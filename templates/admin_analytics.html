@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 flex items-center gap-3">
+                <div class="bg-gradient-to-br from-violet-500 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-violet-200">
+                    <i data-lucide="bar-chart-3" class="w-7 h-7 text-white"></i>
+                </div>
+                Dashboard Analítica
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">Métricas en tiempo real de tu clínica</p>
+        </div>
+        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+            <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
+            <span class="text-sm font-bold text-slate-600" id="analytics-date"></span>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-grid">
+        <div class="bg-gradient-to-br from-sky-500 to-blue-600 p-5 rounded-2xl shadow-lg shadow-sky-200/50 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-sky-100">Consultas este mes</p>
+            <p class="text-4xl font-black mt-1" id="kpi-consultations">—</p>
+            <p class="text-xs text-sky-200 mt-1" id="kpi-consultations-trend"></p>
+        </div>
+        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-lg shadow-emerald-200/50 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-100">Pacientes registrados</p>
+            <p class="text-4xl font-black mt-1" id="kpi-patients">—</p>
+            <p class="text-xs text-emerald-200 mt-1">Total en la clínica</p>
+        </div>
+        <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-5 rounded-2xl shadow-lg shadow-amber-200/50 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-amber-100">Satisfacción</p>
+            <p class="text-4xl font-black mt-1" id="kpi-rating">—</p>
+            <p class="text-xs text-amber-200 mt-1" id="kpi-rating-count"></p>
+        </div>
+        <div class="bg-gradient-to-br from-violet-500 to-purple-600 p-5 rounded-2xl shadow-lg shadow-violet-200/50 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-violet-100">Chats activos</p>
+            <p class="text-4xl font-black mt-1" id="kpi-chats">—</p>
+            <p class="text-xs text-violet-200 mt-1" id="kpi-alerts"></p>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="grid lg:grid-cols-3 gap-4">
+        <!-- Trend Chart (wide) -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <i data-lucide="trending-up" class="w-4 h-4 text-sky-500"></i>
+                Tendencia de consultas (6 meses)
+            </h3>
+            <div class="h-64">
+                <canvas id="chart-trend"></canvas>
+            </div>
+        </div>
+
+        <!-- Diagnostics Donut -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-purple-500"></i>
+                Diagnósticos CIE-10
+            </h3>
+            <div class="h-64 flex items-center justify-center">
+                <canvas id="chart-diagnostics"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="grid lg:grid-cols-2 gap-4">
+        <!-- Top Meds Bar Chart -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <i data-lucide="pill" class="w-4 h-4 text-emerald-500"></i>
+                Top 10 medicamentos recetados
+            </h3>
+            <div class="h-72">
+                <canvas id="chart-meds"></canvas>
+            </div>
+        </div>
+
+        <!-- Doctor Productivity Table -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <i data-lucide="stethoscope" class="w-4 h-4 text-blue-500"></i>
+                Productividad por doctor
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-100">
+                            <th class="text-left py-2 px-2 text-slate-500 font-bold text-xs uppercase">Doctor</th>
+                            <th class="text-center py-2 px-2 text-slate-500 font-bold text-xs uppercase">Consultas</th>
+                            <th class="text-center py-2 px-2 text-slate-500 font-bold text-xs uppercase">Chats</th>
+                            <th class="text-center py-2 px-2 text-slate-500 font-bold text-xs uppercase">Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctor-table-body">
+                        <tr><td colspan="4" class="py-8 text-center text-slate-400">Cargando datos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back link -->
+    <a href="/admin/dashboard" class="inline-flex items-center gap-2 px-5 py-3 bg-white border-2 border-slate-100 text-slate-600 font-bold rounded-2xl hover:border-primary hover:text-primary transition shadow-sm group">
+        <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver al panel
+    </a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    document.getElementById('analytics-date').textContent = new Date().toLocaleDateString('es-CO', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const COLORS = {
+        sky:     ['rgba(14,165,233,0.8)', 'rgba(14,165,233,0.15)'],
+        emerald: ['rgba(16,185,129,0.8)', 'rgba(16,185,129,0.15)'],
+        amber:   ['rgba(245,158,11,0.8)', 'rgba(245,158,11,0.15)'],
+        violet:  ['rgba(139,92,246,0.8)', 'rgba(139,92,246,0.15)'],
+        rose:    ['rgba(244,63,94,0.8)',   'rgba(244,63,94,0.15)'],
+    };
+
+    const DONUT_PALETTE = [
+        '#0EA5E9', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444',
+        '#EC4899', '#06B6D4', '#84CC16',
+    ];
+
+    fetch('/admin/api/analytics_data')
+        .then(r => r.json())
+        .then(data => {
+            // KPIs
+            const k = data.kpis;
+            document.getElementById('kpi-consultations').textContent = k.consultations_month;
+            const diff = k.consultations_month - k.consultations_prev_month;
+            const arrow = diff >= 0 ? '↑' : '↓';
+            document.getElementById('kpi-consultations-trend').textContent =
+                `${arrow} ${Math.abs(diff)} vs. mes anterior`;
+
+            document.getElementById('kpi-patients').textContent = k.new_patients;
+            document.getElementById('kpi-rating').textContent = k.avg_rating > 0 ? `${k.avg_rating} ★` : 'N/A';
+            document.getElementById('kpi-rating-count').textContent = `${k.total_ratings} calificaciones`;
+            document.getElementById('kpi-chats').textContent = k.active_chats;
+            const alertParts = [];
+            if (k.low_stock > 0) alertParts.push(`${k.low_stock} stock bajo`);
+            if (k.pending_tickets > 0) alertParts.push(`${k.pending_tickets} tickets`);
+            document.getElementById('kpi-alerts').textContent = alertParts.join(' · ') || 'Sin alertas';
+
+            // Trend Chart
+            new Chart(document.getElementById('chart-trend'), {
+                type: 'line',
+                data: {
+                    labels: data.trend.labels,
+                    datasets: [{
+                        label: 'Consultas',
+                        data: data.trend.data,
+                        borderColor: COLORS.sky[0],
+                        backgroundColor: COLORS.sky[1],
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: COLORS.sky[0],
+                        pointBorderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 700 } } },
+                        x: { grid: { display: false }, ticks: { font: { weight: 700 } } },
+                    },
+                },
+            });
+
+            // Top Meds Bar Chart
+            new Chart(document.getElementById('chart-meds'), {
+                type: 'bar',
+                data: {
+                    labels: data.top_meds.labels,
+                    datasets: [{
+                        label: 'Cantidad recetada',
+                        data: data.top_meds.data,
+                        backgroundColor: data.top_meds.labels.map((_, i) =>
+                            DONUT_PALETTE[i % DONUT_PALETTE.length] + '99'),
+                        borderColor: data.top_meds.labels.map((_, i) =>
+                            DONUT_PALETTE[i % DONUT_PALETTE.length]),
+                        borderWidth: 2,
+                        borderRadius: 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { weight: 700 } } },
+                        y: { grid: { display: false }, ticks: { font: { weight: 600, size: 11 } } },
+                    },
+                },
+            });
+
+            // Diagnostics Donut
+            if (data.diagnostics.labels.length > 0) {
+                new Chart(document.getElementById('chart-diagnostics'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.diagnostics.labels,
+                        datasets: [{
+                            data: data.diagnostics.data,
+                            backgroundColor: DONUT_PALETTE.slice(0, data.diagnostics.labels.length),
+                            borderWidth: 2,
+                            borderColor: '#fff',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { font: { size: 11, weight: 700 }, padding: 12 } },
+                        },
+                    },
+                });
+            } else {
+                document.getElementById('chart-diagnostics').parentElement.innerHTML =
+                    '<p class="text-center text-slate-400 text-sm py-12">Sin datos de diagnósticos registrados</p>';
+            }
+
+            // Doctor Table
+            const tbody = document.getElementById('doctor-table-body');
+            if (data.doctors.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-400">Sin datos de doctores</td></tr>';
+            } else {
+                tbody.innerHTML = data.doctors.map((doc, i) => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center text-white font-black text-xs shadow-sm">
+                                    ${i + 1}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800">${doc.name}</p>
+                                    <p class="text-[10px] text-slate-400">${doc.specialty}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center py-3 px-2 font-black text-slate-700">${doc.attended}</td>
+                        <td class="text-center py-3 px-2 font-bold text-slate-600">${doc.chats_closed}</td>
+                        <td class="text-center py-3 px-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg ${doc.rating >= 4 ? 'bg-emerald-100 text-emerald-700' : doc.rating > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'} font-black text-xs">
+                                ${doc.rating > 0 ? doc.rating + ' ★' : 'N/A'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        })
+        .catch(err => {
+            console.error('Analytics error:', err);
+            document.getElementById('kpi-consultations').textContent = 'Error';
+        });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 px-4">
+    <div class="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+        <section class="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-50 relative overflow-hidden">
+            <!-- Decorative Gradient -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+            
+            <div class="mb-10 relative">
+                <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    Registro Seguro
+                </div>
+                <h2 class="text-4xl font-black text-slate-900 tracking-tight">Crear cuenta de paciente</h2>
+                <p class="text-slate-500 mt-3 font-medium leading-relaxed max-w-2xl">
+                    Tus datos clínicos están protegidos por cifrado de grado bancario. Solo se utilizan para tu atención médica y gestión administrativa legal.
+                </p>
+            </div>
+
+            <form method="POST" class="space-y-8" id="register-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="grid sm:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Nombre Completo</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" name="name" required placeholder="Ej: María González" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Cédula de Ciudadanía</label>
+                        <div class="relative">
+                            <i data-lucide="credit-card" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" name="cedula" required inputmode="numeric" placeholder="Número de documento" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Usuario</label>
+                        <div class="relative">
+                            <i data-lucide="at-sign" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" name="username" required placeholder="maria.gonzalez" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Contraseña</label>
+                        <div class="relative">
+                            <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="password" name="password" required minlength="10" placeholder="Mínimo 10 caracteres" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Teléfono</label>
+                        <div class="relative">
+                            <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="tel" name="phone" placeholder="Opcional" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Correo Electrónico</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="email" name="email" placeholder="Opcional" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-2 space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Dirección de Residencia</label>
+                        <div class="relative">
+                            <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" name="address" placeholder="Ej: Vereda El Carmen, casa 12" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium">
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-2 space-y-2">
+                        <label class="text-sm font-bold text-slate-700 ml-1">Código de Clínica (Opcional)</label>
+                        <div class="relative">
+                            <i data-lucide="key" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                            <input type="text" name="clinic_code" placeholder="Si tienes un código para una clínica privada" 
+                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary outline-none transition-all font-medium uppercase">
+                        </div>
+                        <p class="text-[10px] text-slate-400 ml-2 font-medium">Déjalo en blanco para registrarte en la clínica pública por defecto.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+                        <i data-lucide="map" class="w-4 h-4"></i> Ubicación exacta (Opcional)
+                    </label>
+                    <div class="bg-slate-50 p-2 rounded-[2rem] border-2 border-slate-100 overflow-hidden">
+                        <div id="registration-map" 
+                            data-location-picker 
+                            data-lat-input="#lat" 
+                            data-lng-input="#lng"
+                            data-use-browser-location="true"
+                            class="h-64 w-full rounded-2xl"></div>
+                    </div>
+                    <input type="hidden" name="latitude" id="lat">
+                    <input type="hidden" name="longitude" id="lng">
+                </div>
+
+                <div class="bg-slate-50 border-2 border-slate-100 rounded-3xl p-6 space-y-4">
+                    <h3 class="font-black text-slate-900 flex items-center gap-2 mb-2">
+                        <i data-lucide="info" class="w-5 h-5 text-primary"></i> Consentimientos
+                    </h3>
+                    
+                    <div class="grid gap-3">
+                        <label class="flex gap-4 items-start cursor-pointer group">
+                            <input type="checkbox" name="accept_terms" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0">
+                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
+                                Acepto los <a href="/terminos" target="_blank" class="text-primary font-bold hover:underline">Términos y Condiciones</a>.
+                            </span>
+                        </label>
+                        
+                        <label class="flex gap-4 items-start cursor-pointer group">
+                            <input type="checkbox" name="accept_privacy" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0">
+                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
+                                Autorizo el tratamiento de <a href="/privacidad" target="_blank" class="text-primary font-bold hover:underline">Datos Personales y Sensibles</a>.
+                            </span>
+                        </label>
+
+                        <label class="flex gap-4 items-start cursor-pointer group">
+                            <input type="checkbox" name="accept_transparency" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0">
+                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
+                                He leído el <a href="/transparencia" target="_blank" class="text-primary font-bold hover:underline">Aviso de Transparencia</a> y acceso a la información.
+                            </span>
+                        </label>
+
+                        <label class="flex gap-4 items-start cursor-pointer group">
+                            <input type="checkbox" name="accept_location" class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0">
+                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
+                                Autorizo el uso de mi ubicación para encontrar servicios cercanos.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" 
+                        class="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-5 rounded-2xl font-black text-xl shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-1 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+                        <span>Crear Cuenta Segura</span>
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                    </button>
+                    <p class="text-center mt-6 text-slate-600 font-medium">
+                        ¿Ya tienes cuenta? 
+                        <a href="/login" class="text-primary font-black hover:underline">Inicia Sesión</a>
+                    </p>
+                </div>
+            </form>
+        </section>
+
+        <aside class="space-y-6 lg:sticky lg:top-24">
+            <div class="bg-slate-900 text-white p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                <i data-lucide="lock" class="absolute -bottom-8 -right-8 w-32 h-32 text-white/5 rotate-12"></i>
+                <h3 class="text-2xl font-black mb-6 flex items-center gap-3">
+                    <i data-lucide="shield" class="w-7 h-7 text-emerald-400"></i> 
+                    Protección RuralHealth
+                </h3>
+                <div class="space-y-5">
+                    <div class="flex gap-4">
+                        <div class="bg-emerald-500/20 p-2 rounded-lg h-fit">
+                            <i data-lucide="key" class="w-4 h-4 text-emerald-400"></i>
+                        </div>
+                        <p class="text-sm text-slate-300 font-medium">Cifrado AES-256 para tus datos sensibles y registros clínicos.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-emerald-500/20 p-2 rounded-lg h-fit">
+                            <i data-lucide="eye-off" class="w-4 h-4 text-emerald-400"></i>
+                        </div>
+                        <p class="text-sm text-slate-300 font-medium">Acceso restringido solo a personal médico autorizado.</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="bg-emerald-500/20 p-2 rounded-lg h-fit">
+                            <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
+                        </div>
+                        <p class="text-sm text-slate-300 font-medium">Cumplimiento estricto con la Ley 1581 de Protección de Datos.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm text-center">
+                <i data-lucide="smartphone" class="w-8 h-8 text-primary mx-auto mb-3"></i>
+                <h4 class="font-bold text-slate-900">App Instalable</h4>
+                <p class="text-xs text-slate-500 mt-1">Usa RuralHealth sin internet en zonas de baja señal una vez instalada.</p>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

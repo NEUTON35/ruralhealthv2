@@ -1,0 +1,616 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 flex items-center gap-3">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-2.5 rounded-xl shadow-lg shadow-emerald-200">
+                    <i data-lucide="file-signature" class="w-7 h-7 text-white"></i>
+                </div>
+                Orden Médica Digital
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">Prescripción con validez legal — Normativa colombiana</p>
+        </div>
+        <a href="{{ url_for('doctor.chat', chat_id=chat_id) if chat_id else url_for('doctor.dashboard') }}" class="border-2 border-slate-100 px-4 py-2.5 rounded-xl font-bold text-slate-700 inline-flex items-center gap-2 hover:border-primary hover:text-primary transition-all">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
+        </a>
+    </div>
+
+    <!-- =====================================================================
+         SEGURIDAD CLÍNICA DEL PACIENTE
+         Se muestra antes del formulario, no después: la información que puede
+         cambiar la prescripción tiene que leerse antes de escribirla.
+         ===================================================================== -->
+    <section class="mb-5 space-y-3">
+
+        <!-- Alergias -->
+        {% if allergies %}
+        <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5">
+            <h2 class="font-black text-rose-900 flex items-center gap-2 mb-3">
+                <i data-lucide="triangle-alert" class="w-5 h-5"></i>
+                Alergias registradas ({{ allergies | length }})
+            </h2>
+            <ul class="space-y-2">
+                {% for allergy in allergies %}
+                <li class="bg-white/70 rounded-xl px-4 py-3 flex items-start justify-between gap-3 flex-wrap">
+                    <div class="min-w-0">
+                        <p class="font-black text-rose-900">{{ allergy.substance }}</p>
+                        {% if allergy.reaction %}
+                        <p class="text-sm text-rose-800">Reacción: {{ allergy.reaction }}</p>
+                        {% endif %}
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-black shrink-0
+                        {% if allergy.severity in ('anafilaxia', 'grave') %}bg-rose-600 text-white
+                        {% else %}bg-amber-200 text-amber-900{% endif %}">
+                        {{ allergy.severity | upper }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <div class="bg-slate-100 border border-slate-300 rounded-2xl p-4 flex items-start gap-3">
+            <i data-lucide="circle-help" class="w-5 h-5 text-slate-500 mt-0.5 shrink-0"></i>
+            <div class="text-sm text-slate-700 leading-relaxed">
+                <b class="text-slate-900">No hay alergias registradas para este paciente.</b>
+                Eso no significa que no las tenga: significa que no lo sabemos.
+                Pregúntale antes de prescribir y
+                <a href="{{ url_for('doctor.patient_history', patient_id=patient.id) }}"
+                   class="text-primary font-bold underline underline-offset-2">regístralas en su historia</a>.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Tratamiento activo -->
+        {% if active_meds %}
+        <div class="bg-sky-50 border border-sky-200 rounded-2xl p-4">
+            <h2 class="font-black text-sky-900 text-sm flex items-center gap-2 mb-2">
+                <i data-lucide="pill" class="w-4 h-4"></i>
+                Tratamiento activo (últimos 90 días)
+            </h2>
+            <p class="text-sm text-sky-900">{{ active_meds | join(' · ') }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Gestación -->
+        {% if patient.is_pregnant %}
+        <div class="bg-violet-50 border-2 border-violet-300 rounded-2xl p-4 flex items-center gap-3">
+            <i data-lucide="baby" class="w-5 h-5 text-violet-700 shrink-0"></i>
+            <p class="text-sm text-violet-900 font-bold">
+                Paciente registrada como gestante. Se verificarán las contraindicaciones en el embarazo.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Resultado de la verificación tras un intento bloqueado -->
+    {% if safety and safety.findings %}
+    <section class="mb-5 bg-white border-2 {% if safety.requires_override %}border-rose-400{% else %}border-amber-300{% endif %} rounded-2xl overflow-hidden">
+        <div class="{% if safety.requires_override %}bg-rose-600{% else %}bg-amber-500{% endif %} px-5 py-3 text-white">
+            <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                Verificación de seguridad — {{ safety.summary_line() }}
+            </h2>
+        </div>
+        <ul class="divide-y divide-slate-100">
+            {% for finding in safety.findings %}
+            <li class="p-5">
+                <div class="flex items-start gap-3">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 mt-0.5
+                        {% if finding.severity == 'block' %}bg-rose-600 text-white
+                        {% elif finding.severity == 'warn' %}bg-amber-500 text-white
+                        {% else %}bg-slate-300 text-slate-800{% endif %}">
+                        {{ finding.severity_label | upper }}
+                    </span>
+                    <div class="min-w-0">
+                        <p class="font-black text-slate-900">{{ finding.title }}</p>
+                        <p class="text-sm text-slate-700 mt-1 leading-relaxed">{{ finding.detail }}</p>
+                        {% if finding.recommendation %}
+                        <p class="text-sm text-slate-800 mt-2 bg-slate-50 border-l-4 border-slate-300 pl-3 py-2 rounded-r leading-relaxed">
+                            <b>Conducta sugerida:</b> {{ finding.recommendation }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="px-5 py-3 bg-slate-50 text-xs text-slate-500 border-t border-slate-100">
+            Verificación con base de conocimiento {{ safety.knowledge_base_version }}.
+            Es una ayuda a la decisión, no un sustituto del criterio clínico:
+            la ausencia de hallazgos no garantiza que la prescripción sea segura.
+        </p>
+    </section>
+    {% endif %}
+
+    <form method="POST" id="prescription-form" class="space-y-5">
+        {% if chat_id %}<input type="hidden" name="chat_id" value="{{ chat_id }}">{% endif %}
+
+        <!-- Justificación para continuar pese a una alerta bloqueante -->
+        {% if safety and safety.requires_override %}
+        <div class="bg-rose-50 border-2 border-rose-400 rounded-2xl p-5">
+            <label for="safety_override_reason" class="font-black text-rose-900 block mb-2">
+                Justificación clínica para continuar
+            </label>
+            <p class="text-sm text-rose-900 mb-3 leading-relaxed">
+                La decisión sigue siendo tuya. Para firmar pese a estas alertas debes
+                dejar por escrito el razonamiento: quedará guardado en la orden y en el
+                registro de auditoría, con tu nombre y la fecha.
+            </p>
+            <textarea id="safety_override_reason" name="safety_override_reason" rows="3"
+                required minlength="20" maxlength="1000"
+                placeholder="Por ejemplo: la reacción previa fue un exantema leve no inmediato hace 15 años; riesgo de anafilaxia bajo; se indica observación durante 30 minutos tras la primera dosis."
+                class="w-full px-4 py-3 border-2 border-rose-200 rounded-xl text-sm focus:border-rose-500 outline-none resize-y">{{ request.form.get('safety_override_reason', '') }}</textarea>
+        </div>
+        {% endif %}
+
+        <!-- SECCIÓN 1: Datos de la Institución (auto) -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-sky-600 to-blue-700 px-5 py-3 text-white">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="building-2" class="w-4 h-4"></i> Datos de la Institución
+                </h2>
+            </div>
+            <div class="p-5 grid sm:grid-cols-3 gap-4 bg-sky-50/30">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Entidad</span>
+                    <p class="font-bold text-slate-800">{{ current_user.clinic.name if current_user.clinic else 'N/A' }}</p>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">NIT</span>
+                    <p class="font-bold text-slate-800">{{ current_user.clinic.nit if current_user.clinic and current_user.clinic.nit else 'No registrado' }}</p>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dirección</span>
+                    <p class="font-bold text-slate-800">{{ current_user.clinic.location if current_user.clinic and current_user.clinic.location else 'No registrada' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: Datos del Paciente -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-white">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="user" class="w-4 h-4"></i> Datos Básicos del Paciente
+                </h2>
+            </div>
+            <div class="p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Paciente</span>
+                    <p class="font-bold text-slate-800">{{ patient.name }}</p>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Documento</span>
+                    <p class="font-bold text-slate-800">{{ patient.cedula }}</p>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Edad</label>
+                    <input type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-emerald-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nivel</label>
+                    <select name="patient_level" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-emerald-500 outline-none">
+                        <option value="1">Nivel 1</option>
+                        <option value="2">Nivel 2</option>
+                        <option value="3">Nivel 3</option>
+                        <option value="4">Nivel 4</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: Aseguramiento -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-3 text-white">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> Cliente / Aseguramiento
+                </h2>
+            </div>
+            <div class="p-5 grid sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">EPS / Aseguradora</label>
+                    <input type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Plan</label>
+                    <input type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Régimen</label>
+                    <select name="insurance_regime" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-violet-500 outline-none">
+                        <option value="">— Seleccionar —</option>
+                        <option value="Contributivo">Contributivo</option>
+                        <option value="Subsidiado">Subsidiado</option>
+                        <option value="Vinculado">Vinculado</option>
+                        <option value="Particular">Particular</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: Diagnósticos CIE-10 -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-white flex items-center justify-between">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-4 h-4"></i> Diagnósticos
+                </h2>
+                <button type="button" onclick="addDiagnosisRow()" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition">
+                    <i data-lucide="plus" class="w-3 h-3 inline"></i> Agregar
+                </button>
+            </div>
+            <div class="p-5" id="diagnosis-rows">
+                <div class="grid sm:grid-cols-4 gap-2 diagnosis-row mb-2">
+                    <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none" required>
+                    <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: Medicamentos (tabla legal completa) -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-600 to-green-600 px-5 py-3 text-white flex items-center justify-between">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="pill" class="w-4 h-4"></i> Medicamentos
+                </h2>
+                <button type="button" onclick="addMedicationRow()" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition">
+                    <i data-lucide="plus" class="w-3 h-3 inline"></i> Agregar
+                </button>
+            </div>
+            <div class="p-5 space-y-3" id="medication-rows">
+                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 grid grid-cols-12 gap-2 px-1 hidden sm:grid">
+                    <span class="col-span-3">Descripción</span>
+                    <span>Cantidad</span>
+                    <span>Dosis</span>
+                    <span>Unidad</span>
+                    <span class="col-span-2">Frecuencia / Duración</span>
+                    <span>Vía</span>
+                    <span class="col-span-2">Instrucciones</span>
+                    <span></span>
+                </div>
+                {% for _ in range(2) %}
+                <div class="grid grid-cols-12 gap-2 medication-row items-center">
+                    <input name="med_name" placeholder="Medicamento" class="col-span-12 sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <input type="number" name="quantity" min="1" value="1" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <input name="dosage" placeholder="Ej: 500mg" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <input name="unit" value="unidad" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <input name="frequency" placeholder="Ej: c/8h x 7d" class="col-span-6 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <select name="route" class="col-span-6 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm bg-white focus:border-emerald-500 outline-none">
+                        <option value="ORAL">Oral</option>
+                        <option value="IV">IV</option>
+                        <option value="IM">IM</option>
+                        <option value="SC">SC</option>
+                        <option value="TOPICA">Tópica</option>
+                        <option value="OFTALMICA">Oftal.</option>
+                        <option value="OTICA">Ótica</option>
+                        <option value="INHALADA">Inhal.</option>
+                        <option value="RECTAL">Rectal</option>
+                    </select>
+                    <input name="instructions" placeholder="Instrucciones" class="col-span-10 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <button type="button" onclick="this.closest('.medication-row').remove()" class="col-span-2 sm:col-span-1 text-red-400 hover:text-red-600 transition p-2 flex items-center justify-center">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SECCIÓN 6: Observaciones & Caducidad -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-600 to-slate-700 px-5 py-3 text-white">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="message-square-text" class="w-4 h-4"></i> Observaciones y Vigencia
+                </h2>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Observaciones</label>
+                    <textarea name="observations" rows="3" placeholder="Observaciones clínicas, indicaciones especiales, contraindicaciones..." class="mt-1 w-full border-2 border-slate-100 p-3 rounded-xl text-sm focus:border-slate-400 outline-none transition-colors resize-none"></textarea>
+                </div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Caducidad</label>
+                        <input type="date" name="expires_date" required value="{{ default_expiration }}" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Hora de Caducidad</label>
+                        <input type="time" name="expires_time" required value="23:59" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 7: Firma Digital del Médico -->
+        <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-700 px-5 py-3 text-white flex items-center justify-between">
+                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="pen-line" class="w-4 h-4"></i> Firma del Profesional
+                </h2>
+                <button type="button" onclick="clearSignature()" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition">Limpiar</button>
+            </div>
+            <div class="p-5">
+                <div class="grid sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nombre del Profesional</span>
+                        <p class="font-bold text-slate-800 text-lg">{{ current_user.name }}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Reg. Médico</span>
+                            <p class="font-bold text-slate-800">{{ current_user.medical_registration or 'No registrado' }}</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Especialidad</span>
+                            <p class="font-bold text-slate-800">{{ current_user.specialty or 'Medicina General' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/30 relative" style="touch-action: none;">
+                    <canvas id="signature-canvas" width="700" height="160" class="w-full rounded-xl cursor-crosshair" style="height:160px;"></canvas>
+                    <p class="absolute bottom-2 right-3 text-[10px] text-indigo-300 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
+                </div>
+                <input type="hidden" name="signature_data" id="signature-data">
+                {% if not current_user.medical_registration %}
+                <p class="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1">
+                    <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                    Registra tu número de Reg. Médico en Ajustes para que aparezca en los documentos.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Verificación en vivo: se rellena a medida que se escriben medicamentos -->
+        <div id="live-safety" class="hidden"></div>
+
+        <!-- BOTÓN DE ENVÍO -->
+        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl font-black text-lg inline-flex items-center justify-center gap-3 shadow-xl shadow-emerald-200/50 hover:shadow-emerald-300/50 transition-all active:scale-[0.98]">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+            Firmar y Emitir Orden Médica
+        </button>
+    </form>
+
+<script>
+/* Verificación de seguridad en vivo.
+ *
+ * Consulta el mismo motor que aplica la validación al firmar, para que la alerta
+ * aparezca al añadir el medicamento y no al final, cuando el formulario ya está
+ * escrito. Esta comprobación no autoriza nada: la definitiva ocurre en el
+ * servidor al enviar.
+ */
+(function () {
+    const PATIENT_ID = {{ patient.id }};
+    const panel = document.getElementById('live-safety');
+    const form = document.getElementById('prescription-form');
+    if (!panel || !form) return;
+
+    const csrf = document.querySelector('meta[name="csrf-token"]');
+    let timer = null;
+
+    function collectMedications() {
+        const names = form.querySelectorAll('input[name="med_name"]');
+        const quantities = form.querySelectorAll('input[name="quantity"]');
+        const meds = [];
+        names.forEach(function (input, index) {
+            const value = (input.value || '').trim();
+            if (!value) return;
+            const quantity = quantities[index] ? parseInt(quantities[index].value, 10) : 1;
+            meds.push({ nombre_med: value, cantidad: isNaN(quantity) ? 1 : quantity });
+        });
+        return meds;
+    }
+
+    const SEVERITY_STYLES = {
+        block: { chip: 'bg-rose-600 text-white', box: 'border-rose-400', label: 'BLOQUEANTE' },
+        warn:  { chip: 'bg-amber-500 text-white', box: 'border-amber-300', label: 'ADVERTENCIA' },
+        info:  { chip: 'bg-slate-300 text-slate-800', box: 'border-slate-200', label: 'INFORMATIVO' }
+    };
+
+    function render(report) {
+        panel.textContent = '';
+        if (!report.findings || !report.findings.length) {
+            panel.classList.add('hidden');
+            return;
+        }
+
+        const style = report.requires_override ? SEVERITY_STYLES.block : SEVERITY_STYLES.warn;
+        panel.className = 'bg-white border-2 rounded-2xl overflow-hidden ' + style.box;
+
+        const header = document.createElement('div');
+        header.className = (report.requires_override ? 'bg-rose-600' : 'bg-amber-500')
+            + ' px-5 py-3 text-white font-black text-sm uppercase tracking-widest';
+        header.textContent = report.requires_override
+            ? 'Revisa antes de firmar — hay alertas bloqueantes'
+            : 'Revisa antes de firmar';
+        panel.appendChild(header);
+
+        const list = document.createElement('ul');
+        list.className = 'divide-y divide-slate-100';
+
+        report.findings.forEach(function (finding) {
+            const item = document.createElement('li');
+            item.className = 'p-4 flex items-start gap-3';
+
+            const chip = document.createElement('span');
+            const chipStyle = SEVERITY_STYLES[finding.severity] || SEVERITY_STYLES.info;
+            chip.className = 'px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 mt-0.5 '
+                + chipStyle.chip;
+            chip.textContent = chipStyle.label;
+            item.appendChild(chip);
+
+            const body = document.createElement('div');
+            body.className = 'min-w-0';
+
+            const title = document.createElement('p');
+            title.className = 'font-black text-slate-900';
+            // textContent, no innerHTML: el contenido incluye nombres escritos
+            // por el usuario y no debe interpretarse como marcado.
+            title.textContent = finding.title;
+            body.appendChild(title);
+
+            const detail = document.createElement('p');
+            detail.className = 'text-sm text-slate-700 mt-1 leading-relaxed';
+            detail.textContent = finding.detail;
+            body.appendChild(detail);
+
+            if (finding.recommendation) {
+                const advice = document.createElement('p');
+                advice.className = 'text-sm text-slate-800 mt-2 bg-slate-50 border-l-4 '
+                    + 'border-slate-300 pl-3 py-2 rounded-r leading-relaxed';
+                advice.textContent = 'Conducta sugerida: ' + finding.recommendation;
+                body.appendChild(advice);
+            }
+
+            item.appendChild(body);
+            list.appendChild(item);
+        });
+
+        panel.appendChild(list);
+        panel.classList.remove('hidden');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    async function check() {
+        const medications = collectMedications();
+        if (!medications.length) {
+            panel.classList.add('hidden');
+            return;
+        }
+        try {
+            const response = await fetch('/doctor/api/prescription_check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf ? csrf.content : ''
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ patient_id: PATIENT_ID, medications: medications })
+            });
+            if (!response.ok) return;
+            render(await response.json());
+        } catch (error) {
+            // Sin conexión no se muestra nada: la validación del servidor al
+            // firmar sigue siendo la que decide.
+        }
+    }
+
+    function schedule() {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(check, 600);
+    }
+
+    form.addEventListener('input', function (event) {
+        if (event.target.name === 'med_name' || event.target.name === 'quantity') {
+            schedule();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', check);
+})();
+</script>
+</div>
+
+<script>
+// Diagnosis rows
+function addDiagnosisRow() {
+    const container = document.getElementById('diagnosis-rows');
+    const row = document.createElement('div');
+    row.className = 'grid sm:grid-cols-4 gap-2 diagnosis-row mb-2';
+    row.innerHTML = `
+        <input type="text" name="dx_code" placeholder="Código CIE-10" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none">
+        <div class="sm:col-span-2 flex gap-2">
+            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none">
+        </div>
+        <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="text-red-400 hover:text-red-600 transition text-sm font-bold">Eliminar</button>
+    `;
+    container.appendChild(row);
+    if (window.lucide) lucide.createIcons();
+}
+
+// Medication rows
+function addMedicationRow() {
+    const container = document.getElementById('medication-rows');
+    const row = document.createElement('div');
+    row.className = 'grid grid-cols-12 gap-2 medication-row items-center';
+    row.innerHTML = `
+        <input name="med_name" placeholder="Medicamento" class="col-span-12 sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <input type="number" name="quantity" min="1" value="1" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <input name="dosage" placeholder="Ej: 500mg" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <input name="unit" value="unidad" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <input name="frequency" placeholder="Ej: c/8h x 7d" class="col-span-6 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <select name="route" class="col-span-6 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm bg-white focus:border-emerald-500 outline-none">
+            <option value="ORAL">Oral</option><option value="IV">IV</option><option value="IM">IM</option><option value="SC">SC</option>
+            <option value="TOPICA">Tópica</option><option value="OFTALMICA">Oftal.</option><option value="OTICA">Ótica</option>
+            <option value="INHALADA">Inhal.</option><option value="RECTAL">Rectal</option>
+        </select>
+        <input name="instructions" placeholder="Instrucciones" class="col-span-10 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <button type="button" onclick="this.closest('.medication-row').remove()" class="col-span-2 sm:col-span-1 text-red-400 hover:text-red-600 transition p-2 flex items-center justify-center">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+    `;
+    container.appendChild(row);
+    if (window.lucide) lucide.createIcons();
+}
+
+// Signature canvas
+(function() {
+    const canvas = document.getElementById('signature-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = 160 * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#1e293b';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    }
+
+    function startDraw(e) {
+        e.preventDefault();
+        drawing = true;
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+    }
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    }
+    function stopDraw() {
+        drawing = false;
+        document.getElementById('signature-data').value = canvas.toDataURL('image/png');
+    }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+})();
+
+function clearSignature() {
+    const canvas = document.getElementById('signature-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('signature-data').value = '';
+}
+</script>
+{% endblock %}

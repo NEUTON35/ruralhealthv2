@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">Agendar Cita</h1>
+            <p class="text-slate-500">Paciente: <span class="font-bold text-slate-800">{{ patient.name }}</span></p>
+        </div>
+        <a href="/doctor/dashboard" class="text-blue-600 font-bold flex items-center gap-2 hover:underline"><i data-lucide="arrow-left" class="w-5 h-5"></i> Volver al Panel</a>
+    </div>
+
+    <!-- Componente Calendario Mensual -->
+    {% include 'calendar_component.html' %}
+
+    <!-- Selección de Hora -->
+    {% if selected_date %}
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 mt-6">
+            <h3 class="font-bold text-gray-800 mb-4 text-lg">Tus horas para el {{ selected_date }}</h3>
+            
+            {% if slots %}
+                <form method="POST" action="/doctor/book_appointment/{{ patient.id }}" class="space-y-6">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="date" value="{{ selected_date }}">
+                    
+                    {% set morning_slots = slots|selectattr('time', 'lt', '12:00')|list %}
+                    {% set afternoon_slots = slots|rejectattr('time', 'lt', '12:00')|list %}
+
+                    {% if morning_slots %}
+                    <div>
+                        <h4 class="font-bold text-sm text-yellow-700 mb-2 flex items-center gap-2"><i data-lucide="sunrise" class="w-4 h-4"></i> Mañana</h4>
+                        <div class="grid grid-cols-4 md:grid-cols-6 gap-3">
+                            {% for slot in morning_slots %}
+                                {% if slot.status == 'available' %}
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required>
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-green-400 bg-green-50 text-green-800 p-3 rounded-xl text-center font-bold hover:bg-green-100 transition">
+                                        {{ slot.time }}
+                                    </div>
+                                </label>
+                                {% elif slot.status == 'booked' %}
+                                <div class="border-2 border-red-300 bg-red-50 text-red-500 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
+                                {% else %}
+                                <div class="border-2 border-gray-600 bg-gray-800 text-gray-300 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if afternoon_slots %}
+                    <div>
+                        <h4 class="font-bold text-sm text-orange-700 mb-2 flex items-center gap-2"><i data-lucide="sunset" class="w-4 h-4"></i> Tarde</h4>
+                        <div class="grid grid-cols-4 md:grid-cols-6 gap-3">
+                            {% for slot in afternoon_slots %}
+                                {% if slot.status == 'available' %}
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required>
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-green-400 bg-green-50 text-green-800 p-3 rounded-xl text-center font-bold hover:bg-green-100 transition">
+                                        {{ slot.time }}
+                                    </div>
+                                </label>
+                                {% elif slot.status == 'booked' %}
+                                <div class="border-2 border-red-300 bg-red-50 text-red-500 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
+                                {% else %}
+                                <div class="border-2 border-gray-600 bg-gray-800 text-gray-300 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="border-t pt-4 mt-4">
+                        <input type="text" name="description" placeholder="Motivo de la cita..." class="w-full border-2 p-3 rounded-xl text-lg focus:border-blue-500 focus:outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold text-xl hover:bg-blue-700 flex items-center justify-center gap-2 transition shadow-lg">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i> Confirmar Cita para {{ patient.name }}
+                    </button>
+                </form>
+            {% else %}
+                <div class="bg-yellow-50 p-6 rounded-xl text-yellow-800 font-semibold text-center flex flex-col items-center gap-2">
+                    <i data-lucide="calendar-x-2" class="w-10 h-10 text-yellow-500"></i>
+                    No atiendes este día. Selecciona otro día en verde.
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="bg-blue-50 p-6 rounded-xl text-blue-800 font-semibold text-center flex flex-col items-center gap-2 mt-6">
+            <i data-lucide="mouse-pointer-click" class="w-10 h-10 text-blue-400"></i>
+            Selecciona un día en el calendario para ver tus horas.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

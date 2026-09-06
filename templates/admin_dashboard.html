@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Panel de Administracion</h1>
+
+<div class="grid sm:grid-cols-3 gap-3 mb-6">
+    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Citas atendidas</p>
+        <p class="text-3xl font-black text-emerald-700">{{ attended_count }}</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Doctores</p>
+        <p class="text-3xl font-black text-indigo-700">{{ doctors|length }}</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Recepcion</p>
+        <p class="text-3xl font-black text-blue-700">{{ receptionists|length }}</p>
+    </div>
+</div>
+
+<a href="/admin/analytics" id="analytics-dashboard-link" class="block bg-gradient-to-r from-violet-600 to-indigo-600 p-5 rounded-2xl shadow-lg shadow-violet-200/50 mb-6 text-white hover:shadow-xl transition-all group">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="bg-white/20 p-3 rounded-xl">
+                <i data-lucide="bar-chart-3" class="w-7 h-7"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-black">Dashboard de Analítica</h2>
+                <p class="text-violet-200 text-sm">Consultas, medicamentos top, diagnósticos, productividad por doctor</p>
+            </div>
+        </div>
+        <i data-lucide="arrow-right" class="w-6 h-6 group-hover:translate-x-1 transition-transform"></i>
+    </div>
+</a>
+
+<section class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-emerald-600 mb-6 flex justify-between items-center">
+    <div>
+        <h2 class="text-2xl font-bold text-emerald-700 flex items-center gap-2"><i data-lucide="file-text" class="w-6 h-6"></i> Exportar RIPS (Minsalud)</h2>
+        <p class="text-sm text-slate-500 mt-1">Generar estructura de archivos planos (CT, AF, US, AC, AP) para enviar al Ministerio de Salud.</p>
+    </div>
+    <form action="/admin/export_rips" method="GET" class="flex flex-col sm:flex-row gap-3 items-center bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-emerald-800">Desde:</span>
+            <input type="date" name="start_date" class="border border-emerald-200 p-2 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-emerald-800">Hasta:</span>
+            <input type="date" name="end_date" class="border border-emerald-200 p-2 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required>
+        </div>
+        <button type="submit" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 transition-all active:scale-95">
+            <i data-lucide="download" class="w-5 h-5"></i> Generar ZIP
+        </button>
+    </form>
+</section>
+
+<section class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-purple-600 mb-6">
+    <h2 class="text-2xl font-bold mb-4 text-purple-700 flex items-center gap-2"><i data-lucide="key-round" class="w-6 h-6"></i> Acceso privado de pacientes</h2>
+    <div class="grid lg:grid-cols-2 gap-5">
+        <div>
+            <form method="POST" class="space-y-4 mb-6">
+                <input type="hidden" name="action" value="create_clinic_access_code">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 ml-1">Código de Acceso (Opcional)</label>
+                    <input name="code" placeholder="Ejem: CLINICA2024" class="w-full border-2 border-slate-100 p-3 rounded-2xl focus:border-purple-500 outline-none transition-colors">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 ml-1">Máx Usos</label>
+                        <input type="number" min="1" max="500" name="max_uses" value="1" class="w-full border-2 border-slate-100 p-3 rounded-2xl focus:border-purple-500 outline-none transition-colors">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 ml-1">Días Vigencia</label>
+                        <input type="number" min="1" name="duration_days" placeholder="Días" class="w-full border-2 border-slate-100 p-3 rounded-2xl focus:border-purple-500 outline-none transition-colors">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 ml-1">Descripción</label>
+                    <input name="description" placeholder="Referencia para administración" class="w-full border-2 border-slate-100 p-3 rounded-2xl focus:border-purple-500 outline-none transition-colors">
+                </div>
+                <button class="w-full bg-purple-700 hover:bg-purple-800 text-white py-4 rounded-2xl font-black shadow-lg shadow-purple-100 transition-all active:scale-[0.98]">
+                    Crear Código de Acceso
+                </button>
+            </form>
+            <div class="space-y-2 max-h-72 overflow-y-auto">
+                {% for code in access_codes %}
+                <div class="bg-purple-50 border border-purple-100 rounded-xl p-3">
+                    <p class="font-mono font-black text-purple-950">{{ code.code }}</p>
+                    <p class="text-xs text-purple-700">{{ code.uses }}/{{ code.max_uses }} usos{% if code.duration_days %} | {{ code.duration_days }} dias{% endif %}</p>
+                </div>
+                {% else %}
+                <p class="text-sm text-slate-400">Sin codigos creados.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div>
+            <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Accesos activos</p>
+            <div class="space-y-2 max-h-96 overflow-y-auto">
+                {% for row in clinic_access_rows %}
+                {% set access = row.access %}
+                <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center justify-between gap-3">
+                    <div>
+                        <p class="font-black text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
+                        <p class="text-xs text-slate-500">{{ access.source }} | Queda {{ row.remaining }}{% if access.expires_at %} | vence {{ access.expires_at|colombia_date }}{% endif %}</p>
+                        {% if row.has_policy %}<span class="inline-flex mt-1 bg-cyan-100 text-cyan-700 px-2 py-1 rounded-full text-[10px] font-black">Poliza</span>{% endif %}
+                    </div>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="revoke_clinic_access">
+                        <input type="hidden" name="access_id" value="{{ access.id }}">
+                        <button class="bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-black">Revocar</button>
+                    </form>
+                </div>
+                {% else %}
+                <p class="text-sm text-slate-400">No hay accesos activos por codigo o poliza.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-cyan-600 mb-6">
+    <h2 class="text-2xl font-bold mb-4 text-cyan-700 flex items-center gap-2"><i data-lucide="users" class="w-6 h-6"></i> Membresias y polizas de doctores</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {% for row in subscription_rows %}
+        {% set sub = row.subscription %}
+        <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="font-black text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
+                    <p class="text-xs text-slate-500">Dr. {{ row.doctor.name if row.doctor else 'Doctor' }} | {{ sub.plan_type }} | Queda {{ row.remaining }}</p>
+                </div>
+                <span class="text-[10px] font-black px-2 py-1 rounded-full {% if row.has_policy %}bg-cyan-100 text-cyan-700{% else %}bg-purple-100 text-purple-700{% endif %}">{{ 'Poliza' if row.has_policy else 'Pago' }}</span>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-400 md:col-span-2">Sin membresias activas asociadas a doctores de la clinica.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-indigo-500">
+        <h2 class="text-2xl font-bold mb-4 text-indigo-600 flex items-center gap-2"><i data-lucide="user-plus" class="w-6 h-6"></i> Agregar Doctor</h2>
+        <form method="POST" class="space-y-3">
+            <input type="hidden" name="action" value="add_doctor">
+            <div class="grid grid-cols-2 gap-3">
+                <input type="text" name="name" required placeholder="Nombre Completo" class="border p-3 rounded-xl text-lg col-span-2">
+                <input type="text" name="cedula" required placeholder="Cedula *" class="border p-3 rounded-xl text-lg">
+                <input type="text" name="specialty" placeholder="Especialidad" class="border p-3 rounded-xl text-lg">
+            </div>
+            <input type="email" name="email" placeholder="Correo electronico" class="w-full border p-3 rounded-xl text-lg">
+            <input type="tel" name="phone" placeholder="Telefono" class="w-full border p-3 rounded-xl text-lg">
+            <input type="text" name="office_address" placeholder="Direccion del consultorio presencial" class="w-full border p-3 rounded-xl text-lg">
+            <div class="grid grid-cols-2 gap-3">
+                <input id="admin-doctor-lat" type="number" step="any" name="office_latitude" placeholder="Latitud consultorio" class="border p-3 rounded-xl text-lg">
+                <input id="admin-doctor-lng" type="number" step="any" name="office_longitude" placeholder="Longitud consultorio" class="border p-3 rounded-xl text-lg">
+            </div>
+            <div class="h-72 rounded-xl overflow-hidden border border-slate-200" data-location-picker data-lat-input="#admin-doctor-lat" data-lng-input="#admin-doctor-lng"></div>
+            <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-black text-sm flex items-center justify-center gap-2">
+                <i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS
+            </button>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 ml-1">Usuario</label>
+                    <input type="text" name="username" required placeholder="Usuario" class="w-full border-2 border-slate-100 p-3 rounded-2xl outline-none focus:border-indigo-500">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 ml-1">Contraseña</label>
+                    <input type="password" name="password" required placeholder="Contraseña" class="w-full border-2 border-slate-100 p-3 rounded-2xl outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-2xl font-black text-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
+                <i data-lucide="plus-circle" class="w-6 h-6"></i> Registrar Doctor
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500">
+        <h2 class="text-2xl font-bold mb-4 text-blue-600 flex items-center gap-2"><i data-lucide="users" class="w-6 h-6"></i> Agregar Staff</h2>
+        <form method="POST" class="space-y-3">
+            <input type="hidden" name="action" value="add_staff">
+            <input type="text" name="name" required placeholder="Nombre Completo" class="w-full border p-3 rounded-xl text-lg">
+            <input type="text" name="cedula" required placeholder="Cedula" class="w-full border p-3 rounded-xl text-lg">
+            <select name="role" class="w-full border p-3 rounded-xl text-lg bg-white">
+                <option value="doctor">Doctor</option>
+                <option value="staff">Recepcionista</option>
+                <option value="expendedor">Expendedor</option>
+            </select>
+            <select name="pharmacy_id" class="w-full border p-3 rounded-xl text-lg bg-white">
+                <option value="">Farmacia para expendedor</option>
+                {% for pharmacy in pharmacies %}
+                <option value="{{ pharmacy.id }}">{{ pharmacy.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="grid grid-cols-2 gap-3">
+                <input type="time" name="atencion_inicio" value="08:00" class="border p-3 rounded-xl text-lg">
+                <input type="time" name="atencion_fin" value="17:00" class="border p-3 rounded-xl text-lg">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <input type="text" name="username" required placeholder="Usuario" class="border p-3 rounded-xl text-lg">
+                <input type="password" name="password" required placeholder="Contrasena" class="border p-3 rounded-xl text-lg">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-xl font-bold text-xl hover:bg-blue-700 transition">Crear Staff</button>
+        </form>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-emerald-500 md:col-span-2">
+        <h2 class="text-2xl font-bold mb-4 text-emerald-700 flex items-center gap-2"><i data-lucide="map-pin" class="w-6 h-6"></i> Farmacias de la clinica</h2>
+        <form method="POST" class="grid md:grid-cols-6 gap-2 mb-4">
+            <input type="hidden" name="action" value="add_pharmacy">
+            <input name="name" required placeholder="Nombre de farmacia" class="border p-2 rounded-lg md:col-span-2">
+            <input name="address" placeholder="Direccion" class="border p-2 rounded-lg md:col-span-2">
+            <input name="phone" placeholder="Telefono" class="border p-2 rounded-lg">
+            <button class="bg-emerald-600 text-white rounded-lg font-bold">Agregar</button>
+            <input id="admin-pharmacy-lat" type="number" step="any" name="latitude" placeholder="Latitud" class="border p-2 rounded-lg md:col-span-3">
+            <input id="admin-pharmacy-lng" type="number" step="any" name="longitude" placeholder="Longitud" class="border p-2 rounded-lg md:col-span-3">
+            <div class="md:col-span-6 h-64 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#admin-pharmacy-lat" data-lng-input="#admin-pharmacy-lng"></div>
+            <button type="button" data-use-browser-location class="md:col-span-6 border border-slate-200 text-slate-700 rounded-lg py-2 font-black text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
+        </form>
+        <div class="space-y-2">
+            {% for pharmacy in pharmacies %}
+            <form method="POST" class="grid md:grid-cols-12 gap-2 items-center border border-slate-100 rounded-lg p-2">
+                <input type="hidden" name="action" value="update_pharmacy">
+                <input type="hidden" name="pharmacy_id" value="{{ pharmacy.id }}">
+                <input name="name" value="{{ pharmacy.name }}" class="border p-2 rounded-lg font-bold md:col-span-2">
+                <input name="address" value="{{ pharmacy.address or '' }}" placeholder="Direccion" class="border p-2 rounded-lg md:col-span-3">
+                <input name="phone" value="{{ pharmacy.phone or '' }}" placeholder="Telefono" class="border p-2 rounded-lg md:col-span-2">
+                <input id="pharmacy-lat-{{ pharmacy.id }}" type="number" step="any" name="latitude" value="{{ pharmacy.latitude if pharmacy.latitude is not none else '' }}" placeholder="Lat" class="border p-2 rounded-lg">
+                <input id="pharmacy-lng-{{ pharmacy.id }}" type="number" step="any" name="longitude" value="{{ pharmacy.longitude if pharmacy.longitude is not none else '' }}" placeholder="Lng" class="border p-2 rounded-lg">
+                <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                    <input type="checkbox" name="is_active" class="accent-emerald-600" {% if pharmacy.is_active %}checked{% endif %}>
+                    Activa
+                </label>
+                <button class="bg-slate-900 text-white rounded-lg font-bold p-2">Guardar</button>
+                <div class="md:col-span-12 h-56 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#pharmacy-lat-{{ pharmacy.id }}" data-lng-input="#pharmacy-lng-{{ pharmacy.id }}"></div>
+                <button type="button" data-use-browser-location class="md:col-span-12 border border-slate-200 text-slate-700 rounded-lg py-2 font-black text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
+            </form>
+            {% else %}
+            <p class="text-sm text-slate-400">Sin farmacias registradas.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-red-500">
+            <h2 class="text-2xl font-bold mb-4">Doctores ({{ doctors|length }})</h2>
+            <ul class="space-y-2 max-h-64 overflow-y-auto">
+                {% for doc in doctors %}
+                <li class="bg-red-50 p-3 rounded-lg flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-lg text-red-900">{{ doc.name }}</span> - <span class="text-sm text-red-700">{{ doc.specialty }}</span>
+                        <p class="text-xs text-gray-600 mt-1">CC: {{ doc.cedula }}{% if doc.email %} | {{ doc.email }}{% endif %}{% if doc.phone %} | {{ doc.phone }}{% endif %}</p>
+                    </div>
+                    <form method="POST">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="delete_user">
+                        <input type="hidden" name="user_id" value="{{ doc.id }}">
+                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold hover:bg-red-600 transition">Eliminar</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500">
+            <h2 class="text-2xl font-bold mb-4">Recepcionistas ({{ receptionists|length }})</h2>
+            <ul class="space-y-2 max-h-64 overflow-y-auto">
+                {% for rec in receptionists %}
+                <li class="bg-blue-50 p-3 rounded-lg flex justify-between items-center">
+                    <span class="font-bold text-lg text-blue-900">{{ rec.name }}</span>
+                    <form method="POST">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="delete_user">
+                        <input type="hidden" name="user_id" value="{{ rec.id }}">
+                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold hover:bg-red-600 transition">Eliminar</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+            <h2 class="text-2xl font-bold mb-4">Expendedores ({{ expendedores|length }})</h2>
+            <ul class="space-y-2 max-h-64 overflow-y-auto">
+                {% for exp in expendedores %}
+                <li class="bg-emerald-50 p-3 rounded-lg space-y-2">
+                    <div class="flex justify-between items-center gap-3">
+                        <div>
+                            <span class="font-bold text-lg text-emerald-900">{{ exp.name }}</span>
+                            <p class="text-xs text-emerald-700">Asignado a: {{ exp.pharmacy.name if exp.pharmacy else 'Sin farmacia' }}</p>
+                        </div>
+                        <form method="POST">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="action" value="delete_user">
+                            <input type="hidden" name="user_id" value="{{ exp.id }}">
+                            <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold hover:bg-red-600 transition">Eliminar</button>
+                        </form>
+                    </div>
+                    <form method="POST" class="flex gap-2">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="assign_expendedor">
+                        <input type="hidden" name="user_id" value="{{ exp.id }}">
+                        <select name="pharmacy_id" class="flex-1 border p-2 rounded-lg bg-white text-sm">
+                            {% for pharmacy in pharmacies %}
+                            <option value="{{ pharmacy.id }}" {% if exp.pharmacy_id == pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-bold">Asignar</button>
+                    </form>
+                </li>
+                {% else %}
+                <li class="text-slate-400 text-sm">Sin expendedores.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-orange-500">
+        <h2 class="text-2xl font-bold mb-4">Pacientes ({{ patients|length }})</h2>
+        <ul class="space-y-2 max-h-[32rem] overflow-y-auto">
+            {% for pat in patients %}
+            <li class="bg-orange-50 p-3 rounded-lg flex justify-between items-center">
+                <div>
+                    <span class="font-bold text-lg text-orange-900">{{ pat.name }}</span>
+                    <p class="text-xs text-gray-600 mt-1">CC: {{ pat.cedula }}{% if pat.phone %} | {{ pat.phone }}{% endif %}{% if pat.email %} | {{ pat.email }}{% endif %}</p>
+                </div>
+                <span class="text-xs font-bold text-slate-400">Solo SuperAdmin puede eliminar</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-amber-500">
+        <h2 class="text-2xl font-bold mb-4 text-amber-700 flex items-center gap-2"><i data-lucide="truck" class="w-6 h-6"></i> Alertas de reposicion</h2>
+        <div class="space-y-2 max-h-80 overflow-y-auto">
+            {% for alert in replenishment_alerts %}
+            <div class="border border-amber-100 bg-amber-50 rounded-lg p-3">
+                <div class="flex justify-between gap-3">
+                    <div>
+                        <p class="font-black text-amber-900">{{ alert.med_name }}</p>
+                        <p class="text-xs text-amber-800">{{ alert.pharmacy.name }} | requerido {{ alert.required_quantity }}, disponible {{ alert.available_quantity }}</p>
+                        {% if alert.note %}<p class="text-xs text-slate-500 mt-1">{{ alert.note }}</p>{% endif %}
+                    </div>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="resolve_replenishment_alert">
+                        <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                        <button class="bg-amber-600 text-white px-3 py-2 rounded-lg text-xs font-bold">Resolver</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-400">Sin alertas abiertas.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-cyan-500">
+        <h2 class="text-2xl font-bold mb-4 text-cyan-700 flex items-center gap-2"><i data-lucide="repeat-2" class="w-6 h-6"></i> Transferencias</h2>
+        <div class="space-y-2 max-h-80 overflow-y-auto">
+            {% for transfer in transfer_requests %}
+            <div class="border border-cyan-100 bg-cyan-50 rounded-lg p-3">
+                <p class="font-black text-cyan-900">{{ transfer.med_name }} x {{ transfer.quantity }}</p>
+                <p class="text-xs text-cyan-800">{{ transfer.source_pharmacy.name }} -> {{ transfer.target_pharmacy.name }} | {{ transfer.status }}</p>
+                <form method="POST" class="flex gap-2 mt-2">
+                    <input type="hidden" name="action" value="resolve_transfer">
+                    <input type="hidden" name="transfer_id" value="{{ transfer.id }}">
+                    <button name="status" value="aprobada" class="bg-cyan-700 text-white px-3 py-2 rounded-lg text-xs font-bold">Aprobar</button>
+                    <button name="status" value="completada" class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold">Completar</button>
+                    <button name="status" value="rechazada" class="bg-white border border-cyan-200 text-cyan-900 px-3 py-2 rounded-lg text-xs font-bold">Rechazar</button>
+                </form>
+            </div>
+            {% else %}
+            <p class="text-sm text-slate-400">Sin solicitudes.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-emerald-500 md:col-span-2">
+        <h2 class="text-2xl font-bold mb-4 text-emerald-700 flex items-center gap-2"><i data-lucide="pill" class="w-6 h-6"></i> Inventario Farmaceutico</h2>
+        <form method="POST" class="grid md:grid-cols-6 gap-2 mb-4">
+            <input type="hidden" name="action" value="add_inventory">
+            <input name="name" required placeholder="Medicamento" class="border p-2 rounded-lg md:col-span-2">
+            <input name="sku" placeholder="SKU" class="border p-2 rounded-lg">
+            <input name="unit" placeholder="Unidad" value="unidad" class="border p-2 rounded-lg">
+            <input type="number" name="stock" min="0" placeholder="Stock" class="border p-2 rounded-lg">
+            <input type="number" name="min_stock" min="0" placeholder="Min" class="border p-2 rounded-lg">
+            <input type="date" name="expires_on" class="border p-2 rounded-lg md:col-span-2">
+            <button class="bg-emerald-600 text-white rounded-lg font-bold md:col-span-4">Agregar</button>
+        </form>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {% for item in inventory_items %}
+            <div class="border border-slate-100 bg-slate-50 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold text-emerald-900">{{ item.name }}</h3>
+                    <p class="text-xs text-slate-500 font-mono mt-1">SKU: {{ item.sku or 'N/A' }}</p>
+                </div>
+                <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
+                    <div class="bg-white p-2 rounded border border-slate-100">
+                        <p class="text-[10px] uppercase text-slate-400 font-black">Stock</p>
+                        <p class="font-black {% if item.stock <= item.min_stock %}text-red-600{% else %}text-emerald-700{% endif %}">{{ item.stock }} {{ item.unit }}</p>
+                    </div>
+                    <div class="bg-white p-2 rounded border border-slate-100">
+                        <p class="text-[10px] uppercase text-slate-400 font-black">Mínimo</p>
+                        <p class="font-bold text-slate-700">{{ item.min_stock }}</p>
+                    </div>
+                </div>
+                {% if item.expires_on %}
+                <p class="text-xs text-amber-700 mt-3 font-bold flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> Vence: {{ item.expires_on }}</p>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="sm:col-span-2 lg:col-span-3 text-center py-6 text-slate-400">
+                <i data-lucide="package-open" class="w-12 h-12 mx-auto text-slate-300 mb-2"></i>
+                <p>Sin medicamentos registrados en el inventario.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

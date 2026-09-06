@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<div class="max-w-6xl mx-auto space-y-4">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900">Mapa de atencion</h1>
+            <p class="text-sm text-slate-500">Farmacias y consultorios cercanos a tu ubicacion registrada.</p>
+        </div>
+        <a href="{{ url_for('patient.dashboard', near=1) }}" class="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg font-black">
+            <i data-lucide="stethoscope" class="w-5 h-5"></i>
+            Doctores cerca de mi
+        </a>
+    </div>
+
+    <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+        <form method="POST" action="{{ url_for('patient.update_location') }}" class="grid lg:grid-cols-8 gap-2 items-end">
+            <div class="lg:col-span-3">
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Direccion</label>
+                <input name="address" value="{{ current_user.address or '' }}" placeholder="Direccion o vereda" class="w-full border p-3 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Latitud</label>
+                <input id="patient-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" class="w-full border p-3 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Longitud</label>
+                <input id="patient-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" class="w-full border p-3 rounded-lg">
+            </div>
+            <label class="lg:col-span-2 flex items-start gap-2 text-xs text-slate-600 border border-slate-100 rounded-lg p-3">
+                <input type="checkbox" name="accept_location" required class="mt-1 accent-emerald-600">
+                <span>Autorizo usar mi ubicacion para calcular cercania y orientar mi atencion.</span>
+            </label>
+            <div class="flex gap-2 lg:col-span-1">
+                <button type="button" data-use-browser-location class="border border-slate-200 px-3 py-3 rounded-lg font-bold text-slate-700" title="Usar GPS del navegador">
+                    <i data-lucide="crosshair" class="w-5 h-5"></i>
+                </button>
+                <button class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-black">Guardar</button>
+            </div>
+            <div class="lg:col-span-8 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#patient-lat" data-lng-input="#patient-lng"></div>
+        </form>
+    </section>
+
+    <section class="bg-white border border-slate-100 rounded-lg shadow-sm overflow-hidden">
+        <div id="care-map" class="h-[520px] bg-slate-100"></div>
+    </section>
+
+    <div class="grid lg:grid-cols-3 gap-4">
+        <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+            <h2 class="font-black text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i> Clinicas</h2>
+            <div id="clinic-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+        </section>
+        <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+            <h2 class="font-black text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="pill" class="w-5 h-5 text-emerald-600"></i> Farmacias</h2>
+            <div id="pharmacy-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+        </section>
+        <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+            <div class="flex items-center justify-between gap-3 mb-3">
+                <h2 class="font-black text-slate-900 flex items-center gap-2"><i data-lucide="map" class="w-5 h-5 text-blue-600"></i> Consultorios</h2>
+                <button id="cache-map-points" class="text-xs bg-slate-900 text-white px-3 py-2 rounded-lg font-bold">Guardar puntos offline</button>
+            </div>
+            <div id="doctor-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+        </section>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const fallbackCenter = [4.5709, -74.2973];
+    const patientLat = {{ current_user.latitude if current_user.latitude is not none else 'null' }};
+    const patientLng = {{ current_user.longitude if current_user.longitude is not none else 'null' }};
+    const map = L.map('care-map', { scrollWheelZoom: true }).setView(patientLat && patientLng ? [patientLat, patientLng] : fallbackCenter, patientLat && patientLng ? 12 : 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const layer = L.layerGroup().addTo(map);
+    const clinicList = document.getElementById('clinic-list');
+    const pharmacyList = document.getElementById('pharmacy-list');
+    const doctorList = document.getElementById('doctor-list');
+
+    function markerIcon(kind, status) {
+        const color = kind === 'patient' ? '#2563eb' : kind === 'doctor' ? '#7c3aed' : kind === 'clinic' ? '#0f766e' : (status ? '#059669' : '#dc2626');
+        const symbol = kind === 'patient' ? 'U' : kind === 'doctor' ? 'D' : kind === 'clinic' ? 'C' : 'F';
+        return L.divIcon({
+            className: '',
+            html: `<div class="map-pin" style="background:${color}">${symbol}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        });
+    }
+
+    function distanceText(value) {
+        return value === null || value === undefined ? 'Sin distancia' : `${value} km`;
+    }
+
+    function addPoint(point, icon, html) {
+        if (point.lat === null || point.lng === null || point.lat === undefined || point.lng === undefined) return;
+        L.marker([point.lat, point.lng], { icon }).bindPopup(html).addTo(layer);
+    }
+
+    function render(data) {
+        layer.clearLayers();
+        clinicList.innerHTML = '';
+        pharmacyList.innerHTML = '';
+        doctorList.innerHTML = '';
+        const bounds = [];
+
+        if (data.patient.lat !== null && data.patient.lng !== null) {
+            addPoint(data.patient, markerIcon('patient'), `<b>${data.patient.name}</b><br>${data.patient.address || 'Ubicacion registrada'}`);
+            bounds.push([data.patient.lat, data.patient.lng]);
+        }
+
+        (data.clinics || []).sort((a, b) => (a.distance_km ?? 999999) - (b.distance_km ?? 999999)).forEach((clinic) => {
+            addPoint(clinic, markerIcon('clinic'), `<b>${clinic.name}</b><br>${clinic.address || ''}<br>${clinic.opening_hours || 'Horario no publicado'}<br>${distanceText(clinic.distance_km)}<br>${clinic.locked ? 'Acceso bloqueado' : 'Acceso disponible'}`);
+            if (clinic.lat !== null && clinic.lng !== null) bounds.push([clinic.lat, clinic.lng]);
+            clinicList.insertAdjacentHTML('beforeend', `
+                <div class="border border-slate-100 rounded-lg p-3 ${clinic.locked ? 'bg-slate-50' : 'bg-blue-50 border-blue-100'}">
+                    <div class="flex justify-between gap-3">
+                        <p class="font-black text-slate-900">${clinic.name}</p>
+                        <span class="text-xs font-black ${clinic.locked ? 'text-slate-400' : 'text-blue-700'}">${clinic.locked ? 'Bloqueada' : 'Disponible'}</span>
+                    </div>
+                    <p class="text-xs text-slate-500">${distanceText(clinic.distance_km)} · ${clinic.address || '-'}</p>
+                    <p class="text-xs text-slate-500">${clinic.opening_hours || 'Horario no publicado'}</p>
+                </div>
+            `);
+        });
+
+        data.pharmacies.sort((a, b) => (a.distance_km ?? 999999) - (b.distance_km ?? 999999)).forEach((pharmacy, index) => {
+            const stockText = pharmacy.stock.length ? pharmacy.stock.map((item) => `${item.name}: ${item.available} ${item.unit}`).join('<br>') : 'Sin stock disponible registrado';
+            addPoint(pharmacy, markerIcon('pharmacy', pharmacy.has_stock), `<b>${pharmacy.name}</b><br>${pharmacy.address || ''}<br>${distanceText(pharmacy.distance_km)}<hr>${stockText}`);
+            if (pharmacy.lat !== null && pharmacy.lng !== null) bounds.push([pharmacy.lat, pharmacy.lng]);
+            pharmacyList.insertAdjacentHTML('beforeend', `
+                <div class="border border-slate-100 rounded-lg p-3 ${index === 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-white'}">
+                    <div class="flex justify-between gap-3">
+                        <p class="font-black text-slate-900">${pharmacy.name}</p>
+                        <span class="text-xs font-black ${pharmacy.has_stock ? 'text-emerald-700' : 'text-red-600'}">${pharmacy.has_stock ? 'Con stock' : 'Sin stock'}</span>
+                    </div>
+                    <p class="text-xs text-slate-500">${distanceText(pharmacy.distance_km)} · ${pharmacy.address || '-'}</p>
+                </div>
+            `);
+        });
+
+        data.doctors.sort((a, b) => (a.distance_km ?? 999999) - (b.distance_km ?? 999999)).forEach((doctor) => {
+            addPoint(doctor, markerIcon('doctor'), `<b>Dr. ${doctor.name}</b><br>${doctor.specialty}<br>${doctor.affiliation}<br>${doctor.schedule || 'Horario no publicado'}<br>${distanceText(doctor.distance_km)}`);
+            if (doctor.lat !== null && doctor.lng !== null) bounds.push([doctor.lat, doctor.lng]);
+            doctorList.insertAdjacentHTML('beforeend', `
+                <div class="border border-slate-100 rounded-lg p-3">
+                    <div class="flex justify-between gap-3">
+                        <p class="font-black text-slate-900">Dr. ${doctor.name}</p>
+                        <span class="text-xs font-black ${doctor.available ? 'text-emerald-700' : 'text-slate-400'}">${doctor.available ? 'Disponible' : 'No disponible'}</span>
+                    </div>
+                    <p class="text-xs text-slate-500">${doctor.specialty} · ${doctor.affiliation}</p>
+                    <p class="text-xs text-slate-500">${doctor.schedule || 'Horario no publicado'}</p>
+                    <p class="text-xs text-blue-700 font-bold">${distanceText(doctor.distance_km)}</p>
+                </div>
+            `);
+        });
+
+        if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+    }
+
+    async function loadPoints() {
+        try {
+            const response = await fetch('{{ url_for("patient.map_points") }}');
+            const data = await response.json();
+            window.currentMapPoints = data;
+            render(data);
+        } catch (error) {
+            const cached = localStorage.getItem('ruralhealth-map-points');
+            if (cached) render(JSON.parse(cached));
+        }
+    }
+
+    document.getElementById('cache-map-points').addEventListener('click', () => {
+        if (window.currentMapPoints) localStorage.setItem('ruralhealth-map-points', JSON.stringify(window.currentMapPoints));
+    });
+
+    loadPoints();
+</script>
+<style>
+    .map-pin {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        border: 3px solid white;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
+    }
+</style>
+{% endblock %}

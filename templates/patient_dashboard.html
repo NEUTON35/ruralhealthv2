@@ -1,0 +1,614 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto" id="patient-dashboard-container">
+    <!-- ENCABEZADO Y MÉTRICAS -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+            <h1 class="text-3xl font-bold mb-1 text-slate-800">Bienvenido, <span class="text-primary">{{ current_user.name }}</span></h1>
+            <p class="text-slate-500 font-medium tracking-wide">Encuentra al especialista que necesitas hoy.</p>
+        </div>
+        <div class="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3">
+            <div class="bg-primary/10 p-1.5 rounded-lg">
+                <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Hora Local</span>
+                <span id="patient-live-clock" class="font-bold text-slate-700 text-sm tracking-tighter">--:--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA CARDS (Signos Vitales del Paciente) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-primary/50 transition-colors group">
+            <div class="flex justify-between items-start mb-2">
+                <div class="bg-blue-50 p-2 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Citas Activas</p>
+            <p class="text-2xl font-black text-slate-800">{{ appointments|length }}</p>
+        </div>
+        
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-500/50 transition-colors group">
+            <div class="flex justify-between items-start mb-2">
+                <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Chats Abiertos</p>
+            <p class="text-2xl font-black text-slate-800">{{ active_chats|length if active_chats else 0 }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-purple-500/50 transition-colors group">
+            <div class="flex justify-between items-start mb-2">
+                <div class="bg-purple-50 p-2 rounded-lg text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Órdenes Digitales</p>
+            <p class="text-2xl font-black text-slate-800">{{ medical_orders|length if medical_orders else 0 }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-500/50 transition-colors group">
+            <div class="flex justify-between items-start mb-2">
+                <div class="bg-rose-50 p-2 rounded-lg text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                    <i data-lucide="heart" class="w-5 h-5"></i>
+                </div>
+            </div>
+            <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Favoritos</p>
+            <p class="text-2xl font-black text-slate-800">{{ fav_data|length if fav_data else 0 }}</p>
+        </div>
+    </div>
+
+    {% if needs_sensitive_consent %}
+    <div class="mb-6 bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="font-black text-emerald-900 flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5"></i> Autoriza datos sensibles para consultas</h2>
+            <p class="text-sm text-emerald-800">Es necesario antes de iniciar chat, citas o seguimiento clínico.</p>
+        </div>
+        <a href="/patient/consentimiento-datos-sensibles" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-black text-center">Revisar y aceptar</a>
+    </div>
+    {% endif %}
+
+    {% if clinic_rows %}
+    <section class="mb-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <div>
+                <h2 class="font-black text-slate-900 flex items-center gap-2">
+                    <i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i>
+                    Clinicas disponibles
+                </h2>
+                <p class="text-xs text-slate-500">Las privadas requieren codigo activo o poliza vigente.</p>
+            </div>
+            <a href="{{ url_for('settings.index') }}" class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-black">Agregar codigo</a>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {% for row in clinic_rows %}
+            <form method="POST" action="{{ url_for('settings.index') }}" class="border rounded-xl p-3 {% if row.is_current %}border-blue-300 bg-blue-50{% elif row.allowed %}border-emerald-100 bg-emerald-50{% else %}border-slate-200 bg-slate-50 opacity-80{% endif %}">
+                <input type="hidden" name="action" value="switch_clinic">
+                <input type="hidden" name="clinic_id" value="{{ row.clinic.id }}">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="font-black text-sm text-slate-900 truncate">{{ row.clinic.name }}</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest {% if row.clinic.access_type == 'private' %}text-amber-700{% else %}text-emerald-700{% endif %}">
+                            {{ 'Privada' if row.clinic.access_type == 'private' else 'Publica' }}
+                        </p>
+                    </div>
+                    {% if row.allowed %}
+                        <i data-lucide="{{ 'check-circle-2' if row.is_current else 'unlock' }}" class="w-5 h-5 {% if row.is_current %}text-blue-600{% else %}text-emerald-600{% endif %}"></i>
+                    {% else %}
+                        <i data-lucide="lock" class="w-5 h-5 text-slate-400"></i>
+                    {% endif %}
+                </div>
+                {% if row.allowed %}
+                    <button class="mt-3 w-full text-xs font-black rounded-lg py-2 {% if row.is_current %}bg-blue-600 text-white{% else %}bg-white border border-emerald-200 text-emerald-700{% endif %}">
+                        {{ 'Activa' if row.is_current else 'Cambiar aqui' }}
+                    </button>
+                {% else %}
+                    <a href="{{ url_for('settings.index') }}" class="mt-3 block text-center text-xs font-black rounded-lg py-2 bg-white border border-slate-200 text-slate-600">Bloqueada</a>
+                {% endif %}
+            </form>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- BARRA DE BÚSQUEDA STYLE ZOCDOC -->
+    {% if medical_orders %}
+    <section class="mb-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+        <h2 class="font-black text-slate-900 flex items-center gap-2 mb-3">
+            <i data-lucide="file-lock-2" class="w-5 h-5 text-emerald-600"></i>
+            Ordenes medicas digitales
+        </h2>
+        <div class="space-y-3">
+            {% for order in medical_orders %}
+            <div class="border border-slate-100 rounded-xl p-3">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <p class="font-black text-slate-900">Orden #{{ order.id }} - {{ order.status }}</p>
+                        <p class="text-xs text-slate-500">Dr. {{ order.doctor.name }} | Expira {{ order.expires_at|colombia_date }} {{ order.expires_at|colombia_time }}</p>
+                    </div>
+                    <span class="text-[10px] font-mono bg-slate-50 border border-slate-100 rounded-lg p-2 break-all">{{ order.hash_seguridad or order.verification_hash }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# === TICKETS DE RECOGIDA DE MEDICAMENTOS === #}
+    {% if pickup_tickets %}
+    <section class="mb-6 rounded-2xl overflow-hidden shadow-md border border-slate-100">
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-500 p-4 text-white flex items-center gap-3">
+            <div class="bg-white/20 p-2 rounded-xl">
+                <i data-lucide="pill" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h2 class="font-black text-lg leading-tight">Tus Medicamentos</h2>
+                <p class="text-emerald-100 text-xs">Tickets de recogida activos y recientes</p>
+            </div>
+        </div>
+        <div class="bg-white divide-y divide-slate-50">
+            {% for ticket in pickup_tickets %}
+            {% set is_today = ticket.pickup_date == today_str %}
+            {% set status_colors = {
+                'autorizado': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                'sin_stock': 'bg-amber-100 text-amber-800 border-amber-200',
+                'parcial': 'bg-purple-100 text-purple-800 border-purple-200',
+                'entregado': 'bg-slate-100 text-slate-600 border-slate-200',
+            } %}
+            {% set status_icons = {
+                'autorizado': 'check-circle-2',
+                'sin_stock': 'clock',
+                'parcial': 'split',
+                'entregado': 'package-check',
+            } %}
+            {% set status_labels = {
+                'autorizado': 'Listo para recoger',
+                'sin_stock': 'Pendiente de stock',
+                'parcial': 'Entrega parcial – Quedan pendientes',
+                'entregado': 'Entregado completamente',
+            } %}
+            <div class="p-4 {% if is_today and ticket.status == 'autorizado' %}bg-emerald-50/50{% endif %}">
+                <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                    <!-- Left: code + meds -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <span class="font-mono font-black text-xl text-slate-900 tracking-wider">{{ ticket.pickup_code }}</span>
+                            <span class="inline-flex items-center gap-1 border px-2.5 py-1 rounded-full text-[11px] font-black {{ status_colors.get(ticket.status, 'bg-slate-100 text-slate-600 border-slate-200') }}">
+                                <i data-lucide="{{ status_icons.get(ticket.status, 'circle') }}" class="w-3 h-3"></i>
+                                {{ status_labels.get(ticket.status, ticket.status) }}
+                            </span>
+                            {% if ticket.is_partial %}
+                            <span class="bg-purple-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">SUB-TICKET</span>
+                            {% endif %}
+                            {% if is_today and ticket.status in ('autorizado', 'parcial') %}
+                            <span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-[11px] font-bold">📅 Hoy</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <p class="text-xs text-slate-600 font-bold flex items-center gap-1.5">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-500"></i>
+                                {{ ticket.pharmacy.name if ticket.pharmacy else 'Farmacia Central' }}
+                            </p>
+                            {% if ticket.pharmacy and ticket.pharmacy.address %}
+                            <p class="text-[10px] text-slate-400 ml-5">{{ ticket.pharmacy.address }}</p>
+                            {% endif %}
+                            <p class="text-[11px] text-slate-500 flex items-center gap-1.5">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                                Sugerido: {{ ticket.pickup_date }} a las {{ ticket.pickup_time }}
+                            </p>
+                        </div>
+
+                        {% if ticket.note %}
+                        <div class="mt-2 p-2 rounded-lg bg-slate-50 border border-slate-100">
+                             <p class="text-[11px] {% if ticket.status == 'sin_stock' %}text-amber-700 font-bold{% else %}text-slate-500 italic{% endif %}">
+                                <i data-lucide="info" class="w-3 h-3 inline-block mr-1"></i>
+                                {{ ticket.note }}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Medications list -->
+                        {% set meds = ticket.meds_json | from_json %}
+                        {% if meds %}
+                        <div class="mt-3 flex flex-wrap gap-1.5">
+                            {% for med in meds[:5] %}
+                            <span class="bg-white border border-slate-200 text-slate-700 text-[11px] px-2.5 py-1 rounded-xl font-bold shadow-sm">
+                                {{ med.nombre_med }} × {{ med.cantidad }}
+                            </span>
+                            {% endfor %}
+                            {% if meds|length > 5 %}
+                            <span class="text-[11px] text-slate-400 font-bold self-center">+{{ meds|length - 5 }} más</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Right: actions -->
+                    <div class="flex flex-col gap-2 shrink-0 sm:min-w-[140px]">
+                        {% if ticket.status in ('autorizado', 'parcial') %}
+                        <form method="POST" action="{{ url_for('patient.notify_arriving', ticket_id=ticket.id) }}">
+                            <button type="submit" class="w-full bg-primary text-white px-4 py-3 rounded-xl font-black text-xs inline-flex items-center justify-center gap-2 hover:bg-primary-dark transition shadow-lg shadow-primary/20 active:scale-95 group">
+                                <i data-lucide="navigation" class="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                                Estoy en camino
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        <div class="text-center py-2 px-3 bg-slate-50 rounded-xl border border-slate-100">
+                            {% if ticket.status != 'entregado' %}
+                            <p class="text-[9px] text-slate-400 font-mono break-all leading-tight">HASH: {{ ticket.pickup_hash[:12] }}...</p>
+                            <p class="text-[9px] text-slate-500 mt-1 font-bold">Muestra esto en ventanilla</p>
+                            {% else %}
+                            <p class="text-[10px] text-slate-400 font-bold">ENTREGADO</p>
+                            <p class="text-[9px] text-slate-400">{{ ticket.delivered_at|colombia_time if ticket.delivered_at else '' }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if payment_tickets %}
+    <section class="mb-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
+        <h2 class="font-black text-slate-900 flex items-center gap-2 mb-3">
+            <i data-lucide="receipt-text" class="w-5 h-5 text-purple-600"></i>
+            Comprobantes de pago
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-2">
+            {% for ticket in payment_tickets %}
+            <div class="border border-slate-100 rounded-xl p-3">
+                <p class="font-black text-sm text-slate-900">Dr. {{ ticket.doctor.name }}</p>
+                <p class="text-xs text-slate-500">{{ ticket.plan_type }} | ${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
+                <span class="inline-flex mt-2 px-2 py-1 rounded-full text-[10px] font-black {% if ticket.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif ticket.status == 'rejected' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+                    {{ ticket.status }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="mb-6 bg-white border border-emerald-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+        <div>
+            <h2 class="font-black text-slate-900 flex items-center gap-2"><i data-lucide="message-circle-question" class="w-5 h-5 text-emerald-600"></i> Consultar medicamentos</h2>
+            <p class="text-sm text-slate-500">Pregunta al staff por disponibilidad antes de desplazarte.</p>
+        </div>
+        <form method="POST" action="{{ url_for('staff.start_chat') }}">
+            <button class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-black text-center inline-flex items-center justify-center gap-2">
+                <i data-lucide="messages-square" class="w-5 h-5"></i>
+                Chat con staff
+            </button>
+        </form>
+    </div>
+
+    <div class="mb-10 bg-white p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+        <form method="GET" class="flex flex-col lg:flex-row gap-4" onsubmit="showDashboardSkeleton()">
+            <div class="flex-1 relative group">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Buscar por nombre o especialidad..." 
+                    class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-lg font-medium">
+            </div>
+            <div class="flex flex-wrap sm:flex-nowrap gap-3">
+                <select name="mode" class="flex-1 lg:w-48 border-2 border-slate-100 p-4 rounded-2xl bg-white focus:border-primary outline-none font-bold text-slate-700 transition-all">
+                    <option value="" {% if not mode_filter %}selected{% endif %}>Todas Modalidades</option>
+                    <option value="presencial" {% if mode_filter == 'presencial' %}selected{% endif %}>Presencial</option>
+                    <option value="telemedicina" {% if mode_filter == 'telemedicina' %}selected{% endif %}>Telemedicina</option>
+                </select>
+                <label class="flex items-center gap-3 bg-slate-50 border-2 border-slate-100 px-6 py-4 rounded-2xl font-bold text-slate-700 cursor-pointer hover:bg-slate-100 transition-all select-none">
+                    <input type="checkbox" name="near" value="1" class="w-5 h-5 rounded-md accent-primary" {% if near_me %}checked{% endif %}>
+                    <span>Cerca de mi</span>
+                </label>
+                <button type="submit" class="bg-primary text-white px-10 py-4 rounded-2xl font-black text-lg shadow-lg shadow-primary/30 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                    Buscar
+                </button>
+            </div>
+        </form>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <a href="{{ url_for('patient.map_view') }}" class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-2 rounded-lg font-black text-sm">
+                <i data-lucide="map" class="w-4 h-4"></i>
+                Ver mapa interactivo
+            </a>
+            <a href="{{ url_for('patient.dashboard', near=1, mode='presencial') }}" class="inline-flex items-center gap-2 bg-slate-50 text-slate-700 border border-slate-100 px-3 py-2 rounded-lg font-black text-sm">
+                <i data-lucide="navigation" class="w-4 h-4"></i>
+                Doctores cerca de mi
+            </a>
+        </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+        <!-- COLUMNA IZQUIERDA Y CENTRAL: LISTADO DE DOCTORES -->
+        <div class="md:col-span-2 space-y-10">
+            
+            <!-- SECCIÓN: MIS FAVORITOS -->
+            {% if fav_data %}
+            <div>
+                <h2 class="text-xl font-bold mb-5 flex items-center gap-2 text-rose-600 border-b border-rose-100 pb-3">
+                    <i data-lucide="heart" class="w-6 h-6 fill-rose-600"></i> Mis Favoritos
+                </h2>
+                <div class="space-y-4">
+                    {% for data in fav_data %}
+                        {% include 'doctor_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- SECCIÓN: DISPONIBLES -->
+            {% if avail_data %}
+            <div>
+                <h2 class="text-xl font-bold mb-5 flex items-center gap-2 text-emerald-600 border-b border-emerald-100 pb-3">
+                    <i data-lucide="stethoscope" class="w-6 h-6"></i> Doctores Disponibles
+                </h2>
+                <div class="space-y-4">
+                    {% for data in avail_data %}
+                        {% include 'doctor_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- SECCIÓN: OCUPADOS -->
+            {% if unavail_data %}
+            <div>
+                <h2 class="text-xl font-bold mb-5 flex items-center gap-2 text-slate-500 border-b border-slate-200 pb-3">
+                    <i data-lucide="clock-alert" class="w-6 h-6"></i> Fuera de Horario
+                </h2>
+                <div class="space-y-4 opacity-75 grayscale-[0.5]">
+                    {% for data in unavail_data %}
+                        {% include 'doctor_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ESTADO VACÍO -->
+            {% if not fav_data and not avail_data and not unavail_data %}
+                <div class="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                    <i data-lucide="search-x" class="w-16 h-16 mx-auto mb-4 text-slate-300"></i>
+                    <h3 class="text-xl font-bold text-slate-700">No se encontraron resultados</h3>
+                    <p class="text-slate-500">Intenta buscando por especialidad como "Pediatría" o "General".</p>
+                    <a href="/patient/dashboard" class="mt-4 inline-block text-blue-600 font-bold hover:underline">Ver todos los doctores</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- COLUMNA DERECHA -->
+        <div class="space-y-6">
+            <!-- PRÓXIMAS CITAS (CORREGIDO FORMATO FECHA) -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-blue-500">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    <i data-lucide="calendar-check" class="w-5 h-5 text-blue-500"></i> Mis Citas
+                </h2>
+                {% if appointments %}
+                <ul class="space-y-3">
+                    {% for appt in appointments %}
+                    <li class="bg-blue-50 p-3 rounded-xl border border-blue-100 group hover:bg-blue-100 transition-colors">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-white p-2 rounded-lg shadow-sm text-center min-w-[50px]">
+                                <span class="block text-[10px] uppercase font-bold text-blue-600">{{ appt.date.split('-')[1] }}/{{ appt.date.split('-')[0] }}</span>
+                                <span class="block text-lg font-black text-slate-700 leading-none">{{ appt.date.split('-')[2] }}</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-800">
+                                    {% if current_user.role == 'patient' %}
+                                        Dr. {{ appt.doctor.name }}
+                                    {% else %}
+                                        {{ appt.patient.name }}
+                                    {% endif %}
+                                </p>
+                                <p class="text-xs text-blue-700 font-medium flex items-center gap-1">
+                                    <i data-lucide="clock" class="w-3 h-3"></i> {{ appt.time }} hrs
+                                </p>
+                                <p class="text-[10px] text-slate-500 italic mt-1 truncate">{{ appt.description or 'Sin detalles' }}</p>
+                                
+                                <div class="mt-2">
+                                    {% if appt.status == 'pending' %}
+                                        <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-green-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-green-700 transition shadow-md">
+                                            🚀 Unirse a la Consulta
+                                        </a>
+                                    {% elif appt.status == 'in_progress' %}
+                                        <span class="block text-center bg-yellow-100 text-yellow-800 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">⏳ En Curso...</span>
+                                    {% elif appt.status == 'no_show' %}
+                                        <div class="bg-red-100 text-red-700 p-2 rounded-lg text-center">
+                                            <p class="font-bold text-xs">❌ No Asistida</p>
+                                            {% if current_user.role == 'patient' %}
+                                                <a href="/patient/book_appointment/{{ appt.doctor_id }}" class="text-[10px] underline text-red-500 block mt-1">Reagendar Cita</a>
+                                            {% endif %}
+                                        </div>
+                                    {% elif appt.status == 'attended' %}
+                                        <span class="block text-center bg-green-100 text-green-700 py-2 rounded-lg font-bold text-xs">✅ Atendida</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-slate-400 text-sm text-center py-6 border-2 border-dashed border-slate-100 rounded-xl">Sin citas programadas.</p>
+                {% endif %}
+            </div>
+            
+            <!-- CONSULTAS RECIENTES -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-purple-500">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-800">
+                    <i data-lucide="message-square" class="w-5 h-5 text-purple-500"></i> Consultas Recientes
+                </h2>
+                <form method="GET" class="mb-4">
+                    {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Filtrar por profesional</label>
+                    <select name="doctor_id" onchange="this.form.submit()" class="mt-1 w-full border border-slate-200 p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-purple-300">
+                        <option value="">Todos los profesionales</option>
+                        {% if doctors_with_chats %}
+                        <optgroup label="Médicos">
+                            {% for doc in doctors_with_chats %}
+                                <option value="{{ doc.id }}" {% if selected_doctor_id == doc.id %}selected{% endif %}>Dr. {{ doc.name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                        {% if staff_with_chats %}
+                        <optgroup label="Soporte / Farmacia">
+                            {% for doc in staff_with_chats %}
+                                <option value="{{ doc.id }}" {% if selected_doctor_id == doc.id %}selected{% endif %}>Staff {{ doc.name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                    </select>
+                </form>
+
+                <!-- CONSULTAS MÉDICAS -->
+                <h3 class="text-xs font-black uppercase tracking-widest text-purple-700 mb-2">Consultas Médicas Activas</h3>
+                <ul class="space-y-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar mb-5">
+                    {% for item in active_doctor_chats %}
+                    {% set c = item.chat %}
+                    <li class="bg-slate-50 p-3 rounded-xl border border-slate-100 transition-all hover:shadow-md {% if item.unread > 0 %}border-l-4 border-l-blue-600 bg-blue-50/50{% endif %}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-sm text-slate-800 truncate">Dr. {{ c.doctor.name }}</span>
+                            <div class="flex items-center gap-2">
+                                {% if item.last_msg %}
+                                <span class="text-[10px] text-slate-400">{{ item.last_msg.timestamp|colombia_time }}</span>
+                                {% endif %}
+                                {% if item.unread > 0 %}
+                                <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce shadow-sm">{{ item.unread }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a href="/patient/chat/{{ c.id }}" class="flex items-center justify-center gap-2 w-full bg-white border border-purple-200 text-purple-700 font-bold text-[10px] py-2 rounded-lg hover:bg-purple-600 hover:text-white transition-all uppercase tracking-tighter">
+                            Continuar Chat
+                            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="text-slate-400 text-sm text-center py-4 border-2 border-dashed border-slate-100 rounded-xl">Sin consultas médicas activas.</li>
+                    {% endfor %}
+                </ul>
+
+                <!-- SOPORTE / FARMACIA -->
+                <h3 class="text-xs font-black uppercase tracking-widest text-emerald-700 mb-2">Soporte / Farmacia Activos</h3>
+                <ul class="space-y-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar mb-5">
+                    {% for item in active_staff_chats %}
+                    {% set c = item.chat %}
+                    <li class="bg-slate-50 p-3 rounded-xl border border-slate-100 transition-all hover:shadow-md {% if item.unread > 0 %}border-l-4 border-l-blue-600 bg-blue-50/50{% endif %}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-sm text-slate-800 truncate">Staff {{ c.doctor.name }}</span>
+                            <div class="flex items-center gap-2">
+                                {% if item.last_msg %}
+                                <span class="text-[10px] text-slate-400">{{ item.last_msg.timestamp|colombia_time }}</span>
+                                {% endif %}
+                                {% if item.unread > 0 %}
+                                <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce shadow-sm">{{ item.unread }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a href="/patient/chat/{{ c.id }}" class="flex items-center justify-center gap-2 w-full bg-white border border-emerald-200 text-emerald-700 font-bold text-[10px] py-2 rounded-lg hover:bg-emerald-600 hover:text-white transition-all uppercase tracking-tighter">
+                            Continuar Soporte
+                            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="text-slate-400 text-sm text-center py-4 border-2 border-dashed border-slate-100 rounded-xl">Sin chats de soporte activos.</li>
+                    {% endfor %}
+                </ul>
+
+                <!-- HISTORIAL CERRADO -->
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Historial cerrado</h3>
+                <ul class="space-y-3 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
+                    {% for item in closed_doctor_chats + closed_staff_chats %}
+                    {% set c = item.chat %}
+                    <li class="bg-slate-50 p-3 rounded-xl border border-slate-100 transition-all hover:shadow-md">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="min-w-0">
+                                <span class="font-bold text-sm text-slate-800 truncate block">{% if c.doctor.role == 'doctor' %}Dr. {% else %}Staff {% endif %}{{ c.doctor.name }}</span>
+                                <span class="text-[10px] text-slate-500 truncate block">{{ c.reason or 'Consulta' }}</span>
+                            </div>
+                            {% if item.last_msg %}
+                                <span class="text-[10px] text-slate-400">{{ item.last_msg.timestamp|colombia_time }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-1 gap-2">
+                            <a href="/patient/chat/{{ c.id }}" class="flex items-center justify-center gap-2 w-full bg-white border border-slate-200 text-slate-700 font-bold text-[10px] py-2 rounded-lg hover:bg-slate-700 hover:text-white transition-all uppercase tracking-tighter">
+                                Ver historial
+                                <i data-lucide="file-text" class="w-3 h-3"></i>
+                            </a>
+                            {% if c.doctor.role == 'doctor' and not item.has_rated %}
+                                <a href="/patient/chat/{{ c.id }}" class="flex items-center justify-center gap-2 w-full bg-yellow-50 border border-yellow-200 text-yellow-700 font-bold text-[10px] py-2 rounded-lg hover:bg-yellow-500 hover:text-white transition-all uppercase tracking-tighter">
+                                    Calificar consulta
+                                    <i data-lucide="star" class="w-3 h-3"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="text-slate-400 text-sm text-center py-4 border-2 border-dashed border-slate-100 rounded-xl">Sin historial cerrado.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updatePatientClock() {
+        const parts = new Intl.DateTimeFormat('es-CO', {
+            timeZone: 'America/Bogota',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }).formatToParts(new Date());
+        const timeParts = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+        const clockElement = document.getElementById('patient-live-clock');
+        if (clockElement) {
+            clockElement.textContent = `${timeParts.hour}:${timeParts.minute}:${timeParts.second}`;
+        }
+    }
+    setInterval(updatePatientClock, 1000);
+    updatePatientClock();
+</script>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+</style>
+<!-- SKELETON LOADER OVERLAY -->
+<div id="dashboard-skeleton" class="hidden absolute inset-0 bg-background/80 z-50 backdrop-blur-sm p-4 pt-20 flex-col gap-6 w-full min-h-screen">
+    <div class="max-w-6xl mx-auto w-full space-y-6">
+        <div class="h-10 bg-slate-200 animate-pulse rounded-lg w-1/3"></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="h-28 bg-slate-200 animate-pulse rounded-2xl"></div>
+            <div class="h-28 bg-slate-200 animate-pulse rounded-2xl"></div>
+            <div class="h-28 bg-slate-200 animate-pulse rounded-2xl"></div>
+            <div class="h-28 bg-slate-200 animate-pulse rounded-2xl"></div>
+        </div>
+        <div class="h-24 bg-slate-200 animate-pulse rounded-2xl w-full"></div>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="md:col-span-2 space-y-4">
+                <div class="h-32 bg-slate-200 animate-pulse rounded-2xl"></div>
+                <div class="h-32 bg-slate-200 animate-pulse rounded-2xl"></div>
+            </div>
+            <div class="space-y-4">
+                <div class="h-64 bg-slate-200 animate-pulse rounded-2xl"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showDashboardSkeleton() {
+        const container = document.getElementById('patient-dashboard-container');
+        if(container) container.classList.add('hidden');
+        const skeleton = document.getElementById('dashboard-skeleton');
+        if(skeleton){
+            skeleton.classList.remove('hidden');
+            skeleton.classList.add('flex');
+        }
+    }
+</script>
+{% endblock %}

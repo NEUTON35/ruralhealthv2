@@ -1,0 +1,41 @@
+<!-- Navegación de Meses -->
+<div class="flex justify-between items-center mb-4">
+    <a href="?month={{ prev_month.strftime('%Y-%m') }}{% if selected_date %}&date={{ selected_date }}{% endif %}" class="bg-white border px-4 py-2 rounded-lg font-bold hover:bg-slate-50 flex items-center gap-2 shadow-sm">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i> {{ prev_month.strftime('%b %Y') }}
+    </a>
+    <h3 class="text-2xl font-bold text-slate-800">{{ current_view_date.strftime('%B %Y') }}</h3>
+    <a href="?month={{ next_month.strftime('%Y-%m') }}{% if selected_date %}&date={{ selected_date }}{% endif %}" class="bg-white border px-4 py-2 rounded-lg font-bold hover:bg-slate-50 flex items-center gap-2 shadow-sm">
+        {{ next_month.strftime('%b %Y') }} <i data-lucide="chevron-right" class="w-5 h-5"></i>
+    </a>
+</div>
+
+<!-- Cuadrícula del Calendario Mensual -->
+<div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+    <div class="grid grid-cols-7 gap-1 text-center mb-2">
+        <div class="text-xs font-bold text-gray-500 py-2">Lun</div>
+        <div class="text-xs font-bold text-gray-500 py-2">Mar</div>
+        <div class="text-xs font-bold text-gray-500 py-2">Mié</div>
+        <div class="text-xs font-bold text-gray-500 py-2">Jue</div>
+        <div class="text-xs font-bold text-gray-500 py-2">Vie</div>
+        <div class="text-xs font-bold text-gray-500 py-2">Sáb</div>
+        <div class="text-xs font-bold text-gray-500 py-2">Dom</div>
+    </div>
+    <div class="grid grid-cols-7 gap-1">
+        {% for day in month_days %}
+            {% if day.is_current_month and not day.is_past %}
+                <a href="?month={{ current_view_date.strftime('%Y-%m') }}&date={{ day.date_str }}" 
+                   class="relative p-2 md:p-3 rounded-xl border-2 text-center transition 
+                   {% if day.date_str == selected_date %}border-medical bg-medical-light shadow-md{% elif day.is_working_day %}border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer{% else %}border-gray-100 bg-gray-50 cursor-not-allowed opacity-40{% endif %}">
+                    <span class="block text-sm md:text-lg font-bold {% if day.date_str == selected_date %}text-medical-dark{% elif day.is_working_day %}text-green-800{% else %}text-gray-400{% endif %}">{{ day.day_num }}</span>
+                    {% if day.is_working_day and day.date_str != selected_date %}
+                        <span class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                    {% endif %}
+                </a>
+            {% else %}
+                <div class="p-2 md:p-3 rounded-xl text-center text-gray-300 border border-transparent">
+                    <span class="block text-sm md:text-lg">{{ day.day_num }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

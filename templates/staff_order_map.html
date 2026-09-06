@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<div class="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <!-- Header con mejor jerarquía -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-4">
+            <div class="bg-primary/10 p-3 rounded-xl text-primary">
+                <i data-lucide="map" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Mapa de Logística</h1>
+                <p class="text-sm text-slate-500 font-medium">Orden #{{ order.id }} • Paciente: <span class="text-slate-900 font-bold">{{ order.patient.name }}</span></p>
+            </div>
+        </div>
+        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-6 py-3 rounded-xl font-black text-slate-700 transition-all active:scale-95">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            Volver al Panel
+        </a>
+    </div>
+
+    <!-- Sección del Mapa -->
+    <section class="bg-white border border-slate-100 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden relative group">
+        <div id="staff-order-map" class="h-[600px] bg-slate-50 z-0"></div>
+        <!-- Leyenda Flotante Premium -->
+        <div class="absolute bottom-6 left-6 z-[1000] bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-white shadow-2xl flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-600 ring-4 ring-blue-100"></span> Paciente</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-600 ring-4 ring-emerald-100"></span> Stock Completo</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500 ring-4 ring-amber-100"></span> Stock Parcial</div>
+            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 ring-4 ring-red-100"></span> Sin Stock</div>
+        </div>
+    </section>
+
+    <!-- Tabla de Disponibilidad -->
+    <section class="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+            <h2 class="font-black text-slate-800 flex items-center gap-2">
+                <i data-lucide="database" class="w-5 h-5 text-primary"></i>
+                Análisis de Inventario en Tiempo Real
+            </h2>
+            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Actualizado hace un momento</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="text-left text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
+                    <tr>
+                        <th class="p-4">Farmacia / Ubicación</th>
+                        <th class="p-4">Logística</th>
+                        {% for med in meds %}
+                        <th class="p-4 text-center">{{ med.nombre_med }}</th>
+                        {% endfor %}
+                        <th class="p-4 text-right">Estatus de Envío</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for row in pharmacy_rows %}
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
+                        <td class="p-4">
+                            <p class="font-black text-slate-900 group-hover:text-primary transition-colors">{{ row.pharmacy.name }}</p>
+                            <p class="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">{{ row.pharmacy.address or 'Sin dirección registrada' }}</p>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-slate-100 p-1.5 rounded-lg text-slate-500">
+                                    <i data-lucide="navigation" class="w-4 h-4"></i>
+                                </div>
+                                <span class="font-bold text-slate-700">{{ row.distance_km ~ ' km' if row.distance_km is not none else 'N/A' }}</span>
+                            </div>
+                        </td>
+                        {% for med_row in row.meds %}
+                        <td class="p-4 text-center">
+                            <div class="inline-flex flex-col items-center">
+                                <span class="text-xs font-black {% if med_row.can_fulfill %}text-emerald-600{% else %}text-red-500{% endif %}">
+                                    {{ med_row.available }} / {{ med_row.required }}
+                                </span>
+                                <div class="w-12 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                                    <div class="h-full {% if med_row.can_fulfill %}bg-emerald-500{% else %}bg-red-400{% endif %}" style="--p: {{ (med_row.available / med_row.required * 100)|round|int if med_row.required > 0 else 0 }}%; width: var(--p);"></div>
+                                </div>
+                            </div>
+                        </td>
+                        {% endfor %}
+                        <td class="p-4 text-right">
+                            {% if row.can_fulfill_all %}
+                            <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-emerald-100">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+    Optimizado para Envío
+                            </div>
+                            {% elif row.any_available %}
+                            <div class="inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-amber-100">
+                                Suministro Parcial
+                            </div>
+                            {% else %}
+                            <div class="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-red-100">
+                                Sin Disponibilidad
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Scripts aislados para evitar colisiones -->
+<!-- Contenedor de Datos (Oculto para el usuario, visible para el JS) -->
+<div id="map-data-provider" class="hidden"
+    data-patient-name="{{ order.patient.name|tojson }}"
+    data-patient-address="{{ (order.patient.address or '')|tojson }}"
+    data-patient-lat="{{ order.patient.latitude if order.patient.latitude is not none else 'null' }}"
+    data-patient-lng="{{ order.patient.longitude if order.patient.longitude is not none else 'null' }}"
+    data-pharmacies='[
+        {% for row in pharmacy_rows %}
+        {
+            "name": {{ row.pharmacy.name|tojson }},
+            "address": {{ (row.pharmacy.address or "")|tojson }},
+            "lat": {{ row.pharmacy.latitude if row.pharmacy.latitude is not none else "null" }},
+            "lng": {{ row.pharmacy.longitude if row.pharmacy.longitude is not none else "null" }},
+            "distance": {{ row.distance_km if row.distance_km is not none else "null" }},
+            "canFulfillAll": {{ "true" if row.can_fulfill_all else "false" }},
+            "anyAvailable": {{ "true" if row.any_available else "false" }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]'>
+</div>
+
+<script>
+// JavaScript 100% Puro (Sin Jinja2) - El editor estará feliz
+var dataEl = document.getElementById('map-data-provider');
+
+var orderMapPatient = {
+    name: JSON.parse(dataEl.getAttribute('data-patient-name')),
+    address: JSON.parse(dataEl.getAttribute('data-patient-address')),
+    lat: parseFloat(dataEl.getAttribute('data-patient-lat')),
+    lng: parseFloat(dataEl.getAttribute('data-patient-lng'))
+};
+
+var orderMapPharmacies = JSON.parse(dataEl.getAttribute('data-pharmacies'));
+
+// Generador de Pines
+function createOrderMapPin(label, color, isPulse) {
+    var pulseHtml = isPulse ? '<div class="pin-pulse" style="background:' + color + '"></div>' : '';
+    return L.divIcon({
+        className: '',
+        html: '<div class="staff-map-pin-container">' +
+              pulseHtml +
+              '<div class="staff-map-pin" style="background:' + color + '">' +
+              label +
+              '</div>' +
+              '</div>',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+    });
+}
+
+// Inicialización
+var staffOrderMap = L.map('staff-order-map', {
+    zoomControl: false,
+    scrollWheelZoom: true
+}).setView(
+    (!isNaN(orderMapPatient.lat) && !isNaN(orderMapPatient.lng)) ? [orderMapPatient.lat, orderMapPatient.lng] : [4.5709, -74.2973], 
+    (!isNaN(orderMapPatient.lat) && !isNaN(orderMapPatient.lng)) ? 13 : 6
+);
+
+L.control.zoom({ position: 'topright' }).addTo(staffOrderMap);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+}).addTo(staffOrderMap);
+
+var mapBounds = [];
+
+// Marcador de Paciente
+if (!isNaN(orderMapPatient.lat) && !isNaN(orderMapPatient.lng)) {
+    L.marker([orderMapPatient.lat, orderMapPatient.lng], { 
+        icon: createOrderMapPin('<i data-lucide="user" class="w-4 h-4"></i>', '#2563eb', true) 
+    }).bindPopup(
+        '<div class="p-2">' +
+        '<p class="font-black text-slate-900">' + orderMapPatient.name + '</p>' +
+        '<p class="text-xs text-slate-500">' + (orderMapPatient.address || 'Ubicación de entrega') + '</p>' +
+        '</div>'
+    ).addTo(staffOrderMap);
+    mapBounds.push([orderMapPatient.lat, orderMapPatient.lng]);
+}
+
+// Marcadores de Farmacias
+orderMapPharmacies.forEach(function(pharmacy) {
+    if (pharmacy.lat === null || pharmacy.lng === null) return;
+    
+    var pinColor = (pharmacy.canFulfillAll === "true" || pharmacy.canFulfillAll === true) ? "#059669" : 
+                   ((pharmacy.anyAvailable === "true" || pharmacy.anyAvailable === true) ? "#d97706" : "#dc2626");
+    
+    var pinIcon = (pharmacy.canFulfillAll === "true" || pharmacy.canFulfillAll === true) ? 
+                  '<i data-lucide="check" class="w-4 h-4"></i>' : '<i data-lucide="pills" class="w-4 h-4"></i>';
+    
+    L.marker([pharmacy.lat, pharmacy.lng], { 
+        icon: createOrderMapPin(pinIcon, pinColor, false) 
+    }).bindPopup(
+        '<div class="p-2">' +
+        '<p class="font-black text-slate-900">' + pharmacy.name + '</p>' +
+        '<p class="text-[10px] text-slate-500">' + (pharmacy.address || '') + '</p>' +
+        '<p class="text-[10px] font-bold mt-2 text-primary">' + (pharmacy.distance === null || pharmacy.distance === "null" ? 'Sin distancia' : 'A ' + pharmacy.distance + ' km') + '</p>' +
+        '</div>'
+    ).addTo(staffOrderMap);
+    mapBounds.push([pharmacy.lat, pharmacy.lng]);
+});
+
+if (mapBounds.length) {
+    staffOrderMap.fitBounds(mapBounds, { padding: [50, 50], maxZoom: 15 });
+}
+
+setTimeout(function() { 
+    if (typeof lucide !== 'undefined') lucide.createIcons(); 
+}, 100);
+</script>
+
+<style>
+    .staff-map-pin-container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .staff-map-pin {
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        border: 3px solid white;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 2;
+    }
+    .staff-map-pin:hover {
+        transform: scale(1.2) translateY(-5px);
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.4);
+    }
+    .pin-pulse {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: pin-pulse-anim 2s infinite;
+        z-index: 1;
+    }
+    @keyframes pin-pulse-anim {
+        0% { transform: scale(1); opacity: 0.5; }
+        100% { transform: scale(2.5); opacity: 0; }
+    }
+    /* Estilos de Popup Leaflet Premium */
+    .leaflet-popup-content-wrapper {
+        border-radius: 16px;
+        padding: 4px;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .leaflet-popup-tip {
+        box-shadow: none;
+    }
+    /* Animación de entrada */
+    .animate-in {
+        animation: fade-in 0.5s ease-out;
+    }
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

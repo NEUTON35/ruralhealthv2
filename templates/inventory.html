@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+        <h1 class="text-3xl font-bold">Inventario</h1>
+        <p class="text-sm text-slate-500">Stock por farmacia de tu clinica</p>
+    </div>
+    <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center justify-center gap-2 border border-slate-200 px-4 py-3 rounded-lg font-bold text-slate-700">
+        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+        Ordenes
+    </a>
+</div>
+
+<section class="bg-white border border-slate-100 shadow-sm rounded-lg p-4 mb-5">
+    <h2 class="text-lg font-black mb-3">Agregar medicamento</h2>
+    <form method="POST" class="grid md:grid-cols-6 gap-2">
+        <select name="pharmacy_id" class="border p-3 rounded-lg bg-white">
+            {% for pharmacy in pharmacies %}
+            <option value="{{ pharmacy.id }}" {% if default_pharmacy and pharmacy.id == default_pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
+            {% endfor %}
+        </select>
+        <input name="nombre_med" required placeholder="Medicamento" class="border p-3 rounded-lg md:col-span-2">
+        <input type="number" name="cantidad" min="0" value="0" class="border p-3 rounded-lg">
+        <input name="unidad" value="unidad" class="border p-3 rounded-lg">
+        <button class="bg-emerald-600 text-white rounded-lg font-bold inline-flex items-center justify-center gap-2 px-4 py-3">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            Guardar
+        </button>
+    </form>
+</section>
+
+<section class="bg-white border border-slate-100 shadow-sm rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="text-left text-[10px] uppercase tracking-widest text-slate-400 bg-slate-50">
+                <tr><th class="p-3">Farmacia</th><th class="p-3">Medicamento</th><th class="p-3">Cantidad</th><th class="p-3">Comprometido</th><th class="p-3">Unidad</th><th class="p-3">Actualizar</th></tr>
+            </thead>
+            <tbody>
+                {% for item in stock_items %}
+                <tr class="border-t align-middle">
+                    <form method="POST">
+                        <input type="hidden" name="stock_id" value="{{ item.id }}">
+                        <td class="p-3">
+                            <select name="pharmacy_id" class="w-40 border p-2 rounded-lg bg-white">
+                                {% for pharmacy in pharmacies %}
+                                <option value="{{ pharmacy.id }}" {% if item.pharmacy_id == pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="p-3">
+                            <input name="nombre_med" value="{{ item.nombre_med }}" class="w-full border p-2 rounded-lg font-bold">
+                        </td>
+                        <td class="p-3">
+                            <input type="number" name="cantidad" min="0" value="{{ item.cantidad }}" class="w-28 border p-2 rounded-lg">
+                        </td>
+                        <td class="p-3 text-sm text-amber-700 font-bold">{{ item.cantidad_comprometida or 0 }}</td>
+                        <td class="p-3">
+                            <input name="unidad" value="{{ item.unidad }}" class="w-28 border p-2 rounded-lg">
+                        </td>
+                        <td class="p-3">
+                            <button class="bg-slate-900 text-white px-3 py-2 rounded-lg font-bold inline-flex items-center gap-2">
+                                <i data-lucide="save" class="w-4 h-4"></i>
+                                Guardar
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="p-6 text-center text-slate-400">Sin stock registrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

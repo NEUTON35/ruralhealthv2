@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden flex flex-col h-[80vh] relative">
+    <!-- CABECERA -->
+    <div class="bg-gradient-to-r from-primary to-primary-dark p-5 sm:p-6 text-white shrink-0 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+        <div class="flex justify-between items-start mb-3 relative z-10">
+            <div>
+                <h2 class="text-2xl font-black tracking-tight">{% if doctor.role != 'doctor' %}Staff {{ doctor.name }}{% else %}Dr. {{ doctor.name }}{% endif %}</h2>
+                <p class="text-sm text-primary-100 flex items-center gap-1.5 font-medium mt-1">
+                    <i data-lucide="clock" class="w-4 h-4"></i> 
+                    {% if doctor.role != 'doctor' %}
+                        {{ doctor.atencion_inicio or '08:00' }} - {{ doctor.atencion_fin or '17:00' }}
+                    {% else %}
+                        {{ doctor.schedule or 'Horario no definido' }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition shadow-sm backdrop-blur-sm">
+                    <i data-lucide="video" class="w-5 h-5"></i>
+                </button>
+                <span class="bg-white/20 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm">
+                    {{ chat.status }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Barra de Motivo de Consulta -->
+        <form method="POST" class="flex gap-2 items-center bg-black/10 backdrop-blur-sm p-2 rounded-xl mt-4 border border-white/10 relative z-10">
+            <input type="hidden" name="update_reason" value="1">
+            <i data-lucide="tag" class="w-4 h-4 text-white/70 ml-2"></i>
+            <input type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="flex-1 bg-transparent text-white placeholder-white/50 text-sm focus:outline-none px-2 font-medium">
+            <button type="submit" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 transition shadow-sm">Guardar</button>
+        </form>
+    </div>
+
+    <!-- CONTENEDOR DE MENSAJES -->
+    <div class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
+        <!-- COUNTDOWN DE 5 MINUTOS PARA CITAS -->
+        {% if chat.appointment and chat.appointment.status == 'in_progress' and chat.appointment.started_at %}
+        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-xl text-center shadow-sm mb-4">
+            <h3 class="font-black text-lg flex items-center justify-center gap-2">
+                <i data-lucide="timer" class="w-5 h-5"></i> Consulta en Curso (10 min)
+            </h3>
+            <p>El paciente tiene 5 minutos para presentarse, de lo contrario la cita se cancelará.</p>
+            <div id="countdown-timer" class="text-4xl font-mono font-black mt-2 text-red-600">10:00</div>
+            
+            {% if current_user.role == 'doctor' %}
+            <form method="POST" action="/doctor/mark_no_show/{{ chat.appointment.id }}" class="mt-3">
+                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-700 transition">
+                    Marcar como "No Asistió"
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <script>
+            (function() {
+                var startStr = "{{ chat.appointment.started_at|colombia_iso }}";
+                var chatId = "{{ chat.id }}";
+                
+                var startedAt = new Date(startStr);
+                var now = new Date();
+                var diff = (now - startedAt) / 1000;
+
+                var noShowLimit = 300; 
+                var consultationLimit = 600; 
+                var remaining = consultationLimit - diff;
+
+                var timerElement = document.getElementById('countdown-timer');
+                var countdownDiv = document.getElementById('appointment-countdown');
+
+                var interval = setInterval(function() {
+                    remaining--;
+                    var elapsed = consultationLimit - remaining;
+
+                    if (elapsed >= noShowLimit && elapsed < noShowLimit + 2) {
+                        if (!document.getElementById('no-show-warn')) {
+                            var warn = document.createElement('div');
+                            warn.id = 'no-show-warn';
+                            warn.className = 'bg-red-200 text-red-900 p-2 rounded-lg mt-2 text-sm font-bold';
+                            warn.innerHTML = "⚠️ Quedan pocos segundos para escribir o se marcará como No Asistida.";
+                            countdownDiv.appendChild(warn);
+                        }
+                    }
+
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        timerElement.innerHTML = "00:00";
+                        var form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/patient/close_chat/' + chatId;
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        var mins = Math.floor(remaining / 60);
+                        var secs = Math.floor(remaining % 60);
+                        timerElement.innerHTML = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                        if (remaining < 60) { timerElement.classList.add('animate-pulse'); }
+                    }
+                }, 1000);
+            })();
+        </script>
+        {% endif %}
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                <div class="bg-red-100 text-red-800 p-3 rounded-xl text-sm font-bold text-center shadow-sm animate-pulse border border-red-200">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% for msg in messages %}
+        <div class="{% if msg.sender_id == current_user.id %}flex justify-end{% else %}flex justify-start{% endif %}">
+            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-[1.5rem] rounded-tr-sm shadow-md shadow-primary/20{% else %}bg-white border border-slate-100 text-slate-800 rounded-[1.5rem] rounded-tl-sm shadow-sm{% endif %} p-4 max-w-[85%] relative group">
+                <p class="text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
+                
+                {% if msg.file_path %}
+                    {% if msg.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')) %}
+                        <img src="/uploads/{{ msg.file_path }}" class="mt-2 rounded-lg max-w-[200px] cursor-pointer border border-black/10" onclick="window.open(this.src)">
+                    {% else %}
+                        <a href="/uploads/{{ msg.file_path }}" target="_blank" class="block mt-2 underline text-blue-200 flex items-center gap-1">
+                            <i data-lucide="file-text" class="w-4 h-4"></i> Ver PDF
+                        </a>
+                    {% endif %}
+                {% endif %}
+
+                <div class="flex justify-end items-center gap-1 mt-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-gray-400{% endif %}">
+                    <span class="text-[10px]">{{ msg.timestamp|colombia_time }}</span>
+                    {% if msg.sender_id == current_user.id %}
+                        {% if msg.is_read %}
+                            <span class="text-blue-200 text-xs font-bold">✓✓</span>
+                        {% else %}
+                            <span class="text-xs font-bold">✓</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                {% if msg.is_flow_question and msg.sender_id != current_user.id %}
+                <div class="mt-3 border-t pt-2 border-slate-100">
+                    {% if msg.flow_input_type == 'open' %}
+                    <form method="POST" action="/patient/chat/{{ chat.id }}" class="flex gap-2">
+                        <input type="text" name="flow_response_open" required class="flex-1 border p-2 rounded text-black text-sm focus:outline-none focus:border-blue-400" placeholder="Tu respuesta...">
+                        <button type="submit" class="bg-blue-600 text-white p-2 rounded text-sm font-bold hover:bg-blue-700 transition">Enviar</button>
+                    </form>
+                    {% elif msg.parsed_flow_options %}
+                    <form method="POST" action="/patient/chat/{{ chat.id }}" class="space-y-2">
+                        {% for key, val in msg.parsed_flow_options.items() %}
+                        <button type="submit" name="flow_response" value="{{ key }}" class="w-full bg-white text-blue-600 border-2 border-blue-400 p-2 rounded-lg font-bold text-left hover:bg-blue-50 transition">
+                            {{ key }}. {{ val['text'] }}
+                        </button>
+                        {% endfor %}
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ZONA INFERIOR -->
+    <div class="border-t">
+        {% if chat.status == 'closed' %}
+            <div class="p-4 bg-slate-100">
+                {% if can_rate %}
+                    <form action="/patient/rate_chat/{{ chat.id }}" method="POST" class="space-y-3 text-left p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+                        <h3 class="font-bold text-lg text-yellow-800 flex items-center gap-2">
+                            <i data-lucide="star" class="w-5 h-5"></i> Califica tu consulta
+                        </h3>
+                        <div class="flex gap-2 items-center">
+                            <label class="font-bold text-sm">Estrellas:</label>
+                            <select name="stars" class="border-2 p-2 rounded-lg bg-white focus:outline-none">
+                                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4)</option>
+                                <option value="3">⭐⭐⭐ (3)</option>
+                                <option value="2">⭐⭐ (2)</option>
+                                <option value="1">⭐ (1)</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            {% for tag in ["Puntual", "Explicación clara", "Buena comunicación", "Sin espera", "Muy amable"] %}
+                            <label class="flex items-center gap-1 bg-white border px-3 py-1 rounded-full cursor-pointer hover:bg-yellow-100 text-sm">
+                                <input type="checkbox" name="tags" value="{{ tag }}" class="w-3 h-3"> {{ tag }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <textarea name="comment" rows="2" class="w-full border p-2 rounded text-sm focus:outline-none focus:border-yellow-500" placeholder="Cuéntale a otros pacientes tu experiencia..."></textarea>
+                        <button type="submit" class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-yellow-600 transition">
+                            Publicar Reseña
+                        </button>
+                    </form>
+                {% elif chat.closed_by == 'patient' %}
+                    <p class="text-sm text-red-500 text-center font-bold py-2">Cerraste la consulta.</p>
+                {% else %}
+                    <p class="text-sm text-gray-500 text-center font-bold py-2">Consulta finalizada.</p>
+                {% endif %}
+            </div>
+
+        {% elif not is_on_duty %}
+            <div class="p-4 bg-gray-100 text-center text-gray-600">
+                <p class="font-bold flex items-center justify-center gap-2">
+                    <i data-lucide="moon" class="w-5 h-5"></i> Fuera de horario de atención
+                </p>
+                <p class="text-xs text-gray-500">{% if doctor.role != 'doctor' %}El personal está fuera de su horario laboral.{% else %}El doctor no atiende en este momento.{% endif %}</p>
+            </div>
+
+        {% elif is_doctor_busy_elsewhere %}
+            <div class="p-4 bg-yellow-50 text-center text-yellow-800 border-t-2 border-yellow-200">
+                <p class="font-bold flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-5 h-5"></i> Doctor en consulta
+                </p>
+                <p class="text-xs">El doctor está atendiendo a otro paciente. Tu chat se reanudará pronto.</p>
+            </div>
+
+        {% elif is_read_only %}
+            <div class="p-4 bg-blue-50 text-center text-blue-800 border-t-2 border-blue-200">
+                <p class="font-bold flex items-center gap-2">
+                    <i data-lucide="eye" class="w-5 h-5"></i> Modo Solo Lectura
+                </p>
+                <p class="text-xs">El doctor está revisando tu historial. No puedes enviar mensajes por ahora.</p>
+            </div>
+
+        {% elif can_send %}
+            <form method="POST" enctype="multipart/form-data" class="p-4 sm:p-5 bg-white flex gap-3 items-center relative" data-offline-chat-form data-chat-id="{{ chat.id }}" data-doctor-name="{{ doctor.name }}">
+                <label class="p-3.5 bg-slate-50 hover:bg-slate-100 rounded-full cursor-pointer transition text-slate-400 hover:text-primary border-2 border-slate-100 shrink-0">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    <input type="file" name="file" accept="image/*,.pdf" hidden>
+                </label>
+                <input type="text" name="content" placeholder="Escribe tu mensaje aquí..." class="flex-1 bg-slate-50 border-2 border-slate-100 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-all">
+                <button type="submit" class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-lg shadow-primary/30 shrink-0 transform hover:-translate-y-0.5 active:scale-95">
+                    <i data-lucide="send" class="w-5 h-5 ml-1"></i>
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if chat.status == 'open' and can_send %}
+<form method="POST" action="/patient/close_chat/{{ chat.id }}" class="mt-2 text-right">
+    <button type="submit" class="text-red-500 text-sm font-bold hover:underline flex items-center gap-1 ml-auto">
+        <i data-lucide="x-circle" class="w-4 h-4"></i> Cerrar consulta
+    </button>
+</form>
+{% endif %}
+
+<div id="video-call-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl overflow-hidden w-full max-w-2xl h-[500px] relative shadow-2xl">
+        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full z-10 hover:bg-red-600 transition">
+            <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone" width="100%" height="100%"></iframe>
+    </div>
+</div>
+
+<div class="mt-6">
+    <a href="/patient/dashboard" class="inline-flex items-center gap-2 px-5 py-3 bg-white border-2 border-slate-100 text-slate-600 font-bold rounded-2xl hover:border-primary hover:text-primary transition shadow-sm group">
+        <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver al panel
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden Médica #{{ order.order_number or order.id }} — RuralHealth Connect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', Arial, sans-serif; color: #1e293b; background: #f8fafc; padding: 20px; }
+        .page { max-width: 800px; margin: 0 auto; background: #fff; border: 2px solid #cbd5e1; border-radius: 4px; }
+        
+        /* HEADER */
+        .header { display: flex; align-items: center; border-bottom: 2px solid #334155; padding: 16px 20px; }
+        .header-logo { width: 80px; flex-shrink: 0; margin-right: 16px; }
+        .header-logo img { width: 100%; height: auto; border-radius: 4px; }
+        .header-center { flex: 1; }
+        .header-center h1 { font-size: 16px; font-weight: 900; text-transform: uppercase; color: #0f172a; }
+        .header-center p { font-size: 11px; color: #475569; margin-top: 2px; }
+        .header-right { text-align: right; border: 1px solid #94a3b8; border-radius: 4px; padding: 8px 12px; font-size: 10px; min-width: 180px; }
+        .header-right .order-num { font-size: 14px; font-weight: 900; color: #0f172a; }
+        .header-right .order-date { color: #64748b; margin-top: 4px; }
+
+        /* TABLE STYLES */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 11px; text-align: left; }
+        th { background: #f1f5f9; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #475569; }
+        
+        /* SECTIONS */
+        .section { border-top: 2px solid #334155; }
+        .section-header { background: #f1f5f9; padding: 6px 12px; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #334155; border-bottom: 1px solid #cbd5e1; }
+        
+        .data-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+        .data-grid .cell { border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 10px; }
+        .data-grid .cell:last-child { border-right: none; }
+        .cell-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; }
+        .cell-value { font-size: 12px; font-weight: 600; color: #0f172a; margin-top: 2px; }
+        .cell-span-2 { grid-column: span 2; }
+        .cell-span-3 { grid-column: span 3; }
+        .cell-span-4 { grid-column: span 4; }
+
+        /* DIAGNOSES */
+        .dx-row { display: grid; grid-template-columns: 80px 1fr; }
+        .dx-code { font-weight: 900; font-size: 12px; color: #0f172a; padding: 5px 10px; border-right: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; }
+        .dx-desc { font-size: 11px; padding: 5px 10px; border-bottom: 1px solid #cbd5e1; color: #334155; text-transform: uppercase; }
+
+        /* MEDICATIONS TABLE */
+        .meds-table th { background: #334155; color: #fff; font-size: 9px; padding: 8px 6px; }
+        .meds-table td { font-size: 11px; }
+        .meds-table tr:nth-child(even) { background: #f8fafc; }
+
+        /* FOOTER / SIGNATURE */
+        .footer { padding: 16px 20px; border-top: 2px solid #334155; }
+        .signature-area { display: flex; gap: 20px; align-items: flex-end; margin-top: 12px; }
+        .signature-block { flex: 1; }
+        .signature-img { max-height: 60px; margin-bottom: 4px; }
+        .signature-line { border-top: 2px solid #0f172a; padding-top: 4px; }
+        .signature-name { font-weight: 900; font-size: 13px; color: #0f172a; }
+        .signature-detail { font-size: 10px; color: #475569; margin-top: 1px; }
+        
+        .validity { font-size: 10px; color: #475569; text-align: center; margin-top: 16px; padding-top: 8px; border-top: 1px solid #e2e8f0; }
+        .validity strong { color: #0f172a; }
+        .hash-block { font-size: 8px; color: #94a3b8; text-align: center; margin-top: 8px; font-family: monospace; word-break: break-all; }
+
+        /* OBSERVATIONS */
+        .observations { padding: 8px 12px; font-size: 11px; color: #334155; min-height: 30px; }
+
+        /* PRINT STYLES */
+        @media print {
+            body { padding: 0; background: #fff; }
+            .page { border: none; max-width: none; }
+            .no-print { display: none !important; }
+            @page { margin: 10mm; size: letter; }
+        }
+
+        /* SCREEN-ONLY CONTROLS */
+        .print-controls { max-width: 800px; margin: 0 auto 16px; display: flex; gap: 12px; }
+        .btn { padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+        .btn-primary { background: #0ea5e9; color: #fff; }
+        .btn-primary:hover { background: #0284c7; }
+        .btn-secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-secondary:hover { background: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <!-- Print Controls (hidden in print) -->
+    <div class="print-controls no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+        <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-secondary">← Volver al panel</a>
+    </div>
+
+    <div class="page">
+        <!-- HEADER: Logo + Institution + Order Number -->
+        <div class="header">
+            {% if order.doctor.clinic and order.doctor.clinic.logo_path %}
+            <div class="header-logo">
+                <img src="/uploads/{{ order.doctor.clinic.logo_path }}" alt="Logo">
+            </div>
+            {% endif %}
+            <div class="header-center">
+                <h1>{{ clinic.legal_name or clinic.name }}</h1>
+                <p>NIT: {{ clinic.nit or 'No registrado' }}</p>
+                <p>Dirección: {{ clinic.location or 'No registrada' }}</p>
+            </div>
+            <div class="header-right">
+                <p style="font-size:9px; color:#64748b;">Orden Nro.</p>
+                <p class="order-num">{{ order.order_number or order.id }}</p>
+                <p class="order-date">Fecha de la Orden<br><strong>{{ order.created_at|colombia_date }} {{ order.created_at|colombia_time }}</strong></p>
+            </div>
+        </div>
+
+        <!-- DATOS BÁSICOS DEL PACIENTE -->
+        <div class="section">
+            <div class="section-header">Datos Básicos — Cliente (Aseguramiento)</div>
+            <div class="data-grid">
+                <div class="cell cell-span-2">
+                    <div class="cell-label">Paciente</div>
+                    <div class="cell-value">{{ order.patient.name }}</div>
+                </div>
+                <div class="cell">
+                    <div class="cell-label">Documento</div>
+                    <div class="cell-value">{{ order.patient.cedula }}</div>
+                </div>
+                <div class="cell">
+                    <div class="cell-label">Edad (Años, Meses, Días)</div>
+                    <div class="cell-value">{{ order.patient_age or 'N/R' }}</div>
+                </div>
+                <div class="cell cell-span-2">
+                    <div class="cell-label">Dirección del Paciente</div>
+                    <div class="cell-value">{{ order.patient.address or 'No registrada' }}</div>
+                </div>
+                <div class="cell">
+                    <div class="cell-label">Nivel</div>
+                    <div class="cell-value">{{ order.patient_level or '1' }}</div>
+                </div>
+                <div class="cell">
+                    <div class="cell-label">Cliente (EPS)</div>
+                    <div class="cell-value">{{ order.insurance_name or 'Particular' }}</div>
+                </div>
+                <div class="cell">
+                    <div class="cell-label">Plan</div>
+                    <div class="cell-value">{{ order.insurance_plan or 'N/A' }}</div>
+                </div>
+                <div class="cell">
+                    <div class="cell-label">Régimen</div>
+                    <div class="cell-value">{{ order.insurance_regime or 'N/A' }}</div>
+                </div>
+                <div class="cell cell-span-2">
+                    <!-- Placeholder to keep grid even -->
+                </div>
+            </div>
+        </div>
+
+        <!-- DIAGNÓSTICOS -->
+        <div class="section">
+            <div class="section-header">Diagnósticos</div>
+            {% for dx in diagnoses %}
+            <div class="dx-row">
+                <div class="dx-code">{{ dx.code }}</div>
+                <div class="dx-desc">{{ dx.description }}</div>
+            </div>
+            {% else %}
+            <div style="padding: 8px 12px; font-size: 11px; color: #94a3b8;">Sin diagnósticos registrados</div>
+            {% endfor %}
+        </div>
+
+        <!-- OBSERVACIONES -->
+        {% if order.observations %}
+        <div class="section">
+            <div class="section-header">Observaciones</div>
+            <div class="observations">{{ order.observations }}</div>
+        </div>
+        {% endif %}
+
+        <!-- TABLA DE MEDICAMENTOS -->
+        <div class="section">
+            <div class="section-header">Medicamentos Prescritos</div>
+            <table class="meds-table">
+                <thead>
+                    <tr>
+                        <th style="width:30px">It</th>
+                        <th>Descripción</th>
+                        <th style="width:55px">Cantidad</th>
+                        <th style="width:65px">Dosis</th>
+                        <th style="width:45px">Und</th>
+                        <th>Frecuencia / Duración</th>
+                        <th style="width:50px">Vía</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in meds %}
+                    <tr>
+                        <td style="text-align:center; font-weight:700;">{{ loop.index }}</td>
+                        <td style="font-weight:600;">{{ med.medicamento or med.nombre_med }}</td>
+                        <td style="text-align:center;">{{ med.cantidad }}</td>
+                        <td>{{ med.dosis or '' }}</td>
+                        <td>{{ med.unidad }}</td>
+                        <td>{{ med.frecuencia or '' }}</td>
+                        <td style="text-align:center;">{{ med.via or 'ORAL' }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if med_instructions %}
+                    <tr>
+                        <td colspan="7" style="font-size:10px; color:#475569; padding:6px 10px;">
+                            {% for inst in med_instructions %}
+                                {% if inst %}<strong>{{ loop.index }}.</strong> {{ inst }}<br>{% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FIRMA -->
+        <div class="footer">
+            <div class="signature-area">
+                <div class="signature-block">
+                    {% if order.doctor.signature_path %}
+                    <img src="/uploads/{{ order.doctor.signature_path }}" class="signature-img" alt="Firma">
+                    {% else %}
+                    <div style="height:50px;"></div>
+                    {% endif %}
+                    <div class="signature-line">
+                        <div class="signature-name">{{ order.doctor.name }}</div>
+                        <div class="signature-detail">Nombre y firma del profesional</div>
+                        <div class="signature-detail">Reg. Méd.: {{ order.doctor.medical_registration or 'No registrado' }} &nbsp;&nbsp; Especialidad: {{ order.doctor.specialty or 'Medicina General' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="validity">
+                Esta prescripción médica es válida por <strong>{{ validity_days }} días</strong> a partir de la fecha de expedición.<br>
+                Fecha Impresión: <strong>{{ print_date }}</strong> &nbsp; Impreso por: <strong>{{ order.doctor.name }}</strong>
+            </div>
+
+            <div class="hash-block">
+                Hash de seguridad: {{ order.verification_hash[:64] }}...
+                <br>Verificar autenticidad en la plataforma RuralHealth Connect
+            </div>
+        </div>
+    </div>
+</body>
+</html>

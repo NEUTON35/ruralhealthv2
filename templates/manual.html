@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-5xl mx-auto py-8 px-4">
+    <!-- Hero Section -->
+    <div class="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 mb-8 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <span class="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary text-xs font-black uppercase tracking-widest rounded-full mb-3">
+                    <i data-lucide="info" class="w-3 h-3"></i> Centro de Operaciones y Aprendizaje
+                </span>
+                <h1 class="text-4xl font-black text-slate-900 tracking-tight">Manual Maestro <span class="text-primary">RuralHealth</span></h1>
+                <p class="text-slate-500 mt-2 max-w-xl">Documentación integral dividida por facultades. Solo tienes acceso a la información pertinente a tu rango de operación.</p>
+            </div>
+            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-primary"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase">Perfil Identificado</p>
+                    <p class="font-bold text-slate-700 capitalize">{{ current_user.role }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="flex flex-wrap gap-2 mb-8 p-1.5 bg-slate-100 rounded-2xl">
+        <button onclick="showSection('general')" id="tab-general" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all active">
+            🌐 General
+        </button>
+        
+        {% if current_user.role == 'patient' %}
+        <button onclick="showSection('patient')" id="tab-patient" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+            👤 Pacientes
+        </button>
+        {% endif %}
+
+        {% if current_user.role == 'doctor' %}
+        <button onclick="showSection('doctor')" id="tab-doctor" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+            🩺 Médicos
+        </button>
+        {% endif %}
+
+        {% if current_user.role == 'expendedor' %}
+        <button onclick="showSection('expendedor')" id="tab-expendedor" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+            💊 Farmacia
+        </button>
+        {% endif %}
+
+        {% if current_user.role in ('staff', 'receptionist') %}
+        <button onclick="showSection('staff')" id="tab-staff" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+            📋 Staff
+        </button>
+        {% endif %}
+
+        {% if current_user.role == 'admin' %}
+        <button onclick="showSection('admin')" id="tab-admin" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+            ⚙️ Admin
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- SECCIÓN: GENERAL (Visible para todos) -->
+    <div id="section-general" class="manual-section space-y-6">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i data-lucide="globe" class="w-7 h-7 text-primary"></i> Estándares de la Plataforma
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-blue-50 rounded-lg"><i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i></div>
+                        <div>
+                            <h4 class="font-black text-slate-800">Privacidad Zero-Trust</h4>
+                            <p class="text-sm text-slate-500">Tus datos nunca se almacenan legibles. Todo, desde tu nombre hasta tu diagnóstico, viaja y se guarda bajo cifrado AES-256.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-emerald-50 rounded-lg"><i data-lucide="zap" class="w-5 h-5 text-emerald-600"></i></div>
+                        <div>
+                            <h4 class="font-black text-slate-800">Velocidad y Datos</h4>
+                            <p class="text-sm text-slate-500">La App consume menos del 50% de datos que una App de salud promedio gracias a nuestra optimización de bajo ancho de banda.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-purple-50 rounded-lg"><i data-lucide="smartphone" class="w-5 h-5 text-purple-600"></i></div>
+                        <div>
+                            <h4 class="font-black text-slate-800">Uso PWA y Modo Offline</h4>
+                            <p class="text-sm text-slate-500">Instala RuralHealth como una App nativa. Si te quedas sin internet, el sistema mostrará una pantalla especial que te permitirá enviar chats, revisar tu agenda y ver mapas gracias a nuestra caché inteligente.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="p-2 bg-rose-50 rounded-lg"><i data-lucide="life-buoy" class="w-5 h-5 text-rose-600"></i></div>
+                        <div>
+                            <h4 class="font-black text-slate-800">Soporte Técnico</h4>
+                            <p class="text-sm text-slate-500">Si un botón "no hace nada", suele ser por una sesión expirada. Cierra sesión y vuelve a entrar para renovar tus tokens de seguridad.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: PACIENTE -->
+    {% if current_user.role == 'patient' %}
+    <div id="section-patient" class="manual-section hidden space-y-6">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i data-lucide="user" class="w-7 h-7 text-primary"></i> Manual del Paciente
+            </h2>
+            <div class="grid gap-6">
+                <div class="p-6 bg-slate-50 rounded-2xl">
+                    <h4 class="font-black text-slate-800 mb-2">📅 Citas y Agendamiento</h4>
+                    <ul class="text-sm text-slate-500 space-y-2 list-disc pl-5">
+                        <li>Usa la barra de búsqueda en tu Panel de Control para encontrar médicos por especialidad o nombre.</li>
+                        <li>Las tarjetas de cada médico te mostrarán si tienen horarios disponibles. Al hacer clic, verás su calendario.</li>
+                        <li>Al agendar, la cita aparecerá en la columna "Mis Citas". 5 minutos antes de la hora acordada se habilitará el botón para unirte a la videollamada.</li>
+                    </ul>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl">
+                    <h4 class="font-black text-slate-800 mb-2">💬 Telemedicina y Chats</h4>
+                    <ul class="text-sm text-slate-500 space-y-2 list-disc pl-5">
+                        <li>Tus chats están divididos en dos categorías para tu comodidad: <strong>Consultas Médicas</strong> (con los doctores) y <strong>Soporte / Farmacia</strong> (con el personal administrativo).</li>
+                        <li>El chat de Soporte te permite verificar la disponibilidad de medicamentos antes de desplazarte a la clínica.</li>
+                        <li>En ambos tipos de chat, puedes enviar imágenes (como resultados de laboratorio) o archivos PDF.</li>
+                    </ul>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl">
+                    <h4 class="font-black text-slate-800 mb-2">💊 Recetas y Despacho</h4>
+                    <ul class="text-sm text-slate-500 space-y-2 list-disc pl-5">
+                        <li>Tras una consulta, el médico emitirá una orden médica digital. Estas órdenes generan "Tickets de Recogida".</li>
+                        <li>Si el ticket está "Listo para recoger", verás un botón que dice "Estoy en camino". Úsalo para avisar a la farmacia de tu llegada.</li>
+                        <li><strong>Pendientes:</strong> Si el medicamento no tiene stock temporalmente, el ticket quedará "Pendiente de stock". Se actualizará automáticamente en cuanto la clínica reciba nuevos suministros.</li>
+                    </ul>
+                </div>
+                <div class="p-6 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                    <h4 class="font-black text-emerald-900 mb-2">🔐 Privacidad y Datos Sensibles</h4>
+                    <p class="text-xs text-emerald-700 leading-relaxed">Para usar los chats y citas, requieres aceptar explícitamente el tratamiento de datos sensibles de salud. El sistema genera una firma digital blindada ligada a tu conexión para garantizar que tus derechos ARCO estén siempre protegidos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN: DOCTOR -->
+    {% if current_user.role == 'doctor' %}
+    <div id="section-doctor" class="manual-section hidden space-y-6">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i data-lucide="stethoscope" class="w-7 h-7 text-primary"></i> Manual Médico (Institucional e Independiente)
+            </h2>
+            <div class="space-y-6">
+                <div class="p-6 border-2 border-slate-100 rounded-3xl">
+                    <h4 class="font-black text-slate-800 mb-4">🩺 Atención y Evolución en Consulta</h4>
+                    <p class="text-sm text-slate-500 mb-4">La plataforma está diseñada para agilizar tu flujo de trabajo y asegurar el cumplimiento de la norma RIPS.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-[10px] font-black text-primary uppercase mb-1">Paso 1: Chat y Videollamada</p>
+                            <p class="text-xs text-slate-500">Puedes usar el chat para el triage inicial, compartir documentos y luego lanzar una videollamada cifrada de punto a punto desde el botón de la cámara.</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-primary uppercase mb-1">Paso 2: Notas de Evolución</p>
+                            <p class="text-xs text-slate-500">Registra síntomas, diagnóstico (usando el código CIE-10) y plan a seguir. Esto es obligatorio para que el Administrador pueda exportar el RIPS.</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-primary uppercase mb-1">Paso 3: Orden Médica Legal</p>
+                            <p class="text-xs text-slate-500">Genera recetas completas con dosis, vías de administración e información de la aseguradora (EPS). Puedes plasmar tu <strong>Firma Digital</strong> directamente en la pantalla, dando validez legal (SERSALUD) al documento que el paciente puede imprimir.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6 bg-teal-50 border border-teal-100 rounded-3xl">
+                    <h4 class="font-black text-teal-800 mb-2"><i data-lucide="settings" class="w-5 h-5 inline mr-1"></i> Perfil Profesional (Ajustes)</h4>
+                    <p class="text-sm text-teal-700 leading-relaxed mb-2">Para que tus órdenes médicas tengan total validez legal, debes registrar tu <strong>Registro Médico</strong> y <strong>Especialidad</strong>.</p>
+                    <ul class="text-xs text-teal-600 list-disc pl-5 space-y-1">
+                        <li>Ve a tu foto de perfil > Configuración > Datos Profesionales.</li>
+                        <li>Ingresa tu Reg. Méd. y especialidad. Esta información se imprimirá automáticamente debajo de tu firma en todas tus prescripciones.</li>
+                    </ul>
+                </div>
+                
+                {% if current_user.is_autonomous %}
+                <div class="p-6 bg-purple-900 text-white rounded-3xl shadow-xl">
+                    <h4 class="font-black text-xl mb-4 flex items-center gap-2"><i data-lucide="briefcase" class="w-6 h-6 text-primary"></i> Gestión de Consultorio Autónomo</h4>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="bg-white/10 p-4 rounded-xl">
+                            <p class="font-black text-xs mb-1">Tarifas y Precios</p>
+                            <p class="text-[10px] text-slate-400 leading-tight">Configura cuánto cobras por consulta, suscripción mensual o anual. Puedes aplicar descuentos a aseguradoras (Pólizas).</p>
+                        </div>
+                        <div class="bg-white/10 p-4 rounded-xl">
+                            <p class="font-black text-xs mb-1">Pagos Manuales</p>
+                            <p class="text-[10px] text-slate-400 leading-tight">Los pacientes subirán una foto/PDF de su transferencia. Revisa el apartado de Pagos en tu panel para validarlos y habilitar el acceso.</p>
+                        </div>
+                        <div class="bg-white/10 p-4 rounded-xl">
+                            <p class="font-black text-xs mb-1">Bloqueo de Agenda</p>
+                            <p class="text-[10px] text-slate-400 leading-tight">Puedes bloquear tu horario en "Configuración" para evitar citas en días que no laboras o en vacaciones.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN: FARMACIA -->
+    {% if current_user.role == 'expendedor' %}
+    <div id="section-expendedor" class="manual-section hidden space-y-6">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i data-lucide="package" class="w-7 h-7 text-emerald-600"></i> Operación de Despacho en Farmacia
+            </h2>
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-6 rounded-2xl">
+                    <h4 class="font-black text-slate-800">✅ Flujo de Entrega a Pacientes</h4>
+                    <p class="text-sm text-slate-500 mt-2">
+                        Pide al paciente su código corto (ej. `A1B2C3`) y digítalo en tu dashboard. El sistema te mostrará exactamente la cantidad de medicamentos autorizados y descontará el stock de inmediato. Si te falta stock, puedes marcar "Entrega Parcial".
+                    </p>
+                </div>
+                <div class="bg-emerald-600 text-white p-6 rounded-2xl shadow-lg">
+                    <h4 class="font-black flex items-center gap-2"><i data-lucide="rocket" class="w-5 h-5"></i> Filtro "Listos para Completar"</h4>
+                    <p class="text-sm text-emerald-100 mt-2">
+                        Muestra los pacientes que estaban esperando medicamentos agotados y que ahora sí se pueden despachar tras un ingreso de inventario. Úsalo para agilizar la entrega pendiente.
+                    </p>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-2xl">
+                    <h4 class="font-black text-slate-800">📦 Ingreso de Cargamentos</h4>
+                    <p class="text-sm text-slate-500 mt-2">
+                        Cuando recibas medicamentos desde el centro de distribución, ingrésalos por la pestaña de "Cargamentos". Esto habilitará a los doctores a seguir recetando.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN: STAFF -->
+    {% if current_user.role in ('staff', 'receptionist') %}
+    <div id="section-staff" class="manual-section hidden space-y-6">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i data-lucide="clipboard-check" class="w-7 h-7 text-amber-600"></i> Gestión de Recepción y Logística
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="border-2 border-slate-100 p-6 rounded-3xl">
+                    <h4 class="font-black text-slate-800 mb-2">💬 Chats de Soporte al Paciente</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed mb-3">Tus chats no se mezclan con los médicos. Tú atiendes preguntas operativas y de disponibilidad en la sección de "Soporte / Farmacia".</p>
+                    <ul class="text-xs text-slate-400 list-disc pl-5 space-y-1">
+                        <li>Confirma si hay medicamentos antes de que el paciente viaje a la clínica.</li>
+                        <li>Asiste con problemas de agendamiento.</li>
+                    </ul>
+                </div>
+                <div class="border-2 border-slate-100 p-6 rounded-3xl">
+                    <h4 class="font-black text-slate-800 mb-2">📦 Recepción de Envíos Logísticos</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        Cuando el almacén central envíe medicamentos a la sede, podrás marcarlos como "Recibidos" en el sistema. Esto actualiza el stock general y descongela las órdenes pendientes.
+                    </p>
+                </div>
+                <div class="md:col-span-2 border-2 border-amber-100 bg-amber-50 p-6 rounded-3xl">
+                    <h4 class="font-black text-amber-800 mb-2">⚠️ Gestión de Alertas de Quiebre</h4>
+                    <p class="text-sm text-amber-700 leading-relaxed">
+                        Si un doctor receta algo sin stock, se levantará una alerta. Revisa la tabla de Alertas diariamente para coordinar y solicitar más inventario al proveedor o centro de acopio.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SECCIÓN: ADMIN -->
+    {% if current_user.role == 'admin' %}
+    <div id="section-admin" class="manual-section hidden space-y-6">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                <i data-lucide="shield-alert" class="w-7 h-7 text-rose-600"></i> Control de Red y Auditoría
+            </h2>
+            <div class="space-y-6">
+                <div class="p-6 bg-slate-900 text-white rounded-3xl">
+                    <h4 class="font-black text-lg mb-2 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5 text-primary"></i> Exportación Consolidada de RIPS</h4>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-3">El sistema reúne las atenciones de todos tus médicos para generar los paquetes normativos.</p>
+                    <ul class="text-xs text-slate-400 list-disc pl-5 space-y-1">
+                        <li>Descarga los archivos `CT`, `AF`, `US`, y `AC` listos para reporte.</li>
+                        <li>El sistema evita errores de validación exigiendo a los doctores ingresar el CIE-10.</li>
+                    </ul>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-5 border-2 border-slate-100 rounded-2xl">
+                        <h4 class="font-black text-slate-800">📊 Panel de Analítica Estratégica</h4>
+                        <p class="text-xs text-slate-500">Accede desde el botón violeta en tu panel principal para ver métricas clave. Obtendrás gráficos de tendencias de atención, el ranking de productividad por doctor, el Top 10 de medicamentos más recetados y los diagnósticos más prevalentes.</p>
+                    </div>
+                    <div class="p-5 border-2 border-slate-100 rounded-2xl">
+                        <h4 class="font-black text-slate-800">🎟️ Códigos de Acceso (Privados)</h4>
+                        <p class="text-xs text-slate-500">Para clínicas de modelo cerrado, genera códigos temporales. Así limitas qué pacientes pueden agendar citas con tus especialistas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Support Footer -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-[2.5rem] p-10 text-white text-center mt-12 shadow-2xl">
+        <div class="flex justify-center mb-6">
+            <div class="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center">
+                <i data-lucide="headphones" class="w-8 h-8 text-primary"></i>
+            </div>
+        </div>
+        <h3 class="text-2xl font-black mb-2">Centro de Soporte Técnico</h3>
+        <p class="text-slate-400 mb-8 max-w-lg mx-auto">Esta documentación es confidencial y para uso interno exclusivo de los usuarios registrados de RuralHealth Connect.</p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="mailto:soporte@ruralhealth.com" class="bg-primary text-white px-8 py-3 rounded-2xl font-black hover:scale-105 transition-all">
+                Enviar Ticket
+            </a>
+            <a href="/transparencia" class="bg-white/10 text-white px-8 py-3 rounded-2xl font-black border border-white/20 hover:bg-white/20 transition-all">
+                Ver Políticas
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .manual-tab {
+        color: #64748b;
+        background: transparent;
+    }
+    .manual-tab.active {
+        color: #0EA5E9;
+        background: white;
+        box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.08);
+    }
+    .manual-tab:hover:not(.active) {
+        color: #0EA5E9;
+        background: rgba(14, 165, 233, 0.05);
+    }
+    .manual-section {
+        animation: fadeIn 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script>
+    function showSection(sectionId) {
+        // Ocultar todas
+        document.querySelectorAll('.manual-section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        
+        // Mostrar seleccionada
+        const target = document.getElementById('section-' + sectionId);
+        if (target) {
+            target.classList.remove('hidden');
+        }
+        
+        // Actualizar tabs
+        document.querySelectorAll('.manual-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        const activeTab = document.getElementById('tab-' + sectionId);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+    }
+</script>
+{% endblock %}

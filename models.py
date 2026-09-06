@@ -1,0 +1,896 @@
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from sqlalchemy.orm import declared_attr
+from time_utils import colombia_now
+from security import EncryptedText
+
+db = SQLAlchemy()
+
+ROLE_SUPER = 'super'
+ROLE_CLINIC_ADMIN = 'admin'
+ROLE_RECEPTIONIST = 'receptionist'
+ROLE_STAFF = 'staff'
+ROLE_EXPENDOR = 'expendedor'
+ROLE_EXPENDEDOR = ROLE_EXPENDOR
+ROLE_DOCTOR = 'doctor'
+ROLE_PATIENT = 'patient'
+STAFF_ROLE_VALUES = (ROLE_STAFF, ROLE_RECEPTIONIST)
+CLINIC_ACTIVE = 'active'
+CLINIC_SUSPENDED = 'suspended'
+CLINIC_ACCESS_PUBLIC = 'public'
+CLINIC_ACCESS_PRIVATE = 'private'
+ACCESS_ACTIVE = 'active'
+ACCESS_REVOKED = 'revoked'
+ACCESS_EXPIRED = 'expired'
+PLAN_PER_CONSULTATION = 'per_consultation'
+PLAN_MONTHLY = 'monthly'
+PLAN_QUARTERLY = 'quarterly'
+PLAN_ANNUAL = 'annual'
+PAYMENT_PENDING = 'pending'
+PAYMENT_APPROVED = 'approved'
+PAYMENT_REJECTED = 'rejected'
+
+# Tipos de documento admitidos por RIPS (Resolucion 1036 de 2022 y concordantes).
+DOC_CEDULA = 'CC'
+DOC_TARJETA_IDENTIDAD = 'TI'
+DOC_REGISTRO_CIVIL = 'RC'
+DOC_CEDULA_EXTRANJERIA = 'CE'
+DOC_PASAPORTE = 'PA'
+DOC_MENOR_SIN_ID = 'MS'
+DOC_ADULTO_SIN_ID = 'AS'
+DOC_PERMISO_ESPECIAL = 'PE'
+DOC_PERMISO_PROTECCION = 'PT'
+DOCUMENT_TYPES = (
+    DOC_CEDULA, DOC_TARJETA_IDENTIDAD, DOC_REGISTRO_CIVIL, DOC_CEDULA_EXTRANJERIA,
+    DOC_PASAPORTE, DOC_MENOR_SIN_ID, DOC_ADULTO_SIN_ID, DOC_PERMISO_ESPECIAL,
+    DOC_PERMISO_PROTECCION,
+)
+
+# Movimientos del libro mayor de inventario.
+STOCK_MOVE_RECEIPT = 'ingreso'
+STOCK_MOVE_DISPENSE = 'dispensacion'
+STOCK_MOVE_RESERVE = 'reserva'
+STOCK_MOVE_RELEASE = 'liberacion'
+STOCK_MOVE_ADJUST = 'ajuste'
+STOCK_MOVE_TRANSFER_OUT = 'traslado_salida'
+STOCK_MOVE_TRANSFER_IN = 'traslado_entrada'
+STOCK_MOVE_EXPIRY = 'baja_vencimiento'
+
+class ClinicScoped:
+    @declared_attr
+    def clinic_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True, index=True)
+
+class Clinic(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(180), nullable=False)
+    legal_name = db.Column(db.String(220), nullable=True)
+    nit = db.Column(db.String(50), nullable=True)
+    # Codigo de habilitacion en el REPS. RIPS lo exige como identificador del
+    # prestador; el NIT no lo sustituye.
+    habilitacion_code = db.Column(db.String(20), nullable=True, index=True)
+    department_code = db.Column(db.String(2), nullable=True)   # DANE
+    municipality_code = db.Column(db.String(3), nullable=True)  # DANE
+    location = db.Column(db.String(220), nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    access_type = db.Column(db.String(30), default=CLINIC_ACCESS_PUBLIC, nullable=False)
+    plan = db.Column(db.String(80), default='starter', nullable=False)
+    plan_pago = db.Column(db.String(80), default='starter', nullable=False)
+    status = db.Column(db.String(50), default=CLINIC_ACTIVE, nullable=False)
+    activa = db.Column(db.Boolean, default=True, nullable=False)
+    contact_email = db.Column(db.String(180), nullable=True)
+    logo_path = db.Column(db.String(300), nullable=True)
+    opening_hours = db.Column(db.Text, nullable=True)
+    policy_consent_code = db.Column(db.String(64), unique=True, nullable=True, index=True)
+    policy_consent_generated_at = db.Column(db.DateTime, nullable=True)
+    subscription_provider = db.Column(db.String(80), nullable=True)
+    subscription_customer_id = db.Column(db.String(180), nullable=True)
+    subscription_status = db.Column(db.String(50), default='manual', nullable=False)
+    created_at = db.Column(db.DateTime, default=colombia_now)
+
+class Pharmacy(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(180), nullable=False)
+    address = db.Column(db.String(220), nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    phone = db.Column(db.String(80), nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=colombia_now)
+    clinic = db.relationship('Clinic')
+
+class User(UserMixin, ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    name = db.Column(EncryptedText, nullable=False)
+    cedula = db.Column(EncryptedText, nullable=False)
+    cedula_hash = db.Column(db.String(64), unique=True, nullable=True, index=True)
+    phone = db.Column(EncryptedText, nullable=True)
+    email = db.Column(EncryptedText, nullable=True)
+    specialty = db.Column(db.String(150), nullable=True)
+
+    # --- Identificacion desagregada (exigida por RIPS) ---
+    # El campo `name` guarda el nombre completo para presentacion; RIPS exige los
+    # componentes por separado y no admite deducirlos partiendo la cadena.
+    document_type = db.Column(db.String(4), default=DOC_CEDULA, nullable=True)
+    first_surname = db.Column(EncryptedText, nullable=True)
+    second_surname = db.Column(EncryptedText, nullable=True)
+    first_name = db.Column(EncryptedText, nullable=True)
+    second_name = db.Column(EncryptedText, nullable=True)
+    birth_date = db.Column(db.Date, nullable=True)
+    sex = db.Column(db.String(1), nullable=True)          # M | F
+    department_code = db.Column(db.String(2), nullable=True)   # DANE
+    municipality_code = db.Column(db.String(3), nullable=True)  # DANE
+    zone = db.Column(db.String(1), default='R', nullable=True)  # U urbana | R rural
+    insurer_code = db.Column(db.String(20), nullable=True)      # codigo EPS/entidad
+    insurer_name = db.Column(db.String(180), nullable=True)
+    affiliation_regime = db.Column(db.String(30), nullable=True)  # contributivo | subsidiado | ...
+
+    # --- Datos clinicos basicos del paciente ---
+    is_pregnant = db.Column(db.Boolean, default=False, nullable=False)
+    pregnancy_updated_at = db.Column(db.DateTime, nullable=True)
+    blood_type = db.Column(db.String(5), nullable=True)
+
+    # --- Ciclo de vida de la cuenta ---
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=True, index=True)
+    must_change_password = db.Column(db.Boolean, default=False, nullable=False)
+    password_changed_at = db.Column(db.DateTime, nullable=True)
+    is_active_account = db.Column(db.Boolean, default=True, nullable=False)
+    deactivated_at = db.Column(db.DateTime, nullable=True)
+    last_login_at = db.Column(db.DateTime, nullable=True)
+    medical_registration = db.Column(db.String(50), nullable=True)
+    signature_path = db.Column(db.String(300), nullable=True)
+    rating = db.Column(db.Float, default=0.0)
+    is_available = db.Column(db.Boolean, default=True)
+    schedule = db.Column(db.String(200), nullable=True)
+    peak_hours = db.Column(db.String(200), nullable=True)
+    avg_response_time = db.Column(db.String(50), nullable=True)
+    avg_consultation_time = db.Column(db.String(50), nullable=True)
+    profile_pic = db.Column(db.String(300), nullable=True)
+    attending_chat_id = db.Column(db.Integer, nullable=True)
+    accepted_terms_at = db.Column(db.DateTime, nullable=True)
+    accepted_privacy_at = db.Column(db.DateTime, nullable=True)
+    accepted_transparency_at = db.Column(db.DateTime, nullable=True)
+    sensitive_data_consent_at = db.Column(db.DateTime, nullable=True)
+    atencion_inicio = db.Column(db.String(5), nullable=True)
+    atencion_fin = db.Column(db.String(5), nullable=True)
+    address = db.Column(EncryptedText, nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    location_consent_at = db.Column(db.DateTime, nullable=True)
+    office_address = db.Column(EncryptedText, nullable=True)
+    office_latitude = db.Column(db.Float, nullable=True)
+    office_longitude = db.Column(db.Float, nullable=True)
+    show_office_on_map = db.Column(db.Boolean, default=False, nullable=False)
+    is_autonomous = db.Column(db.Boolean, default=False, nullable=False)
+    affiliation_type = db.Column(db.String(30), default='clinic', nullable=False)
+    affiliation_name = db.Column(db.String(180), nullable=True)
+    policy_consent_code = db.Column(db.String(64), unique=True, nullable=True, index=True)
+    policy_consent_generated_at = db.Column(db.DateTime, nullable=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=True, index=True)
+    clinic = db.relationship('Clinic')
+    pharmacy = db.relationship('Pharmacy')
+
+class ClinicAccessCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=False, index=True)
+    code = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    description = db.Column(db.String(220), nullable=True)
+    max_uses = db.Column(db.Integer, default=1, nullable=False)
+    uses = db.Column(db.Integer, default=0, nullable=False)
+    duration_days = db.Column(db.Integer, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    clinic = db.relationship('Clinic')
+    created_by = db.relationship('User', foreign_keys=[created_by_user_id])
+
+class UserClinicAccess(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=False, index=True)
+    source = db.Column(db.String(50), default='code', nullable=False)
+    status = db.Column(db.String(30), default=ACCESS_ACTIVE, nullable=False, index=True)
+    code_id = db.Column(db.Integer, db.ForeignKey('clinic_access_code.id'), nullable=True)
+    policy_enrollment_id = db.Column(db.Integer, db.ForeignKey('user_policy_enrollment.id'), nullable=True)
+    starts_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    revoked_at = db.Column(db.DateTime, nullable=True)
+    revoked_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    user = db.relationship('User', foreign_keys=[user_id])
+    clinic = db.relationship('Clinic')
+    code = db.relationship('ClinicAccessCode')
+    revoked_by = db.relationship('User', foreign_keys=[revoked_by_user_id])
+
+class DoctorTariff(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True, index=True)
+    price_per_consultation = db.Column(db.Float, nullable=True)
+    price_monthly = db.Column(db.Float, nullable=True)
+    price_quarterly = db.Column(db.Float, nullable=True)
+    price_annual = db.Column(db.Float, nullable=True)
+    default_policy_discount_percent = db.Column(db.Float, default=0.0, nullable=False)
+    payment_methods_image = db.Column(db.String(300), nullable=True)
+    payment_instructions = db.Column(db.Text, nullable=True)
+    accepts_manual_payment = db.Column(db.Boolean, default=True, nullable=False)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+class PaymentVerificationTicket(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    plan_type = db.Column(db.String(40), nullable=False)
+    amount = db.Column(db.Float, nullable=True)
+    discount_percent = db.Column(db.Float, default=0.0, nullable=False)
+    final_amount = db.Column(db.Float, nullable=True)
+    proof_image = db.Column(db.String(300), nullable=True)
+    status = db.Column(db.String(30), default=PAYMENT_PENDING, nullable=False, index=True)
+    patient_note = db.Column(db.Text, nullable=True)
+    doctor_note = db.Column(db.Text, nullable=True)
+    reviewed_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    subscription_id = db.Column(db.Integer, db.ForeignKey('patient_doctor_subscription.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+    reviewed_by = db.relationship('User', foreign_keys=[reviewed_by_user_id])
+
+class PatientDoctorSubscription(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    source = db.Column(db.String(50), default='manual_payment', nullable=False)
+    plan_type = db.Column(db.String(40), nullable=False)
+    status = db.Column(db.String(30), default=ACCESS_ACTIVE, nullable=False, index=True)
+    starts_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    payment_ticket_id = db.Column(db.Integer, db.ForeignKey('payment_verification_ticket.id'), nullable=True)
+    policy_enrollment_id = db.Column(db.Integer, db.ForeignKey('user_policy_enrollment.id'), nullable=True)
+    revoked_at = db.Column(db.DateTime, nullable=True)
+    revoked_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+    revoked_by = db.relationship('User', foreign_keys=[revoked_by_user_id])
+
+class Policy(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(180), nullable=False)
+    insurer_name = db.Column(db.String(180), nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+
+class PolicyNetworkProvider(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    policy_id = db.Column(db.Integer, db.ForeignKey('policy.id'), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    consent_code = db.Column(db.String(64), nullable=False, index=True)
+    discount_percent = db.Column(db.Float, default=0.0, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    policy = db.relationship('Policy')
+    clinic = db.relationship('Clinic')
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+class PolicyInviteBatch(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    policy_id = db.Column(db.Integer, db.ForeignKey('policy.id'), nullable=False, index=True)
+    provider_id = db.Column(db.Integer, db.ForeignKey('policy_network_provider.id'), nullable=True)
+    consent_code = db.Column(db.String(64), nullable=False, index=True)
+    max_codes = db.Column(db.Integer, default=50, nullable=False)
+    generated_count = db.Column(db.Integer, default=0, nullable=False)
+    duration_days = db.Column(db.Integer, default=30, nullable=False)
+    created_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    policy = db.relationship('Policy')
+    provider = db.relationship('PolicyNetworkProvider')
+    created_by = db.relationship('User', foreign_keys=[created_by_user_id])
+
+class PolicyInviteCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.Integer, db.ForeignKey('policy_invite_batch.id'), nullable=False, index=True)
+    policy_id = db.Column(db.Integer, db.ForeignKey('policy.id'), nullable=False, index=True)
+    code = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    status = db.Column(db.String(30), default='unused', nullable=False, index=True)
+    redeemed_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    redeemed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    batch = db.relationship('PolicyInviteBatch')
+    policy = db.relationship('Policy')
+    redeemed_by = db.relationship('User', foreign_keys=[redeemed_by_user_id])
+
+class UserPolicyEnrollment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    policy_id = db.Column(db.Integer, db.ForeignKey('policy.id'), nullable=False, index=True)
+    invite_code_id = db.Column(db.Integer, db.ForeignKey('policy_invite_code.id'), nullable=True)
+    status = db.Column(db.String(30), default=ACCESS_ACTIVE, nullable=False, index=True)
+    starts_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    policy_document_path = db.Column(db.String(300), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    user = db.relationship('User')
+    policy = db.relationship('Policy')
+    invite_code = db.relationship('PolicyInviteCode')
+
+class Chat(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(50), default='open')
+    closed_by = db.Column(db.String(50), nullable=True)
+    reason = db.Column(EncryptedText, nullable=True)
+    mode = db.Column(db.String(50), default='triage')
+    active_flow_id = db.Column(db.Integer, nullable=True)
+    active_flow_node = db.Column(db.String(50), nullable=True)
+    timestamp = db.Column(db.DateTime, default=colombia_now)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'), nullable=True)
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+    messages = db.relationship('Message', backref='chat', lazy=True)
+
+class Message(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(EncryptedText, nullable=True)
+    file_path = db.Column(db.String(300), nullable=True)
+    timestamp = db.Column(db.DateTime, default=colombia_now)
+    is_flow_question = db.Column(db.Boolean, default=False)
+    flow_options = db.Column(db.Text, nullable=True)
+    flow_input_type = db.Column(db.String(50), nullable=True)
+    is_read = db.Column(db.Boolean, default=False)
+    sender = db.relationship('User', foreign_keys=[sender_id])
+
+class Appointment(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date = db.Column(db.String(10), nullable=False)
+    time = db.Column(db.String(5), nullable=False)
+    appointment_type = db.Column(db.String(80), default='Consulta', nullable=False)
+    description = db.Column(EncryptedText, nullable=True)
+    status = db.Column(db.String(50), default='pending')
+    started_at = db.Column(db.DateTime, nullable=True)
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+    chat = db.relationship('Chat', backref='appointment', uselist=False)
+
+class Rating(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'), nullable=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'), nullable=True)
+    stars = db.Column(db.Integer, nullable=False)
+    comment = db.Column(EncryptedText, nullable=True) # NUEVO: Comentario escrito
+    tags = db.Column(db.String(300), nullable=True) # NUEVO: Etiquetas separadas por coma (Ejemplo: "Puntual,Amable")
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    chat = db.relationship('Chat', foreign_keys=[chat_id])
+    appointment = db.relationship('Appointment', foreign_keys=[appointment_id])
+
+class Favorite(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+class QuestionFlow(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(150), nullable=False)
+    flow_data = db.Column(db.Text, nullable=False)
+
+# NUEVO: Horarios del Doctor
+class DoctorSchedule(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    day_of_week = db.Column(db.Integer, nullable=True) # 0=Lunes, 6=Domingo (Para horarios semanales)
+    specific_date = db.Column(db.String(10), nullable=True) # YYYY-MM-DD (Para días específicos bloqueados/disponibles)
+    start_time = db.Column(db.String(5), nullable=False) # HH:MM
+    end_time = db.Column(db.String(5), nullable=False) # HH:MM
+    is_available = db.Column(db.Boolean, default=True) # True=Horario laboral, False=Bloqueado
+    
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+class MedicalHistory(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'), nullable=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'), nullable=True)
+    record_type = db.Column(db.String(80), default='note', nullable=False)
+    summary = db.Column(EncryptedText, nullable=True)
+    diagnosis = db.Column(EncryptedText, nullable=True)
+    cie10_code = db.Column(db.String(10), nullable=True, index=True)
+    cups_code = db.Column(db.String(20), nullable=True, index=True)
+    treatment = db.Column(EncryptedText, nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now)
+    patient = db.relationship('User', foreign_keys=[patient_id], backref='medical_histories')
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+class InventoryItem(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(180), nullable=False)
+    sku = db.Column(db.String(80), nullable=True)
+    unit = db.Column(db.String(40), default='unidad', nullable=False)
+    stock = db.Column(db.Integer, default=0, nullable=False)
+    min_stock = db.Column(db.Integer, default=0, nullable=False)
+    expires_on = db.Column(db.String(10), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now)
+
+class Stock(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=True, index=True)
+    nombre_med = db.Column(db.String(180), nullable=False, index=True)
+    medicamento = db.Column(db.String(180), nullable=True, index=True)
+    cantidad = db.Column(db.Integer, default=0, nullable=False)
+    cantidad_comprometida = db.Column(db.Integer, default=0, nullable=False)
+    unidad = db.Column(db.String(40), default='unidad', nullable=False)
+    pharmacy = db.relationship('Pharmacy')
+
+class MedicalOrder(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_number = db.Column(db.String(50), nullable=True, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    meds_json = db.Column(db.Text, nullable=False)
+    diagnosis_json = db.Column(db.Text, nullable=True)
+    patient_age = db.Column(db.String(50), nullable=True)
+    patient_level = db.Column(db.String(10), default='1', nullable=True)
+    insurance_name = db.Column(db.String(180), nullable=True)
+    insurance_plan = db.Column(db.String(80), nullable=True)
+    insurance_regime = db.Column(db.String(50), nullable=True)
+    observations = db.Column(db.Text, nullable=True)
+
+    # --- Firma profesional ---
+    # `signature_hash` sella el contenido de la orden junto con la identidad y el
+    # registro medico de quien la firma. Permite demostrar despues que la orden
+    # no se altero y quien la autorizo.
+    signature_hash = db.Column(db.String(256), nullable=True)
+    doctor_registration = db.Column(db.String(50), nullable=True)
+    signed_at = db.Column(db.DateTime, nullable=True)
+
+    # --- Verificacion de seguridad clinica ---
+    safety_report_json = db.Column(db.Text, nullable=True)
+    safety_kb_version = db.Column(db.String(30), nullable=True)
+    safety_override_reason = db.Column(EncryptedText, nullable=True)
+    safety_override_at = db.Column(db.DateTime, nullable=True)
+
+    verification_hash = db.Column(db.String(512), nullable=False, index=True)
+    hash_seguridad = db.Column(db.String(512), nullable=True, index=True)
+    status = db.Column(db.String(30), default='pendiente', nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    fecha_expiracion = db.Column(db.DateTime, nullable=True)
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+    patient = db.relationship('User', foreign_keys=[patient_id])
+
+class MedicationPickupTicket(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('medical_order.id'), nullable=True, index=True)
+    parent_ticket_id = db.Column(db.Integer, db.ForeignKey('medication_pickup_ticket.id'), nullable=True, index=True)  # For sub-tickets (partial deliveries)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=True, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    staff_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    expendedor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    pickup_code = db.Column(db.String(24), unique=True, nullable=False, index=True)
+    pickup_hash = db.Column(db.String(512), unique=True, nullable=False, index=True)
+    meds_json = db.Column(db.Text, nullable=False)  # Medications requested in this ticket
+    delivered_json = db.Column(db.Text, nullable=True)  # Medications actually delivered (partial)
+    pickup_date = db.Column(db.String(10), nullable=False)
+    pickup_time = db.Column(db.String(5), nullable=False)
+    pickup_location = db.Column(db.String(220), nullable=True)
+    note = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(30), default='autorizado', nullable=False, index=True)
+    # Status values: 'autorizado' | 'sin_stock' | 'parcial' | 'entregado' | 'cancelado'
+    priority = db.Column(db.String(20), default='normal', nullable=False, index=True)  # 'normal' | 'alta'
+    is_partial = db.Column(db.Boolean, default=False, nullable=False)  # True = this is a partial delivery sub-ticket
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    delivered_at = db.Column(db.DateTime, nullable=True)
+    order = db.relationship('MedicalOrder')
+    pharmacy = db.relationship('Pharmacy')
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    staff = db.relationship('User', foreign_keys=[staff_id])
+    expendedor = db.relationship('User', foreign_keys=[expendedor_id])
+    parent_ticket = db.relationship('MedicationPickupTicket', remote_side='MedicationPickupTicket.id',
+                                    foreign_keys=[parent_ticket_id], backref='sub_tickets')
+
+class ReplenishmentAlert(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=False, index=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('medical_order.id'), nullable=True, index=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('medication_pickup_ticket.id'), nullable=True, index=True)
+    med_name = db.Column(db.String(180), nullable=False, index=True)
+    required_quantity = db.Column(db.Integer, default=0, nullable=False)
+    available_quantity = db.Column(db.Integer, default=0, nullable=False)
+    status = db.Column(db.String(30), default='abierta', nullable=False, index=True)
+    note = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    pharmacy = db.relationship('Pharmacy')
+    order = db.relationship('MedicalOrder')
+    ticket = db.relationship('MedicationPickupTicket')
+
+class StockTransferRequest(ClinicScoped, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    source_pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=False, index=True)
+    target_pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=False, index=True)
+    requester_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    med_name = db.Column(db.String(180), nullable=False, index=True)
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+    status = db.Column(db.String(30), default='solicitada', nullable=False, index=True)
+    note = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    source_pharmacy = db.relationship('Pharmacy', foreign_keys=[source_pharmacy_id])
+    target_pharmacy = db.relationship('Pharmacy', foreign_keys=[target_pharmacy_id])
+    requester = db.relationship('User', foreign_keys=[requester_id])
+
+class Lead(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(180), nullable=False)
+    institucion = db.Column(db.String(220), nullable=True)
+    telefono = db.Column(db.String(80), nullable=True)
+    email = db.Column(db.String(180), nullable=True)
+    ciudad = db.Column(db.String(120), nullable=True)
+    contacto = db.Column(db.String(300), nullable=True)
+    mensaje = db.Column(db.Text, nullable=True)
+    fecha = db.Column(db.DateTime, default=colombia_now, nullable=False)
+
+class AuditLog(db.Model):
+    """Registro de auditoria con encadenamiento hash.
+
+    Cada entrada incorpora el hash de la anterior. Alterar o eliminar una entrada
+    rompe la cadena en ese punto y en todas las siguientes, de modo que la
+    manipulacion posterior es detectable aunque quien la haga tenga acceso
+    directo a la base de datos. `manage.py verify-audit-chain` recorre la cadena.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=True, index=True)
+    clinic_id = db.Column(db.Integer, nullable=True, index=True)
+    event = db.Column(db.String(100), nullable=False, index=True)
+    path = db.Column(db.String(300), nullable=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(300), nullable=True)
+    details = db.Column(EncryptedText, nullable=True)
+    timestamp = db.Column(db.DateTime, default=colombia_now, index=True)
+    # Encadenamiento: hash de esta entrada y de la inmediatamente anterior.
+    entry_hash = db.Column(db.String(64), nullable=True, index=True)
+    previous_hash = db.Column(db.String(64), nullable=True)
+
+class PasswordHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=colombia_now)
+
+class JWTRevokedToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(128), unique=True, nullable=False, index=True)
+    user_id = db.Column(db.Integer, nullable=True)
+    token_type = db.Column(db.String(20), nullable=False)
+    revoked_at = db.Column(db.DateTime, default=colombia_now)
+
+class InformedConsentLog(db.Model):
+    """Constancia de consentimiento informado.
+
+    Registra tambien *que texto* acepto el titular: sin la version y el hash del
+    documento vigente en ese momento, la constancia no permite demostrar el
+    alcance de lo consentido si el texto cambia despues.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True)
+    consent_type = db.Column(db.String(50), nullable=False, index=True)
+    document_version = db.Column(db.String(30), nullable=True)
+    document_hash = db.Column(db.String(64), nullable=True)
+    granted = db.Column(db.Boolean, default=True, nullable=False)
+    revoked_at = db.Column(db.DateTime, nullable=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(300), nullable=True)
+    digital_signature_hash = db.Column(db.String(128), nullable=False)
+    timestamp = db.Column(db.DateTime, default=colombia_now, index=True)
+    patient = db.relationship('User', foreign_keys=[patient_id])
+
+class CIE10(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(10), unique=True, nullable=False, index=True)
+    description = db.Column(db.Text, nullable=False)
+
+class CUPS(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(20), unique=True, nullable=False, index=True)
+    description = db.Column(db.Text, nullable=False)
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True)
+    title = db.Column(db.String(150), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    type = db.Column(db.String(50), nullable=True)
+    timestamp = db.Column(db.DateTime, default=colombia_now)
+    user = db.relationship('User', foreign_keys=[user_id])
+
+
+class IncomingShipment(ClinicScoped, db.Model):
+    """Tracks a medication shipment 'en camino' to a pharmacy."""
+    id = db.Column(db.Integer, primary_key=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=False, index=True)
+    supplier_name = db.Column(db.String(180), nullable=True)
+    expected_date = db.Column(db.String(10), nullable=False)  # YYYY-MM-DD
+    note = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(30), default='en_camino', nullable=False, index=True)
+    # Status: 'en_camino' | 'recibido' | 'cancelado'
+    created_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    received_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    pharmacy = db.relationship('Pharmacy')
+    created_by = db.relationship('User', foreign_keys=[created_by_user_id])
+    items = db.relationship('IncomingShipmentItem', backref='shipment', lazy=True)
+
+
+class IncomingShipmentItem(ClinicScoped, db.Model):
+    """Individual medication item within an incoming shipment."""
+    id = db.Column(db.Integer, primary_key=True)
+    shipment_id = db.Column(db.Integer, db.ForeignKey('incoming_shipment.id'), nullable=False, index=True)
+    med_name = db.Column(db.String(180), nullable=False, index=True)
+    quantity_incoming = db.Column(db.Integer, nullable=False, default=0)
+    quantity_reserved = db.Column(db.Integer, default=0, nullable=False)  # Auto-reserved for pending tickets
+    reserved_ticket_ids_json = db.Column(db.Text, nullable=True)  # JSON list of ticket IDs with reservations
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+
+
+# =============================================================================
+# Seguridad clinica del paciente
+# =============================================================================
+
+class PatientAllergy(ClinicScoped, db.Model):
+    """Alergia o reaccion adversa registrada de un paciente.
+
+    Es la fuente que consulta `clinical_safety` antes de permitir la firma de una
+    orden. Se conserva quien la registro y cuando: una alergia mal atribuida
+    tambien causa dano, al cerrar opciones terapeuticas validas sin fundamento.
+    """
+    __tablename__ = 'patient_allergy'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    substance = db.Column(EncryptedText, nullable=False)
+    # Copia normalizada y sin cifrar del principio activo, para poder comparar en
+    # base de datos. Por si sola no identifica al paciente.
+    substance_normalized = db.Column(db.String(180), nullable=True, index=True)
+    reaction = db.Column(EncryptedText, nullable=True)
+    severity = db.Column(db.String(20), default='moderada', nullable=False)   # leve|moderada|grave|anafilaxia
+    status = db.Column(db.String(20), default='reportada', nullable=False, index=True)  # confirmada|reportada|descartada
+    onset_date = db.Column(db.Date, nullable=True)
+    notes = db.Column(EncryptedText, nullable=True)
+    recorded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+
+    patient = db.relationship('User', foreign_keys=[patient_id], backref='allergies')
+    recorded_by = db.relationship('User', foreign_keys=[recorded_by_id])
+
+    @property
+    def is_active(self):
+        return self.status != 'descartada'
+
+
+class PatientChronicCondition(ClinicScoped, db.Model):
+    """Condicion cronica activa. Aporta contexto a la verificacion clinica."""
+    __tablename__ = 'patient_chronic_condition'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    condition = db.Column(EncryptedText, nullable=False)
+    cie10_code = db.Column(db.String(10), nullable=True, index=True)
+    status = db.Column(db.String(20), default='activa', nullable=False, index=True)
+    diagnosed_on = db.Column(db.Date, nullable=True)
+    recorded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+
+    patient = db.relationship('User', foreign_keys=[patient_id], backref='chronic_conditions')
+    recorded_by = db.relationship('User', foreign_keys=[recorded_by_id])
+
+
+# =============================================================================
+# Libro mayor de inventario y dispensacion
+# =============================================================================
+
+class StockLedgerEntry(ClinicScoped, db.Model):
+    """Asiento inmutable de movimiento de inventario.
+
+    Ningun cambio de existencias debe ocurrir sin su asiento correspondiente.
+    `balance_before` y `balance_after` permiten reconstruir el saldo en cualquier
+    momento del pasado y detectar mutaciones hechas por fuera de la aplicacion.
+    Va encadenado por hash, igual que el registro de auditoria.
+    """
+    __tablename__ = 'stock_ledger_entry'
+
+    id = db.Column(db.Integer, primary_key=True)
+    stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=True, index=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=True, index=True)
+    med_name = db.Column(db.String(180), nullable=False, index=True)
+
+    movement_type = db.Column(db.String(30), nullable=False, index=True)
+    quantity = db.Column(db.Integer, nullable=False)          # positivo entra, negativo sale
+    balance_before = db.Column(db.Integer, nullable=False)
+    balance_after = db.Column(db.Integer, nullable=False)
+    committed_before = db.Column(db.Integer, default=0, nullable=False)
+    committed_after = db.Column(db.Integer, default=0, nullable=False)
+
+    batch_number = db.Column(db.String(80), nullable=True)
+    expiry_date = db.Column(db.Date, nullable=True)
+
+    ticket_id = db.Column(db.Integer, db.ForeignKey('medication_pickup_ticket.id'), nullable=True, index=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('medical_order.id'), nullable=True, index=True)
+    shipment_id = db.Column(db.Integer, db.ForeignKey('incoming_shipment.id'), nullable=True)
+
+    performed_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+    reason = db.Column(db.String(300), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+
+    entry_hash = db.Column(db.String(64), nullable=True, index=True)
+    previous_hash = db.Column(db.String(64), nullable=True)
+
+    stock = db.relationship('Stock')
+    pharmacy = db.relationship('Pharmacy')
+    performed_by = db.relationship('User', foreign_keys=[performed_by_id])
+
+
+class DispensingLedgerEntry(ClinicScoped, db.Model):
+    """Acta de entrega de un medicamento a un paciente.
+
+    Un asiento por medicamento y por acto de entrega. A diferencia de
+    `delivered_json`, que se sobrescribia en cada entrega parcial y destruia el
+    historial, estos asientos nunca se modifican: son la trazabilidad que exige
+    el servicio farmaceutico.
+    """
+    __tablename__ = 'dispensing_ledger_entry'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('medication_pickup_ticket.id'), nullable=False, index=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('medical_order.id'), nullable=True, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=True, index=True)
+    dispensed_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+
+    med_name = db.Column(db.String(180), nullable=False, index=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit = db.Column(db.String(40), default='unidad', nullable=False)
+    batch_number = db.Column(db.String(80), nullable=True)
+    expiry_date = db.Column(db.Date, nullable=True)
+
+    # Verificacion de identidad de quien retira. Se guarda el indice ciego del
+    # documento presentado, nunca el documento en claro.
+    receiver_kind = db.Column(db.String(20), default='paciente', nullable=False)  # paciente|tercero
+    receiver_name = db.Column(EncryptedText, nullable=True)
+    receiver_document_hash = db.Column(db.String(64), nullable=True)
+    identity_verified = db.Column(db.Boolean, default=False, nullable=False)
+
+    dispensed_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+    notes = db.Column(EncryptedText, nullable=True)
+
+    entry_hash = db.Column(db.String(64), nullable=True, index=True)
+    previous_hash = db.Column(db.String(64), nullable=True)
+
+    ticket = db.relationship('MedicationPickupTicket', backref='dispensing_entries')
+    order = db.relationship('MedicalOrder')
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    dispensed_by = db.relationship('User', foreign_keys=[dispensed_by_id])
+    pharmacy = db.relationship('Pharmacy')
+
+
+# =============================================================================
+# Autenticacion
+# =============================================================================
+
+class PasswordResetToken(db.Model):
+    """Token de un solo uso para restablecer contrasena.
+
+    Se almacena solo el hash del token: quien lea la base de datos no puede
+    usarlo para tomar cuentas ajenas.
+    """
+    __tablename__ = 'password_reset_token'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    issued_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    issued_ip = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    used_at = db.Column(db.DateTime, nullable=True)
+    used_ip = db.Column(db.String(64), nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    issued_by = db.relationship('User', foreign_keys=[issued_by_id])
+
+    def is_usable(self, now=None):
+        now = now or colombia_now()
+        return self.used_at is None and self.expires_at > now
+
+
+class LoginAttempt(db.Model):
+    """Contador de intentos fallidos, persistido en base de datos.
+
+    En memoria del proceso el contador se perdia al reiniciar y no se compartia
+    entre workers, de modo que el bloqueo era evitable. Aqui es global al sistema
+    y sobrevive a los reinicios.
+    """
+    __tablename__ = 'login_attempt'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # Origen + usuario, normalizados y con hash.
+    attempt_key = db.Column(db.String(64), unique=True, nullable=False, index=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    failure_count = db.Column(db.Integer, default=0, nullable=False)
+    first_failure_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    last_failure_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    locked_until = db.Column(db.DateTime, nullable=True, index=True)
+
+
+# =============================================================================
+# Habeas data (Ley 1581 de 2012)
+# =============================================================================
+
+class DataSubjectRequest(db.Model):
+    """Solicitud del titular sobre sus datos personales.
+
+    La ley obliga a atender consulta, rectificacion, supresion y revocatoria en
+    plazos determinados. Sin registro de la solicitud no hay forma de acreditar
+    que se cumplieron.
+    """
+    __tablename__ = 'data_subject_request'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True, index=True)
+    request_type = db.Column(db.String(30), nullable=False, index=True)   # acceso|rectificacion|supresion|revocatoria
+    status = db.Column(db.String(30), default='recibida', nullable=False, index=True)
+    detail = db.Column(EncryptedText, nullable=True)
+    resolution_note = db.Column(EncryptedText, nullable=True)
+    requested_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+    due_at = db.Column(db.DateTime, nullable=True, index=True)   # plazo legal de respuesta
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    requester_ip = db.Column(db.String(64), nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    resolved_by = db.relationship('User', foreign_keys=[resolved_by_id])
+
+    @property
+    def is_overdue(self):
+        if self.resolved_at or not self.due_at:
+            return False
+        return colombia_now() > self.due_at
+
+
+class RetentionPolicy(db.Model):
+    """Politica de retencion documental por tipo de registro.
+
+    La historia clinica se conserva como minimo 15 anos (Resolucion 839 de 2017);
+    otros registros tienen plazos distintos. Tener la politica en datos, y no en
+    la memoria de alguien, es lo que permite auditarla.
+    """
+    __tablename__ = 'retention_policy'
+
+    id = db.Column(db.Integer, primary_key=True)
+    record_type = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    retention_years = db.Column(db.Integer, nullable=False)
+    legal_basis = db.Column(db.String(300), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)

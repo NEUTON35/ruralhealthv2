@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0EA5E9">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="RuralHealth">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    {# El rol permite al cliente evitar peticiones que el servidor rechazaria:
+       la agenda sin conexion es solo para pacientes, y pedirla desde otros
+       roles devolvia 403 en cada carga de pagina. #}
+    <meta name="user-role" content="{{ current_user.role if current_user.is_authenticated else '' }}">
+    <title>RuralHealth Connect</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/static/icon.svg">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 
+                        primary: '#0EA5E9', 
+                        'primary-dark': '#0284C7',
+                        accent: '#10B981',
+                        background: '#F8FAFC',
+                        medical: '#0EA5E9',
+                        'medical-dark': '#0284C7',
+                        'medical-light': '#E0F2FE'
+                    } 
+                } 
+            } 
+        };
+    </script>
+    <style>
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 300ms ease-out; }
+        .toast-exit { transform: translateY(0); opacity: 1; }
+        .toast-exit-active { transform: translateY(100%); opacity: 0; transition: all 300ms ease-in; }
+    </style>
+</head>
+<body class="bg-background text-slate-800 min-h-screen font-sans flex flex-col {% if request.path != '/login' and request.path != '/register' %}md:flex-row{% endif %}">
+    <div class="bg-yellow-100 text-yellow-800 text-center py-1 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 md:w-full md:absolute md:top-0 md:z-50" id="low-bandwidth-banner">
+        <i data-lucide="wifi-off" class="w-4 h-4"></i> Modo Bajo Ancho de Banda
+    </div>
+
+    <!-- Sidebar / Topnav -->
+    {% if request.path != '/login' and request.path != '/register' %}
+    <nav class="bg-white border-r border-slate-200 w-full md:w-64 flex-shrink-0 md:min-h-screen md:flex md:flex-col sticky top-0 z-40 transition-transform pt-6 md:pt-10">
+        <div class="p-4 flex justify-between items-center md:block">
+            <a href="/" class="text-xl font-bold text-primary flex items-center gap-2">
+                {% if current_user.is_authenticated and current_user.clinic and current_user.clinic.logo_path %}
+                    <img src="/uploads/{{ current_user.clinic.logo_path }}" class="w-8 h-8 rounded object-cover" alt="">
+                {% else %}
+                    <i data-lucide="activity" class="w-7 h-7 text-primary"></i>
+                {% endif %}
+                <span class="hidden sm:inline md:inline">RuralHealth</span>
+            </a>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-slate-500 hover:text-primary">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div id="sidebar-content" class="hidden md:flex flex-col flex-1 px-3 py-4 space-y-1">
+            {% if current_user.is_authenticated %}
+                <div class="mb-4 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
+                    <p class="font-semibold text-sm text-slate-800 truncate">{{ current_user.name }}</p>
+                    <p class="text-xs text-slate-500 capitalize">{{ current_user.role }}</p>
+                </div>
+
+                <a href="/" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                </a>
+
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('analytics.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="pie-chart" class="w-5 h-5 text-violet-500"></i> Analítica
+                </a>
+                <a href="{{ url_for('admin.reporte_stock') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-500"></i> Reporte Stock
+                </a>
+                <a href="{{ url_for('admin.audit_log') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="scroll-text" class="w-5 h-5 text-slate-500"></i> Auditoría
+                </a>
+                <a href="{{ url_for('privacy.manage_requests') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="inbox" class="w-5 h-5 text-amber-500"></i> Solicitudes de datos
+                </a>
+                {% endif %}
+
+                {% if current_user.role in ('staff', 'receptionist') %}
+                <a href="{{ url_for('staff.pendientes') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500"></i> Panel Faltantes
+                </a>
+                <a href="{{ url_for('staff.envios') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="truck" class="w-5 h-5 text-blue-500"></i> Cargamentos
+                </a>
+                {% endif %}
+
+                {% if current_user.role == 'expendedor' %}
+                <a href="{{ url_for('expendedor.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="package" class="w-5 h-5 text-emerald-500"></i> Despacho
+                </a>
+                {% endif %}
+
+                {% if current_user.role == 'patient' %}
+                <a href="{{ url_for('patient.map_view') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                    <i data-lucide="map" class="w-5 h-5"></i> Mapa de Médicos
+                </a>
+                {% endif %}
+                
+                <button class="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors" onclick="toggleCommandPalette()">
+                    <i data-lucide="search" class="w-5 h-5"></i> <span class="flex-1 text-left">Buscar</span> <kbd class="hidden md:inline-block text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border">Ctrl+K</kbd>
+                </button>
+
+                <div class="mt-auto space-y-2 pt-6">
+                    <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all font-bold">
+                        <i data-lucide="shield" class="w-5 h-5 text-slate-400"></i> Mis datos
+                    </a>
+                    <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all font-bold">
+                        <i data-lucide="settings" class="w-5 h-5 text-slate-400"></i> Ajustes
+                    </a>
+                    <form method="POST" action="/logout">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-all font-black">
+                            <i data-lucide="log-out" class="w-5 h-5"></i> Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                {% if request.path != '/login' and request.path != '/register' %}
+                <a href="/login" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors font-medium justify-center mt-4">
+                    Iniciar Sesión
+                </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="flex-1 flex flex-col min-h-screen">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full md:mt-8">
+            {% if current_user.is_authenticated and current_user.must_change_password %}
+            <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-5 mb-5">
+                <h2 class="font-black text-amber-900 flex items-center gap-2 mb-2">
+                    <i data-lucide="key-round" class="w-5 h-5"></i>
+                    Debes cambiar tu contraseña inicial
+                </h2>
+                <p class="text-sm text-amber-900 leading-relaxed">
+                    Esta cuenta todavía usa la contraseña con la que fue creada, que
+                    conoce quien la generó. Hasta que la cambies, el acceso al resto
+                    del sistema queda bloqueado.
+                </p>
+            </div>
+            {% endif %}
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="bg-blue-100 text-blue-800 p-3 rounded-lg mb-4 text-center font-semibold">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="max-w-4xl mx-auto px-3 sm:px-4 pb-8 mt-auto text-xs text-slate-400 flex flex-wrap gap-3 justify-center">
+            <a href="/terminos" class="hover:text-primary">Términos</a>
+            <span>·</span>
+            <a href="/privacidad" class="hover:text-primary">Privacidad y Datos</a>
+            <span>·</span>
+            <a href="/transparencia" class="hover:text-primary">Transparencia</a>
+            <span>·</span>
+            <a href="/manual" class="hover:text-primary">Manual</a>
+        </footer>
+    </div>
+
+    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-medical text-white px-4 py-3 rounded-xl font-black shadow-xl items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
+        <i data-lucide="download" class="w-5 h-5"></i>
+        Instalar en pantalla de inicio
+    </button>
+
+    <!-- Toasts Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- Command Palette Modal -->
+    <div id="command-palette" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="toggleCommandPalette()"></div>
+        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div class="p-4 border-b flex items-center gap-3">
+                <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+                <input type="text" id="omnisearch-input" placeholder="Buscar médicos, pacientes, clínicas..." class="w-full outline-none text-lg bg-transparent">
+                <button onclick="toggleCommandPalette()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="omnisearch-results" class="max-h-80 overflow-y-auto p-2 bg-slate-50 empty:hidden">
+                <!-- Resultados renderizados aquí -->
+            </div>
+            <div class="p-2 text-xs text-center text-slate-400 border-t bg-slate-50">
+                Presiona ESC para cerrar
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones UI Base
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                'success': 'bg-accent text-white',
+                'error': 'bg-red-500 text-white',
+                'info': 'bg-primary text-white'
+            };
+            const icons = {
+                'success': 'check-circle',
+                'error': 'alert-circle',
+                'info': 'info'
+            };
+            
+            toast.className = `${colors[type] || colors['info']} px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm font-medium toast-enter max-w-sm`;
+            toast.innerHTML = `<i data-lucide="${icons[type] || icons['info']}" class="w-5 h-5 flex-shrink-0"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-enter-active');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('toast-enter-active');
+                toast.classList.add('toast-exit-active');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Mobile Menu
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                const content = document.getElementById('sidebar-content');
+                if (content) {
+                    content.classList.toggle('hidden');
+                    content.classList.toggle('flex');
+                    content.classList.toggle('absolute');
+                    content.classList.toggle('top-16');
+                    content.classList.toggle('left-0');
+                    content.classList.toggle('right-0');
+                    content.classList.toggle('bg-white');
+                    content.classList.toggle('border-b');
+                    content.classList.toggle('shadow-lg');
+                    content.classList.toggle('z-50');
+                }
+            });
+        }
+
+        // Command Palette
+        function toggleCommandPalette() {
+            const palette = document.getElementById('command-palette');
+            if (palette) {
+                palette.classList.toggle('hidden');
+                if (!palette.classList.contains('hidden')) {
+                    const input = document.getElementById('omnisearch-input');
+                    if (input) input.focus();
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleCommandPalette();
+            }
+            if (e.key === 'Escape') {
+                const palette = document.getElementById('command-palette');
+                if (palette) palette.classList.add('hidden');
+            }
+        });
+
+        // Omnisearch Fetch Logic
+        let searchTimeout;
+        const searchInput = document.getElementById('omnisearch-input');
+        const searchResults = document.getElementById('omnisearch-results');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length < 2) {
+                    searchResults.innerHTML = '';
+                    return;
+                }
+                
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(async () => {
+                    searchResults.innerHTML = '<div class="p-4 text-center text-slate-400"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i></div>';
+                    lucide.createIcons();
+                    
+                    try {
+                        const response = await fetch(`/api/omnisearch?q=${encodeURIComponent(query)}`);
+                        const data = await response.json();
+                        
+                        if (data.results && data.results.length > 0) {
+                            searchResults.innerHTML = data.results.map(item => `
+                                <a href="${item.url}" class="flex items-center gap-3 p-3 hover:bg-white rounded-lg group transition-colors border border-transparent hover:border-slate-100 hover:shadow-sm">
+                                    <div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <i data-lucide="${item.icon || 'file'}" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">${item.title}</p>
+                                        <p class="text-xs text-slate-500">${item.subtitle}</p>
+                                    </div>
+                                </a>
+                            `).join('');
+                            lucide.createIcons();
+                        } else {
+                            searchResults.innerHTML = '<div class="p-4 text-center text-sm text-slate-500">No se encontraron resultados</div>';
+                        }
+                    } catch (error) {
+                        searchResults.innerHTML = '<div class="p-4 text-center text-sm text-red-500">Error en la búsqueda</div>';
+                    }
+                }, 300);
+            });
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        function attachCsrf(form) {
+            const method = (form.getAttribute('method') || 'GET').toUpperCase();
+            if (method === 'GET' || form.querySelector('input[name="_csrf_token"]')) return;
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = '_csrf_token';
+            input.value = csrfToken;
+            form.appendChild(input);
+        }
+        document.querySelectorAll('form').forEach(attachCsrf);
+        const nativeSubmit = HTMLFormElement.prototype.submit;
+        HTMLFormElement.prototype.submit = function() {
+            attachCsrf(this);
+            nativeSubmit.call(this);
+        };
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+        }
+        lucide.createIcons();
+    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/location_picker.js"></script>
+    <script src="/static/pwa.js"></script>
+</body>
+</html>

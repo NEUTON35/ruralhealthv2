@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+
+    <header>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <i data-lucide="scroll-text" class="w-8 h-8 text-primary"></i>
+            Registro de auditoría
+        </h1>
+        <p class="text-slate-500 mt-2 font-medium leading-relaxed">
+            Quién hizo qué y cuándo. Cada entrada lleva el hash de la anterior, de
+            modo que alterar o borrar una rompe la cadena de todas las siguientes.
+        </p>
+    </header>
+
+    <!-- Integridad de la cadena -->
+    {% if chain_breaks %}
+    <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5">
+        <h2 class="font-black text-rose-800 flex items-center gap-2 mb-2">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+            Cadena de auditoría rota en {{ chain_breaks | length }} punto(s)
+        </h2>
+        <p class="text-sm text-rose-900 mb-3 leading-relaxed">
+            Significa que alguna entrada fue modificada o eliminada después de
+            escribirse, o que la base de datos se restauró parcialmente. Esto debe
+            investigarse: el registro de auditoría es la prueba de lo que ocurrió
+            en el sistema.
+        </p>
+        <ul class="text-xs font-mono text-rose-800 space-y-1 bg-white/60 rounded-lg p-3 max-h-40 overflow-y-auto">
+            {% for issue in chain_breaks[:20] %}
+            <li>Entrada #{{ issue.id }} — {{ issue.event }} — {{ issue.timestamp | colombia_iso }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+        <i data-lucide="shield-check" class="w-6 h-6 text-emerald-600 shrink-0"></i>
+        <p class="text-sm text-emerald-900 font-medium">
+            Cadena de auditoría íntegra. No hay señales de alteración en las entradas verificadas.
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Eventos de seguridad -->
+    {% if alerts %}
+    <section class="bg-white rounded-2xl border-2 border-amber-200 overflow-hidden">
+        <div class="px-6 py-4 bg-amber-50 border-b border-amber-200">
+            <h2 class="font-black text-amber-900 flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                Eventos que requieren atención ({{ alerts | length }})
+            </h2>
+        </div>
+        <ul class="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+            {% for entry in alerts %}
+            <li class="px-6 py-3 flex items-start justify-between gap-4 text-sm">
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-800">{{ entry.event }}</p>
+                    {% if entry.details %}
+                    <p class="text-slate-500 text-xs mt-0.5 break-words">{{ entry.details }}</p>
+                    {% endif %}
+                </div>
+                <span class="text-xs text-slate-400 whitespace-nowrap shrink-0">
+                    {{ entry.timestamp | colombia_date }} {{ entry.timestamp | colombia_time }}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <!-- Filtros -->
+    <form method="GET" class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[180px]">
+            <label for="event" class="text-xs font-bold text-slate-600 uppercase tracking-wide">Evento</label>
+            <input type="text" id="event" name="event" value="{{ event_filter }}"
+                placeholder="por ejemplo: login_failed"
+                class="w-full mt-1 px-4 py-2.5 border-2 border-slate-100 rounded-xl text-sm focus:border-primary outline-none">
+        </div>
+        <div class="w-32">
+            <label for="days" class="text-xs font-bold text-slate-600 uppercase tracking-wide">Días</label>
+            <input type="number" id="days" name="days" value="{{ days }}" min="1" max="90"
+                class="w-full mt-1 px-4 py-2.5 border-2 border-slate-100 rounded-xl text-sm focus:border-primary outline-none">
+        </div>
+        <button type="submit"
+            class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-primary-dark transition-colors inline-flex items-center gap-2">
+            <i data-lucide="filter" class="w-4 h-4"></i> Filtrar
+        </button>
+        {% if event_filter %}
+        <a href="{{ url_for('admin.audit_log') }}"
+           class="text-slate-500 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-50">Limpiar</a>
+        {% endif %}
+    </form>
+
+    <!-- Tabla -->
+    <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+            <h2 class="font-black text-slate-800">{{ total }} entrada(s) en {{ days }} día(s)</h2>
+            <p class="text-xs text-slate-500">Página {{ page }} de {{ pages }}</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left text-xs uppercase text-slate-400 border-b border-slate-200">
+                        <th class="px-4 py-3 font-bold whitespace-nowrap">Fecha</th>
+                        <th class="px-4 py-3 font-bold">Evento</th>
+                        <th class="px-4 py-3 font-bold">Actor</th>
+                        <th class="px-4 py-3 font-bold">Ruta</th>
+                        <th class="px-4 py-3 font-bold">Origen</th>
+                        <th class="px-4 py-3 font-bold">Detalle</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for entry in entries %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-2.5 text-slate-500 whitespace-nowrap text-xs">
+                            {{ entry.timestamp | colombia_date }}<br>
+                            <span class="text-slate-400">{{ entry.timestamp | colombia_time }}</span>
+                        </td>
+                        <td class="px-4 py-2.5 font-mono text-xs text-slate-800 font-semibold">{{ entry.event }}</td>
+                        <td class="px-4 py-2.5 text-slate-700">
+                            {{ actor_names.get(entry.user_id, '—') }}
+                        </td>
+                        <td class="px-4 py-2.5 text-slate-400 font-mono text-xs truncate max-w-[160px]">{{ entry.path or '—' }}</td>
+                        <td class="px-4 py-2.5 text-slate-400 font-mono text-xs">{{ entry.ip_address or '—' }}</td>
+                        <td class="px-4 py-2.5 text-slate-500 text-xs max-w-xs break-words">{{ entry.details or '' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                            No hay entradas en el periodo seleccionado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pages > 1 %}
+        <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+            {% if page > 1 %}
+            <a href="{{ url_for('admin.audit_log', page=page-1, days=days, event=event_filter) }}"
+               class="text-primary font-bold text-sm hover:underline inline-flex items-center gap-1">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
+            </a>
+            {% else %}<span></span>{% endif %}
+
+            {% if page < pages %}
+            <a href="{{ url_for('admin.audit_log', page=page+1, days=days, event=event_filter) }}"
+               class="text-primary font-bold text-sm hover:underline inline-flex items-center gap-1">
+                Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <p class="text-xs text-slate-400 text-center pb-4 leading-relaxed">
+        Conservación mínima: 5 años. Verifica la cadena completa con
+        <code class="bg-slate-100 px-1.5 py-0.5 rounded">python manage.py verify-audit-chain</code>.
+    </p>
+</div>
+{% endblock %}

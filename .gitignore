@@ -1,0 +1,35 @@
+# --- Secretos: NUNCA versionar ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Datos de pacientes: NUNCA versionar ---
+uploads/
+instance/
+*.db
+*.sqlite
+*.sqlite3
+logs/
+*.log
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/

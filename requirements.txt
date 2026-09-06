@@ -1,0 +1,50 @@
+# =============================================================================
+# RuralHealth Connect — dependencias de ejecución
+#
+# Las versiones van fijadas con límite superior: una actualización mayor no
+# anunciada de una dependencia de seguridad puede cambiar su comportamiento
+# silenciosamente, y aquí eso afecta al cifrado de historias clínicas.
+# =============================================================================
+
+# --- Núcleo ------------------------------------------------------------------
+Flask>=3.0,<4
+Flask-SQLAlchemy>=3.1,<4
+Flask-Login>=0.6.3,<0.7
+Werkzeug>=3.0.1,<4
+SQLAlchemy>=2.0,<3
+
+# --- Migraciones -------------------------------------------------------------
+# El esquema se gobierna con Alembic. Sin migraciones no hay forma de evolucionar
+# la base ni de revertir un cambio.
+Flask-Migrate>=4.0.7,<5
+alembic>=1.13,<2
+
+# --- Criptografía ------------------------------------------------------------
+# `cryptography` cifra la PII y la historia clínica en reposo (Fernet).
+cryptography>=45.0.7,<47
+PyJWT>=2.8,<3
+
+# --- Seguridad de la capa web ------------------------------------------------
+flask-limiter>=4.1,<5        # limitación de tráfico
+flask-talisman>=1.1,<2       # CSP, HSTS, cabeceras de seguridad
+bleach>=6.0,<7               # sanitización de entrada
+
+# Verificación del contenido real de los archivos subidos, no solo su extensión.
+python-magic>=0.4,<0.5
+python-magic-bin>=0.4,<0.5; sys_platform == "win32"
+
+# --- Base de datos -----------------------------------------------------------
+# PostgreSQL es obligatorio en producción: SQLite no implementa el bloqueo de
+# filas que impide la doble dispensación de medicamentos.
+psycopg2-binary>=2.9.9,<3
+
+# --- Configuración -----------------------------------------------------------
+python-dotenv>=1.0.1,<2
+
+# --- Servidor de producción --------------------------------------------------
+gunicorn>=21.2,<24
+
+# --- Limitación de tráfico compartida (recomendado con varios workers) --------
+# Sin almacenamiento compartido, cada worker lleva su propia cuenta y el límite
+# efectivo se multiplica por el número de workers.
+redis>=5.0,<7
