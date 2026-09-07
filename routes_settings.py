@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, logout_user
@@ -7,7 +8,11 @@ from werkzeug.security import check_password_hash
 from models import (
     ACCESS_ACTIVE,
     APPOINTMENT_FREEING_STATUSES,
+    BillingProfile,
     DataSubjectRequest,
+    ISSUER_CLINIC,
+    ISSUER_INDEPENDENT,
+    LegalConfiguration,
     Appointment,
     Chat,
     Clinic,
@@ -24,6 +29,8 @@ from models import (
     UserPolicyEnrollment,
     db,
 )
+from billing import describe_readiness, profile_for_doctor
+from legal_documents import PLACEHOLDER_LABELS, pending_configuration
 from security import audit, check_password_reuse, hash_password, record_password_change, save_secure_upload, validate_password
 from time_utils import colombia_now
 import bleach
@@ -373,6 +380,136 @@ def index():
                 db.session.commit()
                 flash('Identificacion del prestador actualizada.')
 
+        elif action == 'billing_profile' and current_user.role in ('doctor', 'admin'):
+            # Perfil de facturacion.
+            #
+            # El medico independiente factura a su propio nombre, con su propia
+            # resolucion de numeracion de la DIAN. Mezclar su consecutivo con el
+            # de la clinica invalidaria ambos: cada resolucion autoriza un rango
+            # a un emisor concreto.
+            es_independiente = (current_user.role == 'doctor'
+                                and current_user.is_autonomous)
+
+            if current_user.role == 'doctor' and not es_independiente:
+                flash('Los medicos vinculados facturan bajo el perfil de la clinica.')
+                return redirect(url_for('settings.index'))
+
+            if es_independiente:
+                perfil = BillingProfile.query.filter_by(
+                    doctor_id=current_user.id, issuer_kind=ISSUER_INDEPENDENT).first()
+                if not perfil:
+                    perfil = BillingProfile(
+                        issuer_kind=ISSUER_INDEPENDENT,
+                        doctor_id=current_user.id,
+                        clinic_id=current_user.clinic_id,
+                        legal_name=current_user.name,
+                        document_type='CC',
+                        document_number='',
+                    )
+                    db.session.add(perfil)
+            else:
+                perfil = BillingProfile.query.filter_by(
+                    clinic_id=current_user.clinic_id, issuer_kind=ISSUER_CLINIC).first()
+                if not perfil:
+                    perfil = BillingProfile(
+                        issuer_kind=ISSUER_CLINIC,
+                        clinic_id=current_user.clinic_id,
+                        legal_name=(current_user.clinic.legal_name
+                                    or current_user.clinic.name),
+                        document_type='NIT',
+                        document_number=current_user.clinic.nit or '',
+                    )
+                    db.session.add(perfil)
+
+            perfil.legal_name = bleach.clean(
+                (request.form.get('legal_name') or perfil.legal_name or '').strip())[:220]
+            tipo_doc = (request.form.get('document_type') or perfil.document_type or 'NIT').strip().upper()
+            perfil.document_type = tipo_doc if tipo_doc in ('NIT', 'CC') else 'NIT'
+            perfil.document_number = re.sub(
+                r'[^0-9]', '', request.form.get('document_number') or '')[:40]
+            perfil.verification_digit = re.sub(
+                r'[^0-9]', '', request.form.get('verification_digit') or '')[:1] or None
+            perfil.fiscal_address = bleach.clean(
+                (request.form.get('fiscal_address') or '').strip())[:300] or None
+            perfil.email = bleach.clean((request.form.get('billing_email') or '').strip())[:180] or None
+            perfil.phone = bleach.clean((request.form.get('billing_phone') or '').strip())[:80] or None
+            perfil.tax_regime = bleach.clean((request.form.get('tax_regime') or '').strip())[:60] or None
+            perfil.is_vat_responsible = request.form.get('is_vat_responsible') == 'on'
+
+            # --- Resolucion de numeracion ---
+            perfil.resolution_number = bleach.clean(
+                (request.form.get('resolution_number') or '').strip())[:40] or None
+            perfil.invoice_prefix = re.sub(
+                r'[^A-Za-z0-9]', '', request.form.get('invoice_prefix') or '')[:10].upper() or None
+
+            for campo, atributo in (('resolution_date', 'resolution_date'),
+                                    ('resolution_valid_until', 'resolution_valid_until')):
+                crudo = (request.form.get(campo) or '').strip()
+                if crudo:
+                    try:
+                        setattr(perfil, atributo,
+                                datetime.strptime(crudo, '%Y-%m-%d').date())
+                    except ValueError:
+                        flash(f'La fecha de "{campo}" no es valida.')
+                        return redirect(url_for('settings.index'))
+                else:
+                    setattr(perfil, atributo, None)
+
+            desde = request.form.get('range_from', type=int)
+            hasta = request.form.get('range_to', type=int)
+            if desde and hasta and hasta < desde:
+                flash('El rango autorizado esta invertido: el final es menor que el inicio.')
+                return redirect(url_for('settings.index'))
+            perfil.range_from = desde
+            perfil.range_to = hasta
+
+            audit(
+                'billing_profile_updated',
+                details=f'emisor={perfil.issuer_kind}; numeracion={"si" if perfil.has_numbering else "no"}',
+            )
+            db.session.commit()
+
+            faltantes = describe_readiness(perfil)
+            if faltantes:
+                flash('Perfil guardado. Para poder emitir todavia falta:')
+                for detalle in faltantes[:5]:
+                    flash(f'  {detalle}')
+            else:
+                flash('Perfil de facturacion completo.')
+
+        elif action == 'legal_configuration' and current_user.role in ('admin', 'super'):
+            # Datos del prestador que completan los textos legales.
+            #
+            # Un documento con `[[NIT_OPERADOR]]` sin reemplazar no es un
+            # documento legal, asi que estos valores son los que lo vuelven
+            # publicable.
+            guardados = 0
+            for clave in PLACEHOLDER_LABELS:
+                valor = bleach.clean((request.form.get(f'legal_{clave}') or '').strip())[:500]
+                fila = LegalConfiguration.query.filter_by(key=clave).first()
+                if not fila:
+                    fila = LegalConfiguration(key=clave)
+                    db.session.add(fila)
+                if (fila.value or '') != valor:
+                    fila.value = valor or None
+                    fila.updated_by_id = current_user.id
+                    guardados += 1
+
+            audit('legal_configuration_updated', details=f'campos={guardados}')
+            db.session.commit()
+
+            valores = {row.key: row.value
+                       for row in LegalConfiguration.query.all() if row.value}
+            pendientes = pending_configuration(valores)
+            if pendientes:
+                total = sum(len(v) for v in pendientes.values())
+                flash(
+                    f'Configuracion guardada. Faltan {total} dato(s) para que los '
+                    'documentos legales sean publicables.'
+                )
+            else:
+                flash('Documentos legales completos y publicables.')
+
         elif action == 'update_pregnancy_status' and current_user.role == 'patient':
             # Alimenta la verificacion de contraindicaciones en el embarazo.
             is_pregnant = request.form.get('is_pregnant') == 'on'
@@ -395,4 +532,34 @@ def index():
             for clinic in Clinic.query.filter_by(status='active').order_by(Clinic.name.asc()).all()
         ]
         policy_enrollments = UserPolicyEnrollment.query.filter_by(user_id=current_user.id).order_by(UserPolicyEnrollment.created_at.desc()).all()
-    return render_template('settings.html', clinic_rows=clinic_rows, policy_enrollments=policy_enrollments)
+    # --- Facturacion ---
+    billing_profile = None
+    billing_gaps = []
+    if current_user.role == 'doctor' and current_user.is_autonomous:
+        billing_profile = BillingProfile.query.filter_by(
+            doctor_id=current_user.id, issuer_kind=ISSUER_INDEPENDENT).first()
+        billing_gaps = describe_readiness(billing_profile)
+    elif current_user.role == 'admin':
+        billing_profile = BillingProfile.query.filter_by(
+            clinic_id=current_user.clinic_id, issuer_kind=ISSUER_CLINIC).first()
+        billing_gaps = describe_readiness(billing_profile)
+
+    # --- Configuracion legal ---
+    legal_values = {}
+    legal_pending = {}
+    if current_user.role in ('admin', 'super'):
+        legal_values = {row.key: row.value for row in LegalConfiguration.query.all()}
+        legal_pending = pending_configuration(
+            {k: v for k, v in legal_values.items() if v}
+        )
+
+    return render_template(
+        'settings.html',
+        clinic_rows=clinic_rows,
+        policy_enrollments=policy_enrollments,
+        billing_profile=billing_profile,
+        billing_gaps=billing_gaps,
+        legal_values=legal_values,
+        legal_pending=legal_pending,
+        legal_labels=PLACEHOLDER_LABELS,
+    )

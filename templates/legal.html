@@ -85,9 +85,7 @@
             {% for key, label, href in tabs %}
             <li>
                 <a href="{{ href }}"
-                   class="inline-block py-3 border-b-2 font-medium transition-colors
-                          {% if active_tab == key %}border-accent text-accent
-                          {% else %}border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300{% endif %}"
+                   class="inline-block py-3 border-b-2 font-medium transition-colors {% if active_tab == key %}border-accent text-accent {% else %}border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300{% endif %}"
                    {% if active_tab == key %}aria-current="page"{% endif %}>
                     {{ label }}
                 </a>

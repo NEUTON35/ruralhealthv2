@@ -6,23 +6,23 @@
 
     <div class="space-y-6">
         {% if current_user.role == 'patient' %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-purple-600">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-purple-700"><i data-lucide="key-round" class="w-6 h-6"></i> Codigos y polizas</h2>
             <div class="grid md:grid-cols-2 gap-4">
                 <form method="POST" class="space-y-3 border border-slate-100 rounded-xl p-4">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="redeem_clinic_code">
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-600">Codigo de clinica privada</label>
-                    <input name="clinic_code" placeholder="CLINIC-XXXX" class="w-full border-2 p-3 rounded-xl text-lg focus:border-purple-500 focus:outline-none" aria-label="CLINIC-XXXX">
-                    <button class="bg-purple-700 text-white px-5 py-2 rounded-xl font-black">Desbloquear clinica</button>
+                    <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600">Codigo de clinica privada</label>
+                    <input name="clinic_code" placeholder="CLINIC-XXXX" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="CLINIC-XXXX">
+                    <button class="bg-slate-700 text-white px-5 py-2 rounded-xl font-semibold">Desbloquear clinica</button>
                 </form>
                 <form method="POST" enctype="multipart/form-data" class="space-y-3 border border-slate-100 rounded-xl p-4">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="redeem_policy_code">
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-600">Codigo de poliza / aseguradora</label>
-                    <input name="policy_code" placeholder="POLIZA-XXXX" class="w-full border-2 p-3 rounded-xl text-lg focus:border-purple-500 focus:outline-none" aria-label="POLIZA-XXXX">
+                    <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600">Codigo de poliza / aseguradora</label>
+                    <input name="policy_code" placeholder="POLIZA-XXXX" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="POLIZA-XXXX">
                     <input type="file" name="policy_file" accept="image/*,.pdf" class="w-full border-2 p-3 rounded-xl text-sm" aria-label="Policy file">
-                    <button class="bg-slate-900 text-white px-5 py-2 rounded-xl font-black">Activar poliza</button>
+                    <button class="bg-slate-900 text-white px-5 py-2 rounded-xl font-semibold">Activar poliza</button>
                 </form>
             </div>
         </div>
@@ -31,18 +31,18 @@
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-blue-700"><i data-lucide="building-2" class="w-6 h-6"></i> Cambiar clinica activa</h2>
             <div class="grid sm:grid-cols-2 gap-3">
                 {% for row in clinic_rows %}
-                <form method="POST" class="border rounded-xl p-3 {% if row.is_current %}border-blue-300 bg-blue-50{% elif row.allowed %}border-emerald-100 bg-emerald-50{% else %}border-slate-200 bg-slate-50{% endif %}">
+                <form method="POST" class="border rounded-xl p-3 {% if row.is_current %}border-blue-300 bg-blue-50{% elif row.allowed %}border-positive-subtle bg-positive-subtle{% else %}border-slate-200 bg-slate-50{% endif %}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="switch_clinic">
                     <input type="hidden" name="clinic_id" value="{{ row.clinic.id }}">
                     <div class="flex items-center justify-between gap-2">
                         <div>
-                            <p class="font-black text-slate-900">{{ row.clinic.name }}</p>
+                            <p class="font-semibold text-slate-900">{{ row.clinic.name }}</p>
                             <p class="text-xs text-slate-500">{{ 'Privada' if row.clinic.access_type == 'private' else 'Publica' }}</p>
                         </div>
-                        <i data-lucide="{{ 'lock' if row.locked else 'unlock' }}" class="w-5 h-5 {% if row.locked %}text-slate-400{% else %}text-emerald-600{% endif %}"></i>
+                        <i data-lucide="{{ 'lock' if row.locked else 'unlock' }}" class="w-5 h-5 {% if row.locked %}text-slate-500{% else %}text-slate-500{% endif %}"></i>
                     </div>
-                    <button class="mt-3 w-full py-2 rounded-lg text-xs font-black {% if row.allowed %}bg-blue-600 text-white{% else %}bg-slate-200 text-slate-500{% endif %}" {% if not row.allowed %}disabled{% endif %}>
+                    <button class="mt-3 w-full py-2 rounded-lg text-xs font-semibold {% if row.allowed %}bg-blue-600 text-white{% else %}bg-slate-200 text-slate-500{% endif %}" {% if not row.allowed %}disabled{% endif %}>
                         {{ 'Activa' if row.is_current else 'Cambiar' if row.allowed else 'Bloqueada' }}
                     </button>
                 </form>
@@ -50,15 +50,15 @@
             </div>
             {% if policy_enrollments %}
             <div class="mt-4 border-t pt-4">
-                <p class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">Polizas activas o recientes</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Polizas activas o recientes</p>
                 <div class="space-y-2">
                     {% for enrollment in policy_enrollments %}
                     <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 flex justify-between gap-3">
                         <div>
-                            <p class="font-black text-sm text-slate-900">{{ enrollment.policy.name }}</p>
+                            <p class="font-semibold text-sm text-slate-900">{{ enrollment.policy.name }}</p>
                             <p class="text-xs text-slate-500">Vence: {{ enrollment.expires_at|colombia_date if enrollment.expires_at else 'Sin vencimiento' }}</p>
                         </div>
-                        <span class="text-xs font-black px-2 py-1 rounded-full {% if enrollment.status == 'active' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-200 text-slate-600{% endif %}">{{ enrollment.status }}</span>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full {% if enrollment.status == 'active' %}bg-positive-subtle text-emerald-700{% else %}bg-slate-200 text-slate-600{% endif %}">{{ enrollment.status }}</span>
                     </div>
                     {% endfor %}
                 </div>
@@ -67,91 +67,91 @@
         </div>
         {% endif %}
         {% if current_user.role == 'admin' and current_user.clinic %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-indigo-500">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-700"><i data-lucide="building-2" class="w-6 h-6"></i> Configuración de Clínica</h2>
             <form method="POST" enctype="multipart/form-data" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="clinic_settings">
-                <select name="access_type" class="w-full border-2 p-3 rounded-xl text-lg bg-white focus:border-indigo-500 focus:outline-none" aria-label="Tipo de acceso">
+                <select name="access_type" class="w-full border-2 p-3 rounded-xl text-lg bg-white focus:border-slate-700 focus:outline-none" aria-label="Tipo de acceso">
                     <option value="public" {% if current_user.clinic.access_type == 'public' %}selected{% endif %}>Publica / pagada por el estado</option>
                     <option value="private" {% if current_user.clinic.access_type == 'private' %}selected{% endif %}>Privada / requiere codigo</option>
                 </select>
-                <input type="text" name="nit" value="{{ current_user.clinic.nit or '' }}" placeholder="NIT / Tax ID" class="w-full border-2 p-3 rounded-xl text-lg focus:border-indigo-500 focus:outline-none" aria-label="NIT / Tax ID">
-                <input type="email" name="contact_email" value="{{ current_user.clinic.contact_email or '' }}" placeholder="Correo de contacto" class="w-full border-2 p-3 rounded-xl text-lg focus:border-indigo-500 focus:outline-none" aria-label="Correo de contacto">
-                <input type="text" name="location" value="{{ current_user.clinic.location or '' }}" placeholder="Direccion de la clinica" class="w-full border-2 p-3 rounded-xl text-lg focus:border-indigo-500 focus:outline-none" aria-label="Direccion de la clinica">
+                <input type="text" name="nit" value="{{ current_user.clinic.nit or '' }}" placeholder="NIT / Tax ID" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="NIT / Tax ID">
+                <input type="email" name="contact_email" value="{{ current_user.clinic.contact_email or '' }}" placeholder="Correo de contacto" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Correo de contacto">
+                <input type="text" name="location" value="{{ current_user.clinic.location or '' }}" placeholder="Direccion de la clinica" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Direccion de la clinica">
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <input id="clinic-settings-lat" type="number" step="any" name="latitude" value="{{ current_user.clinic.latitude if current_user.clinic.latitude is not none else '' }}" placeholder="Latitud clinica" class="border-2 p-3 rounded-xl text-lg focus:border-indigo-500 focus:outline-none" aria-label="Latitud clinica">
-                    <input id="clinic-settings-lng" type="number" step="any" name="longitude" value="{{ current_user.clinic.longitude if current_user.clinic.longitude is not none else '' }}" placeholder="Longitud clinica" class="border-2 p-3 rounded-xl text-lg focus:border-indigo-500 focus:outline-none" aria-label="Longitud clinica">
+                    <input id="clinic-settings-lat" type="number" step="any" name="latitude" value="{{ current_user.clinic.latitude if current_user.clinic.latitude is not none else '' }}" placeholder="Latitud clinica" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Latitud clinica">
+                    <input id="clinic-settings-lng" type="number" step="any" name="longitude" value="{{ current_user.clinic.longitude if current_user.clinic.longitude is not none else '' }}" placeholder="Longitud clinica" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Longitud clinica">
                 </div>
                 <div class="h-72 rounded-xl overflow-hidden border border-slate-200" data-location-picker data-lat-input="#clinic-settings-lat" data-lng-input="#clinic-settings-lng"></div>
-                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-black text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
-                <textarea name="opening_hours" rows="4" placeholder="Horarios de apertura de la sede" class="w-full border-2 p-3 rounded-xl text-lg focus:border-indigo-500 focus:outline-none" aria-label="Horarios de apertura de la sede">{{ current_user.clinic.opening_hours or '' }}</textarea>
+                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
+                <textarea name="opening_hours" rows="4" placeholder="Horarios de apertura de la sede" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Horarios de apertura de la sede">{{ current_user.clinic.opening_hours or '' }}</textarea>
                 <label class="block text-sm font-bold text-slate-600">Logo white label</label>
                 <input type="file" name="logo" accept="image/*" class="w-full border-2 p-3 rounded-xl text-sm" aria-label="Logotipo">
-                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition">Guardar Clínica</button>
+                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700 transition">Guardar Clínica</button>
             </form>
             <form method="POST" class="mt-4 bg-slate-50 border border-slate-100 rounded-xl p-4">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="generate_clinic_consent">
-                <p class="text-xs font-black uppercase tracking-widest text-slate-600">Consentimiento para polizas</p>
-                <p class="font-mono font-black text-slate-900 break-all my-2">{{ current_user.clinic.policy_consent_code or 'Sin codigo generado' }}</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Consentimiento para polizas</p>
+                <p class="font-mono font-semibold text-slate-900 break-all my-2">{{ current_user.clinic.policy_consent_code or 'Sin codigo generado' }}</p>
                 <input name="consent_prefix" placeholder="Prefijo del codigo, ej: clinicalamejor" class="w-full border p-3 rounded-xl mb-3" aria-label="Prefijo del codigo, ej: clinicalamejor">
-                <button class="bg-slate-900 text-white px-4 py-2 rounded-xl font-black text-sm">Generar nuevo codigo</button>
+                <button class="bg-slate-900 text-white px-4 py-2 rounded-xl font-semibold text-sm">Generar nuevo codigo</button>
             </form>
         </div>
         {% endif %}
         {% if current_user.role == 'doctor' %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-teal-500">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-positive">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-teal-700"><i data-lucide="stethoscope" class="w-6 h-6"></i> Datos Profesionales (Orden Médica)</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="doctor_professional">
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-600">Registro Médico (Reg. Méd.)</label>
-                        <input type="text" name="medical_registration" value="{{ current_user.medical_registration or '' }}" placeholder="Ej: RM-12345" class="w-full border-2 p-3 rounded-xl text-lg focus:border-teal-500 focus:outline-none mt-1" aria-label="Registro medico profesional">
+                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Registro Médico (Reg. Méd.)</label>
+                        <input type="text" name="medical_registration" value="{{ current_user.medical_registration or '' }}" placeholder="Ej: RM-12345" class="w-full border-2 p-3 rounded-xl text-lg focus:border-positive focus:outline-none mt-1" aria-label="Registro medico profesional">
                     </div>
                     <div>
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-600">Especialidad</label>
-                        <input type="text" name="specialty" value="{{ current_user.specialty or '' }}" placeholder="Ej: Medicina General" class="w-full border-2 p-3 rounded-xl text-lg focus:border-teal-500 focus:outline-none mt-1" aria-label="Especialidad">
+                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Especialidad</label>
+                        <input type="text" name="specialty" value="{{ current_user.specialty or '' }}" placeholder="Ej: Medicina General" class="w-full border-2 p-3 rounded-xl text-lg focus:border-positive focus:outline-none mt-1" aria-label="Especialidad">
                     </div>
                 </div>
                 <p class="text-xs text-slate-500">Estos datos aparecen en las órdenes médicas digitales y documentos legales.</p>
-                <button type="submit" class="bg-teal-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-teal-700 transition">Guardar Datos Profesionales</button>
+                <button type="submit" class="bg-positive text-white px-6 py-2 rounded-xl font-bold hover:bg-positive transition">Guardar Datos Profesionales</button>
             </form>
             {% if current_user.signature_path %}
-            <div class="mt-4 p-3 bg-teal-50 border border-teal-100 rounded-xl">
-                <p class="text-xs font-black uppercase tracking-widest text-teal-700 mb-2">Firma digital registrada</p>
+            <div class="mt-4 p-3 bg-positive-subtle border border-positive-subtle rounded-xl">
+                <p class="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-2">Firma digital registrada</p>
                 <img src="/uploads/{{ current_user.signature_path }}" alt="Firma" class="h-12">
             </div>
             {% endif %}
         </div>
         {% endif %}
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-cyan-500">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-cyan-700"><i data-lucide="map-pin" class="w-6 h-6"></i> Direccion y ubicacion</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="profile_location">
-                <input type="text" name="address" value="{{ current_user.address or '' }}" placeholder="Direccion registrada" class="w-full border-2 p-3 rounded-xl text-lg focus:border-cyan-500 focus:outline-none" aria-label="Direccion registrada">
+                <input type="text" name="address" value="{{ current_user.address or '' }}" placeholder="Direccion registrada" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Direccion registrada">
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <input id="settings-user-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" placeholder="Latitud" class="border-2 p-3 rounded-xl text-lg focus:border-cyan-500 focus:outline-none" aria-label="Latitud">
-                    <input id="settings-user-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" placeholder="Longitud" class="border-2 p-3 rounded-xl text-lg focus:border-cyan-500 focus:outline-none" aria-label="Longitud">
+                    <input id="settings-user-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" placeholder="Latitud" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Latitud">
+                    <input id="settings-user-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" placeholder="Longitud" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Longitud">
                 </div>
                 <div class="h-72 rounded-xl overflow-hidden border border-slate-200" data-location-picker data-lat-input="#settings-user-lat" data-lng-input="#settings-user-lng"></div>
-                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-black text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
-                <label class="flex items-start gap-3 text-sm text-slate-700 bg-cyan-50 border border-cyan-100 rounded-xl p-3">
+                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
+                <label class="flex items-start gap-3 text-sm text-slate-700 bg-slate-50 border border-slate-100 rounded-xl p-3">
                     <input type="checkbox" name="accept_location" required class="mt-1 accent-cyan-700" aria-label="Accept location">
                     <span>Autorizo el uso de esta ubicacion para calcular cercania a farmacias, consultorios y orientar mi atencion.</span>
                 </label>
-                <button type="submit" class="bg-cyan-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-cyan-800 transition">Guardar ubicacion</button>
+                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700 transition">Guardar ubicacion</button>
             </form>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-positive">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-emerald-700"><i data-lucide="shield-check" class="w-6 h-6"></i> Legal y datos personales</h2>
             <div class="grid sm:grid-cols-3 gap-3 text-sm">
-                <a href="/terminos" class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl font-bold text-emerald-800 hover:bg-emerald-100">Términos de uso</a>
+                <a href="/terminos" class="bg-positive-subtle border border-positive-subtle p-3 rounded-xl font-bold text-emerald-800 hover:bg-positive-subtle">Términos de uso</a>
                 <a href="/privacidad" class="bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold text-blue-800 hover:bg-blue-100">Privacidad y tratamiento</a>
                 <a href="/transparencia" class="bg-slate-50 border border-slate-100 p-3 rounded-xl font-bold text-slate-700 hover:bg-slate-100">Transparencia</a>
             </div>
@@ -169,8 +169,237 @@
             </form>
         </div>
 
+        {# ==================================================================
+           FACTURACIÓN
+           El médico independiente factura a su propio nombre, con su propia
+           resolución de numeración de la DIAN. Mezclar su consecutivo con el de
+           la clínica invalidaría ambos: cada resolución autoriza un rango a un
+           emisor concreto.
+           ================================================================== #}
+        {% if current_user.role == 'admin' or (current_user.role == 'doctor' and current_user.is_autonomous) %}
+        <div id="facturacion" class="bg-white p-6 rounded-lg border border-slate-200">
+            <h2 class="text-lg font-semibold mb-1 flex items-center gap-2 text-slate-900">
+                <i data-lucide="receipt" class="w-5 h-5 text-slate-500"></i>
+                Facturación
+            </h2>
+            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                {% if current_user.is_autonomous %}
+                Como profesional independiente facturas a tu propio nombre, con tu
+                identificación y tu propia resolución de numeración de la DIAN.
+                {% else %}
+                Datos con los que la clínica emite sus documentos de cobro.
+                {% endif %}
+            </p>
+
+            {% if billing_gaps %}
+            <div class="border border-caution-border bg-caution-subtle rounded-lg p-4 mb-5">
+                <p class="text-sm font-semibold text-caution-text mb-2">
+                    Todavía no puedes emitir documentos de cobro
+                </p>
+                <ul class="text-sm text-caution-text space-y-1 list-disc list-inside">
+                    {% for gap in billing_gaps %}<li>{{ gap }}</li>{% endfor %}
+                </ul>
+            </div>
+            {% else %}
+            <div class="border border-positive-border bg-positive-subtle rounded-lg p-4 mb-5 flex items-start gap-2">
+                <i data-lucide="check-circle" class="w-5 h-5 text-positive shrink-0 mt-0.5"></i>
+                <p class="text-sm text-positive-text">
+                    Perfil completo. Consecutivo actual:
+                    <b class="font-mono">{{ billing_profile.invoice_prefix or '' }}{{ billing_profile.last_number }}</b>
+                    de {{ billing_profile.range_to }}.
+                </p>
+            </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="billing_profile">
+
+                <div class="grid sm:grid-cols-2 gap-3">
+                    <label class="block text-xs font-medium text-slate-600 sm:col-span-2">
+                        {{ 'Nombre completo' if current_user.is_autonomous else 'Razón social' }}
+                        <input name="legal_name" required maxlength="220"
+                            value="{{ billing_profile.legal_name if billing_profile else '' }}"
+                            class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                    </label>
+
+                    <label class="block text-xs font-medium text-slate-600">
+                        Tipo de documento
+                        <select name="document_type"
+                            class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm bg-white focus:border-accent outline-none">
+                            <option value="NIT" {% if billing_profile and billing_profile.document_type == 'NIT' %}selected{% endif %}>NIT</option>
+                            <option value="CC" {% if billing_profile and billing_profile.document_type == 'CC' %}selected{% endif %}>Cédula</option>
+                        </select>
+                    </label>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="block text-xs font-medium text-slate-600 col-span-2">
+                            Número
+                            <input name="document_number" required inputmode="numeric"
+                                value="{{ billing_profile.document_number if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm font-mono focus:border-accent outline-none">
+                        </label>
+                        <label class="block text-xs font-medium text-slate-600">
+                            DV
+                            <input name="verification_digit" maxlength="1" inputmode="numeric"
+                                value="{{ billing_profile.verification_digit or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm font-mono focus:border-accent outline-none">
+                        </label>
+                    </div>
+
+                    <label class="block text-xs font-medium text-slate-600 sm:col-span-2">
+                        Dirección fiscal
+                        <input name="fiscal_address" maxlength="300"
+                            value="{{ billing_profile.fiscal_address or '' if billing_profile else '' }}"
+                            class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                    </label>
+
+                    <label class="block text-xs font-medium text-slate-600">
+                        Correo de facturación
+                        <input type="email" name="billing_email" maxlength="180"
+                            value="{{ billing_profile.email or '' if billing_profile else '' }}"
+                            class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                    </label>
+
+                    <label class="block text-xs font-medium text-slate-600">
+                        Teléfono
+                        <input name="billing_phone" maxlength="80"
+                            value="{{ billing_profile.phone or '' if billing_profile else '' }}"
+                            class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                    </label>
+                </div>
+
+                <div class="border-t border-slate-200 pt-4">
+                    <h3 class="text-sm font-semibold text-slate-800 mb-1">
+                        Resolución de numeración de la DIAN
+                    </h3>
+                    <p class="text-xs text-slate-600 mb-3 leading-relaxed">
+                        Cada resolución autoriza un rango de números a un emisor concreto.
+                        Usar un número fuera del rango invalida el documento.
+                    </p>
+
+                    <div class="grid sm:grid-cols-4 gap-3">
+                        <label class="block text-xs font-medium text-slate-600 sm:col-span-2">
+                            Número de resolución
+                            <input name="resolution_number" maxlength="40"
+                                value="{{ billing_profile.resolution_number or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm font-mono focus:border-accent outline-none">
+                        </label>
+                        <label class="block text-xs font-medium text-slate-600">
+                            Prefijo
+                            <input name="invoice_prefix" maxlength="10" placeholder="FE"
+                                value="{{ billing_profile.invoice_prefix or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm font-mono focus:border-accent outline-none">
+                        </label>
+                        <label class="block text-xs font-medium text-slate-600">
+                            Fecha de expedición
+                            <input type="date" name="resolution_date"
+                                value="{{ billing_profile.resolution_date or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                        </label>
+                        <label class="block text-xs font-medium text-slate-600">
+                            Vigente hasta
+                            <input type="date" name="resolution_valid_until"
+                                value="{{ billing_profile.resolution_valid_until or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                        </label>
+                        <label class="block text-xs font-medium text-slate-600">
+                            Desde el número
+                            <input type="number" name="range_from" min="1"
+                                value="{{ billing_profile.range_from or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm font-mono focus:border-accent outline-none">
+                        </label>
+                        <label class="block text-xs font-medium text-slate-600">
+                            Hasta el número
+                            <input type="number" name="range_to" min="1"
+                                value="{{ billing_profile.range_to or '' if billing_profile else '' }}"
+                                class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm font-mono focus:border-accent outline-none">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-4">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" name="is_vat_responsible"
+                               {% if billing_profile and billing_profile.is_vat_responsible %}checked{% endif %}
+                               class="mt-0.5 w-4 h-4 rounded border-slate-300 shrink-0">
+                        <span class="text-sm text-slate-700 leading-relaxed">
+                            Soy responsable de IVA
+                            <span class="block text-xs text-slate-600 mt-0.5">
+                                Los servicios de salud humana están excluidos de IVA
+                                (artículo 476 numeral 1 del Estatuto Tributario).
+                                Marca esta casilla solo si facturas además otros
+                                servicios que sí lo causan. Consúltalo con tu contador.
+                            </span>
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit"
+                    class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
+                    Guardar perfil de facturación
+                </button>
+            </form>
+
+            <p class="text-xs text-slate-600 mt-4 leading-relaxed border-t border-slate-200 pt-4">
+                La radicación electrónica ante la DIAN requiere un proveedor
+                tecnológico autorizado. Hasta configurarlo, los documentos se
+                generan y se numeran pero quedan marcados como pendientes de
+                radicar — no se da por enviado lo que no se envió.
+            </p>
+        </div>
+        {% endif %}
+
+        {# ==================================================================
+           DOCUMENTOS LEGALES
+           Un documento con marcadores sin reemplazar no es un documento legal.
+           ================================================================== #}
+        {% if current_user.role in ('admin', 'super') %}
+        <div id="legal" class="bg-white p-6 rounded-lg border border-slate-200">
+            <h2 class="text-lg font-semibold mb-1 flex items-center gap-2 text-slate-900">
+                <i data-lucide="scale" class="w-5 h-5 text-slate-500"></i>
+                Datos del prestador en los documentos legales
+            </h2>
+            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                El artículo 13 del Decreto 1377 de 2013 exige que la política de
+                tratamiento de datos identifique al responsable y su canal de
+                atención. Sin estos datos los documentos no son publicables.
+            </p>
+
+            {% if legal_pending %}
+            <div class="border border-critical-border bg-critical-subtle rounded-lg p-4 mb-5">
+                <p class="text-sm text-critical-text">
+                    Faltan <b>{{ legal_pending.values() | map('length') | sum }}</b>
+                    dato(s). Mientras tanto los documentos muestran marcadores en
+                    lugar de la información legal.
+                </p>
+            </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="legal_configuration">
+
+                {% for key, (label, help_text) in legal_labels.items() %}
+                <label class="block text-xs font-medium text-slate-600">
+                    {{ label }}
+                    <input name="legal_{{ key }}" maxlength="500"
+                        value="{{ legal_values.get(key) or '' }}"
+                        class="w-full mt-1 border border-slate-300 px-3 py-2 rounded-lg text-sm focus:border-accent outline-none">
+                    <span class="block text-xs text-slate-500 mt-1 font-normal leading-relaxed">{{ help_text }}</span>
+                </label>
+                {% endfor %}
+
+                <button type="submit"
+                    class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
+                    Guardar datos legales
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
         <!-- Cierre de cuenta -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-amber-500">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-caution">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-amber-700">
                 <i data-lucide="user-x" class="w-6 h-6"></i> Cerrar mi cuenta
             </h2>
@@ -209,9 +438,9 @@
                 </label>
                 <input type="text" id="confirm_text" name="confirm_text" required
                     autocomplete="off" placeholder="CERRAR"
-                    class="w-full border-2 border-amber-300 p-3 rounded-xl text-lg focus:border-amber-500 focus:outline-none">
+                    class="w-full border-2 border-caution-border p-3 rounded-xl text-lg focus:border-caution focus:outline-none">
                 <button type="submit"
-                    class="bg-amber-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-amber-700 transition-colors flex items-center gap-2">
+                    class="bg-caution text-white px-6 py-2 rounded-xl font-bold hover:bg-caution transition-colors flex items-center gap-2">
                     <i data-lucide="user-x" class="w-5 h-5"></i> Cerrar mi cuenta
                 </button>
             </form>

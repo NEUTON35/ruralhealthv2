@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/60 border border-slate-100 overflow-hidden flex flex-col h-[80vh] relative">
+<div class="bg-white rounded-[2rem] shadow-md border border-slate-100 overflow-hidden flex flex-col h-[80vh] relative">
     <!-- CABECERA -->
     <div class="bg-gradient-to-r from-primary to-primary-dark p-5 sm:p-6 text-white shrink-0 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
         <div class="flex justify-between items-start mb-3 relative z-10">
             <div>
-                <h2 class="text-2xl font-black tracking-tight">{% if doctor.role != 'doctor' %}Staff {{ doctor.name }}{% else %}Dr. {{ doctor.name }}{% endif %}</h2>
+                <h2 class="text-xl font-semibold tracking-tight">{% if doctor.role != 'doctor' %}Staff {{ doctor.name }}{% else %}Dr. {{ doctor.name }}{% endif %}</h2>
                 <p class="text-sm text-primary-100 flex items-center gap-1.5 font-medium mt-1">
                     <i data-lucide="clock" class="w-4 h-4"></i> 
                     {% if doctor.role != 'doctor' %}
@@ -17,17 +17,17 @@
                 </p>
             </div>
             <div class="flex gap-2 items-center">
-                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition shadow-sm ">
+                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition shadow-sm">
                     <i data-lucide="video" class="w-5 h-5"></i>
                 </button>
-                <span class="bg-white/20 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm ">
+                <span class="bg-white/20 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm">
                     {{ chat.status }}
                 </span>
             </div>
         </div>
 
         <!-- Barra de Motivo de Consulta -->
-        <form method="POST" class="flex gap-2 items-center bg-black/10  p-2 rounded-xl mt-4 border border-white/10 relative z-10">
+        <form method="POST" class="flex gap-2 items-center bg-black/10 p-2 rounded-xl mt-4 border border-white/10 relative z-10">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="update_reason" value="1">
             <i data-lucide="tag" class="w-4 h-4 text-white/70 ml-2"></i>
@@ -41,16 +41,16 @@
         <!-- COUNTDOWN DE 5 MINUTOS PARA CITAS -->
         {% if chat.appointment and chat.appointment.status == 'in_progress' and chat.appointment.started_at %}
         <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-xl text-center shadow-sm mb-4">
-            <h3 class="font-black text-lg flex items-center justify-center gap-2">
+            <h3 class="font-semibold text-lg flex items-center justify-center gap-2">
                 <i data-lucide="timer" class="w-5 h-5"></i> Consulta en Curso (10 min)
             </h3>
             <p>El paciente tiene 5 minutos para presentarse, de lo contrario la cita se cancelará.</p>
-            <div id="countdown-timer" class="text-4xl font-mono font-black mt-2 text-red-600">10:00</div>
+            <div id="countdown-timer" class="text-4xl font-mono font-semibold mt-2 text-red-600">10:00</div>
             
             {% if current_user.role == 'doctor' %}
             <form method="POST" action="/doctor/mark_no_show/{{ chat.appointment.id }}" class="mt-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-red-700 transition">
+                <button type="submit" class="bg-critical text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-critical transition">
                     Marcar como "No Asistió"
                 </button>
             </form>
@@ -81,7 +81,7 @@
                         if (!document.getElementById('no-show-warn')) {
                             var warn = document.createElement('div');
                             warn.id = 'no-show-warn';
-                            warn.className = 'bg-red-200 text-red-900 p-2 rounded-lg mt-2 text-sm font-bold';
+                            warn.className = 'bg-critical-border text-red-900 p-2 rounded-lg mt-2 text-sm font-bold';
                             warn.innerHTML = "⚠️ Quedan pocos segundos para escribir o se marcará como No Asistida.";
                             countdownDiv.appendChild(warn);
                         }
@@ -109,7 +109,7 @@
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                <div class="bg-red-100 text-red-800 p-3 rounded-xl text-sm font-bold text-center shadow-sm animate-pulse border border-red-200">
+                <div class="bg-critical-subtle text-red-800 p-3 rounded-xl text-sm font-bold text-center shadow-sm animate-pulse border border-critical-border">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -172,7 +172,7 @@
         {% if chat.status == 'closed' %}
             <div class="p-4 bg-slate-100">
                 {% if can_rate %}
-                    <form action="/patient/rate_chat/{{ chat.id }}" method="POST" class="space-y-3 text-left p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
+                    <form action="/patient/rate_chat/{{ chat.id }}" method="POST" class="space-y-3 text-left p-4 bg-caution-subtle border-l-4 border-caution rounded-r-lg">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <h3 class="font-bold text-lg text-yellow-800 flex items-center gap-2">
                             <i data-lucide="star" class="w-5 h-5"></i> Califica tu consulta
@@ -189,13 +189,13 @@
                         </div>
                         <div class="flex flex-wrap gap-2">
                             {% for tag in ["Puntual", "Explicación clara", "Buena comunicación", "Sin espera", "Muy amable"] %}
-                            <label class="flex items-center gap-1 bg-white border px-3 py-1 rounded-full cursor-pointer hover:bg-yellow-100 text-sm">
+                            <label class="flex items-center gap-1 bg-white border px-3 py-1 rounded-full cursor-pointer hover:bg-caution-subtle text-sm">
                                 <input type="checkbox" name="tags" value="{{ tag }}" class="w-3 h-3" aria-label="Tags"> {{ tag }}
                             </label>
                             {% endfor %}
                         </div>
-                        <textarea name="comment" rows="2" class="w-full border p-2 rounded text-sm focus:outline-none focus:border-yellow-500" placeholder="Cuéntale a otros pacientes tu experiencia..." aria-label="Cuéntale a otros pacientes tu experiencia..."></textarea>
-                        <button type="submit" class="w-full bg-yellow-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-yellow-600 transition">
+                        <textarea name="comment" rows="2" class="w-full border p-2 rounded text-sm focus:outline-none focus:border-caution" placeholder="Cuéntale a otros pacientes tu experiencia..." aria-label="Cuéntale a otros pacientes tu experiencia..."></textarea>
+                        <button type="submit" class="w-full bg-caution text-white px-4 py-2 rounded-lg font-bold hover:bg-caution transition">
                             Publicar Reseña
                         </button>
                     </form>
@@ -215,7 +215,7 @@
             </div>
 
         {% elif is_doctor_busy_elsewhere %}
-            <div class="p-4 bg-yellow-50 text-center text-yellow-800 border-t-2 border-yellow-200">
+            <div class="p-4 bg-caution-subtle text-center text-yellow-800 border-t-2 border-caution-border">
                 <p class="font-bold flex items-center gap-2">
                     <i data-lucide="user-check" class="w-5 h-5"></i> Doctor en consulta
                 </p>
@@ -238,7 +238,7 @@
                     <input type="file" name="file" accept="image/*,.pdf" hidden aria-label="Archivo">
                 </label>
                 <input type="text" name="content" placeholder="Escribe tu mensaje aquí..." class="flex-1 bg-slate-50 border-2 border-slate-100 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Escribe tu mensaje aquí...">
-                <button type="submit" class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-lg shadow-primary/30 shrink-0 transform hover:-translate-y-0.5 active:scale-95">
+                <button type="submit" class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shadow-primary/30 shrink-0">
                     <i data-lucide="send" class="w-5 h-5 ml-1"></i>
                 </button>
             </form>
@@ -255,9 +255,9 @@
 </form>
 {% endif %}
 
-<div id="video-call-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 ">
-    <div class="bg-white rounded-2xl overflow-hidden w-full max-w-2xl h-[500px] relative shadow-2xl">
-        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full z-10 hover:bg-red-600 transition">
+<div id="video-call-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl overflow-hidden w-full max-w-2xl h-[500px] relative shadow-md">
+        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-2 right-2 bg-critical text-white p-2 rounded-full z-10 hover:bg-critical transition">
             <i data-lucide="x" class="w-5 h-5"></i>
         </button>
         <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone" width="100%" height="100%"></iframe>

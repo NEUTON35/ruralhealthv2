@@ -1,5 +1,7 @@
 import math
 
+from flask import current_app
+
 from sqlalchemy import func
 
 from models import Pharmacy, ReplenishmentAlert, Stock, db
@@ -43,8 +45,22 @@ def pharmacies_for_clinic(clinic_id, active_only=True, patient=None):
     if active_only:
         query = query.filter_by(is_active=True)
     pharmacies = query.order_by(Pharmacy.name.asc()).all()
+
     if patient:
-        pharmacies.sort(key=lambda pharmacy: pharmacy_distance(patient, pharmacy) if pharmacy_distance(patient, pharmacy) is not None else 999999)
+        # La distancia se calcula una vez por farmacia, no dos.
+        #
+        # La version anterior llamaba `pharmacy_distance` dos veces dentro de la
+        # misma clave de ordenacion —una para comparar y otra para el valor por
+        # defecto— y `sort` evalua la clave por elemento, asi que cada farmacia
+        # pagaba dos veces la trigonometria. Con pocas farmacias no se nota;
+        # con la red completa de un municipio, si.
+        def orden(pharmacy):
+            distancia = pharmacy_distance(patient, pharmacy)
+            # Las farmacias sin coordenadas van al final, no al principio.
+            return (distancia is None, distancia if distancia is not None else 0.0)
+
+        pharmacies.sort(key=orden)
+
     return pharmacies
 
 
@@ -75,10 +91,20 @@ def doctor_visible_on_map(doctor):
 
 
 def nearest_pharmacy(pharmacies, patient):
+    """Farmacia mas cercana al paciente.
+
+    Devuelve la primera de la lista si no hay coordenadas con las que comparar:
+    sin ubicacion no hay "mas cercana", y elegir una al azar seria peor que
+    elegir la primera de forma predecible.
+    """
     if not pharmacies:
         return None
-    ordered = sorted(pharmacies, key=lambda pharmacy: pharmacy_distance(patient, pharmacy) if pharmacy_distance(patient, pharmacy) is not None else 999999)
-    return ordered[0]
+
+    def orden(pharmacy):
+        distancia = pharmacy_distance(patient, pharmacy)
+        return (distancia is None, distancia if distancia is not None else 0.0)
+
+    return min(pharmacies, key=orden)
 
 
 def stock_for_med(clinic_id, med_name, pharmacy_id=None):
@@ -165,24 +191,34 @@ def create_replenishment_alert(clinic_id, pharmacy_id, med, available, order_id=
     )
     db.session.add(alert)
     
-    # Notificar a los administradores
+    # Notificar a los administradores.
+    #
+    # El fallo al notificar no debe impedir que la alerta de reposicion se cree:
+    # lo importante es que quede registrado el faltante. Pero tampoco debe
+    # desaparecer sin rastro, que es lo que hacia el `print` anterior — en
+    # produccion la salida estandar de un worker de Gunicorn no la lee nadie.
     try:
         from models import Notification
         admins = User.query.filter_by(clinic_id=clinic_id, role='admin').all()
-        pharmacy = Pharmacy.query.get(pharmacy_id)
-        pharmacy_name = pharmacy.name if pharmacy else "Farmacia"
-        
+        pharmacy = db.session.get(Pharmacy, pharmacy_id)
+        pharmacy_name = pharmacy.name if pharmacy else 'la farmacia'
+
         for admin in admins:
-            notif = Notification(
+            db.session.add(Notification(
                 user_id=admin.id,
                 clinic_id=clinic_id,
-                title="Alerta de Stock (Reposición)",
-                message=f"Se requiere reponer {med['nombre_med']} en {pharmacy_name}. Solicitado: {med['cantidad']}, Disponible: {max(0, available)}.",
-                type="stock_alert",
-                timestamp=colombia_now()
-            )
-            db.session.add(notif)
-    except Exception as e:
-        print(f"Error creating notification: {e}")
-        
+                title='Alerta de reposicion de inventario',
+                message=(
+                    f"Se requiere reponer {med['nombre_med']} en {pharmacy_name}. "
+                    f"Solicitado: {med['cantidad']}, disponible: {max(0, available)}."
+                ),
+                type='stock_alert',
+                timestamp=colombia_now(),
+            ))
+    except Exception:
+        current_app.logger.exception(
+            'No se pudo notificar la alerta de reposicion de %s en la farmacia %s',
+            med.get('nombre_med'), pharmacy_id,
+        )
+
     return alert

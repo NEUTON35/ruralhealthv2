@@ -12,7 +12,7 @@
 </div>
 
 <section class="bg-white border border-slate-100 shadow-sm rounded-lg p-4 mb-5">
-    <h2 class="text-lg font-black mb-3">Agregar medicamento</h2>
+    <h2 class="text-lg font-semibold mb-3">Agregar medicamento</h2>
     <form method="POST" class="grid md:grid-cols-6 gap-2">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <select name="pharmacy_id" class="border p-3 rounded-lg bg-white" aria-label="Farmacia">
@@ -23,7 +23,7 @@
         <input name="nombre_med" required placeholder="Medicamento" class="border p-3 rounded-lg md:col-span-2" aria-label="Medicamento">
         <input type="number" name="cantidad" min="0" value="0" class="border p-3 rounded-lg" aria-label="Cantidad">
         <input name="unidad" value="unidad" class="border p-3 rounded-lg" aria-label="Unidad">
-        <button class="bg-emerald-600 text-white rounded-lg font-bold inline-flex items-center justify-center gap-2 px-4 py-3">
+        <button class="bg-positive text-white rounded-lg font-bold inline-flex items-center justify-center gap-2 px-4 py-3">
             <i data-lucide="plus" class="w-5 h-5"></i>
             Guardar
         </button>

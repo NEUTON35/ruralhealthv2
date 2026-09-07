@@ -3,12 +3,12 @@
 <div class="max-w-6xl mx-auto space-y-6">
 
   <!-- Header -->
-  <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2rem] p-6 text-white shadow-2xl relative overflow-hidden">
-    <div class="absolute inset-0 bg-red-500/5"></div>
+  <div class="bg-slate-900 rounded-[2rem] p-6 text-white shadow-md relative overflow-hidden">
+    <div class="absolute inset-0 bg-critical/5"></div>
     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <p class="text-slate-600 text-xs font-black uppercase tracking-widest mb-1">Control de Faltantes</p>
-        <h1 class="text-3xl font-black tracking-tight">Panel de Pendientes</h1>
+        <p class="text-slate-600 text-xs font-semibold uppercase tracking-widest mb-1">Control de Faltantes</p>
+        <h1 class="text-2xl font-semibold tracking-tight">Panel de Pendientes</h1>
         <p class="text-slate-600 text-sm mt-1">{{ rows|length }} ticket(s) con entregas incompletas</p>
       </div>
       <div class="flex gap-2 flex-wrap">
@@ -25,7 +25,7 @@
   <!-- Upcoming Shipments Banner -->
   {% if incoming %}
   <div class="bg-blue-50 border border-blue-200 rounded-[1.5rem] p-4">
-    <p class="text-blue-800 font-black text-sm flex items-center gap-2 mb-2">
+    <p class="text-blue-800 font-semibold text-sm flex items-center gap-2 mb-2">
       <i data-lucide="truck" class="w-4 h-4"></i> Cargamentos en camino
     </p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -33,7 +33,7 @@
       <div class="bg-white border border-blue-100 rounded-xl p-3">
         <p class="font-bold text-blue-900 text-sm">{{ shipment.pharmacy.name }}</p>
         <p class="text-xs text-blue-600">
-          Llegada estimada: <span class="font-black">{{ shipment.expected_date }}</span>
+          Llegada estimada: <span class="font-semibold">{{ shipment.expected_date }}</span>
           {% if shipment.supplier_name %} · {{ shipment.supplier_name }}{% endif %}
         </p>
         <div class="flex flex-wrap gap-1 mt-1">
@@ -52,17 +52,17 @@
     {% set criticos = rows | selectattr('urgency', 'equalto', 'critico') | list %}
     {% set altos = rows | selectattr('urgency', 'equalto', 'alto') | list %}
     {% set normales = rows | selectattr('urgency', 'equalto', 'normal') | list %}
-    <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
-      <p class="text-4xl font-black text-red-600">{{ criticos|length }}</p>
-      <p class="text-xs font-black uppercase tracking-widest text-red-400 mt-1">Críticos ≥7d</p>
+    <div class="bg-critical-subtle border border-critical-subtle rounded-2xl p-4 text-center">
+      <p class="text-3xl font-semibold text-red-600">{{ criticos|length }}</p>
+      <p class="text-xs font-semibold uppercase tracking-widest text-red-400 mt-1">Críticos ≥7d</p>
     </div>
-    <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-center">
-      <p class="text-4xl font-black text-amber-600">{{ altos|length }}</p>
-      <p class="text-xs font-black uppercase tracking-widest text-amber-400 mt-1">Altos 3-6d</p>
+    <div class="bg-caution-subtle border border-caution-subtle rounded-2xl p-4 text-center">
+      <p class="text-3xl font-semibold text-amber-600">{{ altos|length }}</p>
+      <p class="text-xs font-semibold uppercase tracking-widest text-amber-400 mt-1">Altos 3-6d</p>
     </div>
     <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-center">
-      <p class="text-4xl font-black text-slate-600">{{ normales|length }}</p>
-      <p class="text-xs font-black uppercase tracking-widest text-slate-600 mt-1">Normales <3d</p>
+      <p class="text-3xl font-semibold text-slate-600">{{ normales|length }}</p>
+      <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mt-1">Normales <3d</p>
     </div>
   </div>
 
@@ -70,8 +70,8 @@
   {% if rows %}
   <section class="bg-white border border-slate-100 rounded-[1.5rem] shadow-sm overflow-hidden">
     <div class="p-5 border-b border-slate-50 flex items-center justify-between">
-      <h2 class="font-black text-slate-900 flex items-center gap-2">
-        <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
+      <h2 class="font-semibold text-slate-900 flex items-center gap-2">
+        <i data-lucide="clock" class="w-5 h-5 text-caution"></i>
         Tickets Pendientes de Entrega
       </h2>
       <span class="text-xs text-slate-600 font-bold">Ordenados por prioridad + antigüedad</span>
@@ -92,35 +92,35 @@
           {% for row in rows %}
           {% set ticket = row.ticket %}
           {% set urgency_classes = {
-            'critico': 'bg-red-50',
-            'alto': 'bg-amber-50/50',
+            'critico': 'bg-critical-subtle',
+            'alto': 'bg-caution-subtle/50',
             'normal': '',
           } %}
           <tr class="{{ urgency_classes.get(row.urgency, '') }}">
             <td class="px-4 py-3">
-              <p class="font-black text-slate-900">{{ ticket.patient.name }}</p>
+              <p class="font-semibold text-slate-900">{{ ticket.patient.name }}</p>
               <p class="font-mono text-xs text-slate-600">{{ ticket.pickup_code }}</p>
               {% if ticket.is_partial %}
-              <span class="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Sub-ticket</span>
+              <span class="text-xs bg-slate-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Sub-ticket</span>
               {% endif %}
             </td>
             <td class="px-4 py-3">
               {% if ticket.status == 'sin_stock' %}
-              <span class="inline-flex items-center gap-1 bg-red-100 text-red-800 border border-red-200 px-2 py-1 rounded-full text-xs font-bold">
+              <span class="inline-flex items-center gap-1 bg-critical-subtle text-red-800 border border-critical-border px-2 py-1 rounded-full text-xs font-bold">
                 <i data-lucide="alert-triangle" class="w-3 h-3"></i> Sin stock
               </span>
               {% elif ticket.status == 'parcial' %}
-              <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-xs font-bold">
+              <span class="inline-flex items-center gap-1 bg-caution-subtle text-amber-800 border border-caution-border px-2 py-1 rounded-full text-xs font-bold">
                 <i data-lucide="split" class="w-3 h-3"></i> Parcial
               </span>
               {% else %}
-              <span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-200 px-2 py-1 rounded-full text-xs font-bold">
+              <span class="inline-flex items-center gap-1 bg-positive-subtle text-emerald-800 border border-positive-border px-2 py-1 rounded-full text-xs font-bold">
                 <i data-lucide="check-circle" class="w-3 h-3"></i> Autorizado
               </span>
               {% endif %}
             </td>
             <td class="px-4 py-3">
-              <span class="font-black text-lg {% if row.urgency == 'critico' %}text-red-600{% elif row.urgency == 'alto' %}text-amber-600{% else %}text-slate-500{% endif %}">
+              <span class="font-semibold text-lg {% if row.urgency == 'critico' %}text-red-600{% elif row.urgency == 'alto' %}text-amber-600{% else %}text-slate-500{% endif %}">
                 {{ row.days_pending }}d
               </span>
             </td>
@@ -144,7 +144,7 @@
             </td>
             <td class="px-4 py-3">
               {% if ticket.priority == 'alta' %}
-              <span class="inline-flex items-center gap-1 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-black">
+              <span class="inline-flex items-center gap-1 bg-critical text-white px-2 py-1 rounded-full text-xs font-semibold">
                 <i data-lucide="zap" class="w-3 h-3"></i> ALTA
               </span>
               {% else %}
@@ -158,7 +158,7 @@
                   <input type="hidden" name="action" value="set_priority">
                   <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
                   <input type="hidden" name="priority" value="{{ 'normal' if ticket.priority == 'alta' else 'alta' }}">
-                  <button type="submit" class="text-xs border border-slate-200 px-2.5 py-1.5 rounded-lg font-bold text-slate-600 hover:border-red-300 hover:text-red-700 hover:bg-red-50 transition whitespace-nowrap">
+                  <button type="submit" class="text-xs border border-slate-200 px-2.5 py-1.5 rounded-lg font-bold text-slate-600 hover:border-critical-border hover:text-red-700 hover:bg-critical-subtle transition whitespace-nowrap">
                     {% if ticket.priority == 'alta' %}
                     ↓ Normal
                     {% else %}
@@ -171,7 +171,7 @@
                   <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                   <input type="hidden" name="action" value="reactivate">
                   <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
-                  <button type="submit" class="text-xs border border-emerald-200 px-2.5 py-1.5 rounded-lg font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white transition whitespace-nowrap" title="Notificar paciente si hay stock físico">
+                  <button type="submit" class="text-xs border border-positive-border px-2.5 py-1.5 rounded-lg font-bold text-emerald-700 bg-positive-subtle hover:bg-positive hover:text-white transition whitespace-nowrap" title="Notificar paciente si hay stock físico">
                     <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i> Reactivar
                   </button>
                 </form>
@@ -186,22 +186,22 @@
   </section>
   {% else %}
   <div class="bg-white border border-slate-100 rounded-2xl p-12 text-center">
-    <i data-lucide="check-circle-2" class="w-12 h-12 text-emerald-400 mx-auto mb-3"></i>
-    <p class="font-black text-slate-900 text-lg">¡Sin pendientes!</p>
+    <i data-lucide="check-circle-2" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
+    <p class="font-semibold text-slate-900 text-lg">¡Sin pendientes!</p>
     <p class="text-slate-600 text-sm">Todos los tickets han sido entregados.</p>
   </div>
   {% endif %}
 
   <!-- Replenishment Alerts -->
   {% if alerts %}
-  <section class="bg-white border border-amber-100 rounded-[1.5rem] shadow-sm p-5">
-    <h2 class="font-black text-amber-800 flex items-center gap-2 mb-4">
+  <section class="bg-white border border-caution-subtle rounded-[1.5rem] shadow-sm p-5">
+    <h2 class="font-semibold text-amber-800 flex items-center gap-2 mb-4">
       <i data-lucide="bell" class="w-5 h-5"></i> Alertas de Reposición Activas
     </h2>
     <div class="grid sm:grid-cols-2 gap-3">
       {% for alert in alerts %}
-      <div class="border border-amber-100 bg-amber-50 rounded-xl p-3">
-        <p class="font-black text-amber-900 text-sm">{{ alert.med_name }}</p>
+      <div class="border border-caution-subtle bg-caution-subtle rounded-xl p-3">
+        <p class="font-semibold text-amber-900 text-sm">{{ alert.med_name }}</p>
         <p class="text-xs text-amber-700">{{ alert.pharmacy.name }} · Disponible: {{ alert.available_quantity }} / Requerido: {{ alert.required_quantity }}</p>
         {% if alert.note %}<p class="text-xs text-amber-600 mt-0.5">{{ alert.note }}</p>{% endif %}
       </div>

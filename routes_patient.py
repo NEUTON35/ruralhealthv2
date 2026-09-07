@@ -684,9 +684,16 @@ def doctor_payment(doctor_id):
                 timestamp=colombia_now()
             )
             db.session.add(notif)
-        except Exception as e:
-            print(f"Error creating notification: {e}")
-            
+        except Exception:
+            # El comprobante ya quedo registrado; que falle la notificacion no
+            # debe deshacerlo. Pero el fallo no puede desaparecer: `print` en un
+            # worker de Gunicorn no lo lee nadie.
+            current_app.logger.exception(
+                'No se pudo notificar el comprobante de pago del paciente %s al medico %s',
+                current_user.id, doctor.id,
+            )
+
+
         audit('manual_payment_ticket_created', details=f'doctor_id={doctor.id}; plan={plan_type}')
         db.session.commit()
         flash('Comprobante enviado. El medico revisara y aprobara o rechazara el acceso.')

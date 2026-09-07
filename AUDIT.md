@@ -244,20 +244,92 @@ a esos pacientes.
 
 ---
 
+---
+
+# Tercera pasada — 2026-09-06
+
+Revisión de conformidad normativa: recetas, documentos legales, facturación e
+interfaz.
+
+## P0 — Bloqueantes
+
+### P0-12 · La prescripción no cumplía la Resolución 1403 de 2007
+
+La norma enumera catorce elementos que debe contener una prescripción. Faltaban
+seis, y su ausencia hace el documento **no dispensable**:
+
+| Faltaba | Por qué importa |
+| :--- | :--- |
+| Denominación Común Internacional | El campo era texto libre: «Dolex» y «paracetamol» entraban igual y la farmacia no podía saber si era una marca. La norma exige prescribir por genérico. |
+| Concentración y forma farmacéutica separadas | «Amoxicilina 500 mg» no dice si es cápsula o suspensión. En pediatría esa diferencia cambia cómo se administra. |
+| Duración del tratamiento | Sin ella no se puede verificar que la cantidad corresponda a la pauta. |
+| Número de historia clínica | Exigido expresamente; no existía en el modelo. |
+| Dirección y teléfono del paciente | Existían en el perfil pero no se copiaban a la orden. |
+| Cantidad en letras | Una cifra en números se altera con un trazo: «10» se convierte en «100». |
+
+**Acción:** cada renglón valida los nueve campos; sin ellos la orden no se emite.
+Los datos del paciente se congelan en la orden en lugar de leerse del perfil: una
+orden es un documento con fecha y no puede cambiar porque el perfil cambie
+después.
+
+### P0-13 · Telemedicina sin el consentimiento que exige la norma
+
+La Resolución 2654 de 2019 obliga a registrar la modalidad de atención y, en
+telemedicina, a obtener un consentimiento informado **específico**, distinto del
+consentimiento general de datos. Lo que el paciente debe entender ahí no es cómo
+se tratan sus datos, sino que **no habrá examen físico**.
+
+No existía. Se emitían órdenes por telemedicina sin constancia de que el paciente
+conociera los límites de esa modalidad.
+
+**Acción:** documento de consentimiento versionado, con aceptación registrada
+(versión, hash del texto, dispositivo y momento). Sin él no se emite una orden
+nacida de una consulta a distancia.
+
+### P0-14 · Una orden mal emitida no podía retirarse
+
+No había forma de anular una orden. Una receta con la dosis equivocada, el
+medicamento cambiado o el paciente confundido **seguía siendo dispensable hasta
+su fecha de vencimiento**, que puede ser meses después.
+
+**Acción:** anulación con motivo escrito, solo por quien firmó. La orden no se
+borra ni se edita —es historia clínica— pero deja de poder dispensarse, tanto en
+la autorización como en la verificación por hash del mostrador.
+
+## P1 — Documentos legales y facturación
+
+| # | Hallazgo | Acción |
+| :--- | :--- | :--- |
+| P1-20 | **Documentos legales de 931 palabras, escritos como folleto.** Faltaba prácticamente todo lo que exige el artículo 13 del Decreto 1377: identificación del responsable, finalidades, derechos, canal de atención, plazos, vigencia. | Cuatro documentos versionados, 3.356 palabras, con base normativa citada. |
+| P1-21 | **El consentimiento no registraba qué texto se aceptó.** Sin la versión y el hash del documento, una constancia pierde valor probatorio en cuanto el texto cambia. | Versión y huella guardadas en cada aceptación. |
+| P1-22 | **Transferencia internacional de datos no declarada.** La base está alojada fuera de Colombia. El artículo 26 de la Ley 1581 la restringe y exige un fundamento legal: autorización expresa, cláusulas contractuales o declaración de conformidad de la SIC. | Sección específica en la política, con el fundamento como dato que el prestador debe declarar. |
+| P1-23 | **Sin facturación.** El cobro era una foto de transferencia aprobada a mano: sin numeración autorizada, sin identificación fiscal del emisor, sin constancia de por qué no se cobra IVA y sin forma de anularse. | Estructura completa, con numeración atómica e interfaz para el proveedor DIAN. |
+| P1-24 | **El médico independiente no tenía dónde facturar.** Factura a su propio nombre, con su cédula y su propia resolución de numeración. Mezclar su consecutivo con el de la clínica invalidaría ambos: cada resolución autoriza un rango a un emisor concreto. | Perfil de facturación propio, con su identificación y su rango. |
+
+## P2 — Interfaz
+
+| # | Hallazgo | Acción |
+| :--- | :--- | :--- |
+| P2-18 | **El color no significaba nada.** 66 iconos con color propio repartidos en 14 familias, 458 usos del peso de fuente más grueso, 32 gradientes. Cuando todo tiene color, la alerta roja de alergia deja de destacar: compite con la decoración. | Sistema de tres colores semánticos —crítico, advertencia, confirmación— más neutro. Quedan 20 iconos con color, todos de estado clínico. |
+| P2-19 | **`pharmacy_utils` calculaba la distancia dos veces por farmacia** al ordenar, y las farmacias sin coordenadas quedaban primero en la lista de «más cercanas». | Una evaluación por elemento; las que no tienen coordenadas van al final. |
+| P2-20 | **`print()` para errores** en dos rutas. En un worker de Gunicorn esa salida no la lee nadie. | Registro estructurado. |
+
+---
+
 ## Resumen
 
-| Prioridad | Primera pasada | Segunda pasada | Total |
-| :--- | ---: | ---: | ---: |
-| P0 | 9 | 2 | **11** |
-| P1 | 14 | 5 | **19** |
-| P2 | 11 | 6 | **17** |
-| **Total** | **34** | **13** | **47** |
+| Prioridad | 1.ª pasada | 2.ª | 3.ª | Total |
+| :--- | ---: | ---: | ---: | ---: |
+| P0 | 9 | 2 | 3 | **14** |
+| P1 | 14 | 5 | 5 | **24** |
+| P2 | 11 | 6 | 3 | **20** |
+| **Total** | **34** | **13** | **11** | **58** |
 
-**Pruebas automatizadas:** 232 (0 antes de la auditoría).
+**Pruebas automatizadas:** 274 (0 antes de la auditoría).
 
 ## Trabajo pendiente, con su motivo
 
-Tres puntos que no dependen del código y que ningún cambio mío puede sustituir:
+Puntos que no dependen del código y que ningún cambio mío puede sustituir:
 
 1. **Rotar las credenciales** expuestas en el `.env` versionado (`SECURITY.md`).
    Hasta entonces, la historia clínica cifrada es descifrable por cualquiera que
@@ -268,6 +340,23 @@ Tres puntos que no dependen del código y que ningún cambio mío puede sustitui
    clínico es verificable, pero es una revisión inicial de atención primaria, no un
    catálogo exhaustivo. El módulo lo declara y `manage.py check-knowledge-base`
    informa de su antigüedad.
+
+4. **Completar los datos del prestador en los documentos legales.** Razón social,
+   NIT, domicilio, canal de PQRS, área responsable y el fundamento de la
+   transferencia internacional de datos. Se configuran en Ajustes; mientras
+   falten, los documentos muestran marcadores y no son publicables.
+5. **Registrar las bases de datos ante el RNBD** de la Superintendencia de
+   Industria y Comercio.
+6. **Revisión de los textos legales por un abogado.** Tienen la estructura que
+   exige la norma y citan su fundamento, pero son la base sobre la que esa
+   revisión trabaja, no su sustituto.
+7. **Contratar un proveedor tecnológico de facturación electrónica** y su
+   resolución de numeración ante la DIAN. La estructura está lista
+   (`billing.py`); por defecto los documentos se generan y numeran pero quedan
+   marcados como pendientes de radicar, sin fingir un envío que no ocurrió.
+8. **MIPRES** para medicamentos no financiados con UPC. La orden guarda el número
+   para vincularse con el reporte oficial, pero la integración exige credenciales
+   del prestador.
 
 Y uno técnico: **servir Tailwind desde un CSS generado en el build** en lugar del
 script Play, que no admite verificación de integridad y que la propia

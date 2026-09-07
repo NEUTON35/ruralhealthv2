@@ -3,7 +3,7 @@
 <div class="max-w-4xl mx-auto space-y-6">
 
     <header>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-3">
             <i data-lucide="shield" class="w-8 h-8 text-primary"></i>
             Mis datos personales
         </h1>
@@ -15,8 +15,8 @@
 
     <!-- Inventario de datos -->
     <section class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="font-black text-lg text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="database" class="w-5 h-5 text-slate-400"></i>
+        <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
+            <i data-lucide="database" class="w-5 h-5 text-slate-500"></i>
             Qué información tenemos sobre ti
         </h2>
         <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -29,7 +29,7 @@
                 ('Alergias registradas', inventory.alergias)
             ] %}
             <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                <dd class="text-2xl font-black text-slate-900">{{ count }}</dd>
+                <dd class="text-xl font-semibold text-slate-900">{{ count }}</dd>
                 <dt class="text-xs text-slate-500 font-semibold mt-1">{{ label }}</dt>
             </div>
             {% endfor %}
@@ -38,8 +38,8 @@
 
     <!-- Descarga -->
     <section class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="font-black text-lg text-slate-800 mb-2 flex items-center gap-2">
-            <i data-lucide="download" class="w-5 h-5 text-emerald-500"></i>
+        <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
+            <i data-lucide="download" class="w-5 h-5 text-slate-500"></i>
             Descargar una copia
         </h2>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
@@ -47,14 +47,14 @@
             de cálculo: tu perfil, citas, consultas, historia clínica, órdenes,
             alergias, entregas de medicamentos y los consentimientos que otorgaste.
         </p>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-sm text-amber-900">
+        <div class="bg-caution-subtle border border-caution-border rounded-xl p-3 mb-4 text-sm text-amber-900">
             <b>Contiene información de salud.</b> Guárdalo en un lugar seguro y ten
             cuidado con quién lo compartes.
         </div>
         <form method="POST" action="{{ url_for('privacy.export_my_data') }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
-                class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
+                class="bg-positive text-white px-6 py-3 rounded-xl font-bold hover:bg-positive transition-colors inline-flex items-center gap-2">
                 <i data-lucide="file-down" class="w-5 h-5"></i>
                 Descargar mis datos
             </button>
@@ -63,8 +63,8 @@
 
     <!-- Consentimientos -->
     <section class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="font-black text-lg text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="file-signature" class="w-5 h-5 text-violet-500"></i>
+        <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
+            <i data-lucide="file-signature" class="w-5 h-5 text-slate-500"></i>
             Autorizaciones que has dado
         </h2>
 
@@ -87,7 +87,7 @@
                         <td class="py-2 text-slate-500 font-mono text-xs">{{ consent.document_version or '—' }}</td>
                         <td class="py-2">
                             {% if consent.granted and not consent.revoked_at %}
-                            <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-xs font-bold">Vigente</span>
+                            <span class="text-emerald-700 bg-positive-subtle px-2 py-0.5 rounded-full text-xs font-bold">Vigente</span>
                             {% else %}
                             <span class="text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full text-xs font-bold">Revocada</span>
                             {% endif %}
@@ -109,7 +109,7 @@
                 a guardarlos.
             </p>
             <button type="submit"
-                class="text-rose-600 border-2 border-rose-200 px-5 py-2.5 rounded-xl font-bold hover:bg-rose-50 transition-colors inline-flex items-center gap-2">
+                class="text-rose-600 border-2 border-critical-border px-5 py-2.5 rounded-xl font-bold hover:bg-critical-subtle transition-colors inline-flex items-center gap-2">
                 <i data-lucide="x-circle" class="w-4 h-4"></i>
                 Revocar autorización de datos de salud
             </button>
@@ -121,8 +121,8 @@
 
     <!-- Solicitudes -->
     <section class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="font-black text-lg text-slate-800 mb-2 flex items-center gap-2">
-            <i data-lucide="message-square-warning" class="w-5 h-5 text-amber-500"></i>
+        <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
+            <i data-lucide="message-square-warning" class="w-5 h-5 text-caution"></i>
             Hacer una solicitud
         </h2>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
@@ -171,8 +171,8 @@
     <!-- Historial de solicitudes -->
     {% if requests_made %}
     <section class="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 class="font-black text-lg text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="history" class="w-5 h-5 text-slate-400"></i>
+        <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
+            <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
             Mis solicitudes anteriores
         </h2>
         <ul class="space-y-3">
@@ -188,15 +188,15 @@
                         </p>
                     </div>
                     {% if item.resolved_at %}
-                    <span class="text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full text-xs font-bold shrink-0">
+                    <span class="text-emerald-700 bg-positive-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
                         {{ item.status }}
                     </span>
                     {% elif item.is_overdue %}
-                    <span class="text-rose-700 bg-rose-100 px-3 py-1 rounded-full text-xs font-bold shrink-0">
+                    <span class="text-rose-700 bg-critical-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
                         Fuera de plazo
                     </span>
                     {% else %}
-                    <span class="text-amber-700 bg-amber-100 px-3 py-1 rounded-full text-xs font-bold shrink-0">
+                    <span class="text-amber-700 bg-caution-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
                         En trámite
                     </span>
                     {% endif %}

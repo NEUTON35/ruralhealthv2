@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="min-h-[80vh] flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 transform transition-colors hover:scale-[1.01]">
+    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-md border border-slate-100 transition-colors">
         <div class="text-center mb-10">
             <div class="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <i data-lucide="activity" class="w-10 h-10 text-primary"></i>
             </div>
-            <h1 class="text-4xl font-black text-slate-900 tracking-tight">Bienvenido</h1>
+            <h1 class="text-3xl font-semibold text-slate-900 tracking-tight">Bienvenido</h1>
             <p class="text-slate-500 mt-2 font-medium">Ingresa a tu cuenta de RuralHealth</p>
         </div>
 
@@ -16,7 +16,7 @@
             <div class="space-y-1">
                 <label class="text-sm font-bold text-slate-700 ml-1">Usuario</label>
                 <div class="relative">
-                    <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
                     <input type="text" name="username" placeholder="Tu nombre de usuario" required 
                         class="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-lg focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-colors placeholder:text-slate-400" aria-label="Tu nombre de usuario">
                 </div>
@@ -25,14 +25,14 @@
             <div class="space-y-1">
                 <label class="text-sm font-bold text-slate-700 ml-1">Contraseña</label>
                 <div class="relative">
-                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
                     <input type="password" name="password" placeholder="••••••••" required 
                         class="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-lg focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-colors placeholder:text-slate-400" aria-label="Contrasena">
                 </div>
             </div>
 
             <button type="submit" 
-                class="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-4 rounded-2xl font-black text-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-colors flex items-center justify-center gap-3">
+                class="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-4 rounded-2xl font-semibold text-xl shadow-sm shadow-primary/30 hover:shadow-primary/40 transition-colors flex items-center justify-center gap-3">
                 <span>Iniciar Sesión</span>
                 <i data-lucide="arrow-right" class="w-6 h-6"></i>
             </button>
@@ -47,7 +47,7 @@
             </p>
             <p class="text-center text-slate-600 font-medium">
                 ¿No tienes cuenta?
-                <a href="/register" class="text-primary font-black hover:underline underline-offset-4">Regístrate ahora</a>
+                <a href="/register" class="text-primary font-semibold hover:underline underline-offset-4">Regístrate ahora</a>
             </p>
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <p class="text-center text-sm text-slate-500 font-medium">

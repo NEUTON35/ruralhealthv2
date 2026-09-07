@@ -205,10 +205,20 @@ def _next_consecutive(profile):
 # --- Encadenamiento ----------------------------------------------------------
 
 def _chain(invoice):
-    """Encadena la factura por hash a la anterior del mismo emisor."""
+    """Encadena la factura por hash a la anterior del mismo emisor.
+
+    Se excluye la propia factura y las que aún no tienen hash: el borrador ya
+    tiene identificador cuando llega aquí, así que una consulta por id
+    descendente sin filtrar se devolvería a sí misma y toda la cadena quedaría
+    con eslabón previo nulo.
+    """
     anterior = (
         db.session.query(Invoice.entry_hash)
-        .filter(Invoice.billing_profile_id == invoice.billing_profile_id)
+        .filter(
+            Invoice.billing_profile_id == invoice.billing_profile_id,
+            Invoice.id != invoice.id,
+            Invoice.entry_hash.isnot(None),
+        )
         .order_by(Invoice.id.desc())
         .limit(1)
         .first()

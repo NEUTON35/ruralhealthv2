@@ -18,7 +18,7 @@
                 <span id="doctor-live-clock" class="font-bold text-slate-700 text-sm tracking-tighter">--:--:--</span>
             </div>
         </div>
-        <a href="/doctor/export_rips" class="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 hover:bg-emerald-700 transition shadow-sm hover:shadow">
+        <a href="/doctor/export_rips" class="bg-positive text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 hover:bg-positive transition shadow-sm hover:shadow">
             <i data-lucide="file-json" class="w-4 h-4"></i> Generar RIPS
         </a>
     </div>
@@ -35,39 +35,39 @@
             <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_appts }}</span>
         </div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Citas Hoy</p>
-        <p class="text-2xl font-black text-slate-800">{{ appointments|length }}</p>
+        <p class="text-xl font-semibold text-slate-800">{{ appointments|length }}</p>
     </div>
     
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-purple-500/50 transition-colors group">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-slate-700/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-purple-50 p-2 rounded-lg text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+            <div class="bg-slate-50 p-2 rounded-lg text-purple-600 group-hover:bg-slate-700 group-hover:text-white transition-colors">
                 <i data-lucide="receipt" class="w-5 h-5"></i>
             </div>
             {% set pending_payments = payment_tickets|selectattr('status', 'equalto', 'pending')|list|length %}
-            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_payments }}</span>
+            <span class="bg-slate-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_payments }}</span>
         </div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Pagos por Aprobar</p>
-        <p class="text-2xl font-black text-slate-800">{{ pending_payments }}</p>
+        <p class="text-xl font-semibold text-slate-800">{{ pending_payments }}</p>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-500/50 transition-colors group">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-positive/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <div class="bg-positive-subtle p-2 rounded-lg text-emerald-600 group-hover:bg-positive group-hover:text-white transition-colors">
                 <i data-lucide="message-square-more" class="w-5 h-5"></i>
             </div>
         </div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Chats Activos</p>
-        <p class="text-2xl font-black text-slate-800">{{ open_chats|length }}</p>
+        <p class="text-xl font-semibold text-slate-800">{{ open_chats|length }}</p>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-orange-500/50 transition-colors group">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 hover:border-caution/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-orange-50 p-2 rounded-lg text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+            <div class="bg-caution-subtle p-2 rounded-lg text-orange-600 group-hover:bg-caution group-hover:text-white transition-colors">
                 <i data-lucide="users" class="w-5 h-5"></i>
             </div>
         </div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Pacientes en Base</p>
-        <p class="text-2xl font-black text-slate-800">{{ patients|length }}</p>
+        <p class="text-xl font-semibold text-slate-800">{{ patients|length }}</p>
     </div>
 </div>
 
@@ -80,7 +80,7 @@
             <h3 class="font-bold text-lg text-slate-700">Estado de Atención</h3>
             <p class="text-xs text-slate-500">Define si los pacientes pueden verte disponible.</p>
         </div>
-        <button type="submit" class="{% if current_user.is_available %}bg-emerald-500 shadow-emerald-100{% else %}bg-rose-500 shadow-rose-100{% endif %} text-white px-6 py-3 rounded-xl font-black transition-colors shadow-lg hover:scale-105 active:scale-95">
+        <button type="submit" class="{% if current_user.is_available %}bg-positive{% else %}bg-critical{% endif %} text-white px-6 py-3 rounded-xl font-semibold transition-colors shadow-sm">
             {% if current_user.is_available %}
                 DISPONIBLE
             {% else %}
@@ -114,13 +114,13 @@
     </form>
 </div>
 
-<section class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-cyan-500 mb-8">
+<section class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-slate-700 mb-8">
     <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div>
             <h2 class="text-xl font-bold text-cyan-700 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5"></i> Consultorio presencial</h2>
             <p class="text-xs text-slate-500">Puedes publicar u ocultar tu ubicacion en el mapa de pacientes.</p>
         </div>
-        <span class="text-xs font-black px-3 py-1 rounded-full {% if current_user.show_office_on_map %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
+        <span class="text-xs font-semibold px-3 py-1 rounded-full {% if current_user.show_office_on_map %}bg-positive-subtle text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
             {% if current_user.show_office_on_map %}Visible en mapa{% else %}Oculto{% endif %}
         </span>
     </div>
@@ -128,19 +128,19 @@
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_office_location">
         <div class="lg:col-span-2">
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Afiliacion</label>
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Afiliacion</label>
             <input name="affiliation_name" value="{{ current_user.affiliation_name or (current_user.clinic.name if current_user.clinic else '') }}" class="w-full border p-3 rounded-lg" aria-label="Affiliation name">
         </div>
         <div class="lg:col-span-3">
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Direccion consultorio</label>
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Direccion consultorio</label>
             <input name="office_address" value="{{ current_user.office_address or '' }}" placeholder="Direccion fisica" class="w-full border p-3 rounded-lg" aria-label="Direccion fisica">
         </div>
         <div>
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Latitud</label>
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Latitud</label>
             <input id="doctor-office-lat" type="number" step="any" name="office_latitude" value="{{ current_user.office_latitude if current_user.office_latitude is not none else '' }}" class="w-full border p-3 rounded-lg" aria-label="Office latitude">
         </div>
         <div>
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Longitud</label>
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Longitud</label>
             <input id="doctor-office-lng" type="number" step="any" name="office_longitude" value="{{ current_user.office_longitude if current_user.office_longitude is not none else '' }}" class="w-full border p-3 rounded-lg" aria-label="Office longitude">
         </div>
         <label class="flex items-center gap-2 border border-slate-100 p-3 rounded-lg text-sm font-bold text-slate-700">
@@ -149,14 +149,14 @@
         </label>
         <div class="lg:col-span-8 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#doctor-office-lat" data-lng-input="#doctor-office-lng"></div>
         <div class="lg:col-span-8 flex gap-2">
-            <button type="button" data-use-browser-location class="border border-slate-200 px-4 py-3 rounded-lg font-black text-slate-700 flex items-center gap-2"><i data-lucide="crosshair" class="w-5 h-5"></i> Usar GPS</button>
-            <button class="bg-cyan-700 text-white px-4 py-3 rounded-lg font-black flex-1">Guardar consultorio</button>
+            <button type="button" data-use-browser-location class="border border-slate-200 px-4 py-3 rounded-lg font-semibold text-slate-700 flex items-center gap-2"><i data-lucide="crosshair" class="w-5 h-5"></i> Usar GPS</button>
+            <button class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold flex-1">Guardar consultorio</button>
         </div>
     </form>
 </section>
 
 {% if current_user.is_autonomous %}
-<section class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-purple-600 mb-8">
+<section class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-slate-700 mb-8">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
         <div>
             <h2 class="text-xl font-bold text-purple-700 flex items-center gap-2"><i data-lucide="wallet-cards" class="w-5 h-5"></i> Tarifas y pagos</h2>
@@ -166,7 +166,7 @@
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="generate_doctor_consent">
             <input name="consent_prefix" placeholder="Prefijo codigo" class="border border-slate-200 px-3 py-2 rounded-lg text-xs font-bold mr-2" aria-label="Prefijo codigo">
-            <button class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-black flex items-center gap-2">
+            <button class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
                 <i data-lucide="shield-plus" class="w-4 h-4"></i>
                 Codigo poliza
             </button>
@@ -175,8 +175,8 @@
 
     {% if current_user.policy_consent_code %}
     <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4">
-        <p class="text-xs font-black uppercase tracking-widest text-slate-600">Codigo de consentimiento para aseguradoras</p>
-        <p class="font-mono font-black text-slate-900 break-all">{{ current_user.policy_consent_code }}</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Codigo de consentimiento para aseguradoras</p>
+        <p class="font-mono font-semibold text-slate-900 break-all">{{ current_user.policy_consent_code }}</p>
     </div>
     {% endif %}
 
@@ -195,21 +195,21 @@
             </label>
             <textarea name="payment_instructions" rows="3" placeholder="Instrucciones visibles para pacientes" class="border p-3 rounded-xl sm:col-span-2" aria-label="Instrucciones visibles para pacientes">{{ tariff.payment_instructions if tariff else '' }}</textarea>
             <input type="file" name="payment_methods_image" accept="image/*" class="border p-3 rounded-xl sm:col-span-2" aria-label="Payment methods image">
-            <button class="bg-purple-700 text-white py-3 rounded-xl font-black sm:col-span-2">Guardar tarifas</button>
+            <button class="bg-slate-700 text-white py-3 rounded-xl font-semibold sm:col-span-2">Guardar tarifas</button>
         </form>
 
         <div class="border border-slate-100 rounded-xl p-4">
-            <h3 class="font-black text-slate-900 mb-3 flex items-center gap-2"><i data-lucide="receipt-text" class="w-5 h-5 text-purple-600"></i> Comprobantes</h3>
+            <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><i data-lucide="receipt-text" class="w-5 h-5 text-slate-500"></i> Comprobantes</h3>
             <div class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
                 {% for ticket in payment_tickets %}
-                <div class="border border-slate-100 rounded-xl p-3 {% if ticket.status == 'pending' %}bg-amber-50{% else %}bg-slate-50{% endif %}">
+                <div class="border border-slate-100 rounded-xl p-3 {% if ticket.status == 'pending' %}bg-caution-subtle{% else %}bg-slate-50{% endif %}">
                     <div class="flex items-start justify-between gap-3">
                         <div>
-                            <p class="font-black text-sm text-slate-900">{{ ticket.patient.name }}</p>
+                            <p class="font-semibold text-sm text-slate-900">{{ ticket.patient.name }}</p>
                             <p class="text-xs text-slate-500">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }} | ${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
-                            {% if ticket.proof_image %}<a href="/uploads/{{ ticket.proof_image }}" target="_blank" class="text-xs font-black text-purple-700" rel="noopener noreferrer">Ver comprobante</a>{% endif %}
+                            {% if ticket.proof_image %}<a href="/uploads/{{ ticket.proof_image }}" target="_blank" class="text-xs font-semibold text-purple-700" rel="noopener noreferrer">Ver comprobante</a>{% endif %}
                         </div>
-                        <span class="px-2 py-1 rounded-full text-xs font-black {% if ticket.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif ticket.status == 'rejected' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ ticket.status }}</span>
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">{{ ticket.status }}</span>
                     </div>
                     {% if ticket.status == 'pending' %}
                     <form method="POST" class="mt-3 grid gap-2">
@@ -218,8 +218,8 @@
                         <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
                         <textarea name="doctor_note" rows="2" placeholder="Nota opcional" class="border p-2 rounded-lg text-xs" aria-label="Nota opcional"></textarea>
                         <div class="grid grid-cols-2 gap-2">
-                            <button name="decision" value="approve" class="bg-emerald-600 text-white py-2 rounded-lg text-xs font-black">Aprobar</button>
-                            <button name="decision" value="reject" class="bg-red-600 text-white py-2 rounded-lg text-xs font-black">Rechazar</button>
+                            <button name="decision" value="approve" class="bg-positive text-white py-2 rounded-lg text-xs font-semibold">Aprobar</button>
+                            <button name="decision" value="reject" class="bg-critical text-white py-2 rounded-lg text-xs font-semibold">Rechazar</button>
                         </div>
                     </form>
                     {% endif %}
@@ -232,17 +232,17 @@
     </div>
 
     <div class="mt-5 border border-slate-100 rounded-xl p-4">
-        <h3 class="font-black text-slate-900 mb-3 flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-purple-600"></i> Clientes con membresia o poliza</h3>
+        <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-slate-500"></i> Clientes con membresia o poliza</h3>
         <div class="grid md:grid-cols-2 gap-3">
             {% for row in client_subscription_rows %}
             {% set sub = row.subscription %}
             <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <p class="font-black text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
+                        <p class="font-semibold text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
                         <p class="text-xs text-slate-500">{{ plan_labels.get(sub.plan_type, sub.plan_type) }} | Queda {{ row.remaining }}</p>
                     </div>
-                    <span class="text-xs font-black px-2 py-1 rounded-full {% if row.has_policy %}bg-cyan-100 text-cyan-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full {% if row.has_policy %}bg-slate-100 text-cyan-700{% else %}bg-slate-100 text-purple-700{% endif %}">
                         {{ 'Poliza' if row.has_policy else 'Pago' }}
                     </span>
                 </div>
@@ -257,20 +257,20 @@
 
 <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
     <!-- 4. CHATS ABIERTOS -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border-t-4 border-emerald-500">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border-t-4 border-positive">
         <h2 class="text-xl font-bold mb-4 text-emerald-600 flex items-center gap-2">
             <i data-lucide="message-circle" class="w-5 h-5"></i> Abiertos
         </h2>
         <ul class="space-y-3">
             {% for item in open_chats %}
                 {% set c = item.chat %}
-                <li class="border border-slate-100 bg-slate-50 p-3 rounded-xl hover:bg-emerald-50 transition-colors group {% if item.unread > 0 %}border-l-4 border-l-blue-500 shadow-md bg-blue-50/30{% endif %}">
+                <li class="border border-slate-100 bg-slate-50 p-3 rounded-xl hover:bg-positive-subtle transition-colors group {% if item.unread > 0 %}border-l-4 border-l-blue-500 shadow-md bg-blue-50/30{% endif %}">
                     <a href="/doctor/chat/{{ c.id }}" class="block">
                         <div class="flex justify-between items-center mb-1">
                             <h3 class="font-bold text-slate-800 group-hover:text-emerald-700">{{ c.patient.name }}</h3>
                             <div class="flex items-center gap-2">
                                 {% if item.unread > 0 %}
-                                    <span class="bg-blue-600 text-white text-xs font-black px-2 py-0.5 rounded-full animate-pulse">{{ item.unread }}</span>
+                                    <span class="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full animate-pulse">{{ item.unread }}</span>
                                 {% endif %}
                                 <span class="text-xs font-bold text-slate-600">
                                     {{ item.last_msg.timestamp|colombia_time if item.last_msg else '' }}
@@ -306,20 +306,20 @@
                     
                     <div class="mt-2">
                         {% if appt.status == 'pending' %}
-                            <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-green-600 text-white py-2 rounded-lg font-bold text-sm hover:bg-green-700 transition shadow-md">
+                            <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-positive text-white py-2 rounded-lg font-bold text-sm hover:bg-positive transition shadow-md">
                                 🚀 Unirse a la Consulta
                             </a>
                         {% elif appt.status == 'in_progress' %}
-                            <span class="block text-center bg-yellow-100 text-yellow-800 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">⏳ En Curso...</span>
+                            <span class="block text-center bg-caution-subtle text-yellow-800 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">⏳ En Curso...</span>
                         {% elif appt.status == 'no_show' %}
-                            <div class="bg-red-100 text-red-700 p-2 rounded-lg text-center">
+                            <div class="bg-critical-subtle text-red-700 p-2 rounded-lg text-center">
                                 <p class="font-bold text-xs">❌ No Asistida</p>
                                 {% if current_user.role == 'patient' %}
                                     <a href="/patient/book_appointment/{{ appt.doctor_id }}" class="text-xs underline text-red-500 block mt-1">Reagendar Cita</a>
                                 {% endif %}
                             </div>
                         {% elif appt.status == 'attended' %}
-                            <span class="block text-center bg-green-100 text-green-700 py-2 rounded-lg font-bold text-xs">✅ Atendida</span>
+                            <span class="block text-center bg-positive-subtle text-green-700 py-2 rounded-lg font-bold text-xs">✅ Atendida</span>
                         {% endif %}
                     </div>
                 </li>
@@ -373,16 +373,16 @@
     </div>
 
     <!-- 6. HORARIO Y BLOQUEOS -->
-    <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-teal-500 overflow-y-auto max-h-[760px] custom-scrollbar lg:col-span-2">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border-t-4 border-positive overflow-y-auto max-h-[760px] custom-scrollbar lg:col-span-2">
         <h2 class="text-xl font-bold mb-2 text-teal-600 flex items-center gap-2">
             <i data-lucide="calendar-clock" class="w-5 h-5"></i> Mi Horario
         </h2>
-        <div class="bg-teal-50 border border-teal-100 rounded-xl p-3 mb-3">
-            <p class="text-xs font-black uppercase tracking-widest text-teal-700">Resumen publicado</p>
+        <div class="bg-positive-subtle border border-positive-subtle rounded-xl p-3 mb-3">
+            <p class="text-xs font-semibold uppercase tracking-widest text-teal-700">Resumen publicado</p>
             <p class="text-sm font-bold text-slate-700 mt-1">{{ current_user.schedule or 'Configura al menos un día para aparecer disponible.' }}</p>
         </div>
-        <div class="grid grid-cols-3 gap-2 mb-4 text-xs font-black">
-            <button type="button" onclick="applySchedulePreset('office')" class="bg-teal-50 text-teal-700 p-2 rounded-lg hover:bg-teal-100">L-V oficina</button>
+        <div class="grid grid-cols-3 gap-2 mb-4 text-xs font-semibold">
+            <button type="button" onclick="applySchedulePreset('office')" class="bg-positive-subtle text-teal-700 p-2 rounded-lg hover:bg-positive-subtle">L-V oficina</button>
             <button type="button" onclick="applySchedulePreset('morning')" class="bg-blue-50 text-blue-700 p-2 rounded-lg hover:bg-blue-100">Mañanas</button>
             <button type="button" onclick="clearSchedule()" class="bg-slate-100 text-slate-600 p-2 rounded-lg hover:bg-slate-200">Limpiar</button>
         </div>
@@ -397,21 +397,21 @@
                     <input type="checkbox" name="active_{{ i }}" {% if sched %}checked{% endif %} class="schedule-active w-5 h-5 accent-teal-600 mt-6" aria-label="Active {{ i }}">
                     <div>
                         <div class="flex justify-between items-center mb-1">
-                            <label class="text-xs font-black text-slate-700">{{ days[i] }}</label>
+                            <label class="text-xs font-semibold text-slate-700">{{ days[i] }}</label>
                             <span class="schedule-duration text-xs text-slate-600 font-bold">--</span>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" name="start_{{ i }}" value="{{ sched.start_time if sched else '08:00' }}" class="schedule-start text-sm border p-2.5 rounded-lg focus:outline-none focus:border-teal-300" aria-label="Start {{ i }}">
-                            <input type="time" name="end_{{ i }}" value="{{ sched.end_time if sched else '17:00' }}" class="schedule-end text-sm border p-2.5 rounded-lg focus:outline-none focus:border-teal-300" aria-label="End {{ i }}">
+                            <input type="time" name="start_{{ i }}" value="{{ sched.start_time if sched else '08:00' }}" class="schedule-start text-sm border p-2.5 rounded-lg focus:outline-none focus:border-positive-border" aria-label="Start {{ i }}">
+                            <input type="time" name="end_{{ i }}" value="{{ sched.end_time if sched else '17:00' }}" class="schedule-end text-sm border p-2.5 rounded-lg focus:outline-none focus:border-positive-border" aria-label="End {{ i }}">
                         </div>
                     </div>
                 </div>
             {% endfor %}
-            <button type="submit" class="w-full bg-teal-600 text-white py-2 rounded-xl font-bold text-xs mt-2 hover:bg-teal-700 transition-colors">Guardar Semana</button>
+            <button type="submit" class="w-full bg-positive text-white py-2 rounded-xl font-bold text-xs mt-2 hover:bg-positive transition-colors">Guardar Semana</button>
         </form>
 
         <div class="border-t pt-4">
-            <p class="text-xs font-black text-slate-600 uppercase tracking-widest mb-3">Bloqueos de Agenda</p>
+            <p class="text-xs font-semibold text-slate-600 uppercase tracking-widest mb-3">Bloqueos de Agenda</p>
             <form method="POST" action="/doctor/save_schedule" class="space-y-2 bg-slate-50 p-3 rounded-xl border">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="schedule_action" value="blockout">
@@ -428,7 +428,7 @@
                 {% if actual_blockouts %}
                     <ul class="space-y-1">
                         {% for block in actual_blockouts %}
-                            <li class="bg-rose-50 p-2 rounded-lg text-rose-800 text-xs flex justify-between items-center border border-rose-100">
+                            <li class="bg-critical-subtle p-2 rounded-lg text-rose-800 text-xs flex justify-between items-center border border-critical-subtle">
                                 <span class="font-bold">{{ block.specific_date }} ({{ block.start_time }}-{{ block.end_time }})</span>
                                 <form action="/doctor/delete_blockout" method="POST">
                                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -447,38 +447,38 @@
 
     <!-- 7. FLUJOS Y PACIENTES -->
     <div class="space-y-6">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border-t-4 border-purple-500">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 text-purple-600 flex items-center gap-2">
                 <i data-lucide="git-branch" class="w-5 h-5"></i> Flujos
             </h2>
             <form method="POST" class="space-y-2">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="create_flow">
-                <input type="text" name="title" required placeholder="Título del Flujo" class="w-full border p-2 rounded-lg text-xs focus:outline-none focus:border-purple-200" aria-label="Título del Flujo">
-                <textarea name="flow_data" required placeholder='JSON aquí...' class="w-full border p-2 rounded-lg text-xs font-mono h-12 focus:outline-none focus:border-purple-200" aria-label="Flow data"></textarea>
-                <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg font-bold text-xs hover:bg-purple-700 transition-colors">Crear Flujo</button>
+                <input type="text" name="title" required placeholder="Título del Flujo" class="w-full border p-2 rounded-lg text-xs focus:outline-none focus:border-slate-200" aria-label="Título del Flujo">
+                <textarea name="flow_data" required placeholder='JSON aquí...' class="w-full border p-2 rounded-lg text-xs font-mono h-12 focus:outline-none focus:border-slate-200" aria-label="Flow data"></textarea>
+                <button type="submit" class="w-full bg-slate-700 text-white py-2 rounded-lg font-bold text-xs hover:bg-slate-700 transition-colors">Crear Flujo</button>
             </form>
         </div>
 
-        <div class="bg-white p-4 rounded-2xl shadow-sm border-t-4 border-orange-500">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border-t-4 border-caution">
             <h2 class="text-xl font-bold mb-4 text-orange-600 flex items-center gap-2">
                 <i data-lucide="users" class="w-5 h-5"></i> Pacientes
             </h2>
             <div class="relative mb-3">
-                <i data-lucide="search" class="absolute left-2 top-2.5 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="search_patient" placeholder="Buscar..." class="w-full border p-2 pl-8 rounded-xl text-sm focus:outline-none focus:border-orange-200" onkeyup="filterPatients()" aria-label="Buscar...">
+                <i data-lucide="search" class="absolute left-2 top-2.5 w-4 h-4 text-slate-500"></i>
+                <input type="text" id="search_patient" placeholder="Buscar..." class="w-full border p-2 pl-8 rounded-xl text-sm focus:outline-none focus:border-caution-border" onkeyup="filterPatients()" aria-label="Buscar...">
             </div>
             <ul id="patient_list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                 {% for p in patients %}
                     <li class="patient-item flex justify-between items-center group" data-name="{{ p.name.lower() }}">
                         <a href="/doctor/patient_history/{{ p.id }}" class="flex items-center gap-2 flex-1">
-                            <div class="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-xs font-bold">{{ p.name[:1] }}</div>
+                            <div class="w-7 h-7 bg-caution-subtle rounded-full flex items-center justify-center text-orange-600 text-xs font-bold">{{ p.name[:1] }}</div>
                             <span class="font-bold text-xs text-slate-700 group-hover:text-orange-600">{{ p.name }}</span>
                         </a>
                         <a href="/doctor/book_appointment/{{ p.id }}" class="text-blue-500 hover:bg-blue-50 p-1.5 rounded-lg transition-colors" title="Agendar Cita">
                             <i data-lucide="calendar-plus" class="w-4 h-4"></i>
                         </a>
-                        <a href="{{ url_for('doctor.prescription', patient_id=p.id) }}" class="text-emerald-600 hover:bg-emerald-50 p-1.5 rounded-lg transition-colors" title="Orden medica">
+                        <a href="{{ url_for('doctor.prescription', patient_id=p.id) }}" class="text-emerald-600 hover:bg-positive-subtle p-1.5 rounded-lg transition-colors" title="Orden medica">
                             <i data-lucide="pill" class="w-4 h-4"></i>
                         </a>
                     </li>

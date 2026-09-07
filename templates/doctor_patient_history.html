@@ -9,33 +9,33 @@
                 <li class="text-slate-600">Historial Clínico</li>
             </ol>
         </nav>
-        <h1 class="text-4xl font-black text-slate-800 tracking-tight">
+        <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">
             {{ patient.name }}
         </h1>
         <div class="flex flex-wrap gap-3 mt-3">
             <span class="flex items-center gap-1.5 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs text-slate-600 shadow-sm">
-                <i data-lucide="fingerprint" class="w-4 h-4 text-blue-500"></i> CC: {{ patient.cedula }}
+                <i data-lucide="fingerprint" class="w-4 h-4 text-slate-500"></i> CC: {{ patient.cedula }}
             </span>
             {% if patient.phone %}
-            <a href="tel:{{ patient.phone }}" class="flex items-center gap-1.5 font-bold bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl text-xs text-emerald-700 shadow-sm hover:bg-emerald-100 transition-colors">
-                <i data-lucide="phone" class="w-4 h-4 text-emerald-500"></i> {{ patient.phone }}
+            <a href="tel:{{ patient.phone }}" class="flex items-center gap-1.5 font-bold bg-positive-subtle border border-positive-subtle px-3 py-1.5 rounded-xl text-xs text-emerald-700 shadow-sm hover:bg-positive-subtle transition-colors">
+                <i data-lucide="phone" class="w-4 h-4 text-slate-500"></i> {{ patient.phone }}
             </a>
             {% endif %}
             {% if patient.email %}
             <span class="flex items-center gap-1.5 font-bold bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl text-xs text-blue-700 shadow-sm">
-                <i data-lucide="mail" class="w-4 h-4 text-blue-500"></i> {{ patient.email }}
+                <i data-lucide="mail" class="w-4 h-4 text-slate-500"></i> {{ patient.email }}
             </span>
             {% endif %}
         </div>
     </div>
 
     <div class="flex gap-3">
-        <a href="/doctor/book_appointment/{{ patient.id }}" class="group flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 active:scale-95">
+        <a href="/doctor/book_appointment/{{ patient.id }}" class="group flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm">
             <i data-lucide="calendar-plus" class="w-4 h-4"></i> 
             Agendar Cita
         </a>
 
-        <a href="/doctor/dashboard" class="group flex items-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-200 active:scale-95">
+        <a href="/doctor/dashboard" class="group flex items-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-black transition-colors shadow-sm">
             <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
             Volver al Panel
         </a>
@@ -50,10 +50,10 @@
 <section class="grid lg:grid-cols-2 gap-5 mb-8">
 
     <!-- Alergias -->
-    <div class="bg-white rounded-3xl shadow-sm border-2 {% if allergies %}border-rose-200{% else %}border-slate-100{% endif %} overflow-hidden">
-        <div class="{% if allergies %}bg-rose-50 border-rose-100{% else %}bg-slate-50 border-slate-100{% endif %} border-b p-5">
-            <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                <i data-lucide="triangle-alert" class="w-5 h-5 {% if allergies %}text-rose-500{% else %}text-slate-400{% endif %}"></i>
+    <div class="bg-white rounded-3xl shadow-sm border-2 {% if allergies %}border-critical-border{% else %}border-slate-100{% endif %} overflow-hidden">
+        <div class="{% if allergies %}bg-critical-subtle border-critical-subtle{% else %}bg-slate-50 border-slate-100{% endif %} border-b p-5">
+            <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <i data-lucide="triangle-alert" class="w-5 h-5 {% if allergies %}text-critical{% else %}text-slate-400{% endif %}"></i>
                 Alergias y reacciones adversas
             </h2>
             <p class="text-sm text-slate-500 font-medium mt-0.5">
@@ -67,7 +67,7 @@
                 <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50">
                     <div class="flex items-start justify-between gap-3 flex-wrap">
                         <div class="min-w-0">
-                            <p class="font-black text-slate-900">{{ allergy.substance }}</p>
+                            <p class="font-semibold text-slate-900">{{ allergy.substance }}</p>
                             {% if allergy.reaction %}
                             <p class="text-sm text-slate-600 mt-0.5">Reacción: {{ allergy.reaction }}</p>
                             {% endif %}
@@ -77,9 +77,7 @@
                             </p>
                         </div>
                         <div class="flex flex-col items-end gap-1 shrink-0">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-black
-                                {% if allergy.severity in ('anafilaxia', 'grave') %}bg-rose-600 text-white
-                                {% else %}bg-amber-200 text-amber-900{% endif %}">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold {% if allergy.severity in ('anafilaxia', 'grave') %}bg-critical text-white {% else %}bg-caution-border text-amber-900{% endif %}">
                                 {{ allergy.severity | upper }}
                             </span>
                             <span class="text-xs font-bold text-slate-600 uppercase">{{ allergy.status }}</span>
@@ -100,9 +98,9 @@
                             </p>
                             <input type="text" name="reason" required minlength="10" maxlength="300"
                                 placeholder="Motivo (p. ej. prueba cutánea negativa el 2026-08-01)"
-                                class="w-full px-3 py-2 border-2 border-slate-200 rounded-xl text-sm focus:border-rose-400 outline-none" aria-label="Motivo (p. ej. prueba cutánea negativa el 2026-08-01)">
+                                class="w-full px-3 py-2 border-2 border-slate-200 rounded-xl text-sm focus:border-critical outline-none" aria-label="Motivo (p. ej. prueba cutánea negativa el 2026-08-01)">
                             <button type="submit"
-                                class="text-rose-600 border-2 border-rose-200 px-4 py-1.5 rounded-xl font-bold text-xs hover:bg-rose-50 transition-colors">
+                                class="text-rose-600 border-2 border-critical-border px-4 py-1.5 rounded-xl font-bold text-xs hover:bg-critical-subtle transition-colors">
                                 Confirmar descarte
                             </button>
                         </form>
@@ -174,7 +172,7 @@
                     </div>
 
                     <button type="submit"
-                        class="bg-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-rose-700 transition-colors">
+                        class="bg-critical text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-critical transition-colors">
                         Registrar alergia
                     </button>
                 </form>
@@ -185,8 +183,8 @@
     <!-- Contexto clínico -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="bg-slate-50 border-b border-slate-100 p-5">
-            <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                <i data-lucide="clipboard-list" class="w-5 h-5 text-violet-500"></i>
+            <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <i data-lucide="clipboard-list" class="w-5 h-5 text-slate-500"></i>
                 Contexto clínico
             </h2>
         </div>
@@ -194,22 +192,22 @@
         <div class="p-5 space-y-5">
             <dl class="grid grid-cols-2 gap-3">
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                    <dt class="text-xs font-black uppercase tracking-widest text-slate-600">Edad</dt>
-                    <dd class="font-black text-slate-900 text-lg">
+                    <dt class="text-xs font-semibold uppercase tracking-widest text-slate-600">Edad</dt>
+                    <dd class="font-semibold text-slate-900 text-lg">
                         {{ patient_age_years if patient_age_years is not none else 'No registrada' }}
                         {% if patient_age_years is not none %}<span class="text-sm font-bold text-slate-500">años</span>{% endif %}
                     </dd>
                 </div>
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                    <dt class="text-xs font-black uppercase tracking-widest text-slate-600">Gestación</dt>
-                    <dd class="font-black text-lg {% if patient.is_pregnant %}text-violet-700{% else %}text-slate-900{% endif %}">
+                    <dt class="text-xs font-semibold uppercase tracking-widest text-slate-600">Gestación</dt>
+                    <dd class="font-semibold text-lg {% if patient.is_pregnant %}text-violet-700{% else %}text-slate-900{% endif %}">
                         {{ 'Sí' if patient.is_pregnant else 'No registrada' }}
                     </dd>
                 </div>
             </dl>
 
             {% if patient_age_years is none %}
-            <p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 leading-relaxed">
+            <p class="text-xs text-amber-800 bg-caution-subtle border border-caution-border rounded-xl p-3 leading-relaxed">
                 Sin fecha de nacimiento no se pueden verificar las restricciones
                 pediátricas al prescribir.
             </p>
@@ -217,7 +215,7 @@
 
             <!-- Tratamiento activo -->
             <div>
-                <h3 class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">
+                <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">
                     Tratamiento activo (90 días)
                 </h3>
                 {% if active_meds %}
@@ -235,7 +233,7 @@
 
             <!-- Condiciones crónicas -->
             <div class="border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">
+                <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">
                     Condiciones crónicas
                 </h3>
                 {% if conditions %}
@@ -267,7 +265,7 @@
                             placeholder="Código CIE-10 (opcional)"
                             class="w-full px-3 py-2.5 border-2 border-slate-100 rounded-xl text-sm font-mono focus:border-primary outline-none" aria-label="Código CIE-10 (opcional)">
                         <button type="submit"
-                            class="bg-violet-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors">
+                            class="bg-slate-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-700 transition-colors">
                             Registrar condición
                         </button>
                     </form>
@@ -280,13 +278,13 @@
 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
     <div class="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center">
         <div>
-            <h2 class="text-xl font-black text-slate-800 flex items-center gap-2">
-                <i data-lucide="history" class="w-6 h-6 text-orange-500"></i> 
+            <h2 class="text-xl font-semibold text-slate-800 flex items-center gap-2">
+                <i data-lucide="history" class="w-6 h-6 text-caution"></i> 
                 Línea de Tiempo de Consultas
             </h2>
             <p class="text-sm text-slate-500 font-medium">Se han registrado {{ chats|length }} encuentros médicos.</p>
         </div>
-        <div class="bg-orange-100 text-orange-700 px-4 py-2 rounded-2xl font-black text-sm">
+        <div class="bg-caution-subtle text-orange-700 px-4 py-2 rounded-2xl font-semibold text-sm">
             Total: {{ chats|length }}
         </div>
     </div>
@@ -295,15 +293,10 @@
         {% if chats %}
             <div class="grid gap-4">
                 {% for chat in chats %}
-                <div class="group border-2 border-slate-50 rounded-2xl p-5 hover:border-orange-200 hover:bg-orange-50/30 transition-colors flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="group border-2 border-slate-50 rounded-2xl p-5 hover:border-caution-border hover:bg-caution-subtle/30 transition-colors flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
-                            <span class="text-xs font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm
-                                {% if chat.status == 'open' %}
-                                    bg-emerald-500 text-white animate-pulse
-                                {% else %}
-                                    bg-slate-200 text-slate-600
-                                {% endif %}">
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm {% if chat.status == 'open' %} bg-positive text-white animate-pulse {% else %} bg-slate-200 text-slate-600 {% endif %}">
                                 {{ chat.status }}
                             </span>
                             <h3 class="font-bold text-lg text-slate-800 group-hover:text-orange-700 transition-colors">
@@ -314,14 +307,14 @@
                         <div class="flex flex-wrap gap-6 text-sm">
                             <div class="flex items-center gap-2 text-slate-500 font-semibold">
                                 <div class="p-1.5 bg-slate-100 rounded-lg">
-                                    <i data-lucide="calendar" class="w-4 h-4 text-slate-600"></i>
+                                    <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
                                 </div>
                                 {{ chat.timestamp|colombia_date }}
                             </div>
                             
                             <div class="flex items-center gap-2 text-slate-500 font-semibold">
                                 <div class="p-1.5 bg-slate-100 rounded-lg">
-                                    <i data-lucide="clock" class="w-4 h-4 text-slate-600"></i>
+                                    <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
                                 </div>
                                     {{ chat.timestamp|colombia_time }}
                             </div>
@@ -334,22 +327,22 @@
                     </div>
 
                     <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/doctor/chat/{{ chat.id }}" class="flex-1 md:flex-none text-center bg-white border-2 border-orange-500 text-orange-600 px-6 py-2.5 rounded-xl font-black text-sm hover:bg-orange-500 hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <a href="/doctor/chat/{{ chat.id }}" class="flex-1 md:flex-none text-center bg-white border-2 border-caution text-orange-600 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-caution hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm">
                             <i data-lucide="eye" class="w-4 h-4"></i> Revisar Detalles
                         </a>
                     </div>
                 </div>
                 {# Entries for Medical History related to this chat #}
                 {% for h in patient.medical_histories if h.chat_id == chat.id %}
-                <div class="ml-8 mt-2 border-l-4 border-orange-300 bg-orange-50/20 p-4 rounded-xl mb-4 shadow-sm">
+                <div class="ml-8 mt-2 border-l-4 border-caution-border bg-caution-subtle/20 p-4 rounded-xl mb-4 shadow-sm">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded uppercase">Nota Médica</span>
+                        <span class="text-xs font-semibold bg-caution-subtle text-orange-700 px-2 py-0.5 rounded uppercase">Nota Médica</span>
                         <div class="flex gap-2">
                             {% if h.cie10_code %}
-                            <span class="text-xs font-bold bg-white border border-orange-200 text-orange-800 px-2 py-0.5 rounded shadow-sm">CIE-10: {{ h.cie10_code }}</span>
+                            <span class="text-xs font-bold bg-white border border-caution-border text-orange-800 px-2 py-0.5 rounded shadow-sm">CIE-10: {{ h.cie10_code }}</span>
                             {% endif %}
                             {% if h.cups_code %}
-                            <span class="text-xs font-bold bg-white border border-orange-200 text-orange-800 px-2 py-0.5 rounded shadow-sm">CUPS: {{ h.cups_code }}</span>
+                            <span class="text-xs font-bold bg-white border border-caution-border text-orange-800 px-2 py-0.5 rounded shadow-sm">CUPS: {{ h.cups_code }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -362,7 +355,7 @@
         {% else %}
             <div class="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
                 <div class="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                    <i data-lucide="folder-open" class="w-8 h-8 text-slate-300"></i>
+                    <i data-lucide="folder-open" class="w-8 h-8 text-slate-500"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-800">Sin historial</h3>
                 <p class="text-slate-500 text-sm max-w-xs mx-auto">Este paciente aún no ha realizado consultas en la plataforma.</p>
@@ -380,11 +373,7 @@
                         <p class="font-bold">{{ appt.date }} - {{ appt.time }}</p>
                         <p class="text-sm text-gray-500">{{ appt.description or 'General' }}</p>
                     </div>
-                    <span class="text-xs font-bold px-3 py-1 rounded-full 
-                        {% if appt.status == 'attended' %}bg-green-100 text-green-700
-                        {% elif appt.status == 'no_show' %}bg-red-100 text-red-700
-                        {% elif appt.status == 'in_progress' %}bg-yellow-100 text-yellow-700
-                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                    <span class="text-xs font-bold px-3 py-1 rounded-full {% if appt.status == 'attended' %}bg-positive-subtle text-green-700 {% elif appt.status == 'no_show' %}bg-critical-subtle text-red-700 {% elif appt.status == 'in_progress' %}bg-caution-subtle text-yellow-700 {% else %}bg-gray-100 text-gray-600{% endif %}">
                         {{ appt.status }}
                     </span>
                 </li>
@@ -399,7 +388,7 @@
 
 <style>
     .group:hover {
-        transform: translateY(-2px);
+       : translateY(-2px);
     }
 </style>
 {% endblock %}

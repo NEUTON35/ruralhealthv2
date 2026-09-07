@@ -161,7 +161,7 @@
     </style>
 </head>
 <body class="bg-background text-slate-800 min-h-screen font-sans flex flex-col {% if request.path != '/login' and request.path != '/register' %}md:flex-row{% endif %}">
-    <div class="bg-yellow-100 text-yellow-800 text-center py-1 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 md:w-full md:absolute md:top-0 md:z-50" id="low-bandwidth-banner">
+    <div class="bg-caution-subtle text-yellow-800 text-center py-1 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 md:w-full md:absolute md:top-0 md:z-50" id="low-bandwidth-banner">
         <i data-lucide="wifi-off" class="w-4 h-4"></i> Modo Bajo Ancho de Banda
     </div>
 
@@ -197,31 +197,31 @@
 
                 {% if current_user.role == 'admin' %}
                 <a href="{{ url_for('analytics.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="pie-chart" class="w-5 h-5 text-violet-500"></i> Analítica
+                    <i data-lucide="pie-chart" class="w-5 h-5 text-slate-500"></i> Analítica
                 </a>
                 <a href="{{ url_for('admin.reporte_stock') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-500"></i> Reporte Stock
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-slate-500"></i> Reporte Stock
                 </a>
                 <a href="{{ url_for('admin.audit_log') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
                     <i data-lucide="scroll-text" class="w-5 h-5 text-slate-500"></i> Auditoría
                 </a>
                 <a href="{{ url_for('privacy.manage_requests') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="inbox" class="w-5 h-5 text-amber-500"></i> Solicitudes de datos
+                    <i data-lucide="inbox" class="w-5 h-5 text-caution"></i> Solicitudes de datos
                 </a>
                 {% endif %}
 
                 {% if current_user.role in ('staff', 'receptionist') %}
                 <a href="{{ url_for('staff.pendientes') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500"></i> Panel Faltantes
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-caution"></i> Panel Faltantes
                 </a>
                 <a href="{{ url_for('staff.envios') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="truck" class="w-5 h-5 text-blue-500"></i> Cargamentos
+                    <i data-lucide="truck" class="w-5 h-5 text-slate-500"></i> Cargamentos
                 </a>
                 {% endif %}
 
                 {% if current_user.role == 'expendedor' %}
                 <a href="{{ url_for('expendedor.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="package" class="w-5 h-5 text-emerald-500"></i> Despacho
+                    <i data-lucide="package" class="w-5 h-5 text-slate-500"></i> Despacho
                 </a>
                 {% endif %}
 
@@ -237,14 +237,14 @@
 
                 <div class="mt-auto space-y-2 pt-6">
                     <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
-                        <i data-lucide="shield" class="w-5 h-5 text-slate-400"></i> Mis datos
+                        <i data-lucide="shield" class="w-5 h-5 text-slate-500"></i> Mis datos
                     </a>
                     <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
-                        <i data-lucide="settings" class="w-5 h-5 text-slate-400"></i> Ajustes
+                        <i data-lucide="settings" class="w-5 h-5 text-slate-500"></i> Ajustes
                     </a>
                     <form method="POST" action="/logout">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors font-black">
+                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-critical-subtle transition-colors font-semibold">
                             <i data-lucide="log-out" class="w-5 h-5"></i> Cerrar Sesión
                         </button>
                     </form>
@@ -263,8 +263,8 @@
     <div class="flex-1 flex flex-col min-h-screen">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full md:mt-8">
             {% if current_user.is_authenticated and current_user.must_change_password %}
-            <div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-5 mb-5">
-                <h2 class="font-black text-amber-900 flex items-center gap-2 mb-2">
+            <div class="bg-caution-subtle border-2 border-caution rounded-2xl p-5 mb-5">
+                <h2 class="font-semibold text-amber-900 flex items-center gap-2 mb-2">
                     <i data-lucide="key-round" class="w-5 h-5"></i>
                     Debes cambiar tu contraseña inicial
                 </h2>
@@ -298,7 +298,7 @@
         </footer>
     </div>
 
-    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-medical text-white px-4 py-3 rounded-xl font-black shadow-xl items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
+    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-medical text-white px-4 py-3 rounded-xl font-semibold shadow-sm items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
         <i data-lucide="download" class="w-5 h-5"></i>
         Instalar en pantalla de inicio
     </button>
@@ -308,10 +308,10 @@
 
     <!-- Command Palette Modal -->
     <div id="command-palette" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-900/40 " onclick="toggleCommandPalette()"></div>
-        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+        <div class="absolute inset-0 bg-slate-900/40" onclick="toggleCommandPalette()"></div>
+        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-xl shadow-md overflow-hidden flex flex-col">
             <div class="p-4 border-b flex items-center gap-3">
-                <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
+                <i data-lucide="search" class="w-5 h-5 text-slate-500"></i>
                 <input type="text" id="omnisearch-input" placeholder="Buscar médicos, pacientes, clínicas..." class="w-full outline-none text-lg bg-transparent" aria-label="Buscar médicos, pacientes, clínicas...">
                 <button onclick="toggleCommandPalette()" class="text-slate-600 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
@@ -331,7 +331,7 @@
             const toast = document.createElement('div');
             const colors = {
                 'success': 'bg-accent text-white',
-                'error': 'bg-red-500 text-white',
+                'error': 'bg-critical text-white',
                 'info': 'bg-primary text-white'
             };
             const icons = {
@@ -340,7 +340,7 @@
                 'info': 'info'
             };
             
-            toast.className = `${colors[type] || colors['info']} px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm font-medium toast-enter max-w-sm`;
+            toast.className = `${colors[type] || colors['info']} px-4 py-3 rounded-lg shadow-sm flex items-center gap-3 text-sm font-medium toast-enter max-w-sm`;
             toast.innerHTML = `<i data-lucide="${icons[type] || icons['info']}" class="w-5 h-5 flex-shrink-0"></i> <span>${message}</span>`;
             
             container.appendChild(toast);
@@ -373,7 +373,7 @@
                     content.classList.toggle('right-0');
                     content.classList.toggle('bg-white');
                     content.classList.toggle('border-b');
-                    content.classList.toggle('shadow-lg');
+                    content.classList.toggle('shadow-sm');
                     content.classList.toggle('z-50');
                 }
             });

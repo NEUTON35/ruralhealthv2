@@ -3,7 +3,7 @@
 <div class="max-w-4xl mx-auto space-y-6">
 
     <header>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-3">
             <i data-lucide="file-check-2" class="w-8 h-8 text-primary"></i>
             Validación del RIPS
         </h1>
@@ -13,8 +13,8 @@
     </header>
 
     {% if issues %}
-    <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-6">
-        <h2 class="font-black text-rose-900 text-lg flex items-center gap-2 mb-3">
+    <div class="bg-critical-subtle border-2 border-critical-border rounded-2xl p-6">
+        <h2 class="font-semibold text-rose-900 text-lg flex items-center gap-2 mb-3">
             <i data-lucide="octagon-alert" class="w-6 h-6"></i>
             No se puede generar el RIPS
         </h2>
@@ -39,7 +39,7 @@
     {% for scope, scope_issues in grouped.items() %}
     <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
-            <h2 class="font-black text-slate-800 capitalize">
+            <h2 class="font-semibold text-slate-800 capitalize">
                 {{ scope }} — {{ scope_issues | length }} problema(s)
             </h2>
             {% if scope == 'prestador' %}
@@ -59,7 +59,7 @@
         <ul class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
             {% for issue in scope_issues %}
             <li class="px-6 py-3 flex items-start gap-3 text-sm">
-                <i data-lucide="alert-circle" class="w-4 h-4 text-rose-500 mt-0.5 shrink-0"></i>
+                <i data-lucide="alert-circle" class="w-4 h-4 text-critical mt-0.5 shrink-0"></i>
                 <div class="min-w-0">
                     <p class="font-bold text-slate-800">{{ issue.entity }}</p>
                     <p class="text-slate-600">{{ issue.message }}</p>
@@ -72,8 +72,8 @@
     {% endfor %}
 
     {% else %}
-    <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6">
-        <h2 class="font-black text-emerald-900 text-lg flex items-center gap-2 mb-2">
+    <div class="bg-positive-subtle border-2 border-positive-border rounded-2xl p-6">
+        <h2 class="font-semibold text-emerald-900 text-lg flex items-center gap-2 mb-2">
             <i data-lucide="circle-check-big" class="w-6 h-6"></i>
             Listo para exportar
         </h2>
@@ -105,7 +105,7 @@
         </div>
 
         <button type="submit"
-            class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
+            class="bg-positive text-white px-6 py-3 rounded-xl font-bold hover:bg-positive transition-colors inline-flex items-center gap-2">
             <i data-lucide="download" class="w-5 h-5"></i>
             Generar y descargar RIPS
         </button>

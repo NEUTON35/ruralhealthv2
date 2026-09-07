@@ -3,8 +3,8 @@
 <div class="max-w-5xl mx-auto">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div>
-            <h1 class="text-3xl font-black text-slate-900 flex items-center gap-3">
-                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-2.5 rounded-xl shadow-lg shadow-emerald-200">
+            <h1 class="text-2xl font-semibold text-slate-900 flex items-center gap-3">
+                <div class="bg-positive p-2.5 rounded-xl shadow-sm">
                     <i data-lucide="file-signature" class="w-7 h-7 text-white"></i>
                 </div>
                 Orden Médica Digital
@@ -25,8 +25,8 @@
 
         <!-- Alergias -->
         {% if allergies %}
-        <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5">
-            <h2 class="font-black text-rose-900 flex items-center gap-2 mb-3">
+        <div class="bg-critical-subtle border-2 border-critical-border rounded-2xl p-5">
+            <h2 class="font-semibold text-rose-900 flex items-center gap-2 mb-3">
                 <i data-lucide="triangle-alert" class="w-5 h-5"></i>
                 Alergias registradas ({{ allergies | length }})
             </h2>
@@ -34,14 +34,12 @@
                 {% for allergy in allergies %}
                 <li class="bg-white/70 rounded-xl px-4 py-3 flex items-start justify-between gap-3 flex-wrap">
                     <div class="min-w-0">
-                        <p class="font-black text-rose-900">{{ allergy.substance }}</p>
+                        <p class="font-semibold text-rose-900">{{ allergy.substance }}</p>
                         {% if allergy.reaction %}
                         <p class="text-sm text-rose-800">Reacción: {{ allergy.reaction }}</p>
                         {% endif %}
                     </div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-black shrink-0
-                        {% if allergy.severity in ('anafilaxia', 'grave') %}bg-rose-600 text-white
-                        {% else %}bg-amber-200 text-amber-900{% endif %}">
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 {% if allergy.severity in ('anafilaxia', 'grave') %}bg-critical text-white {% else %}bg-caution-border text-amber-900{% endif %}">
                         {{ allergy.severity | upper }}
                     </span>
                 </li>
@@ -64,7 +62,7 @@
         <!-- Tratamiento activo -->
         {% if active_meds %}
         <div class="bg-sky-50 border border-sky-200 rounded-2xl p-4">
-            <h2 class="font-black text-sky-900 text-sm flex items-center gap-2 mb-2">
+            <h2 class="font-semibold text-sky-900 text-sm flex items-center gap-2 mb-2">
                 <i data-lucide="pill" class="w-4 h-4"></i>
                 Tratamiento activo (últimos 90 días)
             </h2>
@@ -74,8 +72,8 @@
 
         <!-- Gestación -->
         {% if patient.is_pregnant %}
-        <div class="bg-violet-50 border-2 border-violet-300 rounded-2xl p-4 flex items-center gap-3">
-            <i data-lucide="baby" class="w-5 h-5 text-violet-700 shrink-0"></i>
+        <div class="bg-slate-50 border-2 border-slate-700 rounded-2xl p-4 flex items-center gap-3">
+            <i data-lucide="baby" class="w-5 h-5 text-slate-500 shrink-0"></i>
             <p class="text-sm text-violet-900 font-bold">
                 Paciente registrada como gestante. Se verificarán las contraindicaciones en el embarazo.
             </p>
@@ -85,9 +83,9 @@
 
     <!-- Resultado de la verificación tras un intento bloqueado -->
     {% if safety and safety.findings %}
-    <section class="mb-5 bg-white border-2 {% if safety.requires_override %}border-rose-400{% else %}border-amber-300{% endif %} rounded-2xl overflow-hidden">
-        <div class="{% if safety.requires_override %}bg-rose-600{% else %}bg-amber-500{% endif %} px-5 py-3 text-white">
-            <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+    <section class="mb-5 bg-white border-2 {% if safety.requires_override %}border-critical{% else %}border-caution-border{% endif %} rounded-2xl overflow-hidden">
+        <div class="{% if safety.requires_override %}bg-critical{% else %}bg-caution{% endif %} px-5 py-3 text-white">
+            <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
                 Verificación de seguridad — {{ safety.summary_line() }}
             </h2>
@@ -96,14 +94,11 @@
             {% for finding in safety.findings %}
             <li class="p-5">
                 <div class="flex items-start gap-3">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-black shrink-0 mt-0.5
-                        {% if finding.severity == 'block' %}bg-rose-600 text-white
-                        {% elif finding.severity == 'warn' %}bg-amber-500 text-white
-                        {% else %}bg-slate-300 text-slate-800{% endif %}">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 mt-0.5 {% if finding.severity == 'block' %}bg-critical text-white {% elif finding.severity == 'warn' %}bg-caution text-white {% else %}bg-slate-300 text-slate-800{% endif %}">
                         {{ finding.severity_label | upper }}
                     </span>
                     <div class="min-w-0">
-                        <p class="font-black text-slate-900">{{ finding.title }}</p>
+                        <p class="font-semibold text-slate-900">{{ finding.title }}</p>
                         <p class="text-sm text-slate-700 mt-1 leading-relaxed">{{ finding.detail }}</p>
                         {% if finding.recommendation %}
                         <p class="text-sm text-slate-800 mt-2 bg-slate-50 border-l-4 border-slate-300 pl-3 py-2 rounded-r leading-relaxed">
@@ -129,8 +124,8 @@
 
         <!-- Justificación para continuar pese a una alerta bloqueante -->
         {% if safety and safety.requires_override %}
-        <div class="bg-rose-50 border-2 border-rose-400 rounded-2xl p-5">
-            <label for="safety_override_reason" class="font-black text-rose-900 block mb-2">
+        <div class="bg-critical-subtle border-2 border-critical rounded-2xl p-5">
+            <label for="safety_override_reason" class="font-semibold text-rose-900 block mb-2">
                 Justificación clínica para continuar
             </label>
             <p class="text-sm text-rose-900 mb-3 leading-relaxed">
@@ -141,28 +136,28 @@
             <textarea id="safety_override_reason" name="safety_override_reason" rows="3"
                 required minlength="20" maxlength="1000"
                 placeholder="Por ejemplo: la reacción previa fue un exantema leve no inmediato hace 15 años; riesgo de anafilaxia bajo; se indica observación durante 30 minutos tras la primera dosis."
-                class="w-full px-4 py-3 border-2 border-rose-200 rounded-xl text-sm focus:border-rose-500 outline-none resize-y">{{ request.form.get('safety_override_reason', '') }}</textarea>
+                class="w-full px-4 py-3 border-2 border-critical-border rounded-xl text-sm focus:border-critical outline-none resize-y">{{ request.form.get('safety_override_reason', '') }}</textarea>
         </div>
         {% endif %}
 
         <!-- SECCIÓN 1: Datos de la Institución (auto) -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-sky-600 to-blue-700 px-5 py-3 text-white">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-accent px-5 py-3 text-white">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="building-2" class="w-4 h-4"></i> Datos de la Institución
                 </h2>
             </div>
             <div class="p-5 grid sm:grid-cols-3 gap-4 bg-sky-50/30">
                 <div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Entidad</span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Entidad</span>
                     <p class="font-bold text-slate-800">{{ current_user.clinic.name if current_user.clinic else 'N/A' }}</p>
                 </div>
                 <div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">NIT</span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">NIT</span>
                     <p class="font-bold text-slate-800">{{ current_user.clinic.nit if current_user.clinic and current_user.clinic.nit else 'No registrado' }}</p>
                 </div>
                 <div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Dirección</span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Dirección</span>
                     <p class="font-bold text-slate-800">{{ current_user.clinic.location if current_user.clinic and current_user.clinic.location else 'No registrada' }}</p>
                 </div>
             </div>
@@ -170,27 +165,27 @@
 
         <!-- SECCIÓN 2: Datos del Paciente -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-white">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-positive px-5 py-3 text-white">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="user" class="w-4 h-4"></i> Datos Básicos del Paciente
                 </h2>
             </div>
             <div class="p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Paciente</span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Paciente</span>
                     <p class="font-bold text-slate-800">{{ patient.name }}</p>
                 </div>
                 <div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Documento</span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Documento</span>
                     <p class="font-bold text-slate-800">{{ patient.cedula }}</p>
                 </div>
                 <div>
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Edad</label>
-                    <input type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-emerald-500 outline-none transition-colors" aria-label="Edad del paciente">
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Edad</label>
+                    <input type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-positive outline-none transition-colors" aria-label="Edad del paciente">
                 </div>
                 <div>
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Nivel</label>
-                    <select name="patient_level" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-emerald-500 outline-none" aria-label="Nivel del paciente">
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Nivel</label>
+                    <select name="patient_level" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-positive outline-none" aria-label="Nivel del paciente">
                         <option value="1">Nivel 1</option>
                         <option value="2">Nivel 2</option>
                         <option value="3">Nivel 3</option>
@@ -202,23 +197,23 @@
 
         <!-- SECCIÓN 3: Aseguramiento -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-3 text-white">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-accent px-5 py-3 text-white">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="shield-check" class="w-4 h-4"></i> Cliente / Aseguramiento
                 </h2>
             </div>
             <div class="p-5 grid sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">EPS / Aseguradora</label>
-                    <input type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors" aria-label="Entidad aseguradora">
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">EPS / Aseguradora</label>
+                    <input type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-700 outline-none transition-colors" aria-label="Entidad aseguradora">
                 </div>
                 <div>
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Plan</label>
-                    <input type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors" aria-label="Plan de aseguramiento">
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Plan</label>
+                    <input type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-700 outline-none transition-colors" aria-label="Plan de aseguramiento">
                 </div>
                 <div>
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Régimen</label>
-                    <select name="insurance_regime" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-violet-500 outline-none" aria-label="Regimen">
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Régimen</label>
+                    <select name="insurance_regime" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-slate-700 outline-none" aria-label="Regimen">
                         <option value="">— Seleccionar —</option>
                         <option value="Contributivo">Contributivo</option>
                         <option value="Subsidiado">Subsidiado</option>
@@ -232,8 +227,8 @@
 
         <!-- SECCIÓN 4: Diagnósticos CIE-10 -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-white flex items-center justify-between">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-caution px-5 py-3 text-white flex items-center justify-between">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="clipboard-list" class="w-4 h-4"></i> Diagnósticos
                 </h2>
                 <button type="button" onclick="addDiagnosisRow()" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition">
@@ -242,16 +237,16 @@
             </div>
             <div class="p-5" id="diagnosis-rows">
                 <div class="grid sm:grid-cols-4 gap-2 diagnosis-row mb-2">
-                    <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none" required aria-label="Código CIE-10 (Ej: E119)">
-                    <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none" required aria-label="Descripción del diagnóstico">
+                    <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-caution outline-none" required aria-label="Código CIE-10 (Ej: E119)">
+                    <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-caution outline-none" required aria-label="Descripción del diagnóstico">
                 </div>
             </div>
         </div>
 
         <!-- SECCIÓN 5: Medicamentos (tabla legal completa) -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-emerald-600 to-green-600 px-5 py-3 text-white flex items-center justify-between">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-positive px-5 py-3 text-white flex items-center justify-between">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="pill" class="w-4 h-4"></i> Medicamentos
                 </h2>
                 <button type="button" onclick="addMedicationRow()"
@@ -397,23 +392,23 @@
 
         <!-- SECCIÓN 6: Observaciones & Caducidad -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-slate-600 to-slate-700 px-5 py-3 text-white">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-slate-700 px-5 py-3 text-white">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="message-square-text" class="w-4 h-4"></i> Observaciones y Vigencia
                 </h2>
             </div>
             <div class="p-5 space-y-4">
                 <div>
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Observaciones</label>
+                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Observaciones</label>
                     <textarea name="observations" rows="3" placeholder="Observaciones clínicas, indicaciones especiales, contraindicaciones..." class="mt-1 w-full border-2 border-slate-100 p-3 rounded-xl text-sm focus:border-slate-400 outline-none transition-colors resize-none" aria-label="Observaciones clínicas, indicaciones especiales, contraindicaciones..."></textarea>
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-600">Fecha de Caducidad</label>
+                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Fecha de Caducidad</label>
                         <input type="date" name="expires_date" required value="{{ default_expiration }}" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none" aria-label="Fecha de caducidad">
                     </div>
                     <div>
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-600">Hora de Caducidad</label>
+                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Hora de Caducidad</label>
                         <input type="time" name="expires_time" required value="23:59" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none" aria-label="Hora de caducidad">
                     </div>
                 </div>
@@ -422,8 +417,8 @@
 
         <!-- SECCIÓN 7: Firma Digital del Médico -->
         <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-indigo-600 to-blue-700 px-5 py-3 text-white flex items-center justify-between">
-                <h2 class="font-black text-sm uppercase tracking-widest flex items-center gap-2">
+            <div class="bg-accent px-5 py-3 text-white flex items-center justify-between">
+                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="pen-line" class="w-4 h-4"></i> Firma del Profesional
                 </h2>
                 <button type="button" onclick="clearSignature()" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/30 transition">Limpiar</button>
@@ -431,21 +426,21 @@
             <div class="p-5">
                 <div class="grid sm:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <span class="text-xs font-black uppercase tracking-widest text-slate-600">Nombre del Profesional</span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Nombre del Profesional</span>
                         <p class="font-bold text-slate-800 text-lg">{{ current_user.name }}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <span class="text-xs font-black uppercase tracking-widest text-slate-600">Reg. Médico</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Reg. Médico</span>
                             <p class="font-bold text-slate-800">{{ current_user.medical_registration or 'No registrado' }}</p>
                         </div>
                         <div>
-                            <span class="text-xs font-black uppercase tracking-widest text-slate-600">Especialidad</span>
+                            <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Especialidad</span>
                             <p class="font-bold text-slate-800">{{ current_user.specialty or 'Medicina General' }}</p>
                         </div>
                     </div>
                 </div>
-                <div class="border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/30 relative" style="touch-action: none;">
+                <div class="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/30 relative" style="touch-action: none;">
                     <canvas id="signature-canvas" width="700" height="160" class="w-full rounded-xl cursor-crosshair" style="height:160px;"></canvas>
                     <p class="absolute bottom-2 right-3 text-xs text-indigo-300 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
                 </div>
@@ -463,7 +458,7 @@
         <div id="live-safety" class="hidden"></div>
 
         <!-- BOTÓN DE ENVÍO -->
-        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl font-black text-lg inline-flex items-center justify-center gap-3 shadow-xl shadow-emerald-200/50 hover:shadow-emerald-300/50 transition-colors active:scale-[0.98]">
+        <button type="submit" class="w-full bg-positive text-white px-6 py-4 rounded-2xl font-semibold text-lg inline-flex items-center justify-center gap-3 shadow-sm hover:shadow-emerald-300/50 transition-colors">
             <i data-lucide="shield-check" class="w-6 h-6"></i>
             Firmar y Emitir Orden Médica
         </button>
@@ -505,8 +500,8 @@
     }
 
     const SEVERITY_STYLES = {
-        block: { chip: 'bg-rose-600 text-white', box: 'border-rose-400', label: 'BLOQUEANTE' },
-        warn:  { chip: 'bg-amber-500 text-white', box: 'border-amber-300', label: 'ADVERTENCIA' },
+        block: { chip: 'bg-critical text-white', box: 'border-critical', label: 'BLOQUEANTE' },
+        warn:  { chip: 'bg-caution text-white', box: 'border-caution-border', label: 'ADVERTENCIA' },
         info:  { chip: 'bg-slate-300 text-slate-800', box: 'border-slate-200', label: 'INFORMATIVO' }
     };
 
@@ -521,8 +516,8 @@
         panel.className = 'bg-white border-2 rounded-2xl overflow-hidden ' + style.box;
 
         const header = document.createElement('div');
-        header.className = (report.requires_override ? 'bg-rose-600' : 'bg-amber-500')
-            + ' px-5 py-3 text-white font-black text-sm uppercase tracking-widest';
+        header.className = (report.requires_override ? 'bg-critical' : 'bg-caution')
+            + ' px-5 py-3 text-white font-semibold text-sm uppercase tracking-widest';
         header.textContent = report.requires_override
             ? 'Revisa antes de firmar — hay alertas bloqueantes'
             : 'Revisa antes de firmar';
@@ -537,7 +532,7 @@
 
             const chip = document.createElement('span');
             const chipStyle = SEVERITY_STYLES[finding.severity] || SEVERITY_STYLES.info;
-            chip.className = 'px-2 py-0.5 rounded-full text-xs font-black shrink-0 mt-0.5 '
+            chip.className = 'px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 mt-0.5 '
                 + chipStyle.chip;
             chip.textContent = chipStyle.label;
             item.appendChild(chip);
@@ -546,7 +541,7 @@
             body.className = 'min-w-0';
 
             const title = document.createElement('p');
-            title.className = 'font-black text-slate-900';
+            title.className = 'font-semibold text-slate-900';
             // textContent, no innerHTML: el contenido incluye nombres escritos
             // por el usuario y no debe interpretarse como marcado.
             title.textContent = finding.title;
@@ -621,9 +616,9 @@ function addDiagnosisRow() {
     const row = document.createElement('div');
     row.className = 'grid sm:grid-cols-4 gap-2 diagnosis-row mb-2';
     row.innerHTML = `
-        <input type="text" name="dx_code" placeholder="Código CIE-10" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none" aria-label="Código CIE-10">
+        <input type="text" name="dx_code" placeholder="Código CIE-10" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-caution outline-none" aria-label="Código CIE-10">
         <div class="sm:col-span-2 flex gap-2">
-            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none" aria-label="Descripción del diagnóstico">
+            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-caution outline-none" aria-label="Descripción del diagnóstico">
         </div>
         <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="text-red-400 hover:text-red-600 transition text-sm font-bold">Eliminar</button>
     `;

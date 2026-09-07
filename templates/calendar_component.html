@@ -24,11 +24,10 @@
         {% for day in month_days %}
             {% if day.is_current_month and not day.is_past %}
                 <a href="?month={{ current_view_date.strftime('%Y-%m') }}&date={{ day.date_str }}" 
-                   class="relative p-2 md:p-3 rounded-xl border-2 text-center transition 
-                   {% if day.date_str == selected_date %}border-medical bg-medical-light shadow-md{% elif day.is_working_day %}border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer{% else %}border-gray-100 bg-gray-50 cursor-not-allowed opacity-40{% endif %}">
+                   class="relative p-2 md:p-3 rounded-xl border-2 text-center transition {% if day.date_str == selected_date %}border-medical bg-medical-light shadow-md{% elif day.is_working_day %}border-positive-border bg-positive-subtle hover:bg-positive-subtle cursor-pointer{% else %}border-gray-100 bg-gray-50 cursor-not-allowed opacity-40{% endif %}">
                     <span class="block text-sm md:text-lg font-bold {% if day.date_str == selected_date %}text-medical-dark{% elif day.is_working_day %}text-green-800{% else %}text-gray-600{% endif %}">{{ day.day_num }}</span>
                     {% if day.is_working_day and day.date_str != selected_date %}
-                        <span class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                        <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-positive rounded-full"></span>
                     {% endif %}
                 </a>
             {% else %}
