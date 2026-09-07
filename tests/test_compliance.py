@@ -218,10 +218,59 @@ class TestRIPSValidation:
                 clinic_id=1, patient_id=patient.id, doctor_id=doctor.id,
                 record_type='consulta', cie10_code='Z000', cups_code='890201',
                 summary='Consulta de control', created_at=colombia_now(),
+                # Causa externa y finalidad: antes el generador las inventaba.
+                external_cause='26', consultation_purpose='15',
+                care_modality='01',
             ))
             db.session.commit()
 
         return {'doctor': doctor, 'patient': patient}
+
+    def test_export_refuses_without_external_cause(self, app, clinic_with_attention):
+        """La causa externa ya no se rellena con "enfermedad general".
+
+        De ese campo depende que un accidente de trabajo se reporte a la ARL,
+        uno de transito al SOAT, y que una lesion por agresion no desaparezca
+        del reporte.
+        """
+        from models import MedicalHistory, db
+        from rips_service import preview_validation
+        from time_utils import colombia_now
+
+        datos = clinic_with_attention
+        with app.app_context():
+            historia = MedicalHistory.query.filter_by(
+                patient_id=datos['patient'].id).first()
+            historia.external_cause = None
+            db.session.commit()
+
+            informe = preview_validation(1, colombia_now() - timedelta(days=1),
+                                         colombia_now() + timedelta(days=1))
+            mensajes = ' '.join(i['message'] for i in informe['issues'])
+            assert 'causa externa' in mensajes.lower()
+
+    def test_export_carries_the_recorded_external_cause(self, app, clinic_with_attention):
+        """Lo que se exporta es lo que consigno el profesional, no un valor fijo."""
+        from models import MedicalHistory, db
+        from rips_service import generate_rips
+        from time_utils import colombia_now
+
+        datos = clinic_with_attention
+        with app.app_context():
+            historia = MedicalHistory.query.filter_by(
+                patient_id=datos['patient'].id).first()
+            # Lesion por agresion: el caso que el generador anterior borraba.
+            historia.external_cause = '28'
+            db.session.commit()
+
+            paquete = generate_rips(1, colombia_now() - timedelta(days=1),
+                                    colombia_now() + timedelta(days=1),
+                                    invoice_number='FE-1')
+            import io as _io
+            import zipfile
+            with zipfile.ZipFile(_io.BytesIO(paquete)) as z:
+                ac = z.read([n for n in z.namelist() if n.startswith('AC')][0])
+            assert ',28,' in ac.decode('utf-8'), 'no se exporto la causa externa real'
 
     def test_export_refuses_when_data_is_missing(self, app, make_user):
         """La versión anterior inventaba los datos que faltaban."""

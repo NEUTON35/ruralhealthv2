@@ -268,6 +268,9 @@ class TestIntegracionConLaAtencion:
             'cie10_code': 'Z000',
             'cups_code': '890201',
             'treatment': 'Continuar tratamiento',
+            'external_cause': '26',
+            'consultation_purpose': '15',
+            'care_modality': '01',
         }, follow_redirects=False)
         assert respuesta.status_code in (302, 303)
 

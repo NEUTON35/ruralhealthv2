@@ -197,6 +197,42 @@
                     <input type="text" name="cups_code" placeholder="Ej: 890201" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Codigo CUPS">
                 </div>
             </div>
+            {# Causa externa y finalidad. Antes el reporte los inventaba: toda
+               atencion salia como "enfermedad general", lo que traslada al
+               pagador equivocado un accidente de trabajo o de transito y borra
+               del reporte las lesiones por agresion. Ahora los determina quien
+               atiende, que es el unico que puede saberlo. #}
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label for="external_cause" class="text-xs font-bold text-slate-600 uppercase">Causa externa</label>
+                    <select id="external_cause" name="external_cause" required
+                            class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none">
+                        <option value="">Seleccione…</option>
+                        {% for codigo, etiqueta in causas_externas %}
+                        <option value="{{ codigo }}">{{ etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="consultation_purpose" class="text-xs font-bold text-slate-600 uppercase">Finalidad</label>
+                    <select id="consultation_purpose" name="consultation_purpose" required
+                            class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none">
+                        <option value="">Seleccione…</option>
+                        {% for codigo, etiqueta in finalidades %}
+                        <option value="{{ codigo }}">{{ etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label for="care_modality" class="text-xs font-bold text-slate-600 uppercase">Modalidad de atención</label>
+                <select id="care_modality" name="care_modality" required
+                        class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none">
+                    {% for codigo, etiqueta in modalidades %}
+                    <option value="{{ codigo }}" {% if codigo == modalidad_sugerida %}selected{% endif %}>{{ etiqueta }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <textarea name="diagnosis" placeholder="Diagnóstico detallado..." class="w-full border p-2 rounded text-xs h-16 focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Diagnóstico detallado..."></textarea>
             <textarea name="treatment" placeholder="Plan de tratamiento / Conducta..." class="w-full border p-2 rounded text-xs h-16 focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Plan de tratamiento / Conducta..."></textarea>
             <button type="submit" class="w-full bg-caution text-white p-2 rounded-lg font-bold text-xs hover:bg-caution transition flex items-center justify-center gap-2">

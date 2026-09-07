@@ -908,7 +908,7 @@ def bootstrap_schema(db, create_tables=True):
         create_tables: crear el esquema si falta. Solo para desarrollo y pruebas;
             en producción el esquema lo gobierna Alembic.
     """
-    from models import CIE10, CUPS, Clinic, Pharmacy, RetentionPolicy
+    from models import CIE10, CUPS, Clinic, Pharmacy, RIPSReferenceCode, RetentionPolicy
 
     if create_tables:
         db.create_all()
@@ -948,7 +948,7 @@ def seed_reference_data(db):
         python manage.py load-cie10 <archivo.csv>
         python manage.py load-cups  <archivo.csv>
     """
-    from models import CIE10, CUPS, RetentionPolicy
+    from models import CIE10, CUPS, RIPSReferenceCode, RetentionPolicy
 
     if not CIE10.query.limit(1).first():
         db.session.add_all([
@@ -961,6 +961,87 @@ def seed_reference_data(db):
             CUPS(code="890201", description="Consulta de primera vez por medicina general"),
             CUPS(code="890301", description="Consulta de control o seguimiento por medicina general"),
         ])
+
+    # Tablas de referencia del RIPS. ATENCION: esta semilla es PARCIAL. Son las
+    # entradas que pudieron verificarse contra el portal del Ministerio; cada
+    # tabla tiene mas codigos. La carga completa se hace con
+    # `manage.py load-rips-tables` contra el archivo oficial.
+    #
+    # Se incluyen aqui las de causa externa que importan clinicamente: sin
+    # ellas no se puede distinguir un accidente de trabajo, uno de transito o
+    # una lesion por agresion, que es justo lo que el generador anterior
+    # borraba al reportar todo como enfermedad general.
+    if not RIPSReferenceCode.query.limit(1).first():
+        semilla = {
+            'RIPSCausaExternaVersion2': [
+                ('21', 'Accidente de trabajo'),
+                ('22', 'Accidente en el hogar'),
+                ('23', 'Accidente de transito de origen comun'),
+                ('24', 'Accidente de transito de origen laboral'),
+                ('25', 'Accidente en el entorno educativo'),
+                ('26', 'Otro tipo de accidente'),
+                ('27', 'Evento catastrofico de origen natural'),
+                ('28', 'Lesion por agresion'),
+                ('29', 'Lesion auto infligida'),
+                ('30', 'Sospecha de violencia fisica'),
+            ],
+            'RIPSFinalidadConsultaVersion2': [
+                ('11', 'Valoracion integral para la promocion y mantenimiento'),
+                ('12', 'Deteccion temprana de enfermedad general'),
+                ('13', 'Deteccion temprana de enfermedad laboral'),
+                ('14', 'Proteccion especifica'),
+                ('15', 'Diagnostico'),
+                ('16', 'Tratamiento'),
+                ('17', 'Rehabilitacion'),
+                ('18', 'Paliacion'),
+                ('19', 'Planificacion familiar y anticoncepcion'),
+                ('20', 'Promocion y apoyo a la lactancia materna'),
+            ],
+            'ModalidadAtencion': [
+                ('01', 'Intramural'),
+                ('02', 'Extramural unidad movil'),
+                ('03', 'Extramural domiciliaria'),
+                ('04', 'Extramural jornada de salud'),
+                ('06', 'Telemedicina interactiva'),
+                ('07', 'Telemedicina no interactiva'),
+                ('08', 'Telemedicina telexperticia'),
+                ('09', 'Telemedicina telemonitoreo'),
+            ],
+            'RIPSTipoUsuarioVersion2': [
+                ('01', 'Contributivo cotizante'),
+                ('02', 'Contributivo beneficiario'),
+                ('03', 'Contributivo adicional'),
+                ('04', 'Subsidiado'),
+                ('05', 'No afiliado'),
+                ('06', 'Especial o excepcion cotizante'),
+                ('07', 'Especial o excepcion beneficiario'),
+                ('08', 'Persona privada de la libertad a cargo del Fondo Nacional de Salud'),
+                ('09', 'Tomador o amparado ARL'),
+                ('10', 'Tomador o amparado SOAT'),
+            ],
+            # OJO: la zona del RIPS va al reves que la del RDA. Aqui 01 es
+            # Rural; en ColombianResidenceZone del IHCE, 01 es Urbana.
+            'ZonaVersion2': [
+                ('01', 'Rural'),
+                ('02', 'Urbano'),
+            ],
+            'conceptoRecaudo': [
+                ('01', 'Copago'),
+                ('02', 'Cuota moderadora'),
+                ('03', 'Pagos compartidos en planes voluntarios de salud'),
+                ('04', 'Anticipo'),
+                ('05', 'No aplica'),
+            ],
+            'RIPSTipoDiagnosticoPrincipal': [
+                ('1', 'Impresion diagnostica'),
+                ('2', 'Confirmado nuevo'),
+                ('3', 'Confirmado repetido'),
+            ],
+        }
+        for tabla, filas in semilla.items():
+            for codigo, descripcion in filas:
+                db.session.add(RIPSReferenceCode(
+                    table_name=tabla, code=codigo, description=descripcion))
 
     # Plazos de conservación documental. Tenerlos en datos, y no en la memoria de
     # alguien, es lo que permite auditar que se respetan.

@@ -136,7 +136,17 @@ ZONAS_RESIDENCIA = {
 }
 
 # La aplicacion guarda la zona como U/R desde antes de esta integracion.
+#
+# CUIDADO: esta tabla va al reves que la del RIPS. Aqui, en el catalogo del
+# IHCE (ColombianResidenceZone), 01 es Urbana y 02 es Rural. En el catalogo del
+# RIPS (ZonaVersion2) es al contrario: 01 es Rural y 02 es Urbano. Confundirlas
+# reporta a todo el mundo en la zona equivocada, y en una plataforma rural eso
+# significa exactamente el error mas caro posible.
 ZONA_A_CODIGO = {'U': '01', 'R': '02'}
+
+# Modalidades de telemedicina segun el catalogo ModalidadAtencion del
+# Ministerio. Determinan la clase del Encounter.
+MODALIDADES_TELEMEDICINA = ('06', '07', '08', '09')
 
 
 # --- Secciones del RDA de consulta ------------------------------------------

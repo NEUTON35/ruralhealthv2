@@ -176,6 +176,27 @@ def validate_history(history):
             'field': 'cups_code',
             'message': 'La atencion no tiene procedimiento CUPS.',
         })
+    if not history.external_cause:
+        issues.append({
+            'scope': 'atencion',
+            'entity_id': history.id,
+            'entity': label,
+            'field': 'external_cause',
+            'message': (
+                'La atencion no tiene causa externa. Ese campo distingue una '
+                'enfermedad general de un accidente de trabajo, uno de transito '
+                'o una lesion por agresion, y de el depende que la atencion se '
+                'reporte al pagador correcto.'
+            ),
+        })
+    if not history.consultation_purpose:
+        issues.append({
+            'scope': 'atencion',
+            'entity_id': history.id,
+            'entity': label,
+            'field': 'consultation_purpose',
+            'message': 'La atencion no tiene finalidad de consulta.',
+        })
     if not history.doctor_id:
         issues.append({
             'scope': 'atencion',
@@ -314,8 +335,8 @@ def generate_rips(clinic_id, start_date, end_date, invoice_number=None, strict=T
             history.created_at.strftime('%d/%m/%Y'),
             '',                                   # numero de autorizacion
             history.cups_code or '',
-            '10',                                 # finalidad: atencion general
-            '13',                                 # causa externa: enfermedad general
+            history.consultation_purpose or '',
+            history.external_cause or '',
             history.cie10_code or '',
             '',                                   # diagnostico relacionado 1
             '',                                   # diagnostico relacionado 2

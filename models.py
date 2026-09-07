@@ -438,6 +438,11 @@ class Appointment(ClinicScoped, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # Fecha en que el usuario SOLICITO la cita, distinta de la fecha asignada.
+    # Sin ella no puede calcularse la oportunidad, que es el indicador con el
+    # que se mide el acceso (Resolucion 1552 de 2013).
+    requested_at = db.Column(db.DateTime, default=colombia_now, nullable=True,
+                             index=True)
     date = db.Column(db.String(10), nullable=False)
     time = db.Column(db.String(5), nullable=False)
     appointment_type = db.Column(db.String(80), default='Consulta', nullable=False)
@@ -487,6 +492,14 @@ class DoctorSchedule(ClinicScoped, db.Model):
     
     doctor = db.relationship('User', foreign_keys=[doctor_id])
 
+# --- Catalogos del RIPS (Resolucion 948 de 2026) -----------------------------
+# Modalidad de atencion. Los codigos 06 a 09 son telemedicina: registrarlos es
+# lo que exige la Resolucion 2654 de 2019 para dejar constancia de la modalidad.
+MODALIDAD_INTRAMURAL = '01'
+MODALIDAD_TELEMEDICINA_INTERACTIVA = '06'
+MODALIDADES_TELEMEDICINA = ('06', '07', '08', '09')
+
+
 class MedicalHistory(ClinicScoped, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -500,8 +513,42 @@ class MedicalHistory(ClinicScoped, db.Model):
     cups_code = db.Column(db.String(20), nullable=True, index=True)
     treatment = db.Column(EncryptedText, nullable=True)
     created_at = db.Column(db.DateTime, default=colombia_now)
+
+    # --- Datos que exige el reporte, y que antes se inventaban --------------
+    # `rips_service` quemaba una causa externa fija ("enfermedad general") para
+    # toda atencion. Ese campo distingue enfermedad general de accidente de
+    # trabajo (ARL), de transito (SOAT) y de lesion por agresion. Reportarlo
+    # todo igual traslada el costo al pagador equivocado y, sobre todo, borra
+    # del reporte los casos de agresion, que son los que activan rutas de
+    # proteccion. Ahora lo determina el profesional en cada atencion.
+    external_cause = db.Column(db.String(2), nullable=True, index=True)
+    consultation_purpose = db.Column(db.String(2), nullable=True)
+    # Resolucion 2654 de 2019: la historia clinica debe dejar constancia de si
+    # la atencion fue presencial o por telemedicina.
+    care_modality = db.Column(db.String(2), default=MODALIDAD_INTRAMURAL,
+                              nullable=True, index=True)
+
+    # --- Adenda (Resolucion 1995 de 1999) ----------------------------------
+    # La historia clinica no se corrige borrando: se corrige por adenda, que
+    # deja el registro anterior intacto y anade uno nuevo que lo enmienda. Sin
+    # esto, un profesional que consigna un diagnostico equivocado no tiene
+    # salida, y ese diagnostico ya viajo al IHCE.
+    amends_id = db.Column(db.Integer, db.ForeignKey('medical_history.id'),
+                          nullable=True, index=True)
+    amendment_reason = db.Column(EncryptedText, nullable=True)
+
     patient = db.relationship('User', foreign_keys=[patient_id], backref='medical_histories')
     doctor = db.relationship('User', foreign_keys=[doctor_id])
+    amends = db.relationship('MedicalHistory', remote_side=[id],
+                             foreign_keys=[amends_id])
+
+    @property
+    def is_telemedicine(self):
+        return (self.care_modality or '') in MODALIDADES_TELEMEDICINA
+
+    @property
+    def is_amendment(self):
+        return self.amends_id is not None
 
 class InventoryItem(ClinicScoped, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -1327,3 +1374,58 @@ class RDASubmission(ClinicScoped, db.Model):
     def needs_attention(self):
         """Requiere que una persona intervenga."""
         return self.status in (RDA_RECHAZADO, RDA_BLOQUEADO)
+
+
+class RIPSReferenceCode(db.Model):
+    """Tabla de referencia del RIPS publicada por el Ministerio en SISPRO.
+
+    Por que vive en base de datos y no en el codigo
+    ----------------------------------------------
+    Son catalogos oficiales que el Ministerio actualiza sin avisar y sin
+    cambiar la norma. Quemarlos en el codigo obliga a desplegar cada vez que
+    cambian, y garantiza que tarde o temprano se queden viejos.
+
+    Ademas, el codigo semilla que trae la aplicacion es **parcial**: cubre las
+    primeras entradas de cada tabla. La carga completa se hace con
+    `manage.py load-rips-tables`, contra el archivo que publica el Ministerio.
+    Hasta entonces, exportar un RIPS con un codigo que no este aqui se rechaza
+    en lugar de radicarse: la regla RVC096 de la Resolucion 948 de 2026 bloquea
+    los codigos de relleno, y es mejor detectarlo antes de enviarlo.
+    """
+    __tablename__ = 'rips_reference_code'
+
+    id = db.Column(db.Integer, primary_key=True)
+    table_name = db.Column(db.String(60), nullable=False, index=True)
+    code = db.Column(db.String(10), nullable=False)
+    description = db.Column(db.String(250), nullable=False)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+
+    __table_args__ = (
+        db.UniqueConstraint('table_name', 'code', name='uq_rips_ref_tabla_codigo'),
+    )
+
+    @staticmethod
+    def opciones(tabla):
+        """Codigos activos de una tabla, ordenados. Para los desplegables."""
+        filas = (RIPSReferenceCode.query
+                 .filter_by(table_name=tabla, active=True)
+                 .order_by(RIPSReferenceCode.code).all())
+        return [(f.code, f.description) for f in filas]
+
+    @staticmethod
+    def es_valido(tabla, codigo):
+        if not codigo:
+            return False
+        return RIPSReferenceCode.query.filter_by(
+            table_name=tabla, code=str(codigo).strip(), active=True).first() is not None
+
+
+# Nombres de las tablas de referencia que usa la aplicacion.
+TABLA_CAUSA_EXTERNA = 'RIPSCausaExternaVersion2'
+TABLA_FINALIDAD = 'RIPSFinalidadConsultaVersion2'
+TABLA_MODALIDAD = 'ModalidadAtencion'
+TABLA_TIPO_USUARIO = 'RIPSTipoUsuarioVersion2'
+TABLA_ZONA = 'ZonaVersion2'
+TABLA_CONCEPTO_RECAUDO = 'conceptoRecaudo'
+TABLA_TIPO_DIAGNOSTICO = 'RIPSTipoDiagnosticoPrincipal'

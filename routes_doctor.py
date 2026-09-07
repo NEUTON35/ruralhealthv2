@@ -9,6 +9,9 @@ from flask_login import login_required, current_user
 from security import audit, csv_safe_row, generate_signed_order_hash, role_required, save_secure_upload, validate_medical_code
 from clinical_safety import COMMON_MEDICATIONS, evaluate_prescription, normalize_drug
 from sqlalchemy.exc import IntegrityError
+from models import (RIPSReferenceCode, TABLA_CAUSA_EXTERNA, TABLA_FINALIDAD,
+                    TABLA_MODALIDAD, MODALIDAD_INTRAMURAL,
+                    MODALIDAD_TELEMEDICINA_INTERACTIVA)
 from models import ADMINISTRATION_ROUTES, APPOINTMENT_FREEING_STATUSES, CARE_IN_PERSON, CARE_MODALITIES, CARE_TELEMEDICINE, DOSAGE_FORMS, InformedConsentLog, MedicalHistory, Notification, ACCESS_ACTIVE, Clinic, DoctorTariff, PatientAllergy, PatientChronicCondition, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_APPROVED, PAYMENT_PENDING, PAYMENT_REJECTED, db, User, Chat, Message, Appointment, QuestionFlow, DoctorSchedule, MedicalOrder
 from datetime import datetime, timedelta
 from time_utils import colombia_now, colombia_strftime
@@ -1072,6 +1075,25 @@ def chat(chat_id):
                 flash(cups_res)
                 return redirect(url_for('doctor.chat', chat_id=chat_obj.id))
 
+            # Causa externa, finalidad y modalidad. Se validan contra el
+            # catalogo oficial: la regla RVC096 de la Resolucion 948 de 2026
+            # rechaza los codigos de relleno, y es mejor detectarlo aqui que
+            # cuando la factura vuelva devuelta.
+            causa = (request.form.get('external_cause') or '').strip()
+            finalidad = (request.form.get('consultation_purpose') or '').strip()
+            modalidad = (request.form.get('care_modality') or '').strip()
+
+            if not RIPSReferenceCode.es_valido(TABLA_CAUSA_EXTERNA, causa):
+                flash('Seleccione una causa externa valida. De ella depende que '
+                      'la atencion se reporte al pagador correcto.')
+                return redirect(url_for('doctor.chat', chat_id=chat_obj.id))
+            if not RIPSReferenceCode.es_valido(TABLA_FINALIDAD, finalidad):
+                flash('Seleccione una finalidad de consulta valida.')
+                return redirect(url_for('doctor.chat', chat_id=chat_obj.id))
+            if not RIPSReferenceCode.es_valido(TABLA_MODALIDAD, modalidad):
+                flash('Seleccione una modalidad de atencion valida.')
+                return redirect(url_for('doctor.chat', chat_id=chat_obj.id))
+
             history = MedicalHistory(
                 clinic_id=current_user.clinic_id,
                 patient_id=chat_obj.patient_id,
@@ -1083,7 +1105,10 @@ def chat(chat_id):
                 diagnosis=diagnosis,
                 cie10_code=cie_res,
                 cups_code=cups_res,
-                treatment=treatment
+                treatment=treatment,
+                external_cause=causa,
+                consultation_purpose=finalidad,
+                care_modality=modalidad,
             )
             db.session.add(history)
             audit('medical_history_recorded', details=f'patient_id={chat_obj.patient_id}')
@@ -1137,7 +1162,22 @@ def chat(chat_id):
             nearby_doctors.append({'doctor': colleague, 'distance_km': distance})
         nearby_doctors.sort(key=lambda item: item['distance_km'] if item['distance_km'] is not None else 999999)
     
-    return render_template('doctor_chat.html', chat=chat_obj, messages=messages, file_history=file_history, flows=flows, nearby_doctors=nearby_doctors)
+    # Catalogos oficiales para los desplegables del formulario. La modalidad se
+    # sugiere por el tipo de cita, pero la decide el profesional: una cita
+    # agendada como presencial puede terminar atendiendose por telemedicina.
+    modalidad_sugerida = MODALIDAD_INTRAMURAL
+    cita = chat_obj.appointment
+    if cita is not None and (cita.appointment_type or '').lower() in ('virtual', 'telemedicina'):
+        modalidad_sugerida = MODALIDAD_TELEMEDICINA_INTERACTIVA
+
+    return render_template(
+        'doctor_chat.html', chat=chat_obj, messages=messages,
+        file_history=file_history, flows=flows, nearby_doctors=nearby_doctors,
+        causas_externas=RIPSReferenceCode.opciones(TABLA_CAUSA_EXTERNA),
+        finalidades=RIPSReferenceCode.opciones(TABLA_FINALIDAD),
+        modalidades=RIPSReferenceCode.opciones(TABLA_MODALIDAD),
+        modalidad_sugerida=modalidad_sugerida,
+    )
 
 
 @doctor_bp.route('/refer/<int:chat_id>', methods=['POST'])

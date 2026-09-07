@@ -234,12 +234,23 @@ def construir_encuentro(historia, ref_paciente, ref_profesional, ref_ips, indice
     que estos cuatro campos determinan la identidad del RDA.
     """
     inicio = _instante(getattr(historia, 'created_at', None))
+
+    # La clase del encuentro depende de la modalidad. Antes iba siempre como
+    # ambulatorio presencial porque la historia clinica no guardaba el dato;
+    # ahora lo guarda, y una atencion por telemedicina se identifica como tal,
+    # que es lo que exige la Resolucion 2654 de 2019.
+    modalidad = (getattr(historia, 'care_modality', None) or '').strip()
+    if modalidad in T.MODALIDADES_TELEMEDICINA:
+        clase = {'system': T.V3_ACT_CODE, 'code': 'VR', 'display': 'virtual'}
+    else:
+        clase = {'system': T.V3_ACT_CODE, 'code': 'AMB', 'display': 'ambulatory'}
+
     recurso = {
         'resourceType': 'Encounter',
         'id': 'Encounter-%d' % indice,
         'meta': {'profile': [T.PERFIL_ENCOUNTER_CONSULTA]},
         'status': 'finished',
-        'class': {'system': T.V3_ACT_CODE, 'code': 'AMB', 'display': 'ambulatory'},
+        'class': clase,
         'subject': {'reference': 'Patient/' + ref_paciente},
         'participant': [{
             'individual': {'reference': 'Practitioner/' + ref_profesional},
