@@ -24,12 +24,14 @@ sencillamente no existía:
     python manage.py rda-problems           Envios de RDA que requieren revision
     python manage.py rda-backfill           Encola atenciones sin registro de envio
     python manage.py rda-preview <id>       Revisa un RDA sin transmitirlo
+    python manage.py rips-json              Genera el RIPS vigente (Res 948/2026)
 
 Los comandos que modifican datos piden confirmación explícita.
 """
 
 import argparse
 import csv
+import io
 import os
 import re
 import sys
@@ -926,6 +928,63 @@ def cmd_rda_preview(args):
             print('Use --json para ver el documento completo.')
         return 0
 
+
+def cmd_rips_json(args):
+    """Genera el RIPS en el formato vigente (Resolucion 948 de 2026)."""
+    from datetime import datetime
+
+    app = get_app()
+    import rips_json
+
+    def _fecha(texto):
+        return datetime.strptime(texto, '%Y-%m-%d')
+
+    with app.app_context():
+        try:
+            inicio, fin = _fecha(args.desde), _fecha(args.hasta)
+        except ValueError:
+            fail('Las fechas van en formato AAAA-MM-DD.')
+            return 1
+
+        if args.preview:
+            informe = rips_json.preview(args.clinic_id, inicio, fin, args.factura)
+            if not informe['ok']:
+                fail('El periodo no puede generarse. Faltan datos:')
+                for problema in informe['issues']:
+                    print('   - [%s] %s' % (problema['entity'], problema['message']))
+                return 2
+            ok('El periodo puede generarse.')
+            print('   Usuarios:  %d' % informe['usuarios'])
+            print('   Consultas: %d' % informe['consultas'])
+            for aviso in informe['avisos']:
+                warn(aviso)
+            return 0
+
+        if not args.factura:
+            fail('Indique el numero de la factura electronica con --factura. '
+                 'El RIPS es su soporte.')
+            return 1
+
+        try:
+            documento, avisos = rips_json.generar(
+                args.clinic_id, inicio, fin, args.factura)
+        except rips_json.RIPSJSONError as e:
+            fail('No se genero el archivo. Faltan datos:')
+            for problema in e.issues:
+                print('   - [%s] %s' % (problema['entity'], problema['message']))
+            return 2
+
+        contenido = rips_json.serializar(documento)
+        with io.open(args.salida, 'w', encoding='utf-8') as destino:
+            destino.write(contenido)
+        ok('Escrito %s (%d usuarios, %d consultas).' % (
+            args.salida, len(documento['usuarios']),
+            len(documento['servicios']['consultas'])))
+        print()
+        for aviso in avisos:
+            warn(aviso)
+        return 0
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog='manage.py',
@@ -1022,6 +1081,17 @@ def build_parser():
     p.add_argument('history_id', type=int)
     p.add_argument('--json', action='store_true', help='Documento FHIR completo')
     p.set_defaults(func=cmd_rda_preview)
+
+
+    p = sub.add_parser('rips-json', help='Genera el RIPS vigente (Res 948 de 2026)')
+    p.add_argument('clinic_id', type=int)
+    p.add_argument('desde', help='AAAA-MM-DD')
+    p.add_argument('hasta', help='AAAA-MM-DD')
+    p.add_argument('--factura', help='Numero de la factura electronica de venta')
+    p.add_argument('--salida', default='rips.json')
+    p.add_argument('--preview', action='store_true',
+                   help='Solo comprobar, sin escribir el archivo')
+    p.set_defaults(func=cmd_rips_json)
 
     return parser
 

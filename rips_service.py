@@ -1,7 +1,20 @@
-"""Generación del Registro Individual de Prestación de Servicios de Salud (RIPS).
+"""RIPS en formato plano. **FORMATO DEROGADO — no sirve para radicar.**
 
-Por qué se reescribió
----------------------
+Lea esto antes de usarlo
+------------------------
+Este módulo genera los archivos planos CT, AF, US y AC de la **Resolución 3374
+de 2000**, que fue **derogada el 30 de junio de 2023** por la Resolución 1036 de
+2022. Lo vigente es la **Resolución 948 de 2026**: RIPS en JSON, asociado a la
+factura electrónica de venta en salud, validado en el Mecanismo Único de
+Validación del Ministerio, que devuelve el CUV.
+
+**Para radicar use `rips_json.py`.** Este módulo se conserva únicamente porque
+alguna entidad territorial puede seguir pidiendo el plano para conciliaciones
+históricas, y porque su validación de datos sigue siendo útil. Lo que produce
+no lo recibe hoy ningún pagador.
+
+Por qué se reescribió en su momento
+-----------------------------------
 La versión anterior rellenaba con literales inventados cada campo que no tenía a
 mano: los apellidos salían como ``"Apellido1"`` y ``"Apellido2"``, la edad como
 ``30``, el sexo como ``M``, la entidad como ``EPS000``, la factura como
