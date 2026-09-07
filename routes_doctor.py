@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 from time_utils import colombia_now, colombia_strftime
 from pharmacy_utils import doctor_distance, doctor_visible_on_map
 from ihce import encolar as encolar_rda
+from surveillance import detectar as detectar_eventos
 from monetization import PLAN_LABELS, expiration_for_plan, generate_human_code, remaining_label
 import json
 import calendar
@@ -1127,7 +1128,23 @@ def chat(chat_id):
                 current_app.logger.exception('No se pudo encolar el RDA')
                 audit('rda_enqueue_failed', details=f'history_id={history.id}')
 
+            # Vigilancia en salud publica (Decreto 3518 de 2006). Se contrasta
+            # el diagnostico con el catalogo de eventos notificables. Igual que
+            # con el RDA, un fallo aqui no puede impedir guardar la atencion.
+            eventos = []
+            try:
+                eventos = detectar_eventos(db, history)
+            except Exception:
+                current_app.logger.exception('Fallo la deteccion de eventos')
+                audit('sivigila_detection_failed', details=f'history_id={history.id}')
+
             flash('Historia clínica guardada exitosamente.')
+            for evento in eventos:
+                plazo = ('de forma INMEDIATA' if evento.is_immediate
+                         else 'en la semana epidemiologica')
+                flash(f'Este caso corresponde a «{evento.name}», evento de '
+                      f'notificación obligatoria al Sivigila. Debe notificarse '
+                      f'{plazo}. Queda registrado como pendiente.')
         
         audit('doctor_chat_updated', details=f'chat_id={chat_obj.id}; action={action}')
         db.session.commit()

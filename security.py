@@ -948,7 +948,8 @@ def seed_reference_data(db):
         python manage.py load-cie10 <archivo.csv>
         python manage.py load-cups  <archivo.csv>
     """
-    from models import CIE10, CUPS, RIPSReferenceCode, RetentionPolicy
+    from models import (CIE10, CUPS, NotifiableEvent, RIPSReferenceCode,
+                        RetentionPolicy, SIVIGILA_INMEDIATA, SIVIGILA_SEMANAL)
 
     if not CIE10.query.limit(1).first():
         db.session.add_all([
@@ -1042,6 +1043,49 @@ def seed_reference_data(db):
             for codigo, descripcion in filas:
                 db.session.add(RIPSReferenceCode(
                     table_name=tabla, code=codigo, description=descripcion))
+
+    # Catalogo de eventos de interes en salud publica (Decreto 3518 de 2006).
+    #
+    # ATENCION: semilla PARCIAL. El Instituto Nacional de Salud publica cada ano
+    # el catalogo completo en sus lineamientos; aqui van los eventos de mayor
+    # frecuencia en atencion primaria rural, que son los que no pueden pasar
+    # inadvertidos. Cargue el catalogo completo antes de operar.
+    #
+    # Los prefijos CIE-10 son deliberadamente amplios: un falso positivo cuesta
+    # que alguien revise y descarte; un falso negativo cuesta un brote sin
+    # notificar.
+    if not NotifiableEvent.query.limit(1).first():
+        eventos = [
+            # codigo, nombre, periodicidad, prefijos CIE-10
+            ('210', 'Dengue', SIVIGILA_SEMANAL, 'A90,A91'),
+            ('220', 'Dengue grave', SIVIGILA_INMEDIATA, 'A91'),
+            ('465', 'Malaria', SIVIGILA_SEMANAL, 'B50,B51,B52,B53,B54'),
+            ('813', 'Tuberculosis', SIVIGILA_SEMANAL, 'A15,A16,A17,A18,A19'),
+            ('550', 'Mortalidad materna', SIVIGILA_INMEDIATA, 'O95,O96,O97'),
+            ('591', 'Muerte en menor de cinco anos por IRA', SIVIGILA_INMEDIATA, 'J00,J06,J12,J18,J21,J22'),
+            ('356', 'Intento de suicidio', SIVIGILA_INMEDIATA, 'X60,X61,X62,X63,X64,X65,X66,X67,X68,X69,X70,X71,X72,X73,X74,X75,X76,X77,X78,X79,X80,X81,X82,X83,X84'),
+            ('875', 'Violencia de genero e intrafamiliar', SIVIGILA_INMEDIATA, 'T74,Y04,Y05,Y06,Y07,Z044'),
+            ('300', 'Rabia humana y agresion por animal potencialmente transmisor', SIVIGILA_INMEDIATA, 'A82,W54,W55,W64'),
+            ('110', 'Desnutricion aguda en menores de cinco anos', SIVIGILA_INMEDIATA, 'E40,E41,E42,E43,E44,E45,E46'),
+            ('580', 'Morbilidad materna extrema', SIVIGILA_INMEDIATA, 'O14,O15,O72,O85'),
+            ('420', 'Intoxicacion por sustancias quimicas', SIVIGILA_INMEDIATA, 'T36,T37,T38,T39,T40,T41,T42,T43,T44,T45,T46,T47,T48,T49,T50,T51,T52,T53,T54,T55,T56,T57,T58,T59,T60,T61,T62,T63,T64,T65'),
+            ('370', 'Enfermedad transmitida por alimentos o agua', SIVIGILA_SEMANAL, 'A00,A01,A02,A03,A04,A05,A09'),
+            ('340', 'Leishmaniasis', SIVIGILA_SEMANAL, 'B55'),
+            ('217', 'Chikungunya', SIVIGILA_SEMANAL, 'A920'),
+            ('895', 'Zika', SIVIGILA_SEMANAL, 'A928'),
+            ('850', 'VIH/sida', SIVIGILA_SEMANAL, 'B20,B21,B22,B23,B24,Z21'),
+            ('340', 'Sifilis gestacional y congenita', SIVIGILA_SEMANAL, 'A50,A51,A52,A53'),
+        ]
+        vistos = set()
+        for codigo, nombre, periodicidad, prefijos in eventos:
+            if codigo in vistos:
+                continue
+            vistos.add(codigo)
+            db.session.add(NotifiableEvent(
+                code=codigo, name=nombre, periodicity=periodicidad,
+                cie10_prefixes=prefijos,
+                notes='Semilla parcial. Verifique contra los lineamientos '
+                      'vigentes del INS.'))
 
     # Plazos de conservación documental. Tenerlos en datos, y no en la memoria de
     # alguien, es lo que permite auditar que se respetan.

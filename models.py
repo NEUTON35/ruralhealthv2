@@ -1429,3 +1429,99 @@ TABLA_TIPO_USUARIO = 'RIPSTipoUsuarioVersion2'
 TABLA_ZONA = 'ZonaVersion2'
 TABLA_CONCEPTO_RECAUDO = 'conceptoRecaudo'
 TABLA_TIPO_DIAGNOSTICO = 'RIPSTipoDiagnosticoPrincipal'
+
+
+# =============================================================================
+# Vigilancia en salud publica (Decreto 3518 de 2006)
+# =============================================================================
+
+SIVIGILA_INMEDIATA = 'inmediata'
+SIVIGILA_SEMANAL = 'semanal'
+
+SIVIGILA_PENDIENTE = 'pendiente'
+SIVIGILA_NOTIFICADA = 'notificada'
+SIVIGILA_DESCARTADA = 'descartada'
+
+
+class NotifiableEvent(db.Model):
+    """Evento de interes en salud publica del catalogo del INS.
+
+    El catalogo vive en base de datos por lo mismo que las tablas del RIPS: el
+    Instituto Nacional de Salud lo actualiza cada ano en sus lineamientos, sin
+    que cambie el decreto. La semilla que trae la aplicacion es PARCIAL y esta
+    marcada como tal.
+    """
+    __tablename__ = 'notifiable_event'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(10), unique=True, nullable=False, index=True)
+    name = db.Column(db.String(200), nullable=False)
+    # `inmediata` obliga a notificar apenas se sospecha el caso; `semanal`
+    # admite el cierre de la semana epidemiologica.
+    periodicity = db.Column(db.String(12), default=SIVIGILA_SEMANAL, nullable=False)
+    # Prefijos CIE-10 que disparan la sospecha, separados por coma. Se comparan
+    # por prefijo porque un evento agrupa varios codigos (A90, A91... dengue).
+    cie10_prefixes = db.Column(db.String(300), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+
+    @property
+    def prefixes(self):
+        return [p.strip().upper() for p in (self.cie10_prefixes or '').split(',') if p.strip()]
+
+    @property
+    def is_immediate(self):
+        return self.periodicity == SIVIGILA_INMEDIATA
+
+
+class SivigilaNotification(ClinicScoped, db.Model):
+    """Caso detectado que debe notificarse al Sivigila.
+
+    Que hace y que NO hace
+    ----------------------
+    La notificacion al Sivigila se radica en el sistema del INS (Sivigila Web),
+    no aqui. Esta aplicacion no puede radicarla por el prestador, y fingir que
+    lo hace seria peor que no tener nada.
+
+    Lo que si hace, que es donde estaba el hueco: **que un caso notificable no
+    pase inadvertido**. Al guardar una atencion cuyo diagnostico corresponde a
+    un evento de interes en salud publica, se abre este registro, se avisa a
+    quien atiende y queda constancia de si se notifico, cuando y quien.
+
+    El Decreto 3518 de 2006 obliga a notificar y preve sanciones. Antes de
+    esto, el sistema no tenia forma de saber que un caso era notificable, asi
+    que la unica defensa era que el profesional se acordara.
+    """
+    __tablename__ = 'sivigila_notification'
+
+    id = db.Column(db.Integer, primary_key=True)
+    medical_history_id = db.Column(db.Integer, db.ForeignKey('medical_history.id'),
+                                   nullable=False, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    event_code = db.Column(db.String(10), nullable=False, index=True)
+    event_name = db.Column(db.String(200), nullable=False)
+    periodicity = db.Column(db.String(12), nullable=False)
+    cie10_code = db.Column(db.String(10), nullable=True)
+
+    status = db.Column(db.String(12), default=SIVIGILA_PENDIENTE, nullable=False, index=True)
+    detected_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+    due_at = db.Column(db.DateTime, nullable=True, index=True)
+    notified_at = db.Column(db.DateTime, nullable=True)
+    notified_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    # Numero de la ficha radicada en Sivigila. Es la prueba de que se notifico.
+    ficha_reference = db.Column(db.String(60), nullable=True)
+    resolution_note = db.Column(EncryptedText, nullable=True)
+
+    medical_history = db.relationship('MedicalHistory', foreign_keys=[medical_history_id])
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    notified_by = db.relationship('User', foreign_keys=[notified_by_id])
+
+    __table_args__ = (
+        db.UniqueConstraint('medical_history_id', 'event_code',
+                            name='uq_sivigila_atencion_evento'),
+    )
+
+    @property
+    def is_overdue(self):
+        return (self.status == SIVIGILA_PENDIENTE and self.due_at is not None
+                and colombia_now() > self.due_at)
