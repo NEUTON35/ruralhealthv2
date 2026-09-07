@@ -126,6 +126,43 @@ def index():
             db.session.commit()
             flash('Direccion actualizada.')
 
+        elif action == 'profile_demographics':
+            # Datos que el perfil PatientRDA del Ministerio marca obligatorios
+            # (Resolucion 1888 de 2025). Se validan contra el catalogo oficial:
+            # un codigo fuera del ValueSet lo rechaza el Ministerio, y aqui el
+            # motivo se entiende.
+            from ihce import terminology as _t
+
+            etnia = (request.form.get('ethnic_group') or '').strip()
+            discapacidad = (request.form.get('disability') or '').strip()
+            nacionalidad = (request.form.get('nationality_code') or '').strip()
+            zona = (request.form.get('zone') or '').strip().upper()
+
+            if etnia and etnia not in _t.GRUPOS_ETNICOS:
+                flash('El grupo etnico seleccionado no es valido.')
+                return redirect(url_for('settings.index'))
+            if discapacidad and discapacidad not in _t.DISCAPACIDADES:
+                flash('La opcion de discapacidad seleccionada no es valida.')
+                return redirect(url_for('settings.index'))
+            if zona and zona not in ('U', 'R'):
+                flash('La zona de residencia debe ser urbana o rural.')
+                return redirect(url_for('settings.index'))
+            if nacionalidad and not (nacionalidad.isdigit() and len(nacionalidad) <= 3):
+                flash('El codigo de nacionalidad no es valido.')
+                return redirect(url_for('settings.index'))
+
+            current_user.ethnic_group = etnia or None
+            current_user.disability = discapacidad or None
+            current_user.nationality_code = nacionalidad or None
+            current_user.zone = zona or None
+
+            # No se registra el valor: la pertenencia etnica y la discapacidad
+            # son datos sensibles, y la auditoria la lee mas gente que la
+            # historia clinica.
+            audit('profile_demographics_updated')
+            db.session.commit()
+            flash('Datos actualizados.')
+
         elif action == 'switch_clinic' and current_user.role == 'patient':
             clinic_id = request.form.get('clinic_id', type=int)
             clinic = db.session.get(Clinic, clinic_id) if clinic_id else None
@@ -553,6 +590,11 @@ def index():
             {k: v for k, v in legal_values.items() if v}
         )
 
+    # Catalogos oficiales del Ministerio para los desplegables. Vienen del
+    # modulo de terminologia y no de una lista escrita en la plantilla, para que
+    # cambiar el catalogo no exija tocar el HTML.
+    from ihce import terminology as _t
+
     return render_template(
         'settings.html',
         clinic_rows=clinic_rows,
@@ -562,4 +604,6 @@ def index():
         legal_values=legal_values,
         legal_pending=legal_pending,
         legal_labels=PLACEHOLDER_LABELS,
+        grupos_etnicos=_t.GRUPOS_ETNICOS,
+        discapacidades=_t.DISCAPACIDADES,
     )

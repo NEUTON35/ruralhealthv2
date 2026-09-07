@@ -40,6 +40,10 @@ class FakePaciente:
         self.phone = kw.get('phone', '3001234567')
         self.municipality_code = kw.get('municipality_code', '05001')
         self.department_code = kw.get('department_code', '05')
+        self.zone = kw.get('zone', 'R')
+        self.nationality_code = kw.get('nationality_code', '170')
+        self.ethnic_group = kw.get('ethnic_group', '99')
+        self.disability = kw.get('disability', '08')
         self.is_active_account = True
 
 
@@ -321,6 +325,67 @@ class TestValidacionPrevia:
         """Poblacion migrante en frontera. PPT debe estar en la tabla."""
         assert T.tipo_documento_valido('PPT')
 
+
+    def test_se_avisa_del_paciente_sin_pertenencia_etnica(self):
+        """El perfil la marca 1..1. No se puede suponer ni dejar en blanco."""
+        errores = validar_datos_minimos(
+            FakePaciente(ethnic_group=None), FakeProfesional(),
+            FakeClinica(), FakeHistoria())
+        assert any('etnica' in e for e in errores)
+
+    def test_se_avisa_del_paciente_sin_zona_de_residencia(self):
+        errores = validar_datos_minimos(
+            FakePaciente(zone=None), FakeProfesional(),
+            FakeClinica(), FakeHistoria())
+        assert any('zona de residencia' in e for e in errores)
+
+    def test_se_avisa_del_paciente_sin_dato_de_discapacidad(self):
+        """"Sin discapacidad" es un valor del catalogo, no la ausencia de dato."""
+        errores = validar_datos_minimos(
+            FakePaciente(disability=None), FakeProfesional(),
+            FakeClinica(), FakeHistoria())
+        assert any('discapacidad' in e for e in errores)
+
+    def test_se_rechaza_un_grupo_etnico_fuera_del_catalogo(self):
+        errores = validar_datos_minimos(
+            FakePaciente(ethnic_group='77'), FakeProfesional(),
+            FakeClinica(), FakeHistoria())
+        assert any('catalogo' in e for e in errores)
+
+
+class TestDatosDemograficos:
+    """Extensiones que el perfil PatientRDA marca obligatorias."""
+
+    def test_la_zona_rural_viaja_con_el_codigo_del_ministerio(self):
+        b = bundle_completo(paciente=FakePaciente(zone='R'))
+        direccion = _recurso(b, 'Patient')['address'][0]
+        coding = direccion['extension'][0]['valueCoding']
+        assert coding['code'] == '02'
+        assert coding['display'] == 'Rural'
+
+    def test_la_zona_urbana_se_traduce_igual(self):
+        b = bundle_completo(paciente=FakePaciente(zone='U'))
+        coding = _recurso(b, 'Patient')['address'][0]['extension'][0]['valueCoding']
+        assert coding['code'] == '01'
+
+    def test_la_etnia_y_la_discapacidad_van_como_extensiones(self):
+        b = bundle_completo(paciente=FakePaciente(ethnic_group='1', disability='02'))
+        extensiones = {e['url']: e['valueCoding'] for e in _recurso(b, 'Patient')['extension']}
+        assert extensiones[T.EXT_ETNIA]['code'] == '1'
+        assert extensiones[T.EXT_ETNIA]['display'] == 'Indigena'
+        assert extensiones[T.EXT_DISCAPACIDAD]['code'] == '02'
+
+    def test_sin_etnia_no_se_inventa_un_valor(self):
+        """Un dato etnico falso en un registro nacional es peor que uno ausente."""
+        b = bundle_completo(paciente=FakePaciente(ethnic_group=None))
+        urls = {e['url'] for e in _recurso(b, 'Patient').get('extension', [])}
+        assert T.EXT_ETNIA not in urls
+
+    def test_la_nacionalidad_usa_el_codigo_iso_numerico(self):
+        b = bundle_completo(paciente=FakePaciente(nationality_code='862'))
+        extensiones = {e['url']: e['valueCoding'] for e in _recurso(b, 'Patient')['extension']}
+        assert extensiones[T.EXT_NACIONALIDAD]['code'] == '862'
+        assert extensiones[T.EXT_NACIONALIDAD]['system'] == T.CS_NACIONALIDAD
 
 # --- Configuracion ----------------------------------------------------------
 

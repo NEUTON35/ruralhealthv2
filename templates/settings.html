@@ -148,6 +148,90 @@
             </form>
         </div>
 
+        {% if current_user.role == 'patient' %}
+        {# Datos que exige el perfil PatientRDA del Ministerio para la historia
+           clinica interoperable (Resolucion 1888 de 2025). Se explica para que
+           son: pedir la pertenencia etnica sin decir por que es lo que hace
+           que la gente no responda o responda cualquier cosa. #}
+        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-400">
+            <h2 class="text-xl font-bold mb-1 flex items-center gap-2 text-slate-700">
+                <i data-lucide="user-round" class="w-6 h-6"></i> Datos para su historia clínica
+            </h2>
+            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                La ley obliga a que su historia clínica pueda ser consultada por
+                cualquier profesional que lo atienda en el país, y estos datos
+                forman parte de ella. Sin ellos su atención no puede reportarse
+                al sistema nacional.
+            </p>
+            <form method="POST" class="space-y-3">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="profile_demographics">
+
+                <div>
+                    <label for="ethnic_group" class="block text-sm font-semibold text-slate-700 mb-1">
+                        Pertenencia étnica
+                    </label>
+                    <select id="ethnic_group" name="ethnic_group"
+                            class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                        <option value="">Prefiero no responder</option>
+                        {% for codigo, etiqueta in grupos_etnicos.items() %}
+                        <option value="{{ codigo }}" {% if current_user.ethnic_group == codigo %}selected{% endif %}>{{ etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Es un dato que usted mismo reconoce. Nadie lo asigna por usted.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="disability" class="block text-sm font-semibold text-slate-700 mb-1">
+                        Condición de discapacidad
+                    </label>
+                    <select id="disability" name="disability"
+                            class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                        <option value="">Sin especificar</option>
+                        {% for codigo, etiqueta in discapacidades.items() %}
+                        <option value="{{ codigo }}" {% if current_user.disability == codigo %}selected{% endif %}>{{ etiqueta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-3">
+                    <div>
+                        <label for="zone" class="block text-sm font-semibold text-slate-700 mb-1">
+                            Zona de residencia
+                        </label>
+                        <select id="zone" name="zone"
+                                class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                            <option value="R" {% if current_user.zone == 'R' %}selected{% endif %}>Rural</option>
+                            <option value="U" {% if current_user.zone == 'U' %}selected{% endif %}>Urbana</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="nationality_code" class="block text-sm font-semibold text-slate-700 mb-1">
+                            Nacionalidad
+                        </label>
+                        <select id="nationality_code" name="nationality_code"
+                                class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                            <option value="170" {% if not current_user.nationality_code or current_user.nationality_code == '170' %}selected{% endif %}>Colombia</option>
+                            <option value="862" {% if current_user.nationality_code == '862' %}selected{% endif %}>Venezuela</option>
+                            <option value="218" {% if current_user.nationality_code == '218' %}selected{% endif %}>Ecuador</option>
+                            <option value="604" {% if current_user.nationality_code == '604' %}selected{% endif %}>Perú</option>
+                            <option value="076" {% if current_user.nationality_code == '076' %}selected{% endif %}>Brasil</option>
+                            <option value="591" {% if current_user.nationality_code == '591' %}selected{% endif %}>Panamá</option>
+                            <option value="332" {% if current_user.nationality_code == '332' %}selected{% endif %}>Haití</option>
+                            <option value="" {% if current_user.nationality_code == '' %}selected{% endif %}>Otra</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-800 transition">
+                    Guardar
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-positive">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-emerald-700"><i data-lucide="shield-check" class="w-6 h-6"></i> Legal y datos personales</h2>
             <div class="grid sm:grid-cols-3 gap-3 text-sm">

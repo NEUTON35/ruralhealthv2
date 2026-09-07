@@ -170,6 +170,20 @@ class User(UserMixin, ClinicScoped, db.Model):
     insurer_name = db.Column(db.String(180), nullable=True)
     affiliation_regime = db.Column(db.String(30), nullable=True)  # contributivo | subsidiado | ...
 
+    # --- Datos que exige el perfil PatientRDA del Ministerio -----------------
+    # El perfil los marca obligatorios (Resolucion 1888 de 2025). Se guardan
+    # como codigo del catalogo oficial, no como texto libre: el Ministerio
+    # valida contra su ValueSet.
+    #
+    # Ninguno se rellena solo. La pertenencia etnica es un dato sensible y
+    # autorreconocido: inventarlo, o suponerlo por el municipio, es peor que
+    # dejarlo vacio. Nacionalidad trae 170 (Colombia) por ser el caso
+    # abrumadoramente mayoritario, pero el formulario permite cambiarlo.
+    nationality_code = db.Column(db.String(3), default='170', nullable=True)
+    ethnic_group = db.Column(db.String(2), nullable=True)   # ColombianEthnicGroup
+    disability = db.Column(db.String(2), nullable=True)     # ColombianDisabilityClassification
+    occupation_code = db.Column(db.String(10), nullable=True)  # CIUO
+
     # --- Datos clinicos basicos del paciente ---
     is_pregnant = db.Column(db.Boolean, default=False, nullable=False)
     pregnancy_updated_at = db.Column(db.DateTime, nullable=True)

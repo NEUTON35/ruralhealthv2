@@ -148,6 +148,29 @@ def validar_datos_minimos(paciente, profesional, clinica, historia):
         errores.append('El paciente no tiene sexo registrado; el perfil '
                        'PatientRDA lo exige.')
 
+    # Extensiones que el perfil marca obligatorias. Se comprueban aqui para que
+    # el motivo llegue al operador con el nombre del campo que falta, en lugar
+    # de un OperationOutcome del Ministerio senalando una ruta FHIR.
+    if not (getattr(paciente, 'nationality_code', None) or '').strip():
+        errores.append('El paciente no tiene nacionalidad registrada.')
+    etnia = (getattr(paciente, 'ethnic_group', None) or '').strip()
+    if not etnia:
+        errores.append('El paciente no tiene pertenencia etnica registrada; es '
+                       'un dato autorreconocido que hay que preguntarle.')
+    elif etnia not in T.GRUPOS_ETNICOS:
+        errores.append('El grupo etnico "%s" no esta en el catalogo del '
+                       'Ministerio.' % etnia)
+    discapacidad = (getattr(paciente, 'disability', None) or '').strip()
+    if not discapacidad:
+        errores.append('El paciente no tiene registrada su condicion de '
+                       'discapacidad. "Sin discapacidad" tambien es un valor.')
+    elif discapacidad not in T.DISCAPACIDADES:
+        errores.append('La discapacidad "%s" no esta en el catalogo del '
+                       'Ministerio.' % discapacidad)
+    if not T.ZONA_A_CODIGO.get((getattr(paciente, 'zone', None) or '').strip().upper()):
+        errores.append('El paciente no tiene zona de residencia (urbana o '
+                       'rural) registrada.')
+
     if not (getattr(profesional, 'cedula', None) or '').strip():
         errores.append('El profesional no tiene numero de documento registrado.')
     if not (getattr(profesional, 'medical_registration', None) or '').strip():

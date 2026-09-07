@@ -89,6 +89,56 @@ SEXO_FHIR = {
 }
 
 
+# --- Extensiones obligatorias del PatientRDA --------------------------------
+# El perfil las marca 1..1 o 1..*, con binding required a estos catalogos.
+# Tomados de los CodeSystem publicados en la guia.
+
+EXT_NACIONALIDAD = BASE_PERFIL + 'ExtensionPatientNationality'
+EXT_ETNIA = BASE_PERFIL + 'ExtensionPatientEthnicity'
+EXT_DISCAPACIDAD = BASE_PERFIL + 'ExtensionPatientDisability'
+EXT_ZONA_RESIDENCIA = BASE_PERFIL + 'ExtensionResidenceZone'
+EXT_SEXO_BIOLOGICO = BASE_PERFIL + 'ExtensionBiologicalGender'
+
+CS_NACIONALIDAD = BASE_CS + 'ISO31661'
+CS_ETNIA = BASE_CS + 'ColombianEthnicGroup'
+CS_DISCAPACIDAD = BASE_CS + 'ColombianDisabilityClassification'
+CS_ZONA = BASE_CS + 'ColombianResidenceZone'
+
+# Codigo ISO 3166-1 numerico de Colombia. Es el valor por defecto porque es el
+# caso mayoritario, no una suposicion sobre la persona: el formulario permite
+# cambiarlo y en zona de frontera hay que hacerlo.
+NACIONALIDAD_COLOMBIA = '170'
+
+GRUPOS_ETNICOS = {
+    '1': 'Indigena',
+    '2': 'ROM (Gitano)',
+    '3': 'Raizal (Archipielago San Andrés y Providencia)',
+    '4': 'Palenquero de San Basilio',
+    '5': 'Negro(a) o mulato(a) o afrocolombiano(a) o afrodescendiente',
+    '6': 'Otras etnias',
+    '99': 'Ninguna de las anteriores',
+}
+
+DISCAPACIDADES = {
+    '01': 'Discapacidad física',
+    '02': 'Discapacidad visual',
+    '03': 'Discapacidad auditiva',
+    '04': 'Discapacidad intelectual',
+    '05': 'Discapacidad sicosocial',
+    '06': 'Sordoceguera',
+    '07': 'Discapacidad múltiple',
+    '08': 'Sin discapacidad',
+}
+
+ZONAS_RESIDENCIA = {
+    '01': 'Urbana',
+    '02': 'Rural',
+}
+
+# La aplicacion guarda la zona como U/R desde antes de esta integracion.
+ZONA_A_CODIGO = {'U': '01', 'R': '02'}
+
+
 # --- Secciones del RDA de consulta ------------------------------------------
 # Orden, titulo literal y codigo LOINC tal como los fija el perfil
 # CompositionAmbulatoryRDA. Los titulos son valores fijos: cambiarlos hace que

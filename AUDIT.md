@@ -345,8 +345,11 @@ Puntos que no dependen del código y que ningún cambio mío puede sustituir:
    NIT, domicilio, canal de PQRS, área responsable y el fundamento de la
    transferencia internacional de datos. Se configuran en Ajustes; mientras
    falten, los documentos muestran marcadores y no son publicables.
-5. **Registrar las bases de datos ante el RNBD** de la Superintendencia de
-   Industria y Comercio.
+5. **Determinar si hay obligación de registrar las bases ante el RNBD.** El
+   Decreto 090 de 2018 solo obliga a sociedades y entidades sin ánimo de lucro
+   con activos superiores a 100.000 UVT, y a personas jurídicas públicas. Hay
+   que declarar la situación real en el artículo 13 de la política: afirmar un
+   registro inexistente es una declaración falsa ante la SIC.
 6. **Revisión de los textos legales por un abogado.** Tienen la estructura que
    exige la norma y citan su fundamento, pero son la base sobre la que esa
    revisión trabaja, no su sustituto.
@@ -357,6 +360,9 @@ Puntos que no dependen del código y que ningún cambio mío puede sustituir:
 8. **MIPRES** para medicamentos no financiados con UPC. La orden guarda el número
    para vincularse con el reporte oficial, pero la integración exige credenciales
    del prestador.
+9. **Credenciales del IHCE** en Hércules (SISPRO), y prueba contra el ambiente
+   sandbox antes de producción. El código está listo; sin credenciales los RDA
+   se acumulan en la cola sin perderse, pero no se remiten.
 
 ---
 

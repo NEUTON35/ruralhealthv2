@@ -117,6 +117,34 @@ def construir_paciente(paciente):
         }],
     }
 
+    # Extensiones que el perfil marca obligatorias. Solo viajan las que tienen
+    # dato: una extension con binding required y un valor inventado es un
+    # rechazo, y en el caso de la etnia seria ademas un dato falso sobre la
+    # persona en un registro nacional.
+    extensiones = []
+    nacionalidad = (getattr(paciente, 'nationality_code', None) or '').strip()
+    if nacionalidad:
+        extensiones.append({
+            'url': T.EXT_NACIONALIDAD,
+            'valueCoding': {'system': T.CS_NACIONALIDAD, 'code': nacionalidad},
+        })
+    etnia = (getattr(paciente, 'ethnic_group', None) or '').strip()
+    if etnia:
+        extensiones.append({
+            'url': T.EXT_ETNIA,
+            'valueCoding': {'system': T.CS_ETNIA, 'code': etnia,
+                            'display': T.GRUPOS_ETNICOS.get(etnia, '')},
+        })
+    discapacidad = (getattr(paciente, 'disability', None) or '').strip()
+    if discapacidad:
+        extensiones.append({
+            'url': T.EXT_DISCAPACIDAD,
+            'valueCoding': {'system': T.CS_DISCAPACIDAD, 'code': discapacidad,
+                            'display': T.DISCAPACIDADES.get(discapacidad, '')},
+        })
+    if extensiones:
+        recurso['extension'] = extensiones
+
     sexo = T.SEXO_FHIR.get((getattr(paciente, 'sex', None) or '').strip())
     if sexo:
         recurso['gender'] = sexo
@@ -129,6 +157,13 @@ def construir_paciente(paciente):
         direccion['city'] = paciente.municipality_code
     if getattr(paciente, 'department_code', None):
         direccion['district'] = paciente.department_code
+    zona = T.ZONA_A_CODIGO.get((getattr(paciente, 'zone', None) or '').strip().upper())
+    if zona:
+        direccion['extension'] = [{
+            'url': T.EXT_ZONA_RESIDENCIA,
+            'valueCoding': {'system': T.CS_ZONA, 'code': zona,
+                            'display': T.ZONAS_RESIDENCIA[zona]},
+        }]
     recurso['address'] = [direccion]
 
     if getattr(paciente, 'phone', None):

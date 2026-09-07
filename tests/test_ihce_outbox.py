@@ -25,7 +25,9 @@ def atencion(app, make_user):
 
     paciente = make_user(role='patient', birth_date=date(1990, 5, 2), sex='F',
                          first_name='Ana', first_surname='Lopez',
-                         municipality_code='05001', department_code='05')
+                         municipality_code='05001', department_code='05',
+                         zone='R', nationality_code='170',
+                         ethnic_group='99', disability='08')
     doctor = make_user(role='doctor', medical_registration='RM-777',
                        first_name='Luis', first_surname='Mora')
 
