@@ -1,0 +1,25 @@
+{
+  "name": "ruralhealth-connect",
+  "version": "1.0.0",
+  "description": "Hoja de estilos de RuralHealth Connect. Solo se necesita para regenerar el CSS.",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -i static/css/input.css -o static/css/app.css --minify",
+    "watch:css": "tailwindcss -i static/css/input.css -o static/css/app.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NEUTON35/ruralhealthv2.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NEUTON35/ruralhealthv2/issues"
+  },
+  "homepage": "https://github.com/NEUTON35/ruralhealthv2#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  },
+  "private": true
+}

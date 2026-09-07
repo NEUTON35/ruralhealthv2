@@ -125,7 +125,7 @@
         {% elif data.doc.is_available %}
             <form action="/patient/start_chat/{{ data.doc.id }}" method="POST" class="w-full">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-primary text-white py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm shadow-primary/20 transition-colors">
+                <button type="submit" class="w-full bg-primary text-white py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-colors">
                     <i data-lucide="message-square" class="w-5 h-5"></i>
                     Iniciar Chat
                 </button>

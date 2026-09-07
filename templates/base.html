@@ -17,148 +17,24 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/static/icon.svg">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
-          crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js"
-            integrity="sha384-8nT3SpButyvenpAdKYPJzXdSz3zidMGduMoaMvwjKnAWVv238n6P1mhveiJJQWrV"
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script>
-        /* =====================================================================
-           SISTEMA VISUAL — software clínico
-           =====================================================================
-           Regla central: el color significa algo. Si todo tiene color, nada lo
-           tiene, y en una pantalla clínica eso es peligroso: la alerta de
-           alergia debe destacar sobre lo demás, no competir con un icono
-           decorativo del mismo tono.
+    {# Tipografia servida en local: nada depende de una peticion externa. #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.css') }}">
+    {# Hoja de estilos propia, servida desde este mismo servidor.
 
-           Solo hay tres familias:
-             neutral  — estructura, texto, iconos. Todo lo que no significa nada.
-             critical — alergia, contraindicación, dato que puede dañar.
-             caution  — advertencia que exige revisión, no bloqueo.
+       Antes se cargaba Tailwind desde `cdn.tailwindcss.com`, que compila el CSS
+       en el navegador. Si ese CDN no era alcanzable —red rural, cortafuegos,
+       bloqueo regional— la interfaz aparecía **sin ningún estilo**: no se
+       degradaba, se rompía. En una aplicación pensada para zonas de baja
+       conectividad eso no es un caso raro, es el caso esperado.
 
-           `accent` se reserva para la acción principal de cada pantalla, una
-           sola por vista. `positive` confirma que algo se completó; nunca se usa
-           como decoración.
-           ===================================================================== */
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
-                    },
-                    colors: {
-                        /* Acción principal. Azul clínico, no saturado. */
-                        accent: {
-                            DEFAULT: '#0369A1',
-                            hover:   '#075985',
-                            subtle:  '#F0F9FF',
-                            border:  '#BAE6FD',
-                        },
-                        /* Riesgo para el paciente. Solo aquí. */
-                        critical: {
-                            DEFAULT: '#B91C1C',
-                            hover:   '#991B1B',
-                            subtle:  '#FEF2F2',
-                            border:  '#FECACA',
-                            text:    '#7F1D1D',
-                        },
-                        /* Requiere revisión del profesional. */
-                        caution: {
-                            DEFAULT: '#B45309',
-                            subtle:  '#FFFBEB',
-                            border:  '#FDE68A',
-                            text:    '#78350F',
-                        },
-                        /* Confirmación de una acción completada. */
-                        positive: {
-                            DEFAULT: '#047857',
-                            subtle:  '#ECFDF5',
-                            border:  '#A7F3D0',
-                            text:    '#064E3B',
-                        },
-                        /* Compatibilidad con las clases que ya existían. */
-                        primary: '#0369A1',
-                        'primary-dark': '#075985',
-                        background: '#F8FAFC',
-                        medical: '#0369A1',
-                        'medical-dark': '#075985',
-                        'medical-light': '#F0F9FF',
-                    },
-                    borderRadius: {
-                        /* Radios discretos: un expediente clínico no es una
-                           tarjeta de red social. */
-                        'xl':  '0.5rem',
-                        '2xl': '0.625rem',
-                        '3xl': '0.75rem',
-                    },
-                    fontSize: {
-                        /* 13px en lugar de 12px: se lee al sol, en pantalla
-                           barata, por personas de cualquier edad. */
-                        'xs': ['0.8125rem', { lineHeight: '1.125rem' }],
-                        'sm': ['0.875rem',  { lineHeight: '1.25rem' }],
-                    },
-                    boxShadow: {
-                        /* Sombras casi planas: la jerarquía la da el borde y el
-                           espacio, no la elevación. */
-                        'sm': '0 1px 2px 0 rgb(15 23 42 / 0.04)',
-                        'DEFAULT': '0 1px 3px 0 rgb(15 23 42 / 0.06)',
-                        'md': '0 2px 6px -1px rgb(15 23 42 / 0.07)',
-                        'lg': '0 4px 10px -2px rgb(15 23 42 / 0.08)',
-                        'xl': '0 6px 16px -4px rgb(15 23 42 / 0.09)',
-                        '2xl': '0 8px 24px -6px rgb(15 23 42 / 0.10)',
-                    },
-                }
-            }
-        };
-    </script>
-    <style>
-        .toast-enter { transform: translateY(100%); opacity: 0; }
-        .toast-enter-active { transform: translateY(0); opacity: 1; transition: transform 200ms ease-out, opacity 200ms ease-out; }
-        .toast-exit { transform: translateY(0); opacity: 1; }
-        .toast-exit-active { transform: translateY(100%); opacity: 0; transition: transform 200ms ease-in, opacity 200ms ease-in; }
+       Ahora el CSS se genera en el build (`npm run build:css`) y se versiona,
+       así que ejecutar la aplicación no necesita ni Node ni conexión. #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
-        /* --- Iconos ------------------------------------------------------
-           Trazo más fino y tamaño uniforme. Lucide viene con stroke-width 2,
-           que a tamaño pequeño empasta el trazo y hace que el icono compita
-           con el texto en vez de acompañarlo. */
-        [data-lucide] { stroke-width: 1.75; }
+    {# Los iconos también se sirven en local, por lo mismo. #}
+    <script src="{{ url_for('static', filename='vendor/lucide.min.js') }}"></script>
 
-        /* --- Impresión ---------------------------------------------------
-           La orden médica y el ticket se imprimen. La navegación, los botones
-           y los avisos no deben aparecer en el papel que se archiva. */
-        @media print {
-            nav, footer, .no-print, #toast-container,
-            #command-palette, #install-home-screen,
-            #low-bandwidth-banner { display: none !important; }
-            body { background: #fff !important; }
-            main { padding: 0 !important; max-width: none !important; }
-            .print-only { display: block !important; }
-            a[href]:after { content: none !important; }
-        }
-        .print-only { display: none; }
-
-        /* --- Foco visible ------------------------------------------------
-           Necesario para quien navega con teclado; Tailwind lo quita en
-           varios componentes con `outline-none`. */
-        :focus-visible {
-            outline: 2px solid #0369A1;
-            outline-offset: 2px;
-        }
-
-        /* --- Movimiento reducido ----------------------------------------- */
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-    </style>
 </head>
 <body class="bg-background text-slate-800 min-h-screen font-sans flex flex-col {% if request.path != '/login' and request.path != '/register' %}md:flex-row{% endif %}">
     <div class="bg-caution-subtle text-yellow-800 text-center py-1 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 md:w-full md:absolute md:top-0 md:z-50" id="low-bandwidth-banner">
@@ -468,9 +344,7 @@
         }
         lucide.createIcons();
     </script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="{{ url_for('static', filename='vendor/leaflet.js') }}"></script>
     <script src="/static/location_picker.js"></script>
     <script src="/static/pwa.js"></script>
 </body>

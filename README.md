@@ -106,7 +106,9 @@ La plataforma ha sido optimizada para operar eficientemente en servidores locale
 ## 🛠️ Tecnologías
 
 *   **Backend**: Python 3.10+ / Flask / Flask-SQLAlchemy / Flask-Login
-*   **Frontend**: Jinja2 / Tailwind CSS (CDN) / Lucide Icons / Chart.js
+*   **Frontend**: Jinja2 / Tailwind CSS (compilado en el build) / Lucide / Chart.js
+    — **sin dependencias de CDN**: todo se sirve desde el propio servidor, para
+    que la interfaz funcione sin conexión
 *   **PWA**: Service Worker / Manifest.json (Soporte Offline y Caché)
 *   **Mapas**: Leaflet.js / OpenStreetMap
 *   **Seguridad Avanzada**:
@@ -138,6 +140,15 @@ python -m venv .venv
 
 pip install -r requirements.txt -r requirements-dev.txt
 ```
+
+> Para **ejecutar** la aplicación no hace falta Node: el CSS ya viene generado en
+> `static/css/app.css`. Solo se necesita para regenerarlo tras cambiar estilos:
+>
+> ```bash
+> npm install
+> npm run build:css     # una vez
+> npm run watch:css     # mientras se editan plantillas
+> ```
 
 ### Configuración
 

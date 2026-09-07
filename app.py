@@ -84,22 +84,29 @@ def configure_logging(app):
 def build_csp():
     """Politica de seguridad de contenido.
 
-    `unsafe-inline` en `script-src` sigue presente porque las plantillas actuales
-    llevan JavaScript en linea. Es una concesion consciente y acotada: mientras
-    exista, la CSP no protege frente a XSS por inyeccion de script en linea, y la
-    defensa real es el escapado de Jinja mas la sanitizacion con bleach en cada
-    entrada. Eliminarla requiere extraer ese JavaScript a archivos de `/static`.
+    Todos los recursos —CSS, iconos, mapas, graficas, tipografia— se sirven
+    desde este mismo servidor, asi que la politica ya no admite ningun origen
+    externo para scripts ni estilos. Antes habia cuatro CDN autorizados; cada uno
+    era un tercero que podia ejecutar JavaScript sobre paginas con historia
+    clinica abierta.
+
+    Las dos excepciones que quedan:
+
+    - **Jitsi** para videollamada, que por naturaleza necesita conexion.
+    - **OpenStreetMap** para las teselas del mapa, que no se pueden empaquetar.
+
+    `unsafe-inline` en `script-src` sigue presente porque las plantillas llevan
+    JavaScript en linea. Es una concesion consciente: mientras exista, la CSP no
+    protege frente a XSS por script inyectado en linea, y la defensa real es el
+    escapado de Jinja mas la sanitizacion con bleach. Eliminarla requiere extraer
+    ese JavaScript a archivos de `/static`.
     """
     return {
         'default-src': ["'self'"],
-        'script-src': [
-            "'self'", "'unsafe-inline'",
-            'https://cdn.tailwindcss.com', 'https://unpkg.com',
-            'https://cdn.jsdelivr.net', 'https://*.jitsi.net', 'https://8x8.vc',
-        ],
-        'style-src': ["'self'", "'unsafe-inline'", 'https://unpkg.com', 'https://fonts.googleapis.com'],
-        'img-src': ["'self'", 'data:', 'blob:', 'https://unpkg.com', 'https://*.tile.openstreetmap.org'],
-        'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
+        'script-src': ["'self'", "'unsafe-inline'", 'https://*.jitsi.net', 'https://8x8.vc'],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", 'data:', 'blob:', 'https://*.tile.openstreetmap.org'],
+        'font-src': ["'self'", 'data:'],
         'connect-src': ["'self'", 'https://*.jitsi.net', 'https://8x8.vc'],
         'frame-src': ["'self'", 'https://meet.jit.si', 'https://*.jitsi.net', 'https://8x8.vc'],
         'frame-ancestors': ["'none'"],

@@ -4,7 +4,7 @@
     <!-- Chat Principal -->
     <section class="lg:col-span-2 bg-white rounded-[2rem] shadow-md border border-slate-100 overflow-hidden flex flex-col h-[80vh] relative">
         <!-- Cabecera Integrada -->
-        <div class="bg-gradient-to-r from-primary to-primary-dark p-5 sm:p-6 text-white shrink-0 relative overflow-hidden">
+        <div class="bg-accent p-5 sm:p-6 text-white shrink-0 relative overflow-hidden">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
             <div class="flex justify-between items-start mb-2 relative z-10">
                 <div>
@@ -21,7 +21,7 @@
         <div class="flex-1 p-6 overflow-y-auto bg-slate-50/80 space-y-4">
             {% for msg in messages %}
             <div class="flex {% if msg.sender_id == current_user.id %}justify-end{% else %}justify-start{% endif %}">
-                <div class="max-w-[85%] rounded-[1.5rem] {% if msg.sender_id == current_user.id %}bg-primary text-white rounded-tr-sm shadow-md shadow-primary/20{% else %}bg-white border border-slate-100 text-slate-800 rounded-tl-sm shadow-sm{% endif %} p-4 relative group">
+                <div class="max-w-[85%] rounded-[1.5rem] {% if msg.sender_id == current_user.id %}bg-primary text-white rounded-tr-sm shadow-md{% else %}bg-white border border-slate-100 text-slate-800 rounded-tl-sm shadow-sm{% endif %} p-4 relative group">
                     <p class="text-xs font-bold opacity-70 mb-1 uppercase tracking-wider">{{ msg.sender.name }} · {{ msg.timestamp|colombia_time }}</p>
                     <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
                 </div>
@@ -34,7 +34,7 @@
         <form method="POST" class="p-4 sm:p-5 bg-white border-t border-slate-100 flex gap-3 items-center relative">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input name="content" required placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border-2 border-slate-100 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
-            <button class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shadow-primary/30 shrink-0">
+            <button class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shrink-0">
                 <i data-lucide="send" class="w-5 h-5 ml-1"></i>
             </button>
         </form>

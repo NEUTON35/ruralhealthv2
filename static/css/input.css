@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   Estilos propios
+   =========================================================================
+   Lo que no se expresa bien como clases de utilidad: animaciones, reglas de
+   impresión y ajustes de accesibilidad que deben aplicarse en todo el sitio.
+   ========================================================================= */
+
+/* --- Avisos emergentes -------------------------------------------------- */
+.toast-enter        { transform: translateY(100%); opacity: 0; }
+.toast-enter-active { transform: translateY(0);    opacity: 1;
+                      transition: transform 200ms ease-out, opacity 200ms ease-out; }
+.toast-exit         { transform: translateY(0);    opacity: 1; }
+.toast-exit-active  { transform: translateY(100%); opacity: 0;
+                      transition: transform 200ms ease-in, opacity 200ms ease-in; }
+
+/* --- Iconos --------------------------------------------------------------
+   Lucide viene con stroke-width 2, que a tamaño pequeño empasta el trazo y
+   hace que el icono compita con el texto en vez de acompañarlo. */
+[data-lucide] { stroke-width: 1.75; }
+
+/* --- Documentos legales --------------------------------------------------
+   El cuerpo de los textos legales viene en texto plano con marcado mínimo.
+   Se le da forma aquí para que el contenido siga siendo legible y revisable
+   en el código fuente, sin clases incrustadas en cada línea. */
+.legal-body ul       { list-style: disc; padding-left: 1.25rem; }
+.legal-body ul li    { margin-bottom: 0.25rem; }
+.legal-body ol       { list-style: decimal; padding-left: 1.25rem; }
+.legal-body ol li    { margin-bottom: 0.25rem; }
+.legal-body strong   { font-weight: 600; color: #0f172a; }
+.legal-body table    { width: 100%; border-collapse: collapse; margin: 0.5rem 0;
+                       font-size: 0.8125rem; }
+.legal-body th,
+.legal-body td       { border: 1px solid #e2e8f0; padding: 0.5rem 0.625rem; text-align: left; }
+.legal-body th       { background: #f8fafc; font-weight: 600; }
+.legal-body .pendiente { background: #fef2f2; color: #7f1d1d; padding: 0 0.25rem;
+                         border-radius: 0.1875rem; font-weight: 600; }
+
+/* --- Impresión -----------------------------------------------------------
+   La orden médica y el ticket de recogida se imprimen y se archivan. La
+   navegación, los botones y los avisos no deben salir en ese papel. */
+@media print {
+  nav, footer, .no-print, #toast-container,
+  #command-palette, #install-home-screen,
+  #low-bandwidth-banner        { display: none !important; }
+  body                         { background: #fff !important; }
+  main                         { padding: 0 !important; max-width: none !important; }
+  .print-only                  { display: block !important; }
+  a[href]:after                { content: none !important; }
+}
+.print-only { display: none; }
+
+/* --- Foco visible --------------------------------------------------------
+   Necesario para quien navega con teclado. Varias utilidades de Tailwind lo
+   suprimen con `outline-none`, así que se restituye de forma global. */
+:focus-visible {
+  outline: 2px solid #0369A1;
+  outline-offset: 2px;
+}
+
+/* --- Movimiento reducido ------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

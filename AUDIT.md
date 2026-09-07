@@ -237,7 +237,7 @@ a esos pacientes.
 | :--- | :--- | :--- |
 | P2-12 | **Contraste por debajo del mínimo legal de accesibilidad.** 258 usos de `text-slate-400` sobre blanco dan 2.56:1; WCAG AA exige 4.5:1. Sobre pantalla barata y a pleno sol, ese texto no se lee. | Subido a `slate-600` (7.58:1) en texto; los iconos se dejan intactos. |
 | P2-13 | **188 fragmentos de texto por debajo de 12 px** (`text-[10px]`, `text-[9px]`), incluidos códigos de recogida y etiquetas de severidad de alergia. | Elevados al mínimo legible. |
-| P2-14 | **Recurso externo sin versión fijada ni verificación.** `lucide@latest` cargaba desde un CDN sin `integrity`: cualquier contenido que sirviera ese CDN se ejecutaba sobre páginas con historia clínica abierta. | Versión fijada y SRI en Lucide, Leaflet y Chart.js. Queda una excepción documentada: el script Play de Tailwind compila en el navegador y no admite SRI — el remedio es generar el CSS en el build. |
+| P2-14 | **Recurso externo sin versión fijada ni verificación.** `lucide@latest` cargaba desde un CDN sin `integrity`: cualquier contenido que sirviera ese CDN se ejecutaba sobre páginas con historia clínica abierta. | Primero se fijó versión y SRI. Tras comprobar en campo que el fallo era peor de lo previsto (ver P0-15), **se eliminó toda dependencia de CDN**. |
 | P2-15 | **Glassmorphism y `transition-all`** (13 y 64 usos) sobre el hardware de gama baja que el propio README declara como objetivo. `transition-all` anima también las propiedades que fuerzan recálculo de maquetación. | Retirado el desenfoque; transiciones acotadas a color. |
 | P2-16 | **`target="_blank"` sin `rel`** (8) e **imágenes sin `alt`** (4). Lo primero entrega `window.opener` al destino, que puede redirigir la pestaña original a una copia falsa del login. | Corregidos, con pruebas. |
 | P2-17 | **Petición rechazada en cada carga de página.** `pwa.js` pedía la agenda sin conexión —que es solo de pacientes— desde todos los roles, generando un 403 por página y llenando la consola de errores que ocultaban los reales. | La petición se hace solo cuando corresponde. |
@@ -358,6 +358,42 @@ Puntos que no dependen del código y que ningún cambio mío puede sustituir:
    para vincularse con el reporte oficial, pero la integración exige credenciales
    del prestador.
 
-Y uno técnico: **servir Tailwind desde un CSS generado en el build** en lugar del
-script Play, que no admite verificación de integridad y que la propia
-documentación de Tailwind desaconseja para producción.
+---
+
+# Cuarta pasada — 2026-09-06
+
+### P0-15 · La interfaz se rompía por completo sin acceso al CDN de Tailwind
+
+Detectado en uso real: la aplicación aparecía como HTML sin ningún estilo.
+
+La causa era `cdn.tailwindcss.com`, que compila el CSS **en el navegador**. Si
+ese servidor no es alcanzable —red rural, cortafuegos, bloqueo regional— no hay
+degradación elegante: no hay estilos en absoluto. Las demás librerías cargaban
+bien desde otro CDN, así que no era falta de conexión sino ese origen concreto.
+
+La primera pasada ya había identificado el riesgo (P2-14) y lo dejó documentado
+como pendiente por requerir un paso de build. Ver la aplicación rota en pantalla
+dejó claro que el nivel asignado era el equivocado: en una aplicación cuyo caso
+de uso declarado es la baja conectividad, un recurso que solo carga con internet
+es un recurso que un día no carga.
+
+**Acción:** eliminada toda dependencia de CDN.
+
+| Antes | Ahora |
+| :--- | :--- |
+| Tailwind compilado en el navegador desde CDN | CSS generado en el build, 56 KB, servido en local |
+| Lucide desde unpkg | `static/vendor/lucide.min.js` |
+| Leaflet desde unpkg | `static/vendor/leaflet.{js,css}` + sus imágenes |
+| Chart.js desde jsDelivr | `static/vendor/chart.umd.min.js` |
+| Inter desde Google Fonts | `static/vendor/fonts/` (8 archivos woff2) |
+
+La política de seguridad de contenido pasó de autorizar cuatro CDN a no
+autorizar ninguno para scripts ni estilos. Cada uno era un tercero capaz de
+ejecutar JavaScript sobre páginas con historia clínica abierta.
+
+El Service Worker precachea la hoja de estilos y las librerías, así que la
+interfaz conserva su aspecto sin conexión. El CSS generado se versiona: ejecutar
+la aplicación no requiere ni Node ni internet.
+
+Quedan dos recursos externos, ambos por naturaleza: Jitsi para videollamada y
+las teselas de OpenStreetMap. Una prueba impide que se cuele cualquier otro.

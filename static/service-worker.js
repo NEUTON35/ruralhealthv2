@@ -18,12 +18,18 @@
  * clínicos queden en el disco del equipo.
  */
 
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const SHELL_CACHE = `ruralhealth-shell-${CACHE_VERSION}`;
 
 /**
  * Solo recursos públicos, sin datos de ningún paciente.
  * `/login` y `/offline` no requieren sesión, así que cachearlos es inocuo.
+ *
+ * Desde v7 se precachean también la hoja de estilos y las librerías, que antes
+ * venían de CDN externos. Ese era el motivo de que la aplicación apareciera sin
+ * ningún estilo cuando el CDN no era alcanzable — que en zona rural no es un
+ * caso raro. Ahora todo se sirve desde este servidor y queda disponible sin
+ * conexión.
  */
 const APP_SHELL = [
   '/login',
@@ -34,6 +40,15 @@ const APP_SHELL = [
   '/static/icon-512.png',
   '/static/pwa.js',
   '/static/location_picker.js',
+  '/static/css/app.css',
+  '/static/css/fonts.css',
+  '/static/vendor/lucide.min.js',
+  '/static/vendor/leaflet.css',
+  '/static/vendor/leaflet.js',
+  '/static/vendor/fonts/inter-400-latin.woff2',
+  '/static/vendor/fonts/inter-500-latin.woff2',
+  '/static/vendor/fonts/inter-600-latin.woff2',
+  '/static/vendor/fonts/inter-700-latin.woff2',
 ];
 
 self.addEventListener('install', (event) => {

@@ -360,47 +360,80 @@ class TestAccessibleMarkup:
 
 
 class TestThirdPartyResources:
-    """Todo recurso externo debe ir con version fijada y verificacion de integridad.
+    """Ningún recurso de la interfaz debe depender de un servidor externo.
 
-    Sin `integrity`, un CDN comprometido —o un intermediario— puede servir
-    JavaScript arbitrario que se ejecuta en paginas con historia clinica abierta.
-    `lucide@latest` era exactamente ese caso: version no fijada y sin verificar.
+    La aplicación cargaba Tailwind desde `cdn.tailwindcss.com`. Cuando ese CDN
+    no era alcanzable —red rural, cortafuegos, bloqueo regional— la interfaz
+    aparecía **sin ningún estilo**: no se degradaba, se rompía. En una aplicación
+    para zonas de baja conectividad eso no es un caso raro, es el esperado.
+
+    Ahora el CSS, los iconos, los mapas, las gráficas y la tipografía se sirven
+    desde el propio servidor. Esta prueba impide que vuelva a colarse un CDN.
     """
 
-    # Excepcion conocida y unica. El script Play de Tailwind compila el CSS en el
-    # navegador en tiempo de ejecucion, asi que su contenido no es estable y no
-    # admite SRI. Su propia documentacion desaconseja usarlo en produccion.
-    # Remedio pendiente: generar el CSS en el build y servirlo desde /static.
-    EXCEPCIONES = ('cdn.tailwindcss.com',)
+    # Únicos externos admitidos, y ambos necesitan conexión por naturaleza:
+    # la videollamada y las teselas del mapa.
+    ORIGENES_PERMITIDOS = ('meet.jit.si', 'jitsi.net', '8x8.vc',
+                           'tile.openstreetmap.org')
 
-    def test_external_resources_are_pinned_and_verified(self):
+    def test_no_external_stylesheets_or_scripts(self):
         import glob
+        import os
         import re
 
-        problemas = []
-        patron = re.compile(r'<(?:link|script)\b[^>]*?(?:src|href)="(https?://[^"]+)"[^>]*>', re.I)
+        externos = []
+        patron = re.compile(
+            r'<(?:link|script)[^>]*?(?:src|href)="(https?://[^"]+)"', re.I)
 
         for path in glob.glob('templates/*.html'):
             src = open(path, encoding='utf-8').read()
             for m in patron.finditer(src):
-                url, etiqueta = m.group(1), m.group(0)
-
-                # Las fuentes de Google se cargan como hoja de estilo sin JS.
-                if 'fonts.googleapis.com' in url or 'fonts.gstatic.com' in url:
+                url = m.group(1)
+                if any(ok in url for ok in self.ORIGENES_PERMITIDOS):
                     continue
-                if any(exc in url for exc in self.EXCEPCIONES):
-                    continue
+                externos.append(f'{os.path.basename(path)}: {url}')
 
-                if '@latest' in url or re.search(r'@\^|@~', url):
-                    problemas.append(f'{path}: version no fijada -> {url}')
-                if 'integrity=' not in etiqueta:
-                    problemas.append(f'{path}: sin SRI -> {url}')
-
-        assert not problemas, '\n'.join(problemas)
-
-    def test_no_new_unverifiable_cdn_is_added(self):
-        """La lista de excepciones no debe crecer sin una decision explicita."""
-        assert self.EXCEPCIONES == ('cdn.tailwindcss.com',), (
-            'se anadio un recurso externo que no puede verificarse; '
-            'documenta por que antes de ampliar la excepcion'
+        assert not externos, (
+            'la interfaz volveria a romperse sin acceso a estos servidores: '
+            f'{externos}'
         )
+
+    def test_built_stylesheet_is_versioned(self):
+        """El CSS generado debe estar en el repositorio.
+
+        Sin él, ejecutar la aplicación exigiría Node y conexión — justo lo que
+        se quería evitar.
+        """
+        import os
+        assert os.path.isfile('static/css/app.css'), (
+            'falta static/css/app.css; generalo con: npm run build:css'
+        )
+        assert os.path.getsize('static/css/app.css') > 10000, (
+            'el CSS generado parece vacio o incompleto'
+        )
+
+    def test_design_tokens_are_in_the_stylesheet(self):
+        """Las clases del sistema visual deben existir en el CSS generado.
+
+        Tailwind solo emite las clases que encuentra usadas: si el build no
+        escanea las plantillas correctas, faltarían sin previo aviso.
+        """
+        css = open('static/css/app.css', encoding='utf-8').read()
+        for clase in ('bg-accent', 'text-critical', 'bg-caution-subtle',
+                      'text-positive', 'border-critical-border'):
+            assert clase in css, f'falta la clase {clase} en el CSS generado'
+
+    def test_vendored_libraries_exist(self):
+        import os
+        for archivo in ('static/vendor/lucide.min.js',
+                        'static/vendor/leaflet.js',
+                        'static/vendor/leaflet.css',
+                        'static/vendor/chart.umd.min.js',
+                        'static/css/fonts.css'):
+            assert os.path.isfile(archivo), f'falta {archivo}'
+
+    def test_service_worker_precaches_the_interface(self):
+        """Sin conexión la interfaz debe seguir teniendo estilos."""
+        sw = open('static/service-worker.js', encoding='utf-8').read()
+        for recurso in ('/static/css/app.css', '/static/vendor/lucide.min.js'):
+            assert recurso in sw, f'{recurso} no se precachea'

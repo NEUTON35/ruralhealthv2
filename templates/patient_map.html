@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.css') }}">
 
 <div class="max-w-6xl mx-auto space-y-4">
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
@@ -66,7 +66,7 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{{ url_for('static', filename='vendor/leaflet.js') }}"></script>
 <script>
     const fallbackCenter = [4.5709, -74.2973];
     const patientLat = {{ current_user.latitude if current_user.latitude is not none else 'null' }};

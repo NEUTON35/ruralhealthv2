@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.css') }}">
 
 <div class="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
     <!-- Header con mejor jerarquía -->

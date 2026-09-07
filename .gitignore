@@ -33,3 +33,11 @@ Thumbs.db
 desktop.ini
 .idea/
 .vscode/
+
+# --- Build de estilos ---
+# node_modules solo hace falta para regenerar el CSS.
+node_modules/
+package-lock.json
+
+# static/css/app.css SI se versiona: sin el, ejecutar la aplicacion
+# exigiria Node y conexion, que es justo lo que se queria evitar.
