@@ -166,6 +166,7 @@ def procesar_envio(db, envio, cliente):
         envio.last_error = e.detalle
         envio.sent_at = ahora
         envio.next_attempt_at = None
+        _auditar(envio, 'rda_duplicado')
         return envio.status
     except IHCEError as e:
         envio.last_error = ('%s %s' % (e, e.detalle or '')).strip()[:2000]
@@ -180,6 +181,8 @@ def procesar_envio(db, envio, cliente):
         else:
             envio.status = RDA_PENDIENTE
             envio.next_attempt_at = ahora + _espera(envio.attempts)
+        if envio.status == RDA_RECHAZADO:
+            _auditar(envio, 'rda_rechazado')
         return envio.status
 
     envio.status = RDA_ACEPTADO
@@ -187,7 +190,36 @@ def procesar_envio(db, envio, cliente):
     envio.next_attempt_at = None
     envio.last_error = None
     envio.remote_id = _extraer_id(respuesta)
+    _auditar(envio, 'rda_enviado')
     return envio.status
+
+
+def _auditar(envio, evento):
+    """Deja constancia de la operacion en el registro encadenado.
+
+    El articulo 6.5 del Manual de operaciones v1.4 exige registros que permitan
+    identificar fecha y hora de cada peticion, quien la hizo, el tipo de
+    operacion y el estado de la transaccion, en un sistema "seguro, inmutable".
+
+    El `AuditLog` de la aplicacion encadena cada entrada con el hash de la
+    anterior, que es lo que hace detectable una manipulacion posterior. La tabla
+    `rda_submission` guarda el estado vigente, pero se sobrescribe en cada
+    reintento: no sirve como registro inmutable de lo que paso.
+
+    No se registra ningun dato clinico. Solo el identificador de la atencion, el
+    estado y el acuse del Ministerio.
+    """
+    from security import audit
+
+    detalle = 'history_id=%s; estado=%s; intento=%s' % (
+        envio.medical_history_id, envio.status, envio.attempts)
+    if envio.remote_id:
+        detalle += '; acuse=%s' % envio.remote_id
+    try:
+        audit(evento, user_id=None, clinic_id=envio.clinic_id, details=detalle)
+    except Exception:
+        # El envio ya ocurrio; no se deshace porque falle la anotacion.
+        logger.exception('No se pudo auditar el envio de RDA %s', envio.id)
 
 
 def _extraer_id(respuesta):

@@ -30,6 +30,7 @@ OperationOutcome, que describe el campo invalido y no el dato del paciente.
 
 import json
 import logging
+import ssl
 import time
 import urllib.error
 import urllib.parse
@@ -38,6 +39,44 @@ import urllib.request
 from . import terminology as T
 
 logger = logging.getLogger('ihce')
+
+
+def _contexto_tls():
+    """Contexto TLS que rechaza cualquier version anterior a 1.3.
+
+    El articulo 6.4 del Manual de operaciones v1.4 lo exige: "Todo el trafico
+    entre el prestador y las API expuesta por parte del Ministerio debe
+    realizarse sobre TLS 1.3 o superior".
+
+    Python negocia por defecto la version mas alta que ambos extremos admitan,
+    pero acepta caer a TLS 1.2 sin avisar. Eso incumpliria la norma en silencio,
+    que es la peor forma de incumplirla: nadie se entera hasta la auditoria.
+    Aqui se fija el minimo, de modo que una conexion que no pueda hacer 1.3
+    falla de forma visible en lugar de degradarse.
+
+    Hay una segunda razon, y es la que motivo esta revision. La historia clinica
+    se conserva quince anos. Un tercero que grabe hoy el trafico cifrado podria
+    descifrarlo mas adelante si el intercambio de llaves fuera debil ("harvest
+    now, decrypt later"). TLS 1.3 es el requisito previo para negociar los
+    intercambios hibridos post-cuanticos que los proveedores ya estan
+    desplegando; sobre TLS 1.2 no hay forma de tenerlos.
+    """
+    contexto = ssl.create_default_context()
+    contexto.minimum_version = ssl.TLSVersion.TLSv1_3
+    contexto.check_hostname = True
+    contexto.verify_mode = ssl.CERT_REQUIRED
+    return contexto
+
+
+_TLS = None
+
+
+def _abrir(peticion, timeout=None):
+    """Opener por defecto. Aparte para poder sustituirlo en las pruebas."""
+    global _TLS
+    if _TLS is None:
+        _TLS = _contexto_tls()
+    return urllib.request.urlopen(peticion, timeout=timeout, context=_TLS)
 
 
 class IHCEError(Exception):
@@ -63,7 +102,7 @@ class IHCEClient:
     def __init__(self, config, opener=None, reloj=None):
         self.config = config
         # `opener` y `reloj` se inyectan en las pruebas para no tocar la red.
-        self._opener = opener or urllib.request.urlopen
+        self._opener = opener or _abrir
         self._reloj = reloj or time.time
         self._token = None
         self._token_expira = 0.0

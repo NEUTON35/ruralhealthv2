@@ -431,6 +431,19 @@ def _entorno():
     }
 
 
+
+class TestTransporte:
+    """Articulo 6.4 del manual: TLS 1.3 o superior, obligatorio."""
+
+    def test_el_contexto_tls_rechaza_versiones_anteriores_a_1_3(self):
+        import ssl
+        from ihce.client import _contexto_tls
+
+        contexto = _contexto_tls()
+        assert contexto.minimum_version == ssl.TLSVersion.TLSv1_3
+        assert contexto.check_hostname is True
+        assert contexto.verify_mode == ssl.CERT_REQUIRED
+
 # --- Cliente ----------------------------------------------------------------
 
 class RespuestaFalsa:

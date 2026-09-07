@@ -279,3 +279,56 @@ class TestIntegracionConLaAtencion:
             assert envio is not None, (
                 'la atencion se guardo sin encolar su RDA: incumple la '
                 'Resolucion 1888 de 2025')
+
+
+class TestAuditoria:
+    """Articulo 6.5 del manual: registro inmutable de cada operacion."""
+
+    def _envio(self, app, atencion):
+        from models import MedicalHistory, db as _db
+        historia = _db.session.get(MedicalHistory, atencion)
+        return outbox.encolar(_db, historia, commit=True)
+
+    def test_un_envio_aceptado_deja_entrada_en_la_auditoria(self, app, atencion):
+        from models import AuditLog, db as _db
+        with app.app_context():
+            envio = self._envio(app, atencion)
+            outbox.procesar_envio(_db, envio, ClienteFalso({'id': 'RDA-7'}))
+            _db.session.commit()
+            entrada = AuditLog.query.filter_by(event='rda_enviado').first()
+            assert entrada is not None
+            assert 'RDA-7' in entrada.details
+            assert str(atencion) in entrada.details
+
+    def test_el_rechazo_tambien_queda_registrado(self, app, atencion):
+        """El manual pide el estado de la transaccion: exito, error o rechazo."""
+        from models import AuditLog, db as _db
+        with app.app_context():
+            envio = self._envio(app, atencion)
+            outbox.procesar_envio(_db, envio, ClienteFalso(
+                IHCEError('mal', codigo=400, permanente=True)))
+            _db.session.commit()
+            assert AuditLog.query.filter_by(event='rda_rechazado').first() is not None
+
+    def test_la_auditoria_no_guarda_datos_clinicos(self, app, atencion):
+        from models import AuditLog, db as _db
+        with app.app_context():
+            envio = self._envio(app, atencion)
+            outbox.procesar_envio(_db, envio, ClienteFalso({'id': 'RDA-7'}))
+            _db.session.commit()
+            entrada = AuditLog.query.filter_by(event='rda_enviado').first()
+            for prohibido in ('J00X', 'Rinofaringitis', 'Cuadro gripal'):
+                assert prohibido not in (entrada.details or '')
+
+    def test_un_fallo_al_auditar_no_deshace_el_envio(self, app, atencion, monkeypatch):
+        """El envio ya ocurrio: no se puede fingir que no."""
+        from models import RDA_ACEPTADO, db as _db
+        with app.app_context():
+            envio = self._envio(app, atencion)
+
+            def revienta(*a, **k):
+                raise RuntimeError('auditoria caida')
+
+            monkeypatch.setattr('security.audit', revienta)
+            estado = outbox.procesar_envio(_db, envio, ClienteFalso({'id': 'X'}))
+            assert estado == RDA_ACEPTADO
