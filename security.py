@@ -9,7 +9,9 @@ from datetime import timedelta
 from functools import wraps
 
 import jwt
+from cryptography.exceptions import InvalidTag
 from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from flask import abort, current_app, flash, redirect, request, session, url_for
 from flask_login import current_user
 from sqlalchemy import inspect
@@ -100,9 +102,73 @@ def _kdf_iterations():
 # rotación en caliente produzca una instancia nueva en lugar de seguir usando la
 # anterior.
 _FERNET_CACHE = {}
+_AESGCM_CACHE = {}
+
+# Prefijo del formato vigente. Permite distinguir a simple vista qué cifró cada
+# valor y, sobre todo, hace posible una migración futura sin adivinar: un valor
+# sin prefijo es del formato anterior.
+CIPHER_V2_PREFIX = "v2."
+
+
+def _field_key():
+    """Llave de 32 bytes para AES-256-GCM.
+
+    Se deriva de la misma semilla que antes y con el mismo salt, así que rotarla
+    sigue siendo el procedimiento documentado en SECURITY.md. Lo que cambia es
+    a qué cifrador se entregan esos 32 bytes.
+    """
+    secret = _secret_material("RURALHEALTH_FIELD_KEY_SEED", "dev-only-ruralhealth-field-key")
+    cache_key = hashlib.sha256(secret).hexdigest()
+    cached = _AESGCM_CACHE.get(cache_key)
+    if cached is None:
+        derived = hashlib.pbkdf2_hmac("sha256", secret, b"field-encryption", KDF_ITERATIONS)
+        cached = AESGCM(derived)
+        _AESGCM_CACHE[cache_key] = cached
+    return cached
+
+
+def _encrypt_field(texto):
+    """Cifra con AES-256-GCM.
+
+    Por qué se dejó Fernet
+    ----------------------
+    Fernet es AES-**128**-CBC más HMAC-SHA256. Es sólido, pero la historia
+    clínica se conserva quince años (Resolución 839 de 2017) y hay dos razones
+    para subir a 256:
+
+    1. El algoritmo de Grover reduce a la mitad el nivel efectivo de una clave
+       simétrica frente a un adversario cuántico. AES-128 quedaría en unos 64
+       bits efectivos. En la práctica Grover es secuencial y no paraleliza bien,
+       así que AES-128 sigue considerándose seguro; pero para un dato que debe
+       seguir siendo secreto en 2041, el margen extra es gratis.
+    2. El artículo 6.4 del Manual de operaciones IHCE v1.4 del Ministerio nombra
+       AES-256 como el algoritmo esperado para los datos sensibles en reposo.
+
+    GCM en lugar de CBC+HMAC porque es cifrado autenticado en una sola primitiva:
+    menos piezas que combinar mal. El nonce es aleatorio de 96 bits, el tamaño
+    que recomienda NIST SP 800-38D, y viaja delante del criptograma.
+    """
+    nonce = os.urandom(12)
+    ciphertext = _field_key().encrypt(nonce, texto.encode("utf-8"), None)
+    return CIPHER_V2_PREFIX + base64.urlsafe_b64encode(nonce + ciphertext).decode("ascii")
+
+
+def _decrypt_field(token):
+    """Descifra. Acepta el formato vigente y el anterior.
+
+    La lectura del formato Fernet se conserva para que una instalación que ya
+    tuviera datos no quede ilegible al desplegar esta versión: sus valores se
+    siguen leyendo y se reescriben en el formato nuevo cuando se guardan, o de
+    una vez con `manage.py rotate-encryption-key`.
+    """
+    if token.startswith(CIPHER_V2_PREFIX):
+        crudo = base64.urlsafe_b64decode(token[len(CIPHER_V2_PREFIX):].encode("ascii"))
+        return _field_key().decrypt(crudo[:12], crudo[12:], None).decode("utf-8")
+    return _fernet().decrypt(token.encode("utf-8")).decode("utf-8")
 
 
 def _fernet():
+    """Cifrador anterior. Solo se usa ya para **leer** datos heredados."""
     key = os.environ.get("RURALHEALTH_FIELD_ENCRYPTION_KEY")
     if key:
         cached = _FERNET_CACHE.get(key)
@@ -124,6 +190,7 @@ def _fernet():
 def reset_fernet_cache():
     """Vacía la caché. Necesario tras rotar la llave dentro del mismo proceso."""
     _FERNET_CACHE.clear()
+    _AESGCM_CACHE.clear()
 
 
 def pii_hash(value):
@@ -151,15 +218,18 @@ class EncryptedText(TypeDecorator):
     def process_bind_param(self, value, dialect):
         if value is None or value == "":
             return value
-        token = _fernet().encrypt(str(value).encode("utf-8")).decode("utf-8")
-        return token
+        return _encrypt_field(str(value))
 
     def process_result_value(self, value, dialect):
         if value is None or value == "":
             return value
         try:
-            return _fernet().decrypt(str(value).encode("utf-8")).decode("utf-8")
-        except (InvalidToken, ValueError):
+            return _decrypt_field(str(value))
+        except (InvalidToken, InvalidTag, ValueError, TypeError):
+            # Un valor que no se puede descifrar se devuelve tal cual en lugar
+            # de reventar la consulta: puede ser un dato escrito antes de que la
+            # columna se cifrara. Perder la pantalla entera por un registro
+            # heredado seria peor que mostrarlo.
             return value
 
 
@@ -1137,23 +1207,52 @@ def backfill_legacy_data(db, batch_size=500, progress=None):
     return report
 
 
+def encrypted_columns():
+    """Descubre en el modelo qué columnas están cifradas.
+
+    Antes esta lista estaba escrita a mano dentro de `reencrypt_all`, y se había
+    quedado corta: cubría 10 campos de 30. Los otros 20 —entre ellos las
+    alergias del paciente, los datos de la orden médica, el registro de
+    dispensación y los nombres y apellidos— **no se recifraban**. Rotar la llave
+    los habría dejado ilegibles en silencio, que es la peor forma de perder
+    historia clínica: sin error, sin aviso, y descubierta meses después.
+
+    Derivarla del propio modelo hace que no pueda volver a desincronizarse:
+    añadir una columna cifrada la incluye automáticamente.
+    """
+    from sqlalchemy import inspect as sa_inspect
+
+    import models
+
+    encontrados = []
+    for nombre in dir(models):
+        modelo = getattr(models, nombre)
+        if not isinstance(modelo, type) or not hasattr(modelo, "__tablename__"):
+            continue
+        try:
+            mapper = sa_inspect(modelo)
+        except Exception:
+            continue
+        campos = [c.key for c in mapper.columns
+                  if isinstance(c.type, EncryptedText)]
+        if campos and hasattr(modelo, "id"):
+            encontrados.append((modelo, tuple(sorted(campos))))
+    return sorted(encontrados, key=lambda par: par[0].__name__)
+
+
 def reencrypt_all(db, batch_size=200, progress=None):
     """Recifra todos los campos cifrados con la llave activa.
 
-    Necesario tras rotar `RURALHEALTH_FIELD_ENCRYPTION_KEY`. Debe ejecutarse con
-    la aplicación detenida y con copia de seguridad previa: si se interrumpe a
-    medias, parte de los datos queda cifrada con la llave anterior.
-    """
-    from models import Appointment, Chat, MedicalHistory, Message, Rating, User
+    Necesario tras rotar `RURALHEALTH_FIELD_KEY_SEED`, y también para migrar del
+    formato Fernet anterior a AES-256-GCM. Debe ejecutarse con la aplicación
+    detenida y con copia de seguridad previa: si se interrumpe a medias, parte de
+    los datos queda en el formato o la llave anteriores.
 
-    targets = (
-        (User, ("name", "cedula", "phone", "email", "address", "office_address")),
-        (Chat, ("reason",)),
-        (Message, ("content",)),
-        (Appointment, ("description",)),
-        (Rating, ("comment",)),
-        (MedicalHistory, ("summary", "diagnosis", "treatment")),
-    )
+    Recifrar el `details` de la auditoría no rompe su cadena: el hash encadenado
+    se calcula sobre el evento, el actor, la ruta, la IP y la marca de tiempo, no
+    sobre ese campo.
+    """
+    targets = encrypted_columns()
 
     total = 0
     for model, fields in targets:
