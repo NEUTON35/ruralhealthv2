@@ -17,7 +17,7 @@
                     <i data-lucide="shield-check" class="w-6 h-6 text-primary"></i>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase">Perfil Identificado</p>
+                    <p class="text-xs font-black text-slate-600 uppercase">Perfil Identificado</p>
                     <p class="font-bold text-slate-700 capitalize">{{ current_user.role }}</p>
                 </div>
             </div>
@@ -26,36 +26,36 @@
 
     <!-- Main Navigation Tabs -->
     <div class="flex flex-wrap gap-2 mb-8 p-1.5 bg-slate-100 rounded-2xl">
-        <button onclick="showSection('general')" id="tab-general" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all active">
+        <button onclick="showSection('general')" id="tab-general" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-colors active">
             🌐 General
         </button>
         
         {% if current_user.role == 'patient' %}
-        <button onclick="showSection('patient')" id="tab-patient" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+        <button onclick="showSection('patient')" id="tab-patient" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">
             👤 Pacientes
         </button>
         {% endif %}
 
         {% if current_user.role == 'doctor' %}
-        <button onclick="showSection('doctor')" id="tab-doctor" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+        <button onclick="showSection('doctor')" id="tab-doctor" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">
             🩺 Médicos
         </button>
         {% endif %}
 
         {% if current_user.role == 'expendedor' %}
-        <button onclick="showSection('expendedor')" id="tab-expendedor" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+        <button onclick="showSection('expendedor')" id="tab-expendedor" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">
             💊 Farmacia
         </button>
         {% endif %}
 
         {% if current_user.role in ('staff', 'receptionist') %}
-        <button onclick="showSection('staff')" id="tab-staff" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+        <button onclick="showSection('staff')" id="tab-staff" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">
             📋 Staff
         </button>
         {% endif %}
 
         {% if current_user.role == 'admin' %}
-        <button onclick="showSection('admin')" id="tab-admin" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all">
+        <button onclick="showSection('admin')" id="tab-admin" class="manual-tab flex-1 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-colors">
             ⚙️ Admin
         </button>
         {% endif %}
@@ -158,15 +158,15 @@
                     <p class="text-sm text-slate-500 mb-4">La plataforma está diseñada para agilizar tu flujo de trabajo y asegurar el cumplimiento de la norma RIPS.</p>
                     <div class="grid md:grid-cols-2 gap-6">
                         <div>
-                            <p class="text-[10px] font-black text-primary uppercase mb-1">Paso 1: Chat y Videollamada</p>
+                            <p class="text-xs font-black text-primary uppercase mb-1">Paso 1: Chat y Videollamada</p>
                             <p class="text-xs text-slate-500">Puedes usar el chat para el triage inicial, compartir documentos y luego lanzar una videollamada cifrada de punto a punto desde el botón de la cámara.</p>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black text-primary uppercase mb-1">Paso 2: Notas de Evolución</p>
+                            <p class="text-xs font-black text-primary uppercase mb-1">Paso 2: Notas de Evolución</p>
                             <p class="text-xs text-slate-500">Registra síntomas, diagnóstico (usando el código CIE-10) y plan a seguir. Esto es obligatorio para que el Administrador pueda exportar el RIPS.</p>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black text-primary uppercase mb-1">Paso 3: Orden Médica Legal</p>
+                            <p class="text-xs font-black text-primary uppercase mb-1">Paso 3: Orden Médica Legal</p>
                             <p class="text-xs text-slate-500">Genera recetas completas con dosis, vías de administración e información de la aseguradora (EPS). Puedes plasmar tu <strong>Firma Digital</strong> directamente en la pantalla, dando validez legal (SERSALUD) al documento que el paciente puede imprimir.</p>
                         </div>
                     </div>
@@ -187,15 +187,15 @@
                     <div class="grid md:grid-cols-3 gap-4">
                         <div class="bg-white/10 p-4 rounded-xl">
                             <p class="font-black text-xs mb-1">Tarifas y Precios</p>
-                            <p class="text-[10px] text-slate-400 leading-tight">Configura cuánto cobras por consulta, suscripción mensual o anual. Puedes aplicar descuentos a aseguradoras (Pólizas).</p>
+                            <p class="text-xs text-slate-600 leading-tight">Configura cuánto cobras por consulta, suscripción mensual o anual. Puedes aplicar descuentos a aseguradoras (Pólizas).</p>
                         </div>
                         <div class="bg-white/10 p-4 rounded-xl">
                             <p class="font-black text-xs mb-1">Pagos Manuales</p>
-                            <p class="text-[10px] text-slate-400 leading-tight">Los pacientes subirán una foto/PDF de su transferencia. Revisa el apartado de Pagos en tu panel para validarlos y habilitar el acceso.</p>
+                            <p class="text-xs text-slate-600 leading-tight">Los pacientes subirán una foto/PDF de su transferencia. Revisa el apartado de Pagos en tu panel para validarlos y habilitar el acceso.</p>
                         </div>
                         <div class="bg-white/10 p-4 rounded-xl">
                             <p class="font-black text-xs mb-1">Bloqueo de Agenda</p>
-                            <p class="text-[10px] text-slate-400 leading-tight">Puedes bloquear tu horario en "Configuración" para evitar citas en días que no laboras o en vacaciones.</p>
+                            <p class="text-xs text-slate-600 leading-tight">Puedes bloquear tu horario en "Configuración" para evitar citas en días que no laboras o en vacaciones.</p>
                         </div>
                     </div>
                 </div>
@@ -247,7 +247,7 @@
                 <div class="border-2 border-slate-100 p-6 rounded-3xl">
                     <h4 class="font-black text-slate-800 mb-2">💬 Chats de Soporte al Paciente</h4>
                     <p class="text-sm text-slate-500 leading-relaxed mb-3">Tus chats no se mezclan con los médicos. Tú atiendes preguntas operativas y de disponibilidad en la sección de "Soporte / Farmacia".</p>
-                    <ul class="text-xs text-slate-400 list-disc pl-5 space-y-1">
+                    <ul class="text-xs text-slate-600 list-disc pl-5 space-y-1">
                         <li>Confirma si hay medicamentos antes de que el paciente viaje a la clínica.</li>
                         <li>Asiste con problemas de agendamiento.</li>
                     </ul>
@@ -279,8 +279,8 @@
             <div class="space-y-6">
                 <div class="p-6 bg-slate-900 text-white rounded-3xl">
                     <h4 class="font-black text-lg mb-2 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5 text-primary"></i> Exportación Consolidada de RIPS</h4>
-                    <p class="text-sm text-slate-300 leading-relaxed mb-3">El sistema reúne las atenciones de todos tus médicos para generar los paquetes normativos.</p>
-                    <ul class="text-xs text-slate-400 list-disc pl-5 space-y-1">
+                    <p class="text-sm text-slate-500 leading-relaxed mb-3">El sistema reúne las atenciones de todos tus médicos para generar los paquetes normativos.</p>
+                    <ul class="text-xs text-slate-600 list-disc pl-5 space-y-1">
                         <li>Descarga los archivos `CT`, `AF`, `US`, y `AC` listos para reporte.</li>
                         <li>El sistema evita errores de validación exigiendo a los doctores ingresar el CIE-10.</li>
                     </ul>
@@ -308,12 +308,12 @@
             </div>
         </div>
         <h3 class="text-2xl font-black mb-2">Centro de Soporte Técnico</h3>
-        <p class="text-slate-400 mb-8 max-w-lg mx-auto">Esta documentación es confidencial y para uso interno exclusivo de los usuarios registrados de RuralHealth Connect.</p>
+        <p class="text-slate-600 mb-8 max-w-lg mx-auto">Esta documentación es confidencial y para uso interno exclusivo de los usuarios registrados de RuralHealth Connect.</p>
         <div class="flex flex-wrap justify-center gap-4">
-            <a href="mailto:soporte@ruralhealth.com" class="bg-primary text-white px-8 py-3 rounded-2xl font-black hover:scale-105 transition-all">
+            <a href="mailto:soporte@ruralhealth.com" class="bg-primary text-white px-8 py-3 rounded-2xl font-black hover:scale-105 transition-colors">
                 Enviar Ticket
             </a>
-            <a href="/transparencia" class="bg-white/10 text-white px-8 py-3 rounded-2xl font-black border border-white/20 hover:bg-white/20 transition-all">
+            <a href="/transparencia" class="bg-white/10 text-white px-8 py-3 rounded-2xl font-black border border-white/20 hover:bg-white/20 transition-colors">
                 Ver Políticas
             </a>
         </div>

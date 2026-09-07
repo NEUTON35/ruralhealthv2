@@ -2,7 +2,7 @@
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6">
     <div>
-        <p class="text-xs font-black uppercase tracking-widest text-slate-400">ROLE_SUPER</p>
+        <p class="text-xs font-black uppercase tracking-widest text-slate-600">ROLE_SUPER</p>
         <h1 class="text-3xl font-black text-slate-900">Panel Global</h1>
     </div>
 
@@ -19,7 +19,7 @@
             'Leads': metrics.leads_total
         }.items() %}
         <div class="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ label }}</p>
+            <p class="text-xs font-black uppercase tracking-widest text-slate-600">{{ label }}</p>
             <p class="text-3xl font-black text-slate-900">{{ value }}</p>
         </div>
         {% endfor %}
@@ -30,22 +30,22 @@
         <form method="POST" class="grid md:grid-cols-4 gap-3">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="create_clinic">
-            <input name="clinic_name" required placeholder="Nombre de la clinica" class="border p-3 rounded-lg md:col-span-2">
-            <input name="location" placeholder="Ubicacion" class="border p-3 rounded-lg">
-            <input name="plan_pago" value="starter" placeholder="Plan de pago" class="border p-3 rounded-lg">
-            <input id="super-clinic-lat" type="number" step="any" name="latitude" placeholder="Latitud clinica" class="border p-3 rounded-lg">
-            <input id="super-clinic-lng" type="number" step="any" name="longitude" placeholder="Longitud clinica" class="border p-3 rounded-lg">
-            <select name="access_type" class="border p-3 rounded-lg bg-white">
+            <input name="clinic_name" required placeholder="Nombre de la clinica" class="border p-3 rounded-lg md:col-span-2" aria-label="Nombre de la clinica">
+            <input name="location" placeholder="Ubicacion" class="border p-3 rounded-lg" aria-label="Ubicacion">
+            <input name="plan_pago" value="starter" placeholder="Plan de pago" class="border p-3 rounded-lg" aria-label="Plan de pago">
+            <input id="super-clinic-lat" type="number" step="any" name="latitude" placeholder="Latitud clinica" class="border p-3 rounded-lg" aria-label="Latitud clinica">
+            <input id="super-clinic-lng" type="number" step="any" name="longitude" placeholder="Longitud clinica" class="border p-3 rounded-lg" aria-label="Longitud clinica">
+            <select name="access_type" class="border p-3 rounded-lg bg-white" aria-label="Tipo de acceso">
                 <option value="public">Publica</option>
                 <option value="private">Privada</option>
             </select>
             <div class="md:col-span-4 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#super-clinic-lat" data-lng-input="#super-clinic-lng"></div>
             <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 rounded-lg font-black px-4 py-3 md:col-span-4 inline-flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS para clinica</button>
-            <input name="admin_name" required placeholder="Nombre admin inicial" class="border p-3 rounded-lg">
-            <input name="admin_cedula" required placeholder="Cedula admin" class="border p-3 rounded-lg">
-            <input name="admin_email" type="email" placeholder="Email admin" class="border p-3 rounded-lg">
-            <input name="admin_username" required placeholder="Usuario admin" class="border p-3 rounded-lg">
-            <input name="admin_password" required type="password" placeholder="Contrasena admin" class="border p-3 rounded-lg md:col-span-2">
+            <input name="admin_name" required placeholder="Nombre admin inicial" class="border p-3 rounded-lg" aria-label="Nombre admin inicial">
+            <input name="admin_cedula" required placeholder="Cedula admin" class="border p-3 rounded-lg" aria-label="Cedula admin">
+            <input name="admin_email" type="email" placeholder="Email admin" class="border p-3 rounded-lg" aria-label="Email admin">
+            <input name="admin_username" required placeholder="Usuario admin" class="border p-3 rounded-lg" aria-label="Usuario admin">
+            <input name="admin_password" required type="password" placeholder="Contrasena admin" class="border p-3 rounded-lg md:col-span-2" aria-label="Contrasena admin">
             <button class="bg-emerald-600 text-white rounded-lg font-black px-4 py-3 md:col-span-2 inline-flex items-center justify-center gap-2">
                 <i data-lucide="building-2" class="w-5 h-5"></i>
                 Crear clinica y admin
@@ -58,16 +58,16 @@
         <form method="POST" class="grid md:grid-cols-4 gap-3 mb-5">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="create_autonomous_doctor">
-            <input name="name" required placeholder="Nombre completo" class="border p-3 rounded-lg">
-            <input name="cedula" required placeholder="Cedula" class="border p-3 rounded-lg">
-            <input name="specialty" placeholder="Especialidad" class="border p-3 rounded-lg">
-            <input name="email" type="email" placeholder="Correo" class="border p-3 rounded-lg">
-            <input name="phone" placeholder="Telefono" class="border p-3 rounded-lg">
-            <input name="username" required placeholder="Usuario" class="border p-3 rounded-lg">
-            <input name="password" required type="password" placeholder="Contrasena" class="border p-3 rounded-lg">
-            <input name="office_address" placeholder="Direccion consultorio" class="border p-3 rounded-lg">
-            <input id="super-doctor-lat" type="number" step="any" name="office_latitude" placeholder="Latitud" class="border p-3 rounded-lg md:col-span-2">
-            <input id="super-doctor-lng" type="number" step="any" name="office_longitude" placeholder="Longitud" class="border p-3 rounded-lg">
+            <input name="name" required placeholder="Nombre completo" class="border p-3 rounded-lg" aria-label="Nombre completo">
+            <input name="cedula" required placeholder="Cedula" class="border p-3 rounded-lg" aria-label="Cedula">
+            <input name="specialty" placeholder="Especialidad" class="border p-3 rounded-lg" aria-label="Especialidad">
+            <input name="email" type="email" placeholder="Correo" class="border p-3 rounded-lg" aria-label="Correo">
+            <input name="phone" placeholder="Telefono" class="border p-3 rounded-lg" aria-label="Telefono">
+            <input name="username" required placeholder="Usuario" class="border p-3 rounded-lg" aria-label="Usuario">
+            <input name="password" required type="password" placeholder="Contrasena" class="border p-3 rounded-lg" aria-label="Contrasena">
+            <input name="office_address" placeholder="Direccion consultorio" class="border p-3 rounded-lg" aria-label="Direccion consultorio">
+            <input id="super-doctor-lat" type="number" step="any" name="office_latitude" placeholder="Latitud" class="border p-3 rounded-lg md:col-span-2" aria-label="Latitud">
+            <input id="super-doctor-lng" type="number" step="any" name="office_longitude" placeholder="Longitud" class="border p-3 rounded-lg" aria-label="Longitud">
             <div class="md:col-span-4 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#super-doctor-lat" data-lng-input="#super-doctor-lng"></div>
             <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 rounded-lg font-black px-4 py-3 md:col-span-4 inline-flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS para consultorio</button>
             <button class="bg-purple-700 text-white rounded-lg font-black px-4 py-3">Crear medico autonomo</button>
@@ -79,7 +79,7 @@
                 <p class="text-xs text-purple-700">{{ doctor.specialty or 'Medicina General' }} | {{ doctor.office_address or 'Sin consultorio' }}</p>
             </div>
             {% else %}
-            <p class="text-sm text-slate-400">Sin medicos autonomos.</p>
+            <p class="text-sm text-slate-600">Sin medicos autonomos.</p>
             {% endfor %}
         </div>
     </section>
@@ -89,20 +89,20 @@
         <form method="POST" class="grid md:grid-cols-4 gap-3 mb-5">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="generate_policy_codes">
-            <input name="policy_code" required placeholder="Codigo de poliza" class="border p-3 rounded-lg">
-            <input name="code_prefix" placeholder="Prefijo codigos (ej: clinicalamejor)" class="border p-3 rounded-lg">
-            <input name="policy_name" placeholder="Nombre de poliza" class="border p-3 rounded-lg">
-            <input name="insurer_name" placeholder="Aseguradora" class="border p-3 rounded-lg">
-            <textarea name="consent_codes" required rows="3" placeholder="Codigos de consentimiento, uno por linea o separados por coma" class="border p-3 rounded-lg md:col-span-4"></textarea>
-            <input type="number" min="1" max="50" name="quantity" value="1" placeholder="Cantidad codigos" class="border p-3 rounded-lg">
-            <input type="number" min="1" name="duration_days" value="30" placeholder="Dias de vigencia" class="border p-3 rounded-lg">
-            <input type="number" min="0" max="100" step="1" name="discount_percent" placeholder="Descuento medico %" class="border p-3 rounded-lg">
+            <input name="policy_code" required placeholder="Codigo de poliza" class="border p-3 rounded-lg" aria-label="Codigo de poliza">
+            <input name="code_prefix" placeholder="Prefijo codigos (ej: clinicalamejor)" class="border p-3 rounded-lg" aria-label="Prefijo codigos (ej: clinicalamejor)">
+            <input name="policy_name" placeholder="Nombre de poliza" class="border p-3 rounded-lg" aria-label="Nombre de poliza">
+            <input name="insurer_name" placeholder="Aseguradora" class="border p-3 rounded-lg" aria-label="Aseguradora">
+            <textarea name="consent_codes" required rows="3" placeholder="Codigos de consentimiento, uno por linea o separados por coma" class="border p-3 rounded-lg md:col-span-4" aria-label="Codigos de consentimiento, uno por linea o separados por coma"></textarea>
+            <input type="number" min="1" max="50" name="quantity" value="1" placeholder="Cantidad codigos" class="border p-3 rounded-lg" aria-label="Cantidad codigos">
+            <input type="number" min="1" name="duration_days" value="30" placeholder="Dias de vigencia" class="border p-3 rounded-lg" aria-label="Dias de vigencia">
+            <input type="number" min="0" max="100" step="1" name="discount_percent" placeholder="Descuento medico %" class="border p-3 rounded-lg" aria-label="Descuento medico %">
             <button class="bg-cyan-700 text-white rounded-lg font-black px-4 py-3">Generar codigos</button>
         </form>
 
         <div class="grid lg:grid-cols-3 gap-4">
             <div>
-                <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Polizas</p>
+                <p class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">Polizas</p>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for policy in policies %}
                     <div class="border border-cyan-100 bg-cyan-50 rounded-lg p-3">
@@ -110,12 +110,12 @@
                         <p class="text-xs text-cyan-700">{{ policy.code }} | {{ policy.insurer_name or '-' }}</p>
                     </div>
                     {% else %}
-                    <p class="text-sm text-slate-400">Sin polizas.</p>
+                    <p class="text-sm text-slate-600">Sin polizas.</p>
                     {% endfor %}
                 </div>
             </div>
             <div>
-                <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Lotes</p>
+                <p class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">Lotes</p>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for batch in policy_batches %}
                     <div class="border border-slate-100 bg-slate-50 rounded-lg p-3">
@@ -123,12 +123,12 @@
                         <p class="text-xs text-slate-500">{{ batch.generated_count }}/{{ batch.max_codes }} codigos | {{ batch.duration_days }} dias</p>
                     </div>
                     {% else %}
-                    <p class="text-sm text-slate-400">Sin lotes.</p>
+                    <p class="text-sm text-slate-600">Sin lotes.</p>
                     {% endfor %}
                 </div>
             </div>
             <div>
-                <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Codigos recientes</p>
+                <p class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">Codigos recientes</p>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for invite in recent_policy_codes %}
                     <div class="border border-emerald-100 bg-emerald-50 rounded-lg p-3">
@@ -136,7 +136,7 @@
                         <p class="text-xs text-emerald-700">{{ invite.policy.code }} | {{ invite.status }}</p>
                     </div>
                     {% else %}
-                    <p class="text-sm text-slate-400">Sin codigos.</p>
+                    <p class="text-sm text-slate-600">Sin codigos.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -149,7 +149,7 @@
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-widest">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-xs tracking-widest">
                     <tr>
                         <th class="text-left p-3">Clinica</th>
                         <th class="text-left p-3">Ubicacion</th>
@@ -168,7 +168,7 @@
                         <td class="p-3 text-slate-500">{{ row.clinic.access_type }}</td>
                         <td class="p-3 text-slate-500">{{ row.clinic.plan_pago or row.clinic.plan }}</td>
                         <td class="p-3">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-black {% if row.clinic.status == 'active' %}bg-emerald-100 text-emerald-700{% else %}bg-red-100 text-red-700{% endif %}">
+                            <span class="px-2 py-1 rounded-full text-xs font-black {% if row.clinic.status == 'active' %}bg-emerald-100 text-emerald-700{% else %}bg-red-100 text-red-700{% endif %}">
                                 {{ row.clinic.status }}
                             </span>
                         </td>
@@ -188,7 +188,14 @@
                             <form method="POST" class="inline">
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                 <input type="hidden" name="clinic_id" value="{{ row.clinic.id }}">
-                                <button name="action" value="delete_clinic" class="bg-slate-900 text-white px-3 py-2 rounded-lg font-bold text-xs">Eliminar</button>
+                                <button name="action" value="delete_clinic"
+                                        onclick="return confirm('Se archivara la clinica: sus cuentas quedan desactivadas y las citas futuras canceladas.
+
+Las historias clinicas NO se eliminan: la ley obliga a conservarlas 15 anos.
+
+¿Continuar?');"
+                                        class="bg-slate-900 text-white px-3 py-2 rounded-lg font-bold text-xs"
+                                        title="Desactiva la clinica. Conserva la historia clinica.">Archivar</button>
                             </form>
                         </td>
                     </tr>
@@ -208,14 +215,14 @@
                 <div class="p-4">
                     <div class="flex justify-between gap-3">
                         <p class="font-black text-slate-900">{{ lead.nombre }}</p>
-                        <p class="text-xs text-slate-400">{{ lead.fecha|colombia_date }}</p>
+                        <p class="text-xs text-slate-600">{{ lead.fecha|colombia_date }}</p>
                     </div>
                     <p class="text-sm text-slate-600">{{ lead.institucion or '-' }} | {{ lead.ciudad or '-' }}</p>
                     <p class="text-xs text-slate-500">{{ lead.telefono or '-' }} | {{ lead.email or '-' }}</p>
                     {% if lead.mensaje %}<p class="text-sm text-slate-700 mt-2">{{ lead.mensaje }}</p>{% endif %}
                 </div>
                 {% else %}
-                <p class="p-4 text-slate-400">Sin leads registrados.</p>
+                <p class="p-4 text-slate-600">Sin leads registrados.</p>
                 {% endfor %}
             </div>
         </section>
@@ -234,11 +241,18 @@
                     <form method="POST">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="patient_id" value="{{ patient.id }}">
-                        <button name="action" value="delete_patient" class="bg-red-600 text-white px-3 py-2 rounded-lg font-bold text-xs">Eliminar</button>
+                        <button name="action" value="delete_patient"
+                            onclick="return confirm('Se archivara al paciente: su cuenta queda desactivada y sus citas futuras canceladas.
+
+Su historia clinica NO se elimina: la ley obliga a conservarla 15 anos.
+
+¿Continuar?');"
+                            class="bg-amber-600 text-white px-3 py-2 rounded-lg font-bold text-xs"
+                            title="Desactiva la cuenta. Conserva la historia clinica.">Archivar</button>
                     </form>
                 </div>
                 {% else %}
-                <p class="p-4 text-slate-400">Sin pacientes registrados.</p>
+                <p class="p-4 text-slate-600">Sin pacientes registrados.</p>
                 {% endfor %}
             </div>
         </section>

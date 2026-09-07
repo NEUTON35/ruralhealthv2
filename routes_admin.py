@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 
-from models import ACCESS_ACTIVE, ACCESS_REVOKED, Appointment, Chat, ClinicAccessCode, InventoryItem, MedicationPickupTicket, Message, PasswordResetToken, PatientDoctorSubscription, Pharmacy, PolicyNetworkProvider, Rating, ReplenishmentAlert, ROLE_DOCTOR, ROLE_EXPENDOR, ROLE_RECEPTIONIST, ROLE_STAFF, STAFF_ROLE_VALUES, StockTransferRequest, User, UserClinicAccess, UserPolicyEnrollment, db
+from models import ACCESS_ACTIVE, APPOINTMENT_FREEING_STATUSES, ACCESS_REVOKED, Appointment, Chat, ClinicAccessCode, InventoryItem, MedicationPickupTicket, Message, PasswordResetToken, PatientDoctorSubscription, Pharmacy, PolicyNetworkProvider, Rating, ReplenishmentAlert, ROLE_DOCTOR, ROLE_EXPENDOR, ROLE_RECEPTIONIST, ROLE_STAFF, STAFF_ROLE_VALUES, StockTransferRequest, User, UserClinicAccess, UserPolicyEnrollment, db
 from pharmacy_utils import ensure_default_pharmacy
 from security import audit, hash_password, pii_hash, role_required, validate_password
 from time_utils import colombia_now
@@ -231,19 +231,59 @@ def dashboard():
                 flash('Solicitud de transferencia actualizada.')
 
         elif action == 'delete_user':
-            user_id = request.form.get('user_id')
-            user = db.session.get(User, int(user_id)) if user_id else None
-            if user and user.clinic_id == current_user.clinic_id and not user.is_autonomous and user.role in {ROLE_DOCTOR, ROLE_STAFF, ROLE_RECEPTIONIST, ROLE_EXPENDOR}:
-                Message.query.filter(Message.clinic_id == current_user.clinic_id, Message.sender_id == user.id).delete()
-                Rating.query.filter(Rating.clinic_id == current_user.clinic_id, Rating.doctor_id == user.id).delete()
-                Appointment.query.filter(Appointment.clinic_id == current_user.clinic_id, Appointment.doctor_id == user.id).delete()
-                Chat.query.filter(Chat.clinic_id == current_user.clinic_id, Chat.doctor_id == user.id).delete()
-                db.session.delete(user)
-                audit('user_deleted', details=f'user_id={user_id}')
+            # Archiva, no borra.
+            #
+            # La version anterior eliminaba los chats y las citas del profesional.
+            # Esos chats son consultas clinicas *de sus pacientes*: dar de baja a
+            # un medico destruia la historia de terceros que no tenian nada que
+            # ver con la baja, y que la ley obliga a conservar 15 anos.
+            user_id = request.form.get('user_id', type=int)
+            user = db.session.get(User, user_id) if user_id else None
+            archivable = {ROLE_DOCTOR, ROLE_STAFF, ROLE_RECEPTIONIST, ROLE_EXPENDOR}
+
+            if user and user.clinic_id == current_user.clinic_id and \
+                    not user.is_autonomous and user.role in archivable:
+                now = colombia_now()
+                user.is_active_account = False
+                user.deactivated_at = now
+                user.is_available = False
+
+                # Las consultas abiertas se cierran para que no queden en la
+                # bandeja de alguien que ya no atiende.
+                abiertos = Chat.query.filter(
+                    Chat.clinic_id == current_user.clinic_id,
+                    Chat.doctor_id == user.id,
+                    Chat.status == 'open',
+                ).all()
+                for chat in abiertos:
+                    chat.status = 'closed'
+                    chat.closed_by = 'profesional_archivado'
+
+                # Las citas futuras se cancelan: el horario queda libre y se puede
+                # reasignar a otro profesional.
+                hoy = now.strftime('%Y-%m-%d')
+                futuras = Appointment.query.filter(
+                    Appointment.clinic_id == current_user.clinic_id,
+                    Appointment.doctor_id == user.id,
+                    Appointment.date >= hoy,
+                    Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+                ).all()
+                for cita in futuras:
+                    cita.status = 'cancelada'
+
+                audit(
+                    'user_archived',
+                    details=(f'user_id={user_id}; rol={user.role}; '
+                             f'chats_cerrados={len(abiertos)}; citas_canceladas={len(futuras)}'),
+                )
                 db.session.commit()
-                flash(f'Usuario {user.name} eliminado correctamente')
+                flash(
+                    f'{user.name} archivado: cuenta desactivada, {len(abiertos)} consulta(s) '
+                    f'cerrada(s) y {len(futuras)} cita(s) futura(s) cancelada(s). '
+                    'Las consultas ya registradas se conservan por el plazo legal.'
+                )
             else:
-                flash('El admin de clinica no puede borrar pacientes.')
+                flash('Solo puedes archivar profesionales y personal de tu propia clinica.')
 
         elif action == 'add_inventory':
             item = InventoryItem(

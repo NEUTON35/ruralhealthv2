@@ -2,9 +2,11 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required
 
 from models import (
+    APPOINTMENT_FREEING_STATUSES,
     Appointment,
     Chat,
     Clinic,
+    CLINIC_SUSPENDED,
     DoctorTariff,
     DoctorSchedule,
     Favorite,
@@ -35,6 +37,7 @@ from models import (
 )
 from security import audit, hash_password, pii_hash, role_required, validate_password
 from monetization import generate_human_code, normalize_code
+from time_utils import colombia_now
 import bleach
 
 superadmin_bp = Blueprint('superadmin', __name__)
@@ -64,38 +67,95 @@ def _split_consent_codes(raw_value):
     return [normalize_code(item) for item in raw.splitlines() if normalize_code(item)]
 
 
-def _delete_patient(patient):
-    clinic_id = patient.clinic_id
-    Message.query.filter(Message.clinic_id == clinic_id, Message.sender_id == patient.id).delete()
-    Rating.query.filter(Rating.clinic_id == clinic_id, Rating.patient_id == patient.id).delete()
-    Favorite.query.filter(Favorite.clinic_id == clinic_id, Favorite.patient_id == patient.id).delete()
-    MedicalHistory.query.filter(MedicalHistory.clinic_id == clinic_id, MedicalHistory.patient_id == patient.id).delete()
-    MedicationPickupTicket.query.filter(MedicationPickupTicket.clinic_id == clinic_id, MedicationPickupTicket.patient_id == patient.id).delete()
-    MedicalOrder.query.filter(MedicalOrder.clinic_id == clinic_id, MedicalOrder.patient_id == patient.id).delete()
-    Chat.query.filter(Chat.clinic_id == clinic_id, Chat.patient_id == patient.id).delete()
-    Appointment.query.filter(Appointment.clinic_id == clinic_id, Appointment.patient_id == patient.id).delete()
-    db.session.delete(patient)
+def _archive_patient(patient):
+    """Archiva a un paciente. **No borra su historia clinica.**
+
+    La version anterior de esta funcion (`_delete_patient`) eliminaba de forma
+    permanente `MedicalHistory`, `MedicalOrder`, `MedicationPickupTicket`, `Chat`
+    y `Message`. Eso hacia dos cosas graves a la vez:
+
+    1. Incumplia el deber de conservar la historia clinica un minimo de 15 anos
+       (Resolucion 839 de 2017). Un clic de superadministrador destruia registros
+       que el prestador esta obligado a custodiar, y que pueden ser la prueba en
+       una reclamacion posterior.
+    2. Contradecia lo que el propio sistema le dice al paciente en el centro de
+       privacidad: que su historia no puede eliminarse ni aunque la solicite.
+
+    Ademas dejaba huerfanos los asientos del libro mayor y las entradas de
+    auditoria, que referencian al usuario.
+
+    Lo que si hace: desactivar la cuenta, cerrar sus consultas abiertas, cancelar
+    las citas futuras —liberando esos horarios para otros pacientes— y retirar los
+    datos que no tienen deber de conservacion (favoritos, calificaciones).
+    """
+    now = colombia_now()
+
+    patient.is_active_account = False
+    patient.deactivated_at = now
+    patient.sensitive_data_consent_at = None
+
+    # Las consultas abiertas se cierran: dejarlas activas mantendria al paciente
+    # en las bandejas del personal.
+    for chat in Chat.query.filter_by(patient_id=patient.id).all():
+        if chat.status == 'open':
+            chat.status = 'closed'
+            chat.closed_by = 'archivado'
+
+    # Las citas futuras se cancelan y el horario queda libre.
+    hoy = now.strftime('%Y-%m-%d')
+    for cita in Appointment.query.filter(
+        Appointment.patient_id == patient.id,
+        Appointment.date >= hoy,
+        Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+    ).all():
+        cita.status = 'cancelada'
+
+    # Preferencias sin valor clinico ni deber de conservacion.
+    Favorite.query.filter_by(patient_id=patient.id).delete(synchronize_session=False)
+
+    return {
+        'historias': MedicalHistory.query.filter_by(patient_id=patient.id).count(),
+        'ordenes': MedicalOrder.query.filter_by(patient_id=patient.id).count(),
+        'consultas': Chat.query.filter_by(patient_id=patient.id).count(),
+    }
 
 
-def _delete_clinic(clinic):
-    clinic_id = clinic.id
-    Message.query.filter_by(clinic_id=clinic_id).delete()
-    Rating.query.filter_by(clinic_id=clinic_id).delete()
-    Favorite.query.filter_by(clinic_id=clinic_id).delete()
-    MedicalHistory.query.filter_by(clinic_id=clinic_id).delete()
-    ReplenishmentAlert.query.filter_by(clinic_id=clinic_id).delete()
-    StockTransferRequest.query.filter_by(clinic_id=clinic_id).delete()
-    MedicationPickupTicket.query.filter_by(clinic_id=clinic_id).delete()
-    MedicalOrder.query.filter_by(clinic_id=clinic_id).delete()
-    Stock.query.filter_by(clinic_id=clinic_id).delete()
-    InventoryItem.query.filter_by(clinic_id=clinic_id).delete()
-    Pharmacy.query.filter_by(clinic_id=clinic_id).delete()
-    QuestionFlow.query.filter_by(clinic_id=clinic_id).delete()
-    DoctorSchedule.query.filter_by(clinic_id=clinic_id).delete()
-    Chat.query.filter_by(clinic_id=clinic_id).delete()
-    Appointment.query.filter_by(clinic_id=clinic_id).delete()
-    User.query.filter(User.clinic_id == clinic_id, User.role != 'super').delete()
-    db.session.delete(clinic)
+def _archive_clinic(clinic):
+    """Suspende una clinica y desactiva sus cuentas. **No borra sus datos.**
+
+    Igual que con el paciente: la version anterior vaciaba todas las tablas de la
+    clinica, incluidas las historias clinicas de todos sus pacientes. Una clinica
+    que cierra sigue teniendo la obligacion de custodiar esos registros durante el
+    plazo legal, y quien los reclame despues —un paciente, un ente de control—
+    tiene derecho a que existan.
+    """
+    clinic.status = CLINIC_SUSPENDED
+    clinic.activa = False
+
+    afectados = User.query.filter(
+        User.clinic_id == clinic.id, User.role != 'super'
+    ).all()
+    now = colombia_now()
+    for usuario in afectados:
+        usuario.is_active_account = False
+        usuario.deactivated_at = now
+
+    for chat in Chat.query.filter_by(clinic_id=clinic.id, status='open').all():
+        chat.status = 'closed'
+        chat.closed_by = 'clinica_archivada'
+
+    hoy = now.strftime('%Y-%m-%d')
+    for cita in Appointment.query.filter(
+        Appointment.clinic_id == clinic.id,
+        Appointment.date >= hoy,
+        Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+    ).all():
+        cita.status = 'cancelada'
+
+    return {
+        'usuarios': len(afectados),
+        'historias': MedicalHistory.query.filter_by(clinic_id=clinic.id).count(),
+    }
 
 
 def _autonomous_clinic():
@@ -186,22 +246,41 @@ def dashboard():
 
         elif clinic and action == 'delete_clinic':
             if User.query.filter_by(clinic_id=clinic.id, role='super').first():
-                flash('No puedes eliminar la clinica que contiene usuarios superadmin.')
+                flash('No puedes archivar la clinica que contiene usuarios superadmin.')
                 return redirect(url_for('superadmin.dashboard'))
             clinic_name = clinic.name
-            _delete_clinic(clinic)
-            audit('clinic_deleted', details=f'clinic_id={clinic_id}; name={clinic_name}')
+            resumen = _archive_clinic(clinic)
+            audit(
+                'clinic_archived',
+                details=(f'clinic_id={clinic_id}; nombre={clinic_name}; '
+                         f'usuarios={resumen["usuarios"]}; historias={resumen["historias"]}'),
+            )
             db.session.commit()
-            flash(f'Clinica {clinic_name} eliminada.')
+            flash(
+                f'Clinica {clinic_name} archivada: {resumen["usuarios"]} cuenta(s) '
+                f'desactivada(s). Sus {resumen["historias"]} registro(s) clinico(s) '
+                'se conservan por el plazo legal de 15 anos y no se eliminan.'
+            )
 
         elif action == 'delete_patient':
             patient_id = request.form.get('patient_id', type=int)
             patient = db.session.get(User, patient_id) if patient_id else None
             if patient and patient.role == ROLE_PATIENT:
-                _delete_patient(patient)
-                audit('patient_deleted_by_superadmin', details=f'patient_id={patient_id}')
+                resumen = _archive_patient(patient)
+                audit(
+                    'patient_archived_by_superadmin',
+                    details=(f'patient_id={patient_id}; historias={resumen["historias"]}; '
+                             f'ordenes={resumen["ordenes"]}'),
+                )
                 db.session.commit()
-                flash('Paciente eliminado.')
+                flash(
+                    'Paciente archivado: su cuenta queda desactivada. '
+                    f'Sus {resumen["historias"]} registro(s) de historia clinica y '
+                    f'{resumen["ordenes"]} orden(es) medica(s) se conservan por el '
+                    'plazo legal de 15 anos.'
+                )
+            else:
+                flash('Solo se pueden archivar cuentas de paciente.')
 
         elif action == 'create_autonomous_doctor':
             username = (request.form.get('username') or '').strip()

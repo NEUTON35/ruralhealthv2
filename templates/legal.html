@@ -63,13 +63,14 @@
 
             {% if consent_required %}
             <form method="POST" action="/patient/consentimiento-datos-sensibles" class="not-prose mt-10 bg-primary/5 border border-primary/20 rounded-2xl p-6 sm:p-8 space-y-5 shadow-sm">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <h3 class="text-xl font-bold text-primary-dark flex items-center gap-3">
                     <div class="bg-primary/10 p-2 rounded-lg"><i data-lucide="shield-check" class="w-6 h-6 text-primary"></i></div>
                     Consentimiento para el cuidado de tu salud
                 </h3>
                 <p class="text-sm text-slate-700 leading-relaxed">Para poder brindarte nuestros servicios de telemedicina, agendar tus citas y permitir que te comuniques con tu doctor, necesitamos tu permiso explícito. Tu autorización nos permite procesar tus <strong>datos de salud (datos sensibles)</strong> de manera estrictamente confidencial. Es tu decisión otorgar este permiso, y es indispensable para que la plataforma funcione para ti.</p>
                 <label class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4 text-sm font-bold text-slate-700 cursor-pointer hover:border-primary transition-colors">
-                    <input type="checkbox" name="accept_sensitive_data" class="mt-1 w-5 h-5 accent-primary" required>
+                    <input type="checkbox" name="accept_sensitive_data" class="mt-1 w-5 h-5 accent-primary" required aria-label="Accept sensitive data">
                     <span class="leading-relaxed">He leído con atención y comprendido la política de privacidad. Otorgo mi autorización expresa para el tratamiento confidencial de mis datos sensibles de salud.</span>
                 </label>
                 <button type="submit" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition shadow-md hover:shadow-lg text-lg">Acepto y deseo continuar</button>

@@ -349,3 +349,165 @@ class TestRetentionPolicies:
             policy = RetentionPolicy.query.filter_by(record_type='historia_clinica').one()
             assert policy.retention_years == 15
             assert 'Resolucion 839' in policy.legal_basis
+
+
+# =============================================================================
+# Archivado frente a borrado
+# =============================================================================
+
+class TestArchivingPreservesClinicalRecords:
+    """El superadministrador tenia un boton que borraba historias clinicas.
+
+    Eliminaba de forma permanente `MedicalHistory`, `MedicalOrder`, `Chat` y
+    `Message`, incumpliendo el deber de conservarlos 15 anos y contradiciendo lo
+    que el propio sistema le promete al paciente en el centro de privacidad.
+    """
+
+    def _paciente_con_historia(self, app, make_user):
+        from models import Appointment, Chat, MedicalHistory, MedicalOrder, Message, db
+        from time_utils import colombia_now
+        from datetime import timedelta
+
+        doctor = make_user(role='doctor', username='doc_arch', medical_registration='RM-AR')
+        patient = make_user(role='patient', username='pac_arch')
+
+        with app.app_context():
+            chat = Chat(clinic_id=1, patient_id=patient.id, doctor_id=doctor.id, status='open')
+            db.session.add(chat)
+            db.session.flush()
+            db.session.add(Message(clinic_id=1, chat_id=chat.id,
+                                   sender_id=patient.id, content='Me duele la cabeza'))
+            db.session.add(MedicalHistory(
+                clinic_id=1, patient_id=patient.id, doctor_id=doctor.id,
+                record_type='consulta', cie10_code='Z000', summary='Cefalea tensional',
+            ))
+            expira = colombia_now() + timedelta(days=30)
+            db.session.add(MedicalOrder(
+                clinic_id=1, order_number='OM-1-00099', doctor_id=doctor.id,
+                patient_id=patient.id, meds_json='[]', verification_hash='x.y',
+                status='pendiente', expires_at=expira,
+            ))
+            futura = colombia_now() + timedelta(days=10)
+            db.session.add(Appointment(
+                clinic_id=1, patient_id=patient.id, doctor_id=doctor.id,
+                date=futura.strftime('%Y-%m-%d'), time='10:00', status='pending',
+            ))
+            db.session.commit()
+
+        return doctor, patient
+
+    def test_archiving_keeps_history_and_deactivates_account(self, app, make_user):
+        from models import Chat, MedicalHistory, MedicalOrder, Message, User, db
+        from routes_superadmin import _archive_patient
+
+        doctor, patient = self._paciente_con_historia(app, make_user)
+
+        with app.app_context():
+            objetivo = db.session.get(User, patient.id)
+            resumen = _archive_patient(objetivo)
+            db.session.commit()
+
+            # La historia clinica permanece intacta.
+            assert MedicalHistory.query.filter_by(patient_id=patient.id).count() == 1
+            assert MedicalOrder.query.filter_by(patient_id=patient.id).count() == 1
+            assert Chat.query.filter_by(patient_id=patient.id).count() == 1
+            assert Message.query.count() == 1
+            assert resumen['historias'] == 1
+
+            # La cuenta queda inutilizable.
+            objetivo = db.session.get(User, patient.id)
+            assert objetivo is not None, 'el usuario no debe borrarse'
+            assert objetivo.is_active_account is False
+            assert objetivo.deactivated_at is not None
+            assert objetivo.sensitive_data_consent_at is None
+
+    def test_archiving_frees_future_appointments(self, app, make_user):
+        from models import Appointment, User, db
+        from routes_superadmin import _archive_patient
+
+        doctor, patient = self._paciente_con_historia(app, make_user)
+
+        with app.app_context():
+            _archive_patient(db.session.get(User, patient.id))
+            db.session.commit()
+
+            cita = Appointment.query.filter_by(patient_id=patient.id).one()
+            assert cita.status == 'cancelada', (
+                'el horario debe liberarse para otro paciente'
+            )
+
+    def test_archiving_closes_open_chats(self, app, make_user):
+        from models import Chat, User, db
+        from routes_superadmin import _archive_patient
+
+        doctor, patient = self._paciente_con_historia(app, make_user)
+
+        with app.app_context():
+            _archive_patient(db.session.get(User, patient.id))
+            db.session.commit()
+            assert Chat.query.filter_by(patient_id=patient.id).one().status == 'closed'
+
+    def test_archiving_a_clinic_keeps_its_records(self, app, make_user):
+        from models import Clinic, MedicalHistory, User, db
+        from routes_superadmin import _archive_clinic
+
+        doctor, patient = self._paciente_con_historia(app, make_user)
+
+        with app.app_context():
+            clinica = db.session.get(Clinic, 1)
+            resumen = _archive_clinic(clinica)
+            db.session.commit()
+
+            assert MedicalHistory.query.filter_by(clinic_id=1).count() == 1
+            assert db.session.get(Clinic, 1) is not None
+            assert db.session.get(Clinic, 1).status == 'suspended'
+            assert resumen['historias'] == 1
+
+            # Ninguna cuenta de la clinica se elimina.
+            assert db.session.get(User, patient.id) is not None
+            assert db.session.get(User, patient.id).is_active_account is False
+
+    def test_no_hard_delete_of_clinical_tables(self):
+        """Ninguna ruta debe borrar en bloque una tabla con contenido clinico.
+
+        Se analiza el arbol de sintaxis, no el texto: los comentarios que
+        explican por que ya no se hace no deben hacer fallar la prueba, y una
+        llamada real debe detectarse aunque cambie el formato.
+        """
+        import ast
+        import glob
+
+        CLINICAS = {
+            'MedicalHistory', 'MedicalOrder', 'Chat', 'Message',
+            'MedicationPickupTicket', 'InformedConsentLog',
+            'StockLedgerEntry', 'DispensingLedgerEntry', 'AuditLog',
+        }
+
+        infracciones = []
+        for path in glob.glob('routes_*.py'):
+            arbol = ast.parse(open(path, encoding='utf-8').read())
+            for nodo in ast.walk(arbol):
+                # Patron: <Modelo>.query...delete()
+                if not (isinstance(nodo, ast.Call)
+                        and isinstance(nodo.func, ast.Attribute)
+                        and nodo.func.attr == 'delete'):
+                    continue
+                raiz = nodo.func.value
+                while isinstance(raiz, (ast.Attribute, ast.Call)):
+                    raiz = raiz.func if isinstance(raiz, ast.Call) else raiz.value
+                if isinstance(raiz, ast.Name) and raiz.id in CLINICAS:
+                    infracciones.append(f'{path}:{nodo.lineno} -> {raiz.id}')
+
+        assert not infracciones, (
+            'borrado masivo de datos clinicos, que deben conservarse 15 anos: '
+            f'{infracciones}'
+        )
+
+    def test_superadmin_archives_instead_of_deleting(self):
+        """Las funciones de archivado deben existir y las de borrado no."""
+        import routes_superadmin as rs
+
+        assert hasattr(rs, '_archive_patient')
+        assert hasattr(rs, '_archive_clinic')
+        assert not hasattr(rs, '_delete_patient')
+        assert not hasattr(rs, '_delete_clinic')

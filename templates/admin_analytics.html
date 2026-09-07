@@ -22,25 +22,25 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-grid">
         <div class="bg-gradient-to-br from-sky-500 to-blue-600 p-5 rounded-2xl shadow-lg shadow-sky-200/50 text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-sky-100">Consultas este mes</p>
+            <p class="text-xs font-black uppercase tracking-widest text-sky-100">Consultas este mes</p>
             <p class="text-4xl font-black mt-1" id="kpi-consultations">—</p>
             <p class="text-xs text-sky-200 mt-1" id="kpi-consultations-trend"></p>
         </div>
         <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-lg shadow-emerald-200/50 text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-100">Pacientes registrados</p>
+            <p class="text-xs font-black uppercase tracking-widest text-emerald-100">Pacientes registrados</p>
             <p class="text-4xl font-black mt-1" id="kpi-patients">—</p>
             <p class="text-xs text-emerald-200 mt-1">Total en la clínica</p>
         </div>
         <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-5 rounded-2xl shadow-lg shadow-amber-200/50 text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-amber-100">Satisfacción</p>
+            <p class="text-xs font-black uppercase tracking-widest text-amber-100">Satisfacción</p>
             <p class="text-4xl font-black mt-1" id="kpi-rating">—</p>
             <p class="text-xs text-amber-200 mt-1" id="kpi-rating-count"></p>
         </div>
         <div class="bg-gradient-to-br from-violet-500 to-purple-600 p-5 rounded-2xl shadow-lg shadow-violet-200/50 text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-violet-100">Chats activos</p>
+            <p class="text-xs font-black uppercase tracking-widest text-violet-100">Chats activos</p>
             <p class="text-4xl font-black mt-1" id="kpi-chats">—</p>
             <p class="text-xs text-violet-200 mt-1" id="kpi-alerts"></p>
         </div>
@@ -50,7 +50,7 @@
     <div class="grid lg:grid-cols-3 gap-4">
         <!-- Trend Chart (wide) -->
         <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
                 <i data-lucide="trending-up" class="w-4 h-4 text-sky-500"></i>
                 Tendencia de consultas (6 meses)
             </h3>
@@ -61,7 +61,7 @@
 
         <!-- Diagnostics Donut -->
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
                 <i data-lucide="pie-chart" class="w-4 h-4 text-purple-500"></i>
                 Diagnósticos CIE-10
             </h3>
@@ -75,7 +75,7 @@
     <div class="grid lg:grid-cols-2 gap-4">
         <!-- Top Meds Bar Chart -->
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
                 <i data-lucide="pill" class="w-4 h-4 text-emerald-500"></i>
                 Top 10 medicamentos recetados
             </h3>
@@ -86,7 +86,7 @@
 
         <!-- Doctor Productivity Table -->
         <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+            <h3 class="text-sm font-black uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
                 <i data-lucide="stethoscope" class="w-4 h-4 text-blue-500"></i>
                 Productividad por doctor
             </h3>
@@ -101,7 +101,7 @@
                         </tr>
                     </thead>
                     <tbody id="doctor-table-body">
-                        <tr><td colspan="4" class="py-8 text-center text-slate-400">Cargando datos...</td></tr>
+                        <tr><td colspan="4" class="py-8 text-center text-slate-600">Cargando datos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -114,7 +114,7 @@
     </a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 (function() {
     document.getElementById('analytics-date').textContent = new Date().toLocaleDateString('es-CO', {
@@ -236,13 +236,13 @@
                 });
             } else {
                 document.getElementById('chart-diagnostics').parentElement.innerHTML =
-                    '<p class="text-center text-slate-400 text-sm py-12">Sin datos de diagnósticos registrados</p>';
+                    '<p class="text-center text-slate-600 text-sm py-12">Sin datos de diagnósticos registrados</p>';
             }
 
             // Doctor Table
             const tbody = document.getElementById('doctor-table-body');
             if (data.doctors.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-400">Sin datos de doctores</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-600">Sin datos de doctores</td></tr>';
             } else {
                 tbody.innerHTML = data.doctors.map((doc, i) => `
                     <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
@@ -253,7 +253,7 @@
                                 </div>
                                 <div>
                                     <p class="font-bold text-slate-800">${doc.name}</p>
-                                    <p class="text-[10px] text-slate-400">${doc.specialty}</p>
+                                    <p class="text-xs text-slate-600">${doc.specialty}</p>
                                 </div>
                             </div>
                         </td>

@@ -14,7 +14,7 @@
                 <i data-lucide="clock" class="w-4 h-4 text-primary"></i>
             </div>
             <div class="flex flex-col">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Hora Local</span>
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-tight">Hora Local</span>
                 <span id="doctor-live-clock" class="font-bold text-slate-700 text-sm tracking-tighter">--:--:--</span>
             </div>
         </div>
@@ -74,12 +74,13 @@
 <div class="grid md:grid-cols-2 gap-6 mb-8">
     <!-- 2. GESTIÓN DE ESTADO -->
     <form method="POST" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="toggle_availability">
         <div>
             <h3 class="font-bold text-lg text-slate-700">Estado de Atención</h3>
             <p class="text-xs text-slate-500">Define si los pacientes pueden verte disponible.</p>
         </div>
-        <button type="submit" class="{% if current_user.is_available %}bg-emerald-500 shadow-emerald-100{% else %}bg-rose-500 shadow-rose-100{% endif %} text-white px-6 py-3 rounded-xl font-black transition-all shadow-lg hover:scale-105 active:scale-95">
+        <button type="submit" class="{% if current_user.is_available %}bg-emerald-500 shadow-emerald-100{% else %}bg-rose-500 shadow-rose-100{% endif %} text-white px-6 py-3 rounded-xl font-black transition-colors shadow-lg hover:scale-105 active:scale-95">
             {% if current_user.is_available %}
                 DISPONIBLE
             {% else %}
@@ -90,19 +91,20 @@
 
     <!-- 3. FOTO DE PERFIL -->
     <form method="POST" enctype="multipart/form-data" action="/doctor/upload_pfp" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="relative group">
             <div class="w-20 h-20 bg-slate-100 rounded-full overflow-hidden border-4 border-white shadow-sm">
                 {% if current_user.profile_pic %}
-                    <img src="/uploads/{{ current_user.profile_pic }}" class="w-full h-full object-cover">
+                    <img src="/uploads/{{ current_user.profile_pic }}" class="w-full h-full object-cover" alt="">
                 {% else %}
-                    <div class="w-full h-full flex items-center justify-center text-slate-300">
+                    <div class="w-full h-full flex items-center justify-center text-slate-500">
                         <i data-lucide="user" class="w-10 h-10"></i>
                     </div>
                 {% endif %}
             </div>
             <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full cursor-pointer hover:bg-blue-700 shadow-md">
                 <i data-lucide="camera" class="w-3 h-3"></i>
-                <input type="file" name="pfp" accept="image/*" hidden onchange="this.form.submit()">
+                <input type="file" name="pfp" accept="image/*" hidden onchange="this.form.submit()" aria-label="Pfp">
             </label>
         </div>
         <div>
@@ -123,25 +125,26 @@
         </span>
     </div>
     <form method="POST" class="grid lg:grid-cols-8 gap-2 items-end">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_office_location">
         <div class="lg:col-span-2">
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Afiliacion</label>
-            <input name="affiliation_name" value="{{ current_user.affiliation_name or (current_user.clinic.name if current_user.clinic else '') }}" class="w-full border p-3 rounded-lg">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Afiliacion</label>
+            <input name="affiliation_name" value="{{ current_user.affiliation_name or (current_user.clinic.name if current_user.clinic else '') }}" class="w-full border p-3 rounded-lg" aria-label="Affiliation name">
         </div>
         <div class="lg:col-span-3">
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Direccion consultorio</label>
-            <input name="office_address" value="{{ current_user.office_address or '' }}" placeholder="Direccion fisica" class="w-full border p-3 rounded-lg">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Direccion consultorio</label>
+            <input name="office_address" value="{{ current_user.office_address or '' }}" placeholder="Direccion fisica" class="w-full border p-3 rounded-lg" aria-label="Direccion fisica">
         </div>
         <div>
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Latitud</label>
-            <input id="doctor-office-lat" type="number" step="any" name="office_latitude" value="{{ current_user.office_latitude if current_user.office_latitude is not none else '' }}" class="w-full border p-3 rounded-lg">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Latitud</label>
+            <input id="doctor-office-lat" type="number" step="any" name="office_latitude" value="{{ current_user.office_latitude if current_user.office_latitude is not none else '' }}" class="w-full border p-3 rounded-lg" aria-label="Office latitude">
         </div>
         <div>
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Longitud</label>
-            <input id="doctor-office-lng" type="number" step="any" name="office_longitude" value="{{ current_user.office_longitude if current_user.office_longitude is not none else '' }}" class="w-full border p-3 rounded-lg">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Longitud</label>
+            <input id="doctor-office-lng" type="number" step="any" name="office_longitude" value="{{ current_user.office_longitude if current_user.office_longitude is not none else '' }}" class="w-full border p-3 rounded-lg" aria-label="Office longitude">
         </div>
         <label class="flex items-center gap-2 border border-slate-100 p-3 rounded-lg text-sm font-bold text-slate-700">
-            <input type="checkbox" name="show_office_on_map" class="accent-cyan-600" {% if current_user.show_office_on_map %}checked{% endif %}>
+            <input type="checkbox" name="show_office_on_map" class="accent-cyan-600" {% if current_user.show_office_on_map %}checked{% endif %} aria-label="Show office on map">
             Mostrar
         </label>
         <div class="lg:col-span-8 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#doctor-office-lat" data-lng-input="#doctor-office-lng"></div>
@@ -160,8 +163,9 @@
             <p class="text-xs text-slate-500">Publica precios y una imagen con tus metodos de pago. Los pacientes suben el comprobante y tu apruebas el acceso.</p>
         </div>
         <form method="POST">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="generate_doctor_consent">
-            <input name="consent_prefix" placeholder="Prefijo codigo" class="border border-slate-200 px-3 py-2 rounded-lg text-xs font-bold mr-2">
+            <input name="consent_prefix" placeholder="Prefijo codigo" class="border border-slate-200 px-3 py-2 rounded-lg text-xs font-bold mr-2" aria-label="Prefijo codigo">
             <button class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-black flex items-center gap-2">
                 <i data-lucide="shield-plus" class="w-4 h-4"></i>
                 Codigo poliza
@@ -171,25 +175,26 @@
 
     {% if current_user.policy_consent_code %}
     <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4">
-        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Codigo de consentimiento para aseguradoras</p>
+        <p class="text-xs font-black uppercase tracking-widest text-slate-600">Codigo de consentimiento para aseguradoras</p>
         <p class="font-mono font-black text-slate-900 break-all">{{ current_user.policy_consent_code }}</p>
     </div>
     {% endif %}
 
     <div class="grid lg:grid-cols-2 gap-5">
         <form method="POST" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="update_tariff">
-            <input type="number" step="100" min="0" name="price_per_consultation" value="{{ tariff.price_per_consultation if tariff and tariff.price_per_consultation is not none else '' }}" placeholder="Precio por consulta" class="border p-3 rounded-xl">
-            <input type="number" step="100" min="0" name="price_monthly" value="{{ tariff.price_monthly if tariff and tariff.price_monthly is not none else '' }}" placeholder="Mensual" class="border p-3 rounded-xl">
-            <input type="number" step="100" min="0" name="price_quarterly" value="{{ tariff.price_quarterly if tariff and tariff.price_quarterly is not none else '' }}" placeholder="Trimestral" class="border p-3 rounded-xl">
-            <input type="number" step="100" min="0" name="price_annual" value="{{ tariff.price_annual if tariff and tariff.price_annual is not none else '' }}" placeholder="Anual" class="border p-3 rounded-xl">
-            <input type="number" step="1" min="0" max="100" name="default_policy_discount_percent" value="{{ tariff.default_policy_discount_percent if tariff else 0 }}" placeholder="Descuento poliza %" class="border p-3 rounded-xl">
+            <input type="number" step="100" min="0" name="price_per_consultation" value="{{ tariff.price_per_consultation if tariff and tariff.price_per_consultation is not none else '' }}" placeholder="Precio por consulta" class="border p-3 rounded-xl" aria-label="Precio por consulta">
+            <input type="number" step="100" min="0" name="price_monthly" value="{{ tariff.price_monthly if tariff and tariff.price_monthly is not none else '' }}" placeholder="Mensual" class="border p-3 rounded-xl" aria-label="Mensual">
+            <input type="number" step="100" min="0" name="price_quarterly" value="{{ tariff.price_quarterly if tariff and tariff.price_quarterly is not none else '' }}" placeholder="Trimestral" class="border p-3 rounded-xl" aria-label="Trimestral">
+            <input type="number" step="100" min="0" name="price_annual" value="{{ tariff.price_annual if tariff and tariff.price_annual is not none else '' }}" placeholder="Anual" class="border p-3 rounded-xl" aria-label="Anual">
+            <input type="number" step="1" min="0" max="100" name="default_policy_discount_percent" value="{{ tariff.default_policy_discount_percent if tariff else 0 }}" placeholder="Descuento poliza %" class="border p-3 rounded-xl" aria-label="Descuento poliza %">
             <label class="flex items-center gap-2 border p-3 rounded-xl text-sm font-bold text-slate-700">
-                <input type="checkbox" name="accepts_manual_payment" class="accent-purple-700" {% if not tariff or tariff.accepts_manual_payment %}checked{% endif %}>
+                <input type="checkbox" name="accepts_manual_payment" class="accent-purple-700" {% if not tariff or tariff.accepts_manual_payment %}checked{% endif %} aria-label="Accepts manual payment">
                 Aceptar pago manual
             </label>
-            <textarea name="payment_instructions" rows="3" placeholder="Instrucciones visibles para pacientes" class="border p-3 rounded-xl sm:col-span-2">{{ tariff.payment_instructions if tariff else '' }}</textarea>
-            <input type="file" name="payment_methods_image" accept="image/*" class="border p-3 rounded-xl sm:col-span-2">
+            <textarea name="payment_instructions" rows="3" placeholder="Instrucciones visibles para pacientes" class="border p-3 rounded-xl sm:col-span-2" aria-label="Instrucciones visibles para pacientes">{{ tariff.payment_instructions if tariff else '' }}</textarea>
+            <input type="file" name="payment_methods_image" accept="image/*" class="border p-3 rounded-xl sm:col-span-2" aria-label="Payment methods image">
             <button class="bg-purple-700 text-white py-3 rounded-xl font-black sm:col-span-2">Guardar tarifas</button>
         </form>
 
@@ -202,15 +207,16 @@
                         <div>
                             <p class="font-black text-sm text-slate-900">{{ ticket.patient.name }}</p>
                             <p class="text-xs text-slate-500">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }} | ${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
-                            {% if ticket.proof_image %}<a href="/uploads/{{ ticket.proof_image }}" target="_blank" class="text-xs font-black text-purple-700">Ver comprobante</a>{% endif %}
+                            {% if ticket.proof_image %}<a href="/uploads/{{ ticket.proof_image }}" target="_blank" class="text-xs font-black text-purple-700" rel="noopener noreferrer">Ver comprobante</a>{% endif %}
                         </div>
-                        <span class="px-2 py-1 rounded-full text-[10px] font-black {% if ticket.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif ticket.status == 'rejected' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ ticket.status }}</span>
+                        <span class="px-2 py-1 rounded-full text-xs font-black {% if ticket.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif ticket.status == 'rejected' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ ticket.status }}</span>
                     </div>
                     {% if ticket.status == 'pending' %}
                     <form method="POST" class="mt-3 grid gap-2">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="action" value="review_payment_ticket">
                         <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
-                        <textarea name="doctor_note" rows="2" placeholder="Nota opcional" class="border p-2 rounded-lg text-xs"></textarea>
+                        <textarea name="doctor_note" rows="2" placeholder="Nota opcional" class="border p-2 rounded-lg text-xs" aria-label="Nota opcional"></textarea>
                         <div class="grid grid-cols-2 gap-2">
                             <button name="decision" value="approve" class="bg-emerald-600 text-white py-2 rounded-lg text-xs font-black">Aprobar</button>
                             <button name="decision" value="reject" class="bg-red-600 text-white py-2 rounded-lg text-xs font-black">Rechazar</button>
@@ -219,7 +225,7 @@
                     {% endif %}
                 </div>
                 {% else %}
-                <p class="text-sm text-slate-400 text-center py-6">Sin comprobantes todavia.</p>
+                <p class="text-sm text-slate-600 text-center py-6">Sin comprobantes todavia.</p>
                 {% endfor %}
             </div>
         </div>
@@ -236,13 +242,13 @@
                         <p class="font-black text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
                         <p class="text-xs text-slate-500">{{ plan_labels.get(sub.plan_type, sub.plan_type) }} | Queda {{ row.remaining }}</p>
                     </div>
-                    <span class="text-[10px] font-black px-2 py-1 rounded-full {% if row.has_policy %}bg-cyan-100 text-cyan-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+                    <span class="text-xs font-black px-2 py-1 rounded-full {% if row.has_policy %}bg-cyan-100 text-cyan-700{% else %}bg-purple-100 text-purple-700{% endif %}">
                         {{ 'Poliza' if row.has_policy else 'Pago' }}
                     </span>
                 </div>
             </div>
             {% else %}
-            <p class="text-sm text-slate-400 md:col-span-2">Sin clientes activos por mensualidad, trimestral, anual o poliza.</p>
+            <p class="text-sm text-slate-600 md:col-span-2">Sin clientes activos por mensualidad, trimestral, anual o poliza.</p>
             {% endfor %}
         </div>
     </div>
@@ -258,24 +264,24 @@
         <ul class="space-y-3">
             {% for item in open_chats %}
                 {% set c = item.chat %}
-                <li class="border border-slate-100 bg-slate-50 p-3 rounded-xl hover:bg-emerald-50 transition-all group {% if item.unread > 0 %}border-l-4 border-l-blue-500 shadow-md bg-blue-50/30{% endif %}">
+                <li class="border border-slate-100 bg-slate-50 p-3 rounded-xl hover:bg-emerald-50 transition-colors group {% if item.unread > 0 %}border-l-4 border-l-blue-500 shadow-md bg-blue-50/30{% endif %}">
                     <a href="/doctor/chat/{{ c.id }}" class="block">
                         <div class="flex justify-between items-center mb-1">
                             <h3 class="font-bold text-slate-800 group-hover:text-emerald-700">{{ c.patient.name }}</h3>
                             <div class="flex items-center gap-2">
                                 {% if item.unread > 0 %}
-                                    <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse">{{ item.unread }}</span>
+                                    <span class="bg-blue-600 text-white text-xs font-black px-2 py-0.5 rounded-full animate-pulse">{{ item.unread }}</span>
                                 {% endif %}
-                                <span class="text-[10px] font-bold text-slate-400">
+                                <span class="text-xs font-bold text-slate-600">
                                     {{ item.last_msg.timestamp|colombia_time if item.last_msg else '' }}
                                 </span>
                             </div>
                         </div>
-                        <p class="text-[11px] text-slate-500 truncate"><b>Motivo:</b> {{ c.reason or 'Sin motivo' }}</p>
+                        <p class="text-xs text-slate-500 truncate"><b>Motivo:</b> {{ c.reason or 'Sin motivo' }}</p>
                     </a>
                 </li>
             {% else %}
-                <p class="text-slate-400 text-sm text-center py-10 italic">No hay pacientes activos.</p>
+                <p class="text-slate-600 text-sm text-center py-10 italic">No hay pacientes activos.</p>
             {% endfor %}
         </ul>
     </div>
@@ -296,7 +302,7 @@
                             {{ appt.patient.name }}
                         {% endif %}
                     </p>
-                    <p class="text-[10px] text-blue-600 italic truncate">{{ appt.description or 'Sin detalles' }}</p>
+                    <p class="text-xs text-blue-600 italic truncate">{{ appt.description or 'Sin detalles' }}</p>
                     
                     <div class="mt-2">
                         {% if appt.status == 'pending' %}
@@ -309,7 +315,7 @@
                             <div class="bg-red-100 text-red-700 p-2 rounded-lg text-center">
                                 <p class="font-bold text-xs">❌ No Asistida</p>
                                 {% if current_user.role == 'patient' %}
-                                    <a href="/patient/book_appointment/{{ appt.doctor_id }}" class="text-[10px] underline text-red-500 block mt-1">Reagendar Cita</a>
+                                    <a href="/patient/book_appointment/{{ appt.doctor_id }}" class="text-xs underline text-red-500 block mt-1">Reagendar Cita</a>
                                 {% endif %}
                             </div>
                         {% elif appt.status == 'attended' %}
@@ -325,24 +331,25 @@
                 <i data-lucide="clock-cog" class="w-4 h-4"></i> Configurar Tiempos
             </h3>
             <form method="POST" class="space-y-3">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="update_metrics">
                 
                 <div class="grid grid-cols-2 gap-2">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Horario Visible</label>
-                        <input type="text" name="schedule" value="{{ current_user.schedule or '' }}" placeholder="L-V 8am-5pm" class="w-full border-2 border-slate-50 p-1.5 rounded-lg text-sm focus:border-blue-200 focus:outline-none">
+                        <label class="text-xs font-bold text-slate-600 uppercase">Horario Visible</label>
+                        <input type="text" name="schedule" value="{{ current_user.schedule or '' }}" placeholder="L-V 8am-5pm" class="w-full border-2 border-slate-50 p-1.5 rounded-lg text-sm focus:border-blue-200 focus:outline-none" aria-label="L-V 8am-5pm">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Hora Pico</label>
-                        <input type="text" name="peak_hours" value="{{ current_user.peak_hours or '' }}" placeholder="7:00 - 9:00" class="w-full border-2 border-slate-50 p-1.5 rounded-lg text-sm focus:border-blue-200 focus:outline-none">
+                        <label class="text-xs font-bold text-slate-600 uppercase">Hora Pico</label>
+                        <input type="text" name="peak_hours" value="{{ current_user.peak_hours or '' }}" placeholder="7:00 - 9:00" class="w-full border-2 border-slate-50 p-1.5 rounded-lg text-sm focus:border-blue-200 focus:outline-none" aria-label="7:00 - 9:00">
                     </div>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Espera Promedio</label>
+                    <label class="text-xs font-bold text-slate-600 uppercase">Espera Promedio</label>
                     <div class="flex gap-1">
-                        <input type="number" name="avg_response_time_val" value="{{ current_user.avg_response_time.split(' ')[0] if current_user.avg_response_time else '' }}" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-sm" min="0" placeholder="Valor">
-                        <select name="avg_response_time_unit" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-xs bg-white focus:outline-none">
+                        <input type="number" name="avg_response_time_val" value="{{ current_user.avg_response_time.split(' ')[0] if current_user.avg_response_time else '' }}" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-sm" min="0" placeholder="Valor" aria-label="Valor">
+                        <select name="avg_response_time_unit" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-xs bg-white focus:outline-none" aria-label="Avg response time unit">
                             <option value="segundos" {% if current_user.avg_response_time and 'segundo' in current_user.avg_response_time %}selected{% endif %}>Seg</option>
                             <option value="minutos" {% if current_user.avg_response_time and 'minuto' in current_user.avg_response_time %}selected{% elif not current_user.avg_response_time %}selected{% endif %}>Min</option>
                             <option value="horas" {% if current_user.avg_response_time and 'hora' in current_user.avg_response_time %}selected{% endif %}>Horas</option>
@@ -351,10 +358,10 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">Duración Consulta</label>
+                    <label class="text-xs font-bold text-slate-600 uppercase">Duración Consulta</label>
                     <div class="flex gap-1">
-                        <input type="number" name="avg_consultation_time_val" value="{{ current_user.avg_consultation_time.split(' ')[0] if current_user.avg_consultation_time else '' }}" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-sm" min="0" placeholder="Valor">
-                        <select name="avg_consultation_time_unit" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-xs bg-white focus:outline-none">
+                        <input type="number" name="avg_consultation_time_val" value="{{ current_user.avg_consultation_time.split(' ')[0] if current_user.avg_consultation_time else '' }}" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-sm" min="0" placeholder="Valor" aria-label="Valor">
+                        <select name="avg_consultation_time_unit" class="w-1/2 border-2 border-slate-50 p-1.5 rounded-lg text-xs bg-white focus:outline-none" aria-label="Avg consultation time unit">
                             <option value="minutos" {% if current_user.avg_consultation_time and 'minuto' in current_user.avg_consultation_time %}selected{% elif not current_user.avg_consultation_time %}selected{% endif %}>Min</option>
                             <option value="horas" {% if current_user.avg_consultation_time and 'hora' in current_user.avg_consultation_time %}selected{% endif %}>Horas</option>
                         </select>
@@ -371,30 +378,31 @@
             <i data-lucide="calendar-clock" class="w-5 h-5"></i> Mi Horario
         </h2>
         <div class="bg-teal-50 border border-teal-100 rounded-xl p-3 mb-3">
-            <p class="text-[10px] font-black uppercase tracking-widest text-teal-700">Resumen publicado</p>
+            <p class="text-xs font-black uppercase tracking-widest text-teal-700">Resumen publicado</p>
             <p class="text-sm font-bold text-slate-700 mt-1">{{ current_user.schedule or 'Configura al menos un día para aparecer disponible.' }}</p>
         </div>
-        <div class="grid grid-cols-3 gap-2 mb-4 text-[10px] font-black">
+        <div class="grid grid-cols-3 gap-2 mb-4 text-xs font-black">
             <button type="button" onclick="applySchedulePreset('office')" class="bg-teal-50 text-teal-700 p-2 rounded-lg hover:bg-teal-100">L-V oficina</button>
             <button type="button" onclick="applySchedulePreset('morning')" class="bg-blue-50 text-blue-700 p-2 rounded-lg hover:bg-blue-100">Mañanas</button>
             <button type="button" onclick="clearSchedule()" class="bg-slate-100 text-slate-600 p-2 rounded-lg hover:bg-slate-200">Limpiar</button>
         </div>
         
         <form method="POST" action="/doctor/save_schedule" class="space-y-3 mb-6">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="schedule_action" value="weekly">
             {% set days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] %}
             {% for i in range(7) %}
                 {% set sched = schedules|selectattr('day_of_week', 'equalto', i)|selectattr('specific_date', 'none')|first %}
                 <div class="grid grid-cols-[auto_1fr] gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 schedule-row" data-day="{{ i }}">
-                    <input type="checkbox" name="active_{{ i }}" {% if sched %}checked{% endif %} class="schedule-active w-5 h-5 accent-teal-600 mt-6">
+                    <input type="checkbox" name="active_{{ i }}" {% if sched %}checked{% endif %} class="schedule-active w-5 h-5 accent-teal-600 mt-6" aria-label="Active {{ i }}">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <label class="text-xs font-black text-slate-700">{{ days[i] }}</label>
-                            <span class="schedule-duration text-[10px] text-slate-400 font-bold">--</span>
+                            <span class="schedule-duration text-xs text-slate-600 font-bold">--</span>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" name="start_{{ i }}" value="{{ sched.start_time if sched else '08:00' }}" class="schedule-start text-sm border p-2.5 rounded-lg focus:outline-none focus:border-teal-300">
-                            <input type="time" name="end_{{ i }}" value="{{ sched.end_time if sched else '17:00' }}" class="schedule-end text-sm border p-2.5 rounded-lg focus:outline-none focus:border-teal-300">
+                            <input type="time" name="start_{{ i }}" value="{{ sched.start_time if sched else '08:00' }}" class="schedule-start text-sm border p-2.5 rounded-lg focus:outline-none focus:border-teal-300" aria-label="Start {{ i }}">
+                            <input type="time" name="end_{{ i }}" value="{{ sched.end_time if sched else '17:00' }}" class="schedule-end text-sm border p-2.5 rounded-lg focus:outline-none focus:border-teal-300" aria-label="End {{ i }}">
                         </div>
                     </div>
                 </div>
@@ -403,15 +411,16 @@
         </form>
 
         <div class="border-t pt-4">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Bloqueos de Agenda</p>
+            <p class="text-xs font-black text-slate-600 uppercase tracking-widest mb-3">Bloqueos de Agenda</p>
             <form method="POST" action="/doctor/save_schedule" class="space-y-2 bg-slate-50 p-3 rounded-xl border">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="schedule_action" value="blockout">
-                <input type="date" name="specific_date" class="w-full border p-2 rounded-lg text-xs focus:outline-none" required>
+                <input type="date" name="specific_date" class="w-full border p-2 rounded-lg text-xs focus:outline-none" required aria-label="Specific date">
                 <div class="flex gap-2">
-                    <input type="time" name="block_start" value="08:00" class="w-1/2 border p-2 rounded-lg text-xs focus:outline-none">
-                    <input type="time" name="block_end" value="17:00" class="w-1/2 border p-2 rounded-lg text-xs focus:outline-none">
+                    <input type="time" name="block_start" value="08:00" class="w-1/2 border p-2 rounded-lg text-xs focus:outline-none" aria-label="Block start">
+                    <input type="time" name="block_end" value="17:00" class="w-1/2 border p-2 rounded-lg text-xs focus:outline-none" aria-label="Block end">
                 </div>
-                <button type="submit" class="w-full bg-slate-800 text-white py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:bg-black transition-colors">Bloquear Fecha</button>
+                <button type="submit" class="w-full bg-slate-800 text-white py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors">Bloquear Fecha</button>
             </form>
 
             <div class="mt-4">
@@ -419,9 +428,10 @@
                 {% if actual_blockouts %}
                     <ul class="space-y-1">
                         {% for block in actual_blockouts %}
-                            <li class="bg-rose-50 p-2 rounded-lg text-rose-800 text-[10px] flex justify-between items-center border border-rose-100">
+                            <li class="bg-rose-50 p-2 rounded-lg text-rose-800 text-xs flex justify-between items-center border border-rose-100">
                                 <span class="font-bold">{{ block.specific_date }} ({{ block.start_time }}-{{ block.end_time }})</span>
                                 <form action="/doctor/delete_blockout" method="POST">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="block_id" value="{{ block.id }}">
                                     <button type="submit" class="text-rose-600 font-bold px-1 hover:text-rose-800">✕</button>
                                 </form>
@@ -429,7 +439,7 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p class="text-[10px] text-slate-400 text-center italic">Sin bloqueos activos.</p>
+                    <p class="text-xs text-slate-600 text-center italic">Sin bloqueos activos.</p>
                 {% endif %}
             </div>
         </div>
@@ -442,9 +452,10 @@
                 <i data-lucide="git-branch" class="w-5 h-5"></i> Flujos
             </h2>
             <form method="POST" class="space-y-2">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="create_flow">
-                <input type="text" name="title" required placeholder="Título del Flujo" class="w-full border p-2 rounded-lg text-xs focus:outline-none focus:border-purple-200">
-                <textarea name="flow_data" required placeholder='JSON aquí...' class="w-full border p-2 rounded-lg text-[10px] font-mono h-12 focus:outline-none focus:border-purple-200"></textarea>
+                <input type="text" name="title" required placeholder="Título del Flujo" class="w-full border p-2 rounded-lg text-xs focus:outline-none focus:border-purple-200" aria-label="Título del Flujo">
+                <textarea name="flow_data" required placeholder='JSON aquí...' class="w-full border p-2 rounded-lg text-xs font-mono h-12 focus:outline-none focus:border-purple-200" aria-label="Flow data"></textarea>
                 <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg font-bold text-xs hover:bg-purple-700 transition-colors">Crear Flujo</button>
             </form>
         </div>
@@ -455,13 +466,13 @@
             </h2>
             <div class="relative mb-3">
                 <i data-lucide="search" class="absolute left-2 top-2.5 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="search_patient" placeholder="Buscar..." class="w-full border p-2 pl-8 rounded-xl text-sm focus:outline-none focus:border-orange-200" onkeyup="filterPatients()">
+                <input type="text" id="search_patient" placeholder="Buscar..." class="w-full border p-2 pl-8 rounded-xl text-sm focus:outline-none focus:border-orange-200" onkeyup="filterPatients()" aria-label="Buscar...">
             </div>
             <ul id="patient_list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                 {% for p in patients %}
                     <li class="patient-item flex justify-between items-center group" data-name="{{ p.name.lower() }}">
                         <a href="/doctor/patient_history/{{ p.id }}" class="flex items-center gap-2 flex-1">
-                            <div class="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-[10px] font-bold">{{ p.name[:1] }}</div>
+                            <div class="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 text-xs font-bold">{{ p.name[:1] }}</div>
                             <span class="font-bold text-xs text-slate-700 group-hover:text-orange-600">{{ p.name }}</span>
                         </a>
                         <a href="/doctor/book_appointment/{{ p.id }}" class="text-blue-500 hover:bg-blue-50 p-1.5 rounded-lg transition-colors" title="Agendar Cita">

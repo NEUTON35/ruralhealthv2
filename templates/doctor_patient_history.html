@@ -3,7 +3,7 @@
 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
     <div>
         <nav class="flex mb-2" aria-label="Breadcrumb">
-            <ol class="flex items-center space-x-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <ol class="flex items-center space-x-2 text-xs font-bold text-slate-600 uppercase tracking-widest">
                 <li><a href="/doctor/dashboard" class="hover:text-blue-600 transition-colors">Panel</a></li>
                 <li><i data-lucide="chevron-right" class="w-3 h-3"></i></li>
                 <li class="text-slate-600">Historial Clínico</li>
@@ -30,12 +30,12 @@
     </div>
 
     <div class="flex gap-3">
-        <a href="/doctor/book_appointment/{{ patient.id }}" class="group flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
+        <a href="/doctor/book_appointment/{{ patient.id }}" class="group flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 active:scale-95">
             <i data-lucide="calendar-plus" class="w-4 h-4"></i> 
             Agendar Cita
         </a>
 
-        <a href="/doctor/dashboard" class="group flex items-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-black transition-all shadow-lg shadow-slate-200 active:scale-95">
+        <a href="/doctor/dashboard" class="group flex items-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-2xl font-bold text-sm hover:bg-black transition-colors shadow-lg shadow-slate-200 active:scale-95">
             <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
             Volver al Panel
         </a>
@@ -71,18 +71,18 @@
                             {% if allergy.reaction %}
                             <p class="text-sm text-slate-600 mt-0.5">Reacción: {{ allergy.reaction }}</p>
                             {% endif %}
-                            <p class="text-xs text-slate-400 mt-1">
+                            <p class="text-xs text-slate-600 mt-1">
                                 Registrada por {{ allergy.recorded_by.name if allergy.recorded_by else 'el sistema' }}
                                 el {{ allergy.created_at | colombia_date }}
                             </p>
                         </div>
                         <div class="flex flex-col items-end gap-1 shrink-0">
-                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black
+                            <span class="px-2.5 py-1 rounded-full text-xs font-black
                                 {% if allergy.severity in ('anafilaxia', 'grave') %}bg-rose-600 text-white
                                 {% else %}bg-amber-200 text-amber-900{% endif %}">
                                 {{ allergy.severity | upper }}
                             </span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">{{ allergy.status }}</span>
+                            <span class="text-xs font-bold text-slate-600 uppercase">{{ allergy.status }}</span>
                         </div>
                     </div>
 
@@ -100,7 +100,7 @@
                             </p>
                             <input type="text" name="reason" required minlength="10" maxlength="300"
                                 placeholder="Motivo (p. ej. prueba cutánea negativa el 2026-08-01)"
-                                class="w-full px-3 py-2 border-2 border-slate-200 rounded-xl text-sm focus:border-rose-400 outline-none">
+                                class="w-full px-3 py-2 border-2 border-slate-200 rounded-xl text-sm focus:border-rose-400 outline-none" aria-label="Motivo (p. ej. prueba cutánea negativa el 2026-08-01)">
                             <button type="submit"
                                 class="text-rose-600 border-2 border-rose-200 px-4 py-1.5 rounded-xl font-bold text-xs hover:bg-rose-50 transition-colors">
                                 Confirmar descarte
@@ -133,7 +133,7 @@
                         <input type="text" id="substance" name="substance" required minlength="2" maxlength="180"
                             placeholder="Principio activo, p. ej. Penicilina"
                             class="w-full mt-1 px-3 py-2.5 border-2 border-slate-100 rounded-xl text-sm focus:border-primary outline-none">
-                        <p class="text-xs text-slate-400 mt-1">
+                        <p class="text-xs text-slate-600 mt-1">
                             Usa el principio activo, no la marca comercial: la verificación
                             compara familias farmacológicas.
                         </p>
@@ -194,14 +194,14 @@
         <div class="p-5 space-y-5">
             <dl class="grid grid-cols-2 gap-3">
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                    <dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">Edad</dt>
+                    <dt class="text-xs font-black uppercase tracking-widest text-slate-600">Edad</dt>
                     <dd class="font-black text-slate-900 text-lg">
                         {{ patient_age_years if patient_age_years is not none else 'No registrada' }}
                         {% if patient_age_years is not none %}<span class="text-sm font-bold text-slate-500">años</span>{% endif %}
                     </dd>
                 </div>
                 <div class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                    <dt class="text-[10px] font-black uppercase tracking-widest text-slate-400">Gestación</dt>
+                    <dt class="text-xs font-black uppercase tracking-widest text-slate-600">Gestación</dt>
                     <dd class="font-black text-lg {% if patient.is_pregnant %}text-violet-700{% else %}text-slate-900{% endif %}">
                         {{ 'Sí' if patient.is_pregnant else 'No registrada' }}
                     </dd>
@@ -217,7 +217,7 @@
 
             <!-- Tratamiento activo -->
             <div>
-                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">
                     Tratamiento activo (90 días)
                 </h3>
                 {% if active_meds %}
@@ -229,13 +229,13 @@
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p class="text-sm text-slate-400">Sin órdenes vigentes.</p>
+                <p class="text-sm text-slate-600">Sin órdenes vigentes.</p>
                 {% endif %}
             </div>
 
             <!-- Condiciones crónicas -->
             <div class="border-t border-slate-100 pt-4">
-                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-600 mb-2">
                     Condiciones crónicas
                 </h3>
                 {% if conditions %}
@@ -244,13 +244,13 @@
                     <li class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm">
                         <b class="text-slate-800">{{ condition.condition }}</b>
                         {% if condition.cie10_code %}
-                        <span class="text-slate-400 font-mono text-xs ml-1">{{ condition.cie10_code }}</span>
+                        <span class="text-slate-600 font-mono text-xs ml-1">{{ condition.cie10_code }}</span>
                         {% endif %}
                     </li>
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p class="text-sm text-slate-400 mb-3">Ninguna registrada.</p>
+                <p class="text-sm text-slate-600 mb-3">Ninguna registrada.</p>
                 {% endif %}
 
                 <details>
@@ -262,10 +262,10 @@
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <input type="text" name="condition" required minlength="3" maxlength="200"
                             placeholder="p. ej. Diabetes mellitus tipo 2"
-                            class="w-full px-3 py-2.5 border-2 border-slate-100 rounded-xl text-sm focus:border-primary outline-none">
+                            class="w-full px-3 py-2.5 border-2 border-slate-100 rounded-xl text-sm focus:border-primary outline-none" aria-label="p. ej. Diabetes mellitus tipo 2">
                         <input type="text" name="cie10_code" maxlength="10"
                             placeholder="Código CIE-10 (opcional)"
-                            class="w-full px-3 py-2.5 border-2 border-slate-100 rounded-xl text-sm font-mono focus:border-primary outline-none">
+                            class="w-full px-3 py-2.5 border-2 border-slate-100 rounded-xl text-sm font-mono focus:border-primary outline-none" aria-label="Código CIE-10 (opcional)">
                         <button type="submit"
                             class="bg-violet-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors">
                             Registrar condición
@@ -295,10 +295,10 @@
         {% if chats %}
             <div class="grid gap-4">
                 {% for chat in chats %}
-                <div class="group border-2 border-slate-50 rounded-2xl p-5 hover:border-orange-200 hover:bg-orange-50/30 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="group border-2 border-slate-50 rounded-2xl p-5 hover:border-orange-200 hover:bg-orange-50/30 transition-colors flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
-                            <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm
+                            <span class="text-xs font-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm
                                 {% if chat.status == 'open' %}
                                     bg-emerald-500 text-white animate-pulse
                                 {% else %}
@@ -326,7 +326,7 @@
                                     {{ chat.timestamp|colombia_time }}
                             </div>
 
-                            <div class="flex items-center gap-2 text-slate-400">
+                            <div class="flex items-center gap-2 text-slate-600">
                                 <i data-lucide="hash" class="w-4 h-4"></i>
                                 <span class="text-xs">ID: {{ chat.id }}</span>
                             </div>
@@ -334,7 +334,7 @@
                     </div>
 
                     <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/doctor/chat/{{ chat.id }}" class="flex-1 md:flex-none text-center bg-white border-2 border-orange-500 text-orange-600 px-6 py-2.5 rounded-xl font-black text-sm hover:bg-orange-500 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <a href="/doctor/chat/{{ chat.id }}" class="flex-1 md:flex-none text-center bg-white border-2 border-orange-500 text-orange-600 px-6 py-2.5 rounded-xl font-black text-sm hover:bg-orange-500 hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm">
                             <i data-lucide="eye" class="w-4 h-4"></i> Revisar Detalles
                         </a>
                     </div>
@@ -343,13 +343,13 @@
                 {% for h in patient.medical_histories if h.chat_id == chat.id %}
                 <div class="ml-8 mt-2 border-l-4 border-orange-300 bg-orange-50/20 p-4 rounded-xl mb-4 shadow-sm">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="text-[10px] font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded uppercase">Nota Médica</span>
+                        <span class="text-xs font-black bg-orange-100 text-orange-700 px-2 py-0.5 rounded uppercase">Nota Médica</span>
                         <div class="flex gap-2">
                             {% if h.cie10_code %}
-                            <span class="text-[10px] font-bold bg-white border border-orange-200 text-orange-800 px-2 py-0.5 rounded shadow-sm">CIE-10: {{ h.cie10_code }}</span>
+                            <span class="text-xs font-bold bg-white border border-orange-200 text-orange-800 px-2 py-0.5 rounded shadow-sm">CIE-10: {{ h.cie10_code }}</span>
                             {% endif %}
                             {% if h.cups_code %}
-                            <span class="text-[10px] font-bold bg-white border border-orange-200 text-orange-800 px-2 py-0.5 rounded shadow-sm">CUPS: {{ h.cups_code }}</span>
+                            <span class="text-xs font-bold bg-white border border-orange-200 text-orange-800 px-2 py-0.5 rounded shadow-sm">CUPS: {{ h.cups_code }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -389,7 +389,7 @@
                     </span>
                 </li>
                 {% else %}
-                <li class="text-gray-400 text-sm italic">Sin citas registradas.</li>
+                <li class="text-gray-600 text-sm italic">Sin citas registradas.</li>
                 {% endfor %}
             </ul>
         </div>

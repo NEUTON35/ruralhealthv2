@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" referrerpolicy="no-referrer">
 
 <div class="max-w-6xl mx-auto space-y-6 animate-in fade-in duration-500">
     <!-- Header con mejor jerarquía -->
@@ -14,7 +14,7 @@
                 <p class="text-sm text-slate-500 font-medium">Orden #{{ order.id }} • Paciente: <span class="text-slate-900 font-bold">{{ order.patient.name }}</span></p>
             </div>
         </div>
-        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-6 py-3 rounded-xl font-black text-slate-700 transition-all active:scale-95">
+        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-6 py-3 rounded-xl font-black text-slate-700 transition-colors active:scale-95">
             <i data-lucide="arrow-left" class="w-5 h-5"></i>
             Volver al Panel
         </a>
@@ -24,7 +24,7 @@
     <section class="bg-white border border-slate-100 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden relative group">
         <div id="staff-order-map" class="h-[600px] bg-slate-50 z-0"></div>
         <!-- Leyenda Flotante Premium -->
-        <div class="absolute bottom-6 left-6 z-[1000] bg-white/90 backdrop-blur-md p-4 rounded-2xl border border-white shadow-2xl flex gap-4 text-[10px] font-black uppercase tracking-widest text-slate-600">
+        <div class="absolute bottom-6 left-6 z-[1000] bg-white/90  p-4 rounded-2xl border border-white shadow-2xl flex gap-4 text-xs font-black uppercase tracking-widest text-slate-600">
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-600 ring-4 ring-blue-100"></span> Paciente</div>
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-600 ring-4 ring-emerald-100"></span> Stock Completo</div>
             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500 ring-4 ring-amber-100"></span> Stock Parcial</div>
@@ -39,11 +39,11 @@
                 <i data-lucide="database" class="w-5 h-5 text-primary"></i>
                 Análisis de Inventario en Tiempo Real
             </h2>
-            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Actualizado hace un momento</span>
+            <span class="text-xs font-black uppercase tracking-widest text-slate-600">Actualizado hace un momento</span>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="text-left text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
+                <thead class="text-left text-xs uppercase tracking-widest text-slate-600 border-b border-slate-50">
                     <tr>
                         <th class="p-4">Farmacia / Ubicación</th>
                         <th class="p-4">Logística</th>
@@ -58,7 +58,7 @@
                     <tr class="hover:bg-slate-50/80 transition-colors group">
                         <td class="p-4">
                             <p class="font-black text-slate-900 group-hover:text-primary transition-colors">{{ row.pharmacy.name }}</p>
-                            <p class="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">{{ row.pharmacy.address or 'Sin dirección registrada' }}</p>
+                            <p class="text-xs text-slate-600 font-medium truncate max-w-[200px]">{{ row.pharmacy.address or 'Sin dirección registrada' }}</p>
                         </td>
                         <td class="p-4">
                             <div class="flex items-center gap-2">
@@ -82,16 +82,16 @@
                         {% endfor %}
                         <td class="p-4 text-right">
                             {% if row.can_fulfill_all %}
-                            <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-emerald-100">
+                            <div class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tighter ring-1 ring-emerald-100">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
     Optimizado para Envío
                             </div>
                             {% elif row.any_available %}
-                            <div class="inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-amber-100">
+                            <div class="inline-flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tighter ring-1 ring-amber-100">
                                 Suministro Parcial
                             </div>
                             {% else %}
-                            <div class="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter ring-1 ring-red-100">
+                            <div class="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tighter ring-1 ring-red-100">
                                 Sin Disponibilidad
                             </div>
                             {% endif %}
@@ -113,14 +113,7 @@
     data-patient-lng="{{ order.patient.longitude if order.patient.longitude is not none else 'null' }}"
     data-pharmacies='[
         {% for row in pharmacy_rows %}
-        {
-            "name": {{ row.pharmacy.name|tojson }},
-            "address": {{ (row.pharmacy.address or "")|tojson }},
-            "lat": {{ row.pharmacy.latitude if row.pharmacy.latitude is not none else "null" }},
-            "lng": {{ row.pharmacy.longitude if row.pharmacy.longitude is not none else "null" }},
-            "distance": {{ row.distance_km if row.distance_km is not none else "null" }},
-            "canFulfillAll": {{ "true" if row.can_fulfill_all else "false" }},
-            "anyAvailable": {{ "true" if row.any_available else "false" }}
+        { "name": {{ row.pharmacy.name|tojson }}, "address": {{ (row.pharmacy.address or "")|tojson }}, "lat": {{ row.pharmacy.latitude if row.pharmacy.latitude is not none else "null" }}, "lng": {{ row.pharmacy.longitude if row.pharmacy.longitude is not none else "null" }}, "distance": {{ row.distance_km if row.distance_km is not none else "null" }}, "canFulfillAll": {{ "true" if row.can_fulfill_all else "false" }}, "anyAvailable": {{ "true" if row.any_available else "false" }}
         }{% if not loop.last %},{% endif %}
         {% endfor %}
     ]'>
@@ -201,8 +194,8 @@ orderMapPharmacies.forEach(function(pharmacy) {
     }).bindPopup(
         '<div class="p-2">' +
         '<p class="font-black text-slate-900">' + pharmacy.name + '</p>' +
-        '<p class="text-[10px] text-slate-500">' + (pharmacy.address || '') + '</p>' +
-        '<p class="text-[10px] font-bold mt-2 text-primary">' + (pharmacy.distance === null || pharmacy.distance === "null" ? 'Sin distancia' : 'A ' + pharmacy.distance + ' km') + '</p>' +
+        '<p class="text-xs text-slate-500">' + (pharmacy.address || '') + '</p>' +
+        '<p class="text-xs font-bold mt-2 text-primary">' + (pharmacy.distance === null || pharmacy.distance === "null" ? 'Sin distancia' : 'A ' + pharmacy.distance + ' km') + '</p>' +
         '</div>'
     ).addTo(staffOrderMap);
     mapBounds.push([pharmacy.lat, pharmacy.lng]);

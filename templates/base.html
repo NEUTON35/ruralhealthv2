@@ -17,12 +17,16 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/static/icon.svg">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
+          crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js"
+            integrity="sha384-8nT3SpButyvenpAdKYPJzXdSz3zidMGduMoaMvwjKnAWVv238n6P1mhveiJJQWrV"
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         tailwind.config = { 
             theme: { 
@@ -120,19 +124,19 @@
                 {% endif %}
                 
                 <button class="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors" onclick="toggleCommandPalette()">
-                    <i data-lucide="search" class="w-5 h-5"></i> <span class="flex-1 text-left">Buscar</span> <kbd class="hidden md:inline-block text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border">Ctrl+K</kbd>
+                    <i data-lucide="search" class="w-5 h-5"></i> <span class="flex-1 text-left">Buscar</span> <kbd class="hidden md:inline-block text-xs bg-slate-100 px-1.5 py-0.5 rounded border">Ctrl+K</kbd>
                 </button>
 
                 <div class="mt-auto space-y-2 pt-6">
-                    <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all font-bold">
+                    <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
                         <i data-lucide="shield" class="w-5 h-5 text-slate-400"></i> Mis datos
                     </a>
-                    <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all font-bold">
+                    <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
                         <i data-lucide="settings" class="w-5 h-5 text-slate-400"></i> Ajustes
                     </a>
                     <form method="POST" action="/logout">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-all font-black">
+                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors font-black">
                             <i data-lucide="log-out" class="w-5 h-5"></i> Cerrar Sesión
                         </button>
                     </form>
@@ -175,7 +179,7 @@
             {% block content %}{% endblock %}
         </main>
 
-        <footer class="max-w-4xl mx-auto px-3 sm:px-4 pb-8 mt-auto text-xs text-slate-400 flex flex-wrap gap-3 justify-center">
+        <footer class="max-w-4xl mx-auto px-3 sm:px-4 pb-8 mt-auto text-xs text-slate-600 flex flex-wrap gap-3 justify-center">
             <a href="/terminos" class="hover:text-primary">Términos</a>
             <span>·</span>
             <a href="/privacidad" class="hover:text-primary">Privacidad y Datos</a>
@@ -196,17 +200,17 @@
 
     <!-- Command Palette Modal -->
     <div id="command-palette" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="toggleCommandPalette()"></div>
+        <div class="absolute inset-0 bg-slate-900/40 " onclick="toggleCommandPalette()"></div>
         <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
             <div class="p-4 border-b flex items-center gap-3">
                 <i data-lucide="search" class="w-5 h-5 text-slate-400"></i>
-                <input type="text" id="omnisearch-input" placeholder="Buscar médicos, pacientes, clínicas..." class="w-full outline-none text-lg bg-transparent">
-                <button onclick="toggleCommandPalette()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <input type="text" id="omnisearch-input" placeholder="Buscar médicos, pacientes, clínicas..." class="w-full outline-none text-lg bg-transparent" aria-label="Buscar médicos, pacientes, clínicas...">
+                <button onclick="toggleCommandPalette()" class="text-slate-600 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div id="omnisearch-results" class="max-h-80 overflow-y-auto p-2 bg-slate-50 empty:hidden">
                 <!-- Resultados renderizados aquí -->
             </div>
-            <div class="p-2 text-xs text-center text-slate-400 border-t bg-slate-50">
+            <div class="p-2 text-xs text-center text-slate-600 border-t bg-slate-50">
                 Presiona ESC para cerrar
             </div>
         </div>
@@ -305,7 +309,7 @@
                 
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(async () => {
-                    searchResults.innerHTML = '<div class="p-4 text-center text-slate-400"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i></div>';
+                    searchResults.innerHTML = '<div class="p-4 text-center text-slate-600"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i></div>';
                     lucide.createIcons();
                     
                     try {
@@ -356,7 +360,9 @@
         }
         lucide.createIcons();
     </script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="/static/location_picker.js"></script>
     <script src="/static/pwa.js"></script>
 </body>

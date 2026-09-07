@@ -92,10 +92,23 @@ def analytics_data():
     # --- Tendencia: Consultas últimos 6 meses ---
     trend_labels = []
     trend_data = []
+    # Los meses se recorren contando meses, no restando bloques de 30 dias.
+    #
+    # La version anterior hacia `now.replace(day=1) - timedelta(days=i * 30)`. Como
+    # los meses no duran 30 dias, la serie salia mal: en marzo de 2026 la grafica
+    # mostraba diciembre dos veces y se saltaba febrero por completo. El
+    # administrador tomaba decisiones sobre una curva con un mes inventado y otro
+    # ausente.
+    def month_start(reference, months_back):
+        total = reference.year * 12 + (reference.month - 1) - months_back
+        return reference.replace(
+            year=total // 12, month=total % 12 + 1, day=1,
+            hour=0, minute=0, second=0, microsecond=0,
+        )
+
     for i in range(5, -1, -1):
-        cursor = now.replace(day=1) - timedelta(days=i * 30)
-        cursor = cursor.replace(day=1)
-        next_month = (cursor.replace(day=28) + timedelta(days=5)).replace(day=1)
+        cursor = month_start(now, i)
+        next_month = month_start(now, i - 1)
         label = _month_label(cursor)
         count = Appointment.query.filter(
             Appointment.clinic_id == clinic_id,

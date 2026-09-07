@@ -350,7 +350,36 @@ class Message(ClinicScoped, db.Model):
     is_read = db.Column(db.Boolean, default=False)
     sender = db.relationship('User', foreign_keys=[sender_id])
 
+# Estados de una cita. `cancelada` y `no_show` liberan el horario para que otro
+# paciente pueda tomarlo; el resto lo ocupan.
+APPOINTMENT_PENDING = 'pending'
+APPOINTMENT_IN_PROGRESS = 'in_progress'
+APPOINTMENT_ATTENDED = 'attended'
+APPOINTMENT_NO_SHOW = 'no_show'
+APPOINTMENT_CANCELLED = 'cancelada'
+APPOINTMENT_FREEING_STATUSES = (APPOINTMENT_NO_SHOW, APPOINTMENT_CANCELLED)
+
+
 class Appointment(ClinicScoped, db.Model):
+    # Indice unico parcial sobre el horario del profesional.
+    #
+    # Antes la reserva era "consultar y luego insertar", sin nada que impidiera
+    # que dos pacientes pulsaran el mismo horario a la vez: ambos pasaban la
+    # comprobacion y ambos quedaban agendados con el mismo medico a la misma hora.
+    # Solo una restriccion en la base de datos cierra esa ventana.
+    #
+    # Es parcial —excluye citas canceladas y no asistidas— para que un horario
+    # liberado pueda volver a ofrecerse.
+    __table_args__ = (
+        db.Index(
+            'uq_appointment_active_slot',
+            'doctor_id', 'date', 'time',
+            unique=True,
+            sqlite_where=db.text("status NOT IN ('cancelada', 'no_show')"),
+            postgresql_where=db.text("status NOT IN ('cancelada', 'no_show')"),
+        ),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

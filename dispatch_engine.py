@@ -391,7 +391,7 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
             _notify(
                 user_id=ticket.patient_id,
                 clinic_id=clinic_id,
-                title='💊 ¡Medicamentos disponibles para recoger!',
+                title='Medicamentos disponibles para recoger',
                 message=(
                     f'Tu ticket {ticket.pickup_code} está listo. '
                     f'Los medicamentos ya están disponibles en {pharmacy_name}. '

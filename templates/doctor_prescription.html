@@ -11,7 +11,7 @@
             </h1>
             <p class="text-sm text-slate-500 mt-1">Prescripción con validez legal — Normativa colombiana</p>
         </div>
-        <a href="{{ url_for('doctor.chat', chat_id=chat_id) if chat_id else url_for('doctor.dashboard') }}" class="border-2 border-slate-100 px-4 py-2.5 rounded-xl font-bold text-slate-700 inline-flex items-center gap-2 hover:border-primary hover:text-primary transition-all">
+        <a href="{{ url_for('doctor.chat', chat_id=chat_id) if chat_id else url_for('doctor.dashboard') }}" class="border-2 border-slate-100 px-4 py-2.5 rounded-xl font-bold text-slate-700 inline-flex items-center gap-2 hover:border-primary hover:text-primary transition-colors">
             <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
         </a>
     </div>
@@ -96,7 +96,7 @@
             {% for finding in safety.findings %}
             <li class="p-5">
                 <div class="flex items-start gap-3">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 mt-0.5
+                    <span class="px-2 py-0.5 rounded-full text-xs font-black shrink-0 mt-0.5
                         {% if finding.severity == 'block' %}bg-rose-600 text-white
                         {% elif finding.severity == 'warn' %}bg-amber-500 text-white
                         {% else %}bg-slate-300 text-slate-800{% endif %}">
@@ -124,6 +124,7 @@
     {% endif %}
 
     <form method="POST" id="prescription-form" class="space-y-5">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         {% if chat_id %}<input type="hidden" name="chat_id" value="{{ chat_id }}">{% endif %}
 
         <!-- Justificación para continuar pese a una alerta bloqueante -->
@@ -153,15 +154,15 @@
             </div>
             <div class="p-5 grid sm:grid-cols-3 gap-4 bg-sky-50/30">
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Entidad</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Entidad</span>
                     <p class="font-bold text-slate-800">{{ current_user.clinic.name if current_user.clinic else 'N/A' }}</p>
                 </div>
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">NIT</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">NIT</span>
                     <p class="font-bold text-slate-800">{{ current_user.clinic.nit if current_user.clinic and current_user.clinic.nit else 'No registrado' }}</p>
                 </div>
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dirección</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Dirección</span>
                     <p class="font-bold text-slate-800">{{ current_user.clinic.location if current_user.clinic and current_user.clinic.location else 'No registrada' }}</p>
                 </div>
             </div>
@@ -176,20 +177,20 @@
             </div>
             <div class="p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Paciente</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Paciente</span>
                     <p class="font-bold text-slate-800">{{ patient.name }}</p>
                 </div>
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Documento</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Documento</span>
                     <p class="font-bold text-slate-800">{{ patient.cedula }}</p>
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Edad</label>
-                    <input type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-emerald-500 outline-none transition-colors">
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Edad</label>
+                    <input type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-emerald-500 outline-none transition-colors" aria-label="Edad del paciente">
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nivel</label>
-                    <select name="patient_level" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-emerald-500 outline-none">
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Nivel</label>
+                    <select name="patient_level" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-emerald-500 outline-none" aria-label="Nivel del paciente">
                         <option value="1">Nivel 1</option>
                         <option value="2">Nivel 2</option>
                         <option value="3">Nivel 3</option>
@@ -208,16 +209,16 @@
             </div>
             <div class="p-5 grid sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">EPS / Aseguradora</label>
-                    <input type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors">
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">EPS / Aseguradora</label>
+                    <input type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors" aria-label="Entidad aseguradora">
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Plan</label>
-                    <input type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors">
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Plan</label>
+                    <input type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-violet-500 outline-none transition-colors" aria-label="Plan de aseguramiento">
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Régimen</label>
-                    <select name="insurance_regime" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-violet-500 outline-none">
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Régimen</label>
+                    <select name="insurance_regime" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold bg-white focus:border-violet-500 outline-none" aria-label="Regimen">
                         <option value="">— Seleccionar —</option>
                         <option value="Contributivo">Contributivo</option>
                         <option value="Subsidiado">Subsidiado</option>
@@ -241,8 +242,8 @@
             </div>
             <div class="p-5" id="diagnosis-rows">
                 <div class="grid sm:grid-cols-4 gap-2 diagnosis-row mb-2">
-                    <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none" required>
-                    <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none" required>
+                    <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none" required aria-label="Código CIE-10 (Ej: E119)">
+                    <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none" required aria-label="Descripción del diagnóstico">
                 </div>
             </div>
         </div>
@@ -258,7 +259,7 @@
                 </button>
             </div>
             <div class="p-5 space-y-3" id="medication-rows">
-                <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 grid grid-cols-12 gap-2 px-1 hidden sm:grid">
+                <div class="text-xs font-black uppercase tracking-widest text-slate-600 grid grid-cols-12 gap-2 px-1 hidden sm:grid">
                     <span class="col-span-3">Descripción</span>
                     <span>Cantidad</span>
                     <span>Dosis</span>
@@ -270,12 +271,12 @@
                 </div>
                 {% for _ in range(2) %}
                 <div class="grid grid-cols-12 gap-2 medication-row items-center">
-                    <input name="med_name" placeholder="Medicamento" class="col-span-12 sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-                    <input type="number" name="quantity" min="1" value="1" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-                    <input name="dosage" placeholder="Ej: 500mg" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-                    <input name="unit" value="unidad" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-                    <input name="frequency" placeholder="Ej: c/8h x 7d" class="col-span-6 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-                    <select name="route" class="col-span-6 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm bg-white focus:border-emerald-500 outline-none">
+                    <input name="med_name" placeholder="Medicamento" class="col-span-12 sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Medicamento">
+                    <input type="number" name="quantity" min="1" value="1" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Cantidad">
+                    <input name="dosage" placeholder="Ej: 500mg" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Dosis">
+                    <input name="unit" value="unidad" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Unidad">
+                    <input name="frequency" placeholder="Ej: c/8h x 7d" class="col-span-6 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Frecuencia">
+                    <select name="route" class="col-span-6 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm bg-white focus:border-emerald-500 outline-none" aria-label="Via de administracion">
                         <option value="ORAL">Oral</option>
                         <option value="IV">IV</option>
                         <option value="IM">IM</option>
@@ -286,7 +287,7 @@
                         <option value="INHALADA">Inhal.</option>
                         <option value="RECTAL">Rectal</option>
                     </select>
-                    <input name="instructions" placeholder="Instrucciones" class="col-span-10 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+                    <input name="instructions" placeholder="Instrucciones" class="col-span-10 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Instrucciones">
                     <button type="button" onclick="this.closest('.medication-row').remove()" class="col-span-2 sm:col-span-1 text-red-400 hover:text-red-600 transition p-2 flex items-center justify-center">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
@@ -304,17 +305,17 @@
             </div>
             <div class="p-5 space-y-4">
                 <div>
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Observaciones</label>
-                    <textarea name="observations" rows="3" placeholder="Observaciones clínicas, indicaciones especiales, contraindicaciones..." class="mt-1 w-full border-2 border-slate-100 p-3 rounded-xl text-sm focus:border-slate-400 outline-none transition-colors resize-none"></textarea>
+                    <label class="text-xs font-black uppercase tracking-widest text-slate-600">Observaciones</label>
+                    <textarea name="observations" rows="3" placeholder="Observaciones clínicas, indicaciones especiales, contraindicaciones..." class="mt-1 w-full border-2 border-slate-100 p-3 rounded-xl text-sm focus:border-slate-400 outline-none transition-colors resize-none" aria-label="Observaciones clínicas, indicaciones especiales, contraindicaciones..."></textarea>
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Fecha de Caducidad</label>
-                        <input type="date" name="expires_date" required value="{{ default_expiration }}" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none">
+                        <label class="text-xs font-black uppercase tracking-widest text-slate-600">Fecha de Caducidad</label>
+                        <input type="date" name="expires_date" required value="{{ default_expiration }}" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none" aria-label="Fecha de caducidad">
                     </div>
                     <div>
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Hora de Caducidad</label>
-                        <input type="time" name="expires_time" required value="23:59" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none">
+                        <label class="text-xs font-black uppercase tracking-widest text-slate-600">Hora de Caducidad</label>
+                        <input type="time" name="expires_time" required value="23:59" class="mt-1 w-full border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-slate-400 outline-none" aria-label="Hora de caducidad">
                     </div>
                 </div>
             </div>
@@ -331,23 +332,23 @@
             <div class="p-5">
                 <div class="grid sm:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nombre del Profesional</span>
+                        <span class="text-xs font-black uppercase tracking-widest text-slate-600">Nombre del Profesional</span>
                         <p class="font-bold text-slate-800 text-lg">{{ current_user.name }}</p>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Reg. Médico</span>
+                            <span class="text-xs font-black uppercase tracking-widest text-slate-600">Reg. Médico</span>
                             <p class="font-bold text-slate-800">{{ current_user.medical_registration or 'No registrado' }}</p>
                         </div>
                         <div>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Especialidad</span>
+                            <span class="text-xs font-black uppercase tracking-widest text-slate-600">Especialidad</span>
                             <p class="font-bold text-slate-800">{{ current_user.specialty or 'Medicina General' }}</p>
                         </div>
                     </div>
                 </div>
                 <div class="border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/30 relative" style="touch-action: none;">
                     <canvas id="signature-canvas" width="700" height="160" class="w-full rounded-xl cursor-crosshair" style="height:160px;"></canvas>
-                    <p class="absolute bottom-2 right-3 text-[10px] text-indigo-300 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
+                    <p class="absolute bottom-2 right-3 text-xs text-indigo-300 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
                 </div>
                 <input type="hidden" name="signature_data" id="signature-data">
                 {% if not current_user.medical_registration %}
@@ -363,7 +364,7 @@
         <div id="live-safety" class="hidden"></div>
 
         <!-- BOTÓN DE ENVÍO -->
-        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl font-black text-lg inline-flex items-center justify-center gap-3 shadow-xl shadow-emerald-200/50 hover:shadow-emerald-300/50 transition-all active:scale-[0.98]">
+        <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl font-black text-lg inline-flex items-center justify-center gap-3 shadow-xl shadow-emerald-200/50 hover:shadow-emerald-300/50 transition-colors active:scale-[0.98]">
             <i data-lucide="shield-check" class="w-6 h-6"></i>
             Firmar y Emitir Orden Médica
         </button>
@@ -432,7 +433,7 @@
 
             const chip = document.createElement('span');
             const chipStyle = SEVERITY_STYLES[finding.severity] || SEVERITY_STYLES.info;
-            chip.className = 'px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 mt-0.5 '
+            chip.className = 'px-2 py-0.5 rounded-full text-xs font-black shrink-0 mt-0.5 '
                 + chipStyle.chip;
             chip.textContent = chipStyle.label;
             item.appendChild(chip);
@@ -516,9 +517,9 @@ function addDiagnosisRow() {
     const row = document.createElement('div');
     row.className = 'grid sm:grid-cols-4 gap-2 diagnosis-row mb-2';
     row.innerHTML = `
-        <input type="text" name="dx_code" placeholder="Código CIE-10" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none">
+        <input type="text" name="dx_code" placeholder="Código CIE-10" class="border-2 border-slate-100 p-2.5 rounded-xl text-sm font-bold focus:border-orange-500 outline-none" aria-label="Código CIE-10">
         <div class="sm:col-span-2 flex gap-2">
-            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none">
+            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-orange-500 outline-none" aria-label="Descripción del diagnóstico">
         </div>
         <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="text-red-400 hover:text-red-600 transition text-sm font-bold">Eliminar</button>
     `;
@@ -532,17 +533,17 @@ function addMedicationRow() {
     const row = document.createElement('div');
     row.className = 'grid grid-cols-12 gap-2 medication-row items-center';
     row.innerHTML = `
-        <input name="med_name" placeholder="Medicamento" class="col-span-12 sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-        <input type="number" name="quantity" min="1" value="1" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-        <input name="dosage" placeholder="Ej: 500mg" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-        <input name="unit" value="unidad" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-        <input name="frequency" placeholder="Ej: c/8h x 7d" class="col-span-6 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
-        <select name="route" class="col-span-6 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm bg-white focus:border-emerald-500 outline-none">
+        <input name="med_name" placeholder="Medicamento" class="col-span-12 sm:col-span-3 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Medicamento">
+        <input type="number" name="quantity" min="1" value="1" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Cantidad">
+        <input name="dosage" placeholder="Ej: 500mg" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Dosis">
+        <input name="unit" value="unidad" class="col-span-4 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Unidad">
+        <input name="frequency" placeholder="Ej: c/8h x 7d" class="col-span-6 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Frecuencia">
+        <select name="route" class="col-span-6 sm:col-span-1 border-2 border-slate-100 p-2.5 rounded-xl text-sm bg-white focus:border-emerald-500 outline-none" aria-label="Via de administracion">
             <option value="ORAL">Oral</option><option value="IV">IV</option><option value="IM">IM</option><option value="SC">SC</option>
             <option value="TOPICA">Tópica</option><option value="OFTALMICA">Oftal.</option><option value="OTICA">Ótica</option>
             <option value="INHALADA">Inhal.</option><option value="RECTAL">Rectal</option>
         </select>
-        <input name="instructions" placeholder="Instrucciones" class="col-span-10 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none">
+        <input name="instructions" placeholder="Instrucciones" class="col-span-10 sm:col-span-2 border-2 border-slate-100 p-2.5 rounded-xl text-sm focus:border-emerald-500 outline-none" aria-label="Instrucciones">
         <button type="button" onclick="this.closest('.medication-row').remove()" class="col-span-2 sm:col-span-1 text-red-400 hover:text-red-600 transition p-2 flex items-center justify-center">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>

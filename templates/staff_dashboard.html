@@ -13,14 +13,15 @@
 
 <section class="bg-white border border-slate-100 shadow-sm rounded-lg p-4 mb-5">
     <form method="POST" class="grid sm:grid-cols-4 gap-3 items-end">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_hours">
         <div>
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Atencion inicio</label>
-            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="w-full border p-3 rounded-lg">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Atencion inicio</label>
+            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de inicio de atencion">
         </div>
         <div>
-            <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Atencion fin</label>
-            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="w-full border p-3 rounded-lg">
+            <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Atencion fin</label>
+            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de fin de atencion">
         </div>
         <button class="bg-slate-900 text-white px-4 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 sm:col-span-2">
             <i data-lucide="clock" class="w-5 h-5"></i>
@@ -30,9 +31,9 @@
 </section>
 
 <form method="GET" action="{{ url_for('staff.verify_order', verification_hash='TOKEN') }}" class="bg-white border border-slate-100 shadow-sm rounded-lg p-4 mb-5" onsubmit="this.action=this.action.replace('TOKEN', encodeURIComponent(this.elements.verification_hash.value));">
-    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Hash de seguridad</label>
+    <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-2">Hash de seguridad</label>
     <div class="flex flex-col sm:flex-row gap-2">
-        <input name="verification_hash" required placeholder="Pega el token de la orden" class="flex-1 border p-3 rounded-lg font-mono text-sm">
+        <input name="verification_hash" required placeholder="Pega el token de la orden" class="flex-1 border p-3 rounded-lg font-mono text-sm" aria-label="Pega el token de la orden">
         <button class="bg-slate-900 text-white px-4 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2">
             <i data-lucide="shield-check" class="w-5 h-5"></i>
             Validar
@@ -46,7 +47,7 @@
             <i data-lucide="messages-square" class="w-5 h-5 text-emerald-600"></i>
             Chats de medicamentos
         </h2>
-        <span class="text-xs font-black uppercase tracking-widest text-slate-400">{{ staff_chats|length if staff_chats else 0 }} abiertos</span>
+        <span class="text-xs font-black uppercase tracking-widest text-slate-600">{{ staff_chats|length if staff_chats else 0 }} abiertos</span>
     </div>
     <div class="grid sm:grid-cols-2 gap-3">
         {% for item in staff_chats %}
@@ -55,13 +56,13 @@
             <div class="flex justify-between gap-2">
                 <span class="font-black text-slate-900">{{ chat.patient.name }}</span>
                 {% if item.unread > 0 %}
-                <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-full">{{ item.unread }}</span>
+                <span class="bg-blue-600 text-white text-xs font-black px-2 py-1 rounded-full">{{ item.unread }}</span>
                 {% endif %}
             </div>
             <p class="text-xs text-slate-500 truncate">{{ item.last_msg.content if item.last_msg else chat.reason }}</p>
         </a>
         {% else %}
-        <p class="text-sm text-slate-400 sm:col-span-2">Sin chats de medicamentos abiertos.</p>
+        <p class="text-sm text-slate-600 sm:col-span-2">Sin chats de medicamentos abiertos.</p>
         {% endfor %}
     </div>
 </section>
@@ -80,12 +81,12 @@
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-400">Orden #{{ order.id }}</span>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-600">Orden #{{ order.id }}</span>
                     <span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-bold">{{ order.status }}</span>
                 </div>
                 <h2 class="text-xl font-black text-slate-900">{{ order.patient.name }}</h2>
                 <p class="text-sm text-slate-500">Medico: {{ order.doctor.name }} | Expedida: {{ order.created_at|colombia_date }} {{ order.created_at|colombia_time }} | Vence: {{ order.expires_at|colombia_date }} {{ order.expires_at|colombia_time }}</p>
-                <p class="text-xs font-mono text-slate-400 mt-2 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
+                <p class="text-xs font-mono text-slate-600 mt-2 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
             </div>
             <div class="flex flex-col gap-2 min-w-[220px]">
                 <a href="{{ url_for('staff.verify_order', verification_hash=order.hash_seguridad or order.verification_hash) }}" class="inline-flex items-center justify-center gap-2 border border-slate-200 px-3 py-2 rounded-lg font-bold text-slate-700">
@@ -97,11 +98,12 @@
                     Mapa paciente
                 </a>
                 <form method="POST" action="{{ url_for('staff.dispense', order_id=order.id) }}" class="space-y-2">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="date" name="pickup_date" value="{{ order.created_at.strftime('%Y-%m-%d') }}" class="border p-2 rounded-lg text-xs">
-                        <input type="time" name="pickup_time" value="09:00" class="border p-2 rounded-lg text-xs">
+                        <input type="date" name="pickup_date" value="{{ order.created_at.strftime('%Y-%m-%d') }}" class="border p-2 rounded-lg text-xs" aria-label="Fecha de recogida">
+                        <input type="time" name="pickup_time" value="09:00" class="border p-2 rounded-lg text-xs" aria-label="Hora de recogida">
                     </div>
-                    <select name="pharmacy_id" class="w-full border p-2 rounded-lg text-xs bg-white">
+                    <select name="pharmacy_id" class="w-full border p-2 rounded-lg text-xs bg-white" aria-label="Farmacia">
                         {% for pharmacy_row in row.pharmacy_rows %}
                         <option value="{{ pharmacy_row.pharmacy.id }}">{{ pharmacy_row.pharmacy.name }}{% if pharmacy_row.distance_km is not none %} - {{ pharmacy_row.distance_km }} km{% endif %}</option>
                         {% endfor %}
@@ -125,7 +127,7 @@
         </div>
         <div class="mt-4 overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="text-left text-[10px] uppercase tracking-widest text-slate-400">
+                <thead class="text-left text-xs uppercase tracking-widest text-slate-600">
                     <tr><th class="py-2">Medicamento</th><th class="py-2">Cantidad</th><th class="py-2">Unidad</th></tr>
                 </thead>
                 <tbody>
@@ -136,14 +138,14 @@
                         <td class="py-2">{{ med.unidad }}{% if med.instrucciones %}<p class="text-xs text-slate-500">{{ med.instrucciones }}</p>{% endif %}</td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="3" class="py-3 text-slate-400">La orden no tiene medicamentos legibles.</td></tr>
+                    <tr><td colspan="3" class="py-3 text-slate-600">La orden no tiene medicamentos legibles.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
         <div class="mt-4 overflow-x-auto border border-slate-100 rounded-lg">
             <table class="w-full text-xs">
-                <thead class="text-left text-[10px] uppercase tracking-widest text-slate-400 bg-slate-50">
+                <thead class="text-left text-xs uppercase tracking-widest text-slate-600 bg-slate-50">
                     <tr>
                         <th class="p-2">Farmacia</th>
                         <th class="p-2">Distancia</th>
@@ -174,7 +176,7 @@
                         </td>
                     </tr>
                     {% else %}
-                    <tr><td class="p-3 text-slate-400" colspan="{{ row.meds|length + 3 }}">No hay farmacias activas.</td></tr>
+                    <tr><td class="p-3 text-slate-600" colspan="{{ row.meds|length + 3 }}">No hay farmacias activas.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -29,11 +29,12 @@
       Registrar Nuevo Cargamento
     </h2>
     <form method="POST" id="shipment-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="action" value="create_shipment">
       <div class="grid sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Farmacia Destino *</label>
-          <select name="pharmacy_id" required class="w-full border-2 border-slate-100 p-3 rounded-xl bg-white focus:border-blue-500 focus:outline-none text-sm">
+          <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1.5">Farmacia Destino *</label>
+          <select name="pharmacy_id" required class="w-full border-2 border-slate-100 p-3 rounded-xl bg-white focus:border-blue-500 focus:outline-none text-sm" aria-label="Farmacia">
             <option value="">Seleccionar farmacia...</option>
             {% for pharmacy in pharmacies %}
             <option value="{{ pharmacy.id }}">{{ pharmacy.name }}</option>
@@ -41,31 +42,31 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Fecha Estimada de Llegada *</label>
-          <input type="date" name="expected_date" required class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
+          <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1.5">Fecha Estimada de Llegada *</label>
+          <input type="date" name="expected_date" required class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Fecha estimada de llegada">
         </div>
         <div>
-          <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Proveedor / Distribuidor</label>
-          <input type="text" name="supplier_name" placeholder="Ej: Farmacias del Norte S.A." class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
+          <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1.5">Proveedor / Distribuidor</label>
+          <input type="text" name="supplier_name" placeholder="Ej: Farmacias del Norte S.A." class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Proveedor">
         </div>
         <div>
-          <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Notas</label>
-          <input type="text" name="note" placeholder="Número de guía, observaciones..." class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
+          <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1.5">Notas</label>
+          <input type="text" name="note" placeholder="Número de guía, observaciones..." class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Número de guía, observaciones...">
         </div>
       </div>
 
       <!-- Dynamic medication items -->
       <div class="mb-4">
         <div class="flex items-center justify-between mb-2">
-          <label class="text-xs font-black uppercase tracking-widest text-slate-400">Medicamentos del Cargamento *</label>
+          <label class="text-xs font-black uppercase tracking-widest text-slate-600">Medicamentos del Cargamento *</label>
           <button type="button" onclick="addMedRow()" class="text-xs text-blue-600 font-black flex items-center gap-1 hover:text-blue-800 transition">
             <i data-lucide="plus" class="w-3 h-3"></i> Agregar medicamento
           </button>
         </div>
         <div id="med-rows" class="space-y-2">
           <div class="med-row grid grid-cols-3 gap-2">
-            <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
-            <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
+            <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Nombre del medicamento">
+            <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Cant.">
           </div>
         </div>
       </div>
@@ -99,11 +100,11 @@
           <div class="flex-1">
             <div class="flex items-center gap-2 flex-wrap mb-1">
               <span class="font-black text-slate-900">{{ shipment.pharmacy.name }}</span>
-              <span class="inline-flex items-center gap-1 border px-2 py-0.5 rounded-full text-[11px] font-bold {{ cfg[0] }}">
+              <span class="inline-flex items-center gap-1 border px-2 py-0.5 rounded-full text-xs font-bold {{ cfg[0] }}">
                 <i data-lucide="{{ cfg[1] }}" class="w-3 h-3"></i> {{ cfg[2] }}
               </span>
               {% if shipment.expected_date <= today_str and shipment.status == 'en_camino' %}
-              <span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[11px] font-bold">📅 Hoy / Vencido</span>
+              <span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-xs font-bold">📅 Hoy / Vencido</span>
               {% endif %}
             </div>
             <p class="text-xs text-slate-500">
@@ -113,13 +114,13 @@
             </p>
             <div class="flex flex-wrap gap-1.5 mt-2">
               {% for item in shipment.items %}
-              <span class="bg-slate-50 border border-slate-100 text-slate-700 text-[11px] px-2 py-0.5 rounded-lg font-medium">
+              <span class="bg-slate-50 border border-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-lg font-medium">
                 {{ item.med_name }} ×{{ item.quantity_incoming }}
               </span>
               {% endfor %}
             </div>
             {% if shipment.note %}
-            <p class="text-[11px] text-slate-400 mt-1 italic">{{ shipment.note }}</p>
+            <p class="text-xs text-slate-600 mt-1 italic">{{ shipment.note }}</p>
             {% endif %}
           </div>
           {% if shipment.status == 'en_camino' %}
@@ -150,7 +151,7 @@
     {% else %}
     <div class="p-12 text-center">
       <i data-lucide="truck" class="w-10 h-10 text-slate-200 mx-auto mb-3"></i>
-      <p class="text-slate-400 font-bold">Sin cargamentos registrados aún.</p>
+      <p class="text-slate-600 font-bold">Sin cargamentos registrados aún.</p>
     </div>
     {% endif %}
   </section>
@@ -162,9 +163,9 @@ function addMedRow() {
   const div = document.createElement('div');
   div.className = 'med-row grid grid-cols-3 gap-2';
   div.innerHTML = `
-    <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
+    <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Nombre del medicamento">
     <div class="flex gap-1">
-      <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm">
+      <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Cant.">
       <button type="button" onclick="this.closest('.med-row').remove()" class="px-2 text-red-400 hover:text-red-600 transition">✕</button>
     </div>
   `;

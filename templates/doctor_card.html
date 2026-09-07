@@ -1,4 +1,4 @@
-<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:border-primary/20 transition-all flex flex-col gap-5 relative group/card">
+<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:border-primary/20 transition-colors flex flex-col gap-5 relative group/card">
     
     <!-- Fila Superior: Foto + Info + Favorito -->
     <div class="flex gap-5">
@@ -6,7 +6,7 @@
         <div class="relative flex-shrink-0 w-24 h-24">
             <div class="w-full h-full bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-md flex items-center justify-center">
                 {% if data.doc.profile_pic %}
-                    <img src="/uploads/{{ data.doc.profile_pic }}" class="w-full h-full object-cover">
+                    <img src="/uploads/{{ data.doc.profile_pic }}" class="w-full h-full object-cover" alt="">
                 {% else %}
                     <i data-lucide="user" class="w-12 h-12 text-slate-300"></i>
                 {% endif %}
@@ -23,7 +23,7 @@
                 </div>
                 <form action="/patient/toggle_favorite/{{ data.doc.id }}" method="POST">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="p-2 rounded-xl bg-slate-50 hover:bg-rose-50 hover:text-rose-500 transition-all active:scale-90 border border-slate-100">
+                    <button type="submit" class="p-2 rounded-xl bg-slate-50 hover:bg-rose-50 hover:text-rose-500 transition-colors active:scale-90 border border-slate-100">
                         <i data-lucide="heart" class="w-6 h-6 {% if data.is_fav %}fill-rose-500 text-rose-500{% else %}text-slate-300{% endif %}"></i>
                     </button>
                 </form>
@@ -32,7 +32,7 @@
             <p class="text-xs text-slate-500 mt-2 font-medium flex items-center gap-1.5">
                 <i data-lucide="building" class="w-3.5 h-3.5"></i>
                 {{ data.doc.affiliation_name or (data.doc.clinic.name if data.doc.clinic else 'Médico autónomo') }}
-                {% if data.doc.is_autonomous %}<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-black text-[9px]">AUTÓNOMO</span>{% endif %}
+                {% if data.doc.is_autonomous %}<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-black text-xs">AUTÓNOMO</span>{% endif %}
             </p>
 
             {% if data.doc.office_address %}
@@ -46,16 +46,16 @@
             {% endif %}
             
             <div class="flex flex-wrap gap-2 mt-3">
-                <div class="bg-amber-50 text-amber-700 text-[11px] font-black px-2.5 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
+                <div class="bg-amber-50 text-amber-700 text-xs font-black px-2.5 py-1 rounded-lg border border-amber-100 flex items-center gap-1">
                     <i data-lucide="star" class="w-3 h-3 fill-amber-500 text-amber-500"></i>
                     {{ data.doc.rating }}
                 </div>
                 {% if data.locked %}
-                <div class="bg-slate-100 text-slate-600 text-[11px] font-black px-2.5 py-1 rounded-lg flex items-center gap-1 border border-slate-200">
+                <div class="bg-slate-100 text-slate-600 text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 border border-slate-200">
                     <i data-lucide="lock" class="w-3 h-3"></i> PRIVADO
                 </div>
                 {% elif data.subscription %}
-                <div class="bg-emerald-100 text-emerald-700 text-[11px] font-black px-2.5 py-1 rounded-lg border border-emerald-200">ACCESO ACTIVO</div>
+                <div class="bg-emerald-100 text-emerald-700 text-xs font-black px-2.5 py-1 rounded-lg border border-emerald-200">ACCESO ACTIVO</div>
                 {% endif %}
             </div>
         </div>
@@ -65,18 +65,18 @@
     {% if data.doc.is_autonomous and data.prices %}
     <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl">
         <div class="flex items-center justify-between mb-3">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tarifas Disponibles</span>
+            <span class="text-xs font-black text-slate-600 uppercase tracking-widest">Tarifas Disponibles</span>
             {% if data.discount_percent %}
-                <span class="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">{{ data.discount_percent|round|int }}% DESCUENTO PÓLIZA</span>
+                <span class="bg-emerald-600 text-white text-xs font-black px-2 py-0.5 rounded-full">{{ data.discount_percent|round|int }}% DESCUENTO PÓLIZA</span>
             {% endif %}
         </div>
         <div class="grid grid-cols-2 gap-3">
             {% for price in data.prices %}
             <div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
-                <p class="text-[9px] font-bold text-slate-500 uppercase">{{ price.label }}</p>
+                <p class="text-xs font-bold text-slate-500 uppercase">{{ price.label }}</p>
                 <p class="text-base font-black text-slate-900">
                     {% if data.discount_percent and price.final_amount != price.amount %}
-                        <span class="line-through text-slate-300 text-xs mr-1">${{ '%.0f'|format(price.amount) }}</span>
+                        <span class="line-through text-slate-500 text-xs mr-1">${{ '%.0f'|format(price.amount) }}</span>
                         ${{ '%.0f'|format(price.final_amount) }}
                     {% else %}
                         ${{ '%.0f'|format(price.amount) }}
@@ -93,15 +93,15 @@
         <div class="grid grid-cols-7 gap-2">
             {% for day in data.avail %}
             <a href="{% if data.locked %}{{ url_for('patient.doctor_payment', doctor_id=data.doc.id) if data.doc.is_autonomous else url_for('settings.index') }}{% else %}/patient/book_appointment/{{ data.doc.id }}?date={{ day.date.strftime('%Y-%m-%d') }}{% endif %}" 
-               class="flex flex-col items-center py-2 rounded-xl border-2 transition-all {% if day.slots > 0 and not data.locked %}border-primary/20 bg-primary/5 hover:border-primary hover:bg-primary/10 cursor-pointer{% else %}border-slate-50 bg-slate-50 cursor-not-allowed opacity-50{% endif %}">
-                <span class="text-[9px] font-black text-slate-400 uppercase">{{ day.day_name[:3] }}</span>
+               class="flex flex-col items-center py-2 rounded-xl border-2 transition-colors {% if day.slots > 0 and not data.locked %}border-primary/20 bg-primary/5 hover:border-primary hover:bg-primary/10 cursor-pointer{% else %}border-slate-50 bg-slate-50 cursor-not-allowed opacity-50{% endif %}">
+                <span class="text-xs font-black text-slate-600 uppercase">{{ day.day_name[:3] }}</span>
                 <span class="text-sm font-black {% if day.slots > 0 %}text-slate-900{% else %}text-slate-400{% endif %}">{{ day.date.strftime('%d') }}</span>
                 {% if data.locked %}
                     <i data-lucide="lock" class="w-3 h-3 text-slate-300 mt-0.5"></i>
                 {% elif day.slots > 0 %}
-                    <span class="text-[9px] font-black text-primary mt-0.5">{{ day.slots }}</span>
+                    <span class="text-xs font-black text-primary mt-0.5">{{ day.slots }}</span>
                 {% else %}
-                    <span class="text-[9px] text-slate-300 mt-0.5">-</span>
+                    <span class="text-xs text-slate-500 mt-0.5">-</span>
                 {% endif %}
             </a>
             {% endfor %}
@@ -111,27 +111,27 @@
     <!-- Acciones Rápidas -->
     <div class="grid grid-cols-2 gap-3 mt-auto">
         <a href="{% if data.locked %}{{ url_for('patient.doctor_payment', doctor_id=data.doc.id) if data.doc.is_autonomous else url_for('settings.index') }}{% else %}/patient/book_appointment/{{ data.doc.id }}{% endif %}" 
-            class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-100 hover:-translate-y-0.5 transition-all active:scale-95">
+            class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-slate-100 hover:-translate-y-0.5 transition-colors active:scale-95">
             <i data-lucide="calendar" class="w-5 h-5"></i>
             Agendar Cita
         </a>
 
         {% if data.locked %}
             <a href="{{ url_for('patient.doctor_payment', doctor_id=data.doc.id) if data.doc.is_autonomous else url_for('settings.index') }}" 
-                class="w-full bg-white border-2 border-slate-100 text-slate-600 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
+                class="w-full bg-white border-2 border-slate-100 text-slate-600 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                 <i data-lucide="unlock" class="w-5 h-5"></i>
                 Desbloquear
             </a>
         {% elif data.doc.is_available %}
             <form action="/patient/start_chat/{{ data.doc.id }}" method="POST" class="w-full">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-primary text-white py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all active:scale-95">
+                <button type="submit" class="w-full bg-primary text-white py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-colors active:scale-95">
                     <i data-lucide="message-square" class="w-5 h-5"></i>
                     Iniciar Chat
                 </button>
             </form>
         {% else %}
-            <div class="w-full bg-slate-50 text-slate-400 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-2 border-slate-100 cursor-not-allowed">
+            <div class="w-full bg-slate-50 text-slate-600 py-3.5 rounded-2xl font-black text-sm flex items-center justify-center gap-2 border-2 border-slate-100 cursor-not-allowed">
                 <i data-lucide="clock" class="w-5 h-5"></i>
                 No disponible
             </div>

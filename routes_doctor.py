@@ -8,7 +8,8 @@ from flask import Blueprint, Response, jsonify, render_template, request, redire
 from flask_login import login_required, current_user
 from security import audit, csv_safe_row, generate_signed_order_hash, role_required, save_secure_upload, validate_medical_code
 from clinical_safety import evaluate_prescription, normalize_drug
-from models import MedicalHistory, ACCESS_ACTIVE, Clinic, DoctorTariff, PatientAllergy, PatientChronicCondition, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_APPROVED, PAYMENT_PENDING, PAYMENT_REJECTED, db, User, Chat, Message, Appointment, QuestionFlow, DoctorSchedule, MedicalOrder
+from sqlalchemy.exc import IntegrityError
+from models import APPOINTMENT_FREEING_STATUSES, MedicalHistory, ACCESS_ACTIVE, Clinic, DoctorTariff, PatientAllergy, PatientChronicCondition, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_APPROVED, PAYMENT_PENDING, PAYMENT_REJECTED, db, User, Chat, Message, Appointment, QuestionFlow, DoctorSchedule, MedicalOrder
 from datetime import datetime, timedelta
 from time_utils import colombia_now, colombia_strftime
 from pharmacy_utils import doctor_distance, doctor_visible_on_map
@@ -755,7 +756,7 @@ def chat(chat_id):
                     flash(str(error))
                     return redirect(url_for('doctor.chat', chat_id=chat_obj.id))
                 ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
-                content = "🖼️ Imagen" if ext in ['jpg', 'jpeg', 'png', 'webp'] else "📄 Archivo"
+                content = "Imagen" if ext in ['jpg', 'jpeg', 'png', 'webp'] else "Archivo"
                 msg = Message(clinic_id=current_user.clinic_id, chat_id=chat_obj.id, sender_id=current_user.id, content=content, file_path=filename)
                 db.session.add(msg)
         elif action == 'start_flow':
@@ -1298,15 +1299,32 @@ def book_appointment(patient_id):
             flash('Formato de fecha u hora inválido.')
             return redirect(request.referrer or url_for('patient.dashboard'))
         
-        exists = Appointment.query.filter_by(doctor_id=current_user.id, clinic_id=current_user.clinic_id, date=date, time=time).first()
+        exists = Appointment.query.filter(
+            Appointment.doctor_id == current_user.id,
+            Appointment.clinic_id == current_user.clinic_id,
+            Appointment.date == date,
+            Appointment.time == time,
+            Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+        ).first()
         if exists:
-            flash('Esta hora ya está ocupada.')
+            flash('Esa hora ya esta ocupada.')
             return redirect(url_for('doctor.book_appointment', patient_id=patient_id, date=date))
-            
-        appt = Appointment(clinic_id=current_user.clinic_id, patient_id=patient_id, doctor_id=current_user.id, date=date, time=time, description=desc)
+
+        appt = Appointment(clinic_id=current_user.clinic_id, patient_id=patient_id,
+                           doctor_id=current_user.id, date=date, time=time, description=desc)
         db.session.add(appt)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # El indice unico de la base cierra la ventana entre la comprobacion
+            # anterior y esta insercion.
+            db.session.rollback()
+            flash('Esa hora acaba de ser tomada. Elige otra.')
+            return redirect(url_for('doctor.book_appointment', patient_id=patient_id, date=date))
+
+        audit('appointment_booked_by_doctor', details=f'patient_id={patient_id}; fecha={date} {time}')
         db.session.commit()
-        flash(f'¡Cita agendada exitosamente para {patient.name}! ✅')
+        flash(f'Cita agendada para {patient.name}.')
         return redirect(url_for('doctor.dashboard'))
     
     selected_date = request.args.get('date')

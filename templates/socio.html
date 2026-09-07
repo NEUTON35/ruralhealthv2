@@ -9,12 +9,13 @@
         </div>
 
         <form method="POST" class="grid sm:grid-cols-2 gap-3">
-            <input name="nombre" required placeholder="Nombre completo" class="border p-3 rounded-lg">
-            <input name="institucion" placeholder="Institucion" class="border p-3 rounded-lg">
-            <input name="telefono" placeholder="Telefono" class="border p-3 rounded-lg">
-            <input name="email" type="email" placeholder="Email" class="border p-3 rounded-lg">
-            <input name="ciudad" placeholder="Ciudad" class="border p-3 rounded-lg sm:col-span-2">
-            <textarea name="mensaje" rows="5" placeholder="Mensaje o necesidades de la institucion" class="border p-3 rounded-lg sm:col-span-2"></textarea>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input name="nombre" required placeholder="Nombre completo" class="border p-3 rounded-lg" aria-label="Nombre completo">
+            <input name="institucion" placeholder="Institucion" class="border p-3 rounded-lg" aria-label="Institucion">
+            <input name="telefono" placeholder="Telefono" class="border p-3 rounded-lg" aria-label="Telefono">
+            <input name="email" type="email" placeholder="Email" class="border p-3 rounded-lg" aria-label="Email">
+            <input name="ciudad" placeholder="Ciudad" class="border p-3 rounded-lg sm:col-span-2" aria-label="Ciudad">
+            <textarea name="mensaje" rows="5" placeholder="Mensaje o necesidades de la institucion" class="border p-3 rounded-lg sm:col-span-2" aria-label="Mensaje o necesidades de la institucion"></textarea>
             <button class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-black sm:col-span-2 inline-flex items-center justify-center gap-2">
                 <i data-lucide="send" class="w-5 h-5"></i>
                 Enviar solicitud

@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 
-from models import db, User, Chat, Message, Appointment, Rating, QuestionFlow, Favorite, DoctorSchedule, MedicalOrder, MedicationPickupTicket, Notification, Pharmacy, Stock, STAFF_ROLE_VALUES, Clinic, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_PENDING
+from models import APPOINTMENT_FREEING_STATUSES, db, User, Chat, Message, Appointment, Rating, QuestionFlow, Favorite, DoctorSchedule, MedicalOrder, MedicationPickupTicket, Notification, Pharmacy, Stock, STAFF_ROLE_VALUES, Clinic, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_PENDING
 import json
 import calendar
 from datetime import datetime, timedelta
@@ -81,10 +82,15 @@ def get_doctor_availability(doctor, days=5):
             while current_slot < end_dt:
                 total_slots += 1
                 current_slot += timedelta(minutes=15)
-            booked = Appointment.query.filter_by(
-                doctor_id=doctor.id,
-                clinic_id=doctor.clinic_id,
-                date=current_date.strftime('%Y-%m-%d'),
+            # Solo cuentan las citas que realmente ocupan el horario. Contar tambien
+            # las canceladas y no asistidas hacia que el paciente viera menos cupos
+            # de los que habia, y en una agenda rural escasa eso son consultas que
+            # nadie llega a tomar.
+            booked = Appointment.query.filter(
+                Appointment.doctor_id == doctor.id,
+                Appointment.clinic_id == doctor.clinic_id,
+                Appointment.date == current_date.strftime('%Y-%m-%d'),
+                Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
             ).execution_options(include_all_clinics=True).count()
             avail_slots = max(0, total_slots - booked)
             availability.append({'date': current_date, 'day_name': dias_semana[day_of_week], 'slots': avail_slots})
@@ -322,7 +328,7 @@ def notify_arriving(ticket_id):
         notif = Notification(
             user_id=target.id,
             clinic_id=current_user.clinic_id,
-            title='🚶 Paciente en camino',
+            title='Paciente en camino',
             message=f'El paciente {current_user.name} notificó que viene en camino para recoger el ticket {ticket.pickup_code}. Alista el stock si es necesario.',
             type='patient_arriving',
         )
@@ -509,14 +515,34 @@ def chat(chat_id):
         if action == 'schedule_appointment_chat':
             date = request.form.get('date'); time = request.form.get('time'); desc = bleach.clean((request.form.get('description') or '')[:1000])
             if date and time:
-                if not Appointment.query.filter_by(doctor_id=chat_obj.doctor_id, clinic_id=chat_obj.clinic_id, date=date, time=time).execution_options(include_all_clinics=True).first():
-                    appt = Appointment(clinic_id=chat_obj.clinic_id, patient_id=chat_obj.patient_id, doctor_id=chat_obj.doctor_id, date=date, time=time, description=desc)
-                    db.session.add(appt)
-                    msg_sys = Message(clinic_id=chat_obj.clinic_id, chat_id=chat_obj.id, sender_id=current_user.id, content=f"📅 Cita agendada: {date} a las {time}")
-                    db.session.add(msg_sys)
-                    flash('Cita agendada desde el chat')
+                occupied = Appointment.query.filter(
+                    Appointment.doctor_id == chat_obj.doctor_id,
+                    Appointment.clinic_id == chat_obj.clinic_id,
+                    Appointment.date == date,
+                    Appointment.time == time,
+                    Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+                ).execution_options(include_all_clinics=True).first()
+                if occupied:
+                    flash('Esa hora ya esta ocupada.')
                 else:
-                    flash('Esa hora ya está ocupada.')
+                    appt = Appointment(clinic_id=chat_obj.clinic_id, patient_id=chat_obj.patient_id,
+                                       doctor_id=chat_obj.doctor_id, date=date, time=time, description=desc)
+                    db.session.add(appt)
+                    # El texto se guarda cifrado en la base y sale en la exportacion
+                    # de historia clinica: sin emoji, que en Android antiguo puede
+                    # renderizar como un cuadro vacio en un registro clinico.
+                    db.session.add(Message(
+                        clinic_id=chat_obj.clinic_id, chat_id=chat_obj.id,
+                        sender_id=current_user.id,
+                        content=f'Cita agendada: {date} a las {time}',
+                    ))
+                    try:
+                        db.session.flush()
+                        flash('Cita agendada desde el chat.')
+                    except IntegrityError:
+                        db.session.rollback()
+                        flash('Esa hora acaba de ser tomada. Elige otra.')
+                        return redirect(url_for('patient.chat', chat_id=chat_obj.id))
 
         # Acción: Respuesta a Flujo (Botones)
         elif 'flow_response' in request.form:
@@ -559,7 +585,7 @@ def chat(chat_id):
                 file_path = filename
                 ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
                 if not content: 
-                    content = "🖼️ Imagen" if ext in ['jpg', 'jpeg', 'png', 'webp'] else "📄 Archivo"
+                    content = "Imagen" if ext in ['jpg', 'jpeg', 'png', 'webp'] else "Archivo"
             
             if content or file_path:
                 msg = Message(clinic_id=chat_obj.clinic_id, chat_id=chat_obj.id, sender_id=current_user.id, content=content or " ", file_path=file_path)
@@ -598,7 +624,7 @@ def toggle_favorite(doctor_id):
     else:
         new_fav = Favorite(clinic_id=current_user.clinic_id, patient_id=current_user.id, doctor_id=doctor_id)
         db.session.add(new_fav)
-        flash('Doctor agregado a favoritos ❤️')
+        flash('Doctor agregado a favoritos ')
     db.session.commit()
     return redirect(url_for('patient.dashboard'))
 
@@ -819,13 +845,35 @@ def book_appointment(doctor_id):
             flash('Formato de fecha u hora inválido.')
             return redirect(request.referrer or url_for('patient.dashboard'))
 
-        if Appointment.query.filter_by(doctor_id=doctor_id, clinic_id=appointment_clinic_id, date=date, time=time).execution_options(include_all_clinics=True).first():
-            flash('Esta hora acaba de ser tomada.')
+        # La comprobacion previa da un mensaje claro en el caso normal, pero no es
+        # la que garantiza la exclusion: entre esta consulta y la insercion cabe
+        # otra reserva. Quien decide es el indice unico de la base de datos.
+        taken = Appointment.query.filter(
+            Appointment.doctor_id == doctor_id,
+            Appointment.clinic_id == appointment_clinic_id,
+            Appointment.date == date,
+            Appointment.time == time,
+            Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+        ).execution_options(include_all_clinics=True).first()
+        if taken:
+            flash('Esa hora ya esta ocupada. Elige otra.')
             return redirect(url_for('patient.book_appointment', doctor_id=doctor_id, date=date))
 
-        appt = Appointment(clinic_id=appointment_clinic_id, patient_id=current_user.id, doctor_id=doctor_id, date=date, time=time, description=desc)
-        db.session.add(appt); db.session.commit()
-        flash('¡Cita agendada exitosamente! ✅')
+        appt = Appointment(clinic_id=appointment_clinic_id, patient_id=current_user.id,
+                           doctor_id=doctor_id, date=date, time=time, description=desc)
+        db.session.add(appt)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # Otro paciente tomo el horario en el intervalo entre la consulta y
+            # la insercion. Sin esto, ambos quedarian citados a la misma hora.
+            db.session.rollback()
+            flash('Esa hora acaba de ser tomada por otro paciente. Elige otra.')
+            return redirect(url_for('patient.book_appointment', doctor_id=doctor_id, date=date))
+
+        audit('appointment_booked', details=f'doctor_id={doctor_id}; fecha={date} {time}')
+        db.session.commit()
+        flash('Cita agendada correctamente.')
         return redirect(url_for('patient.dashboard'))
     
     selected_date = request.args.get('date')
@@ -844,7 +892,17 @@ def book_appointment(doctor_id):
                 slots.append(current_slot.strftime('%H:%M'))
                 current_slot += timedelta(minutes=15)
         
-        booked_slots = [appt.time for appt in Appointment.query.filter_by(doctor_id=doctor_id, clinic_id=appointment_clinic_id, date=selected_date).execution_options(include_all_clinics=True).all()]
+        # Una cita cancelada o no asistida libera el horario. Antes se contaban
+        # todas, asi que un paciente que no se presento dejaba ese cupo inutilizado
+        # de forma permanente: consulta perdida en una agenda que suele ser escasa.
+        booked_slots = [
+            appt.time for appt in Appointment.query.filter(
+                Appointment.doctor_id == doctor_id,
+                Appointment.clinic_id == appointment_clinic_id,
+                Appointment.date == selected_date,
+                Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+            ).execution_options(include_all_clinics=True).all()
+        ]
         blockouts = DoctorSchedule.query.filter_by(doctor_id=doctor_id, clinic_id=appointment_clinic_id, specific_date=selected_date, is_available=False).execution_options(include_all_clinics=True).all()
         blocked_slots = []
         for block in blockouts:

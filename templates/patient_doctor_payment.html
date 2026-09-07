@@ -25,7 +25,7 @@
                         Metodos de pago
                     </h2>
                     {% if tariff.payment_methods_image %}
-                    <a href="/uploads/{{ tariff.payment_methods_image }}" target="_blank" class="block overflow-hidden rounded-xl border border-purple-100 bg-white">
+                    <a href="/uploads/{{ tariff.payment_methods_image }}" target="_blank" class="block overflow-hidden rounded-xl border border-purple-100 bg-white" rel="noopener noreferrer">
                         <img src="/uploads/{{ tariff.payment_methods_image }}" class="w-full max-h-80 object-contain bg-white" alt="Metodos de pago">
                     </a>
                     {% else %}
@@ -46,7 +46,7 @@
                                 <p class="font-black text-sm text-slate-800">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }}</p>
                                 <p class="text-xs text-slate-500">${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
                             </div>
-                            <span class="px-2 py-1 rounded-full text-[10px] font-black {% if ticket.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif ticket.status == 'rejected' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ ticket.status }}</span>
+                            <span class="px-2 py-1 rounded-full text-xs font-black {% if ticket.status == 'approved' %}bg-emerald-100 text-emerald-700{% elif ticket.status == 'rejected' %}bg-red-100 text-red-700{% else %}bg-amber-100 text-amber-700{% endif %}">{{ ticket.status }}</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -55,6 +55,7 @@
             </div>
 
             <form method="POST" enctype="multipart/form-data" class="border border-slate-100 rounded-xl p-4 space-y-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <h2 class="font-black text-slate-900 flex items-center gap-2">
                     <i data-lucide="upload" class="w-5 h-5 text-purple-600"></i>
                     Enviar comprobante
@@ -72,16 +73,16 @@
                                     <span class="font-black text-purple-700">${{ '%.0f'|format(price.final_amount) }}</span>
                                 </p>
                             </div>
-                            <input type="radio" name="plan_type" value="{{ price.plan_type }}" required class="accent-purple-700">
+                            <input type="radio" name="plan_type" value="{{ price.plan_type }}" required class="accent-purple-700" aria-label="Plan type">
                         </div>
                     </label>
                     {% endfor %}
                 </div>
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Comprobante</label>
-                    <input type="file" name="proof" accept="image/*,.pdf" required class="w-full border p-3 rounded-xl text-sm">
+                    <label class="block text-xs font-black uppercase tracking-widest text-slate-600 mb-1">Comprobante</label>
+                    <input type="file" name="proof" accept="image/*,.pdf" required class="w-full border p-3 rounded-xl text-sm" aria-label="Proof">
                 </div>
-                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el medico" class="w-full border p-3 rounded-xl text-sm"></textarea>
+                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el medico" class="w-full border p-3 rounded-xl text-sm" aria-label="Nota opcional para el medico"></textarea>
                 <button class="w-full bg-purple-700 text-white py-3 rounded-xl font-black hover:bg-purple-800">Enviar para revision</button>
             </form>
         </div>

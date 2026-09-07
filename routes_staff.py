@@ -1,11 +1,12 @@
 import json
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from models import (
+    APPOINTMENT_FREEING_STATUSES,
     Appointment,
     Chat,
     IncomingShipment,
@@ -170,16 +171,16 @@ def _create_pickup_ticket(order, patient_id, meds, pickup_date, pickup_time, pha
     # Notify patient about their ticket
     pharmacy_name = pharmacy.name if pharmacy else current_user.clinic.name
     if ticket_status == 'sin_stock':
-        patient_msg = (f'⚠️ Tu ticket {pickup_code} fue generado pero no hay stock disponible en {pharmacy_name}. '
+        patient_msg = (f'Tu ticket {pickup_code} fue generado pero no hay stock disponible en {pharmacy_name}. '
                        'El personal está tramitando la reposición. Te notificaremos cuando estén listos.')
-        patient_title = '⚠️ Ticket pendiente de stock'
+        patient_title = 'Ticket pendiente de stock'
     else:
         meds_summary = ', '.join(f"{m['nombre_med']} x{m['cantidad']}" for m in meds[:3])
-        patient_msg = (f'✅ Tu ticket de recogida {pickup_code} está listo. '
+        patient_msg = (f'Tu ticket de recogida {pickup_code} está listo. '
                        f'Medicamentos: {meds_summary}{" y más" if len(meds) > 3 else ""}. '
                        f'Fecha: {pickup_date} {pickup_time} en {pharmacy_name}. '
                        f'Lleva tu código o hash al mostrador.')
-        patient_title = '💊 Medicamentos listos para recoger'
+        patient_title = 'Medicamentos listos para recoger'
     patient_notif = Notification(
         user_id=patient_id,
         clinic_id=current_user.clinic_id,
@@ -193,12 +194,43 @@ def _create_pickup_ticket(order, patient_id, meds, pickup_date, pickup_time, pha
 
 def _create_pending_delivery(order, patient_id, doctor_id, shortages):
     reclaim_at = colombia_now() + timedelta(days=7)
+    reclaim_date = reclaim_at.strftime('%Y-%m-%d')
+
+    # Antes se fijaba siempre a las 09:00. Con dos entregas pendientes del mismo
+    # medico en la misma fecha, ambas citas caian en el mismo horario: la agenda
+    # mostraba un solo cupo para dos pacientes distintos. Se busca el primer
+    # horario libre en lugar de amontonarlos.
+    taken = {
+        row.time for row in Appointment.query.filter(
+            Appointment.doctor_id == doctor_id,
+            Appointment.date == reclaim_date,
+            Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+        ).execution_options(include_all_clinics=True).all()
+    }
+
+    slot = None
+    cursor = datetime.strptime('09:00', '%H:%M')
+    end_of_day = datetime.strptime('17:00', '%H:%M')
+    while cursor < end_of_day:
+        candidate = cursor.strftime('%H:%M')
+        if candidate not in taken:
+            slot = candidate
+            break
+        cursor += timedelta(minutes=15)
+
+    if slot is None:
+        # Agenda llena ese dia: la orden queda marcada igualmente para que el
+        # faltante no se pierda, aunque no haya cupo de recordatorio.
+        if order:
+            order.status = 'pendiente_stock'
+        return None
+
     appointment = Appointment(
         clinic_id=current_user.clinic_id,
         patient_id=patient_id,
         doctor_id=doctor_id,
-        date=reclaim_at.strftime('%Y-%m-%d'),
-        time='09:00',
+        date=reclaim_date,
+        time=slot,
         appointment_type='Entrega Pendiente',
         description='Entrega Pendiente: stock insuficiente para ' + ', '.join(shortages),
         status='pending',
@@ -606,7 +638,7 @@ def pendientes():
                     db.session.add(Notification(
                         user_id=ticket.patient_id,
                         clinic_id=current_user.clinic_id,
-                        title='💊 Medicamentos disponibles',
+                        title='Medicamentos disponibles',
                         message=f'Tu ticket {ticket.pickup_code} ya tiene stock disponible en la sede. Puedes acercarte a recogerlos.',
                         type='ticket_ready',
                     ))
@@ -728,7 +760,7 @@ def envios():
 
             audit('incoming_shipment_created', details=f'shipment_id={shipment.id}; pharmacy_id={pharmacy_id}')
             db.session.commit()
-            flash(f'✅ Cargamento registrado para {expected_date}. El staff puede informar al paciente la fecha estimada.')
+            flash(f'Cargamento registrado para {expected_date}. El staff puede informar al paciente la fecha estimada.')
             return redirect(url_for('staff.envios'))
 
         elif action == 'receive_shipment':
@@ -785,7 +817,7 @@ def envios():
             audit('incoming_shipment_received', details=f'shipment_id={shipment.id}; reactivated_tickets={reactivated_total}')
             db.session.commit()
             flash(
-                f'✅ Cargamento recibido. Stock actualizado. '
+                f'Cargamento recibido. Stock actualizado. '
                 f'{len(reactivated_total)} ticket(s) reactivados automáticamente. Pacientes notificados.'
             )
             return redirect(url_for('staff.envios'))

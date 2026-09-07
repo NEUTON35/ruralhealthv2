@@ -171,11 +171,104 @@ misma base, y el `ALTER TABLE` construido con `f-string` reemplaza a un sistema 
 
 ---
 
+---
+
+# Segunda pasada — 2026-09-06
+
+Revisión adicional tras una pregunta sobre convenciones de interfaz. La pregunta
+era de estilo; la revisión encontró **10 defectos**, dos de ellos de corrección de
+datos y uno de incumplimiento legal en curso.
+
+## P0 — Bloqueantes
+
+### P0-10 · El sistema borraba historias clínicas de forma permanente
+
+Tres caminos distintos eliminaban registros clínicos con `DELETE`:
+
+| Ruta | Qué borraba |
+| :--- | :--- |
+| `routes_superadmin._delete_patient` | `MedicalHistory`, `MedicalOrder`, `MedicationPickupTicket`, `Chat`, `Message` del paciente |
+| `routes_superadmin._delete_clinic` | Lo mismo, para **todos** los pacientes de la clínica |
+| `routes_admin` acción `delete_user` | Los chats y citas del profesional — que son consultas **de sus pacientes** |
+| `routes_settings` acción `delete_account` | Chats y citas propios, y la fila del usuario |
+
+Esto incumplía el deber de conservar la historia clínica un mínimo de 15 años
+(Resolución 839 de 2017) y contradecía de forma directa lo que el propio módulo de
+habeas data le explica al paciente: que su historia no puede eliminarse ni aunque
+la solicite. La pantalla de ajustes llegaba a prometer «se borrarán todos tus
+datos, historiales médicos y citas de forma permanente».
+
+Dar de baja a un médico destruía además la historia de terceros que no tenían
+relación alguna con esa baja.
+
+**Acción:** los cuatro caminos pasan a archivar: la cuenta se desactiva, las
+consultas abiertas se cierran, las citas futuras se cancelan —liberando el
+horario— y el registro clínico permanece. Los textos de la interfaz dicen ahora lo
+que realmente ocurre. Una prueba analiza el árbol de sintaxis de todas las rutas
+para impedir que vuelva a aparecer un borrado masivo de tablas clínicas.
+
+### P0-11 · Dos pacientes podían ocupar el mismo horario
+
+La reserva de cita era «consultar y luego insertar», sin nada entre ambas
+operaciones. Dos pacientes pulsando el mismo horario a la vez pasaban los dos la
+comprobación y quedaban los dos agendados con el mismo profesional a la misma
+hora. Ocurría en los cuatro caminos que crean citas, y el de «entrega pendiente»
+las fijaba todas a las 09:00, de modo que el choque era sistemático.
+
+**Acción:** índice único parcial en base de datos sobre `(doctor_id, date, time)`,
+excluyendo las canceladas y no asistidas. Es parcial para que un horario liberado
+vuelva a ofrecerse. La migración sanea los duplicados que ya existan marcando como
+canceladas las posteriores —sin borrarlas— y avisa de cuáles son, para reprogramar
+a esos pacientes.
+
+## P1 — Correcciones de datos y acceso
+
+| # | Hallazgo | Acción |
+| :--- | :--- | :--- |
+| P1-15 | **La gráfica de tendencia mostraba meses duplicados y omitía otros.** Recorría los meses restando bloques de 30 días. En marzo de 2026 dibujaba diciembre dos veces y se saltaba febrero entero; en mayo repetía enero. El administrador decidía sobre una curva con un mes inventado y otro ausente. | Recorrido por meses reales. Prueba que recorre 36 meses consecutivos. |
+| P1-16 | **Las citas canceladas bloqueaban el horario para siempre.** Un paciente que no se presentaba inutilizaba ese cupo de forma permanente, en agendas donde cada consulta cuenta. El contador de cupos disponibles las incluía, así que además mostraba menos disponibilidad de la real. | Solo cuentan las citas que ocupan de verdad. |
+| P1-17 | **243 de 256 campos de formulario sin nombre accesible.** Un lector de pantalla los anunciaba como «campo de texto, en blanco»: quien tiene baja visión no podía saber si escribía la dosis o la cantidad. | `aria-label` en los 243, tomado del texto descriptivo real y no del ejemplo del marcador. |
+| P1-18 | **Emojis dentro de datos que se guardan en la base.** 21 literales con emoji iban a `Notification.title`, `Notification.message` y `Message.content`, que se cifran, salen en la exportación de historia clínica que reciben los auditores y se imprimen en la orden. En Android antiguo muchos renderizan como un cuadro vacío dentro de un dato clínico. | Retirados de todo literal de Python; prueba que impide su reintroducción. |
+| P1-19 | **Toda escritura dependía de JavaScript.** 61 formularios no llevaban el token CSRF en el HTML; lo inyectaba un script al cargar la página. Si ese script no se ejecuta —conexión intermitente, navegador antiguo—, cada envío devuelve un 400 y el usuario ve un formulario que aparentemente no hace nada. | Token en el HTML de los 61. La inyección queda como red de seguridad. |
+
+## P2 — Interfaz y cadena de suministro
+
+| # | Hallazgo | Acción |
+| :--- | :--- | :--- |
+| P2-12 | **Contraste por debajo del mínimo legal de accesibilidad.** 258 usos de `text-slate-400` sobre blanco dan 2.56:1; WCAG AA exige 4.5:1. Sobre pantalla barata y a pleno sol, ese texto no se lee. | Subido a `slate-600` (7.58:1) en texto; los iconos se dejan intactos. |
+| P2-13 | **188 fragmentos de texto por debajo de 12 px** (`text-[10px]`, `text-[9px]`), incluidos códigos de recogida y etiquetas de severidad de alergia. | Elevados al mínimo legible. |
+| P2-14 | **Recurso externo sin versión fijada ni verificación.** `lucide@latest` cargaba desde un CDN sin `integrity`: cualquier contenido que sirviera ese CDN se ejecutaba sobre páginas con historia clínica abierta. | Versión fijada y SRI en Lucide, Leaflet y Chart.js. Queda una excepción documentada: el script Play de Tailwind compila en el navegador y no admite SRI — el remedio es generar el CSS en el build. |
+| P2-15 | **Glassmorphism y `transition-all`** (13 y 64 usos) sobre el hardware de gama baja que el propio README declara como objetivo. `transition-all` anima también las propiedades que fuerzan recálculo de maquetación. | Retirado el desenfoque; transiciones acotadas a color. |
+| P2-16 | **`target="_blank"` sin `rel`** (8) e **imágenes sin `alt`** (4). Lo primero entrega `window.opener` al destino, que puede redirigir la pestaña original a una copia falsa del login. | Corregidos, con pruebas. |
+| P2-17 | **Petición rechazada en cada carga de página.** `pwa.js` pedía la agenda sin conexión —que es solo de pacientes— desde todos los roles, generando un 403 por página y llenando la consola de errores que ocultaban los reales. | La petición se hace solo cuando corresponde. |
+
+---
+
 ## Resumen
 
-| Prioridad | Hallazgos |
-| :--- | :--- |
-| P0 | 9 |
-| P1 | 14 |
-| P2 | 10 |
-| **Total** | **33** |
+| Prioridad | Primera pasada | Segunda pasada | Total |
+| :--- | ---: | ---: | ---: |
+| P0 | 9 | 2 | **11** |
+| P1 | 14 | 5 | **19** |
+| P2 | 11 | 6 | **17** |
+| **Total** | **34** | **13** | **47** |
+
+**Pruebas automatizadas:** 232 (0 antes de la auditoría).
+
+## Trabajo pendiente, con su motivo
+
+Tres puntos que no dependen del código y que ningún cambio mío puede sustituir:
+
+1. **Rotar las credenciales** expuestas en el `.env` versionado (`SECURITY.md`).
+   Hasta entonces, la historia clínica cifrada es descifrable por cualquiera que
+   haya tenido ese archivo.
+2. **Cargar los catálogos CIE-10 y CUPS oficiales.** Los incluidos son un arranque
+   mínimo; un catálogo incompleto rechaza códigos válidos al prescribir.
+3. **Revisión de `clinical_safety.py` por un químico farmacéutico.** El contenido
+   clínico es verificable, pero es una revisión inicial de atención primaria, no un
+   catálogo exhaustivo. El módulo lo declara y `manage.py check-knowledge-base`
+   informa de su antigüedad.
+
+Y uno técnico: **servir Tailwind desde un CSS generado en el build** en lugar del
+script Play, que no admite verificación de integridad y que la propia
+documentación de Tailwind desaconseja para producción.

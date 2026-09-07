@@ -222,3 +222,170 @@ def test_internal_error_shows_incident_code_not_trace(app, client, populated):
     assert '1098765432' not in body, 'no debe filtrarse el contenido de la excepcion'
     assert 'RuntimeError' not in body
     assert 'codigo' in body.lower(), 'debe ofrecerse un identificador de incidente'
+
+
+# =============================================================================
+# Robustez del HTML servido
+# =============================================================================
+
+class TestFormsWorkWithoutJavaScript:
+    """Los formularios no deben depender de JavaScript para el token CSRF.
+
+    La aplicacion lo inyectaba con un script al cargar la pagina. Eso deja toda
+    operacion de escritura supeditada a que ese script se ejecute: si el JS no
+    carga —conexion intermitente, navegador antiguo—, cada envio devuelve un 400
+    de CSRF y el usuario ve un formulario que aparentemente no hace nada.
+    """
+
+    def test_every_post_form_carries_its_token(self):
+        import glob
+        import os
+        import re
+
+        sin_token = []
+        for path in glob.glob('templates/*.html'):
+            src = open(path, encoding='utf-8').read()
+            for m in re.finditer(r'<form\b[^>]*method\s*=\s*["\']post["\'][^>]*>', src, re.I):
+                cierre = src.lower().find('</form>', m.end())
+                cuerpo = src[m.end():cierre if cierre != -1 else len(src)]
+                if '_csrf_token' not in cuerpo:
+                    linea = src[:m.start()].count('\n') + 1
+                    sin_token.append(f'{os.path.basename(path)}:{linea}')
+
+        assert not sin_token, (
+            'formularios POST que dependerian del JavaScript para funcionar: '
+            f'{sin_token}'
+        )
+
+    def test_rendered_login_form_has_token(self, client):
+        cuerpo = client.get('/login').get_data(as_text=True)
+        assert 'name="_csrf_token"' in cuerpo
+
+
+class TestAccessibleMarkup:
+
+    def test_form_fields_have_accessible_names(self):
+        """Un campo sin nombre se anuncia como "campo de texto, en blanco"."""
+        import glob
+        import os
+        import re
+
+        sin_nombre = []
+        for path in glob.glob('templates/*.html'):
+            src = open(path, encoding='utf-8').read()
+            etiquetados = set(re.findall(r'<label[^>]*\bfor="([^"]+)"', src))
+            for m in re.finditer(r'<(input|select|textarea)\b((?:[^<>"]|"[^"]*")*?)/?>',
+                                 src, re.I):
+                attrs = m.group(2)
+                if re.search(r'type="(hidden|submit|button)"', attrs, re.I):
+                    continue
+                ident = re.search(r'\bid="([^"]+)"', attrs)
+                if ident and ident.group(1) in etiquetados:
+                    continue
+                if 'aria-label' in attrs or 'aria-labelledby' in attrs:
+                    continue
+                nombre = re.search(r'name="([^"]+)"', attrs)
+                sin_nombre.append(
+                    f'{os.path.basename(path)}:{nombre.group(1) if nombre else "?"}'
+                )
+
+        assert not sin_nombre, f'campos sin nombre accesible: {sin_nombre}'
+
+    def test_no_text_below_minimum_size(self):
+        """Nada por debajo de 12px: se usa al sol, en pantallas baratas."""
+        import glob
+        import re
+
+        diminutos = []
+        for path in glob.glob('templates/*.html'):
+            src = open(path, encoding='utf-8').read()
+            for hallazgo in re.findall(r'text-\[(\d+)px\]', src):
+                if int(hallazgo) < 12:
+                    diminutos.append(f'{path}: {hallazgo}px')
+        assert not diminutos, f'texto por debajo del minimo legible: {diminutos}'
+
+    def test_no_insufficient_contrast_on_text(self):
+        """text-slate-400 sobre blanco da 2.56:1; AA exige 4.5:1."""
+        import glob
+        import re
+
+        malos = []
+        for path in glob.glob('templates/*.html'):
+            src = open(path, encoding='utf-8').read()
+            for etiqueta in re.findall(r'<[a-zA-Z][^>]*>', src):
+                if etiqueta.startswith('<i ') or 'data-lucide' in etiqueta:
+                    continue   # los iconos no transmiten texto
+                if re.search(r'(?<!placeholder:)text-(slate|gray)-[34]00', etiqueta):
+                    malos.append(f'{path}: {etiqueta[:70]}')
+        assert not malos, f'contraste por debajo de AA: {malos[:10]}'
+
+    def test_external_links_are_isolated(self):
+        """target=_blank sin rel deja window.opener a la pagina destino."""
+        import glob
+        import re
+
+        expuestos = []
+        for path in glob.glob('templates/*.html'):
+            src = open(path, encoding='utf-8').read()
+            for enlace in re.findall(r'<a\b[^>]*target="_blank"[^>]*>', src):
+                if 'noopener' not in enlace:
+                    expuestos.append(f'{path}: {enlace[:60]}')
+        assert not expuestos, f'enlaces sin noopener: {expuestos}'
+
+    def test_images_have_alt(self):
+        import glob
+        import re
+
+        sin_alt = []
+        for path in glob.glob('templates/*.html'):
+            for img in re.findall(r'<img\b[^>]*>', open(path, encoding='utf-8').read()):
+                if 'alt=' not in img:
+                    sin_alt.append(f'{path}: {img[:60]}')
+        assert not sin_alt, f'imagenes sin alt: {sin_alt}'
+
+
+class TestThirdPartyResources:
+    """Todo recurso externo debe ir con version fijada y verificacion de integridad.
+
+    Sin `integrity`, un CDN comprometido —o un intermediario— puede servir
+    JavaScript arbitrario que se ejecuta en paginas con historia clinica abierta.
+    `lucide@latest` era exactamente ese caso: version no fijada y sin verificar.
+    """
+
+    # Excepcion conocida y unica. El script Play de Tailwind compila el CSS en el
+    # navegador en tiempo de ejecucion, asi que su contenido no es estable y no
+    # admite SRI. Su propia documentacion desaconseja usarlo en produccion.
+    # Remedio pendiente: generar el CSS en el build y servirlo desde /static.
+    EXCEPCIONES = ('cdn.tailwindcss.com',)
+
+    def test_external_resources_are_pinned_and_verified(self):
+        import glob
+        import re
+
+        problemas = []
+        patron = re.compile(r'<(?:link|script)\b[^>]*?(?:src|href)="(https?://[^"]+)"[^>]*>', re.I)
+
+        for path in glob.glob('templates/*.html'):
+            src = open(path, encoding='utf-8').read()
+            for m in patron.finditer(src):
+                url, etiqueta = m.group(1), m.group(0)
+
+                # Las fuentes de Google se cargan como hoja de estilo sin JS.
+                if 'fonts.googleapis.com' in url or 'fonts.gstatic.com' in url:
+                    continue
+                if any(exc in url for exc in self.EXCEPCIONES):
+                    continue
+
+                if '@latest' in url or re.search(r'@\^|@~', url):
+                    problemas.append(f'{path}: version no fijada -> {url}')
+                if 'integrity=' not in etiqueta:
+                    problemas.append(f'{path}: sin SRI -> {url}')
+
+        assert not problemas, '\n'.join(problemas)
+
+    def test_no_new_unverifiable_cdn_is_added(self):
+        """La lista de excepciones no debe crecer sin una decision explicita."""
+        assert self.EXCEPCIONES == ('cdn.tailwindcss.com',), (
+            'se anadio un recurso externo que no puede verificarse; '
+            'documenta por que antes de ampliar la excepcion'
+        )

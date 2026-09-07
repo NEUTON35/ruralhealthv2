@@ -6,6 +6,8 @@ from werkzeug.security import check_password_hash
 
 from models import (
     ACCESS_ACTIVE,
+    APPOINTMENT_FREEING_STATUSES,
+    DataSubjectRequest,
     Appointment,
     Chat,
     Clinic,
@@ -228,27 +230,79 @@ def index():
                 flash(f'Poliza activada. Desbloqueo {unlocked_clinics} clinicas y {unlocked_doctors} medicos.')
 
         elif action == 'delete_account':
+            # Cierre de cuenta a peticion del titular.
+            #
+            # Antes esto borraba de verdad: chats, citas y calificaciones, y luego
+            # la fila del usuario. Dos problemas.
+            #
+            # Uno legal: los chats son historia clinica y hay deber de conservarla
+            # 15 anos (Resolucion 839 de 2017). El titular puede pedir la supresion,
+            # pero ese deber prevalece (Ley 1581, articulo 9).
+            #
+            # Y uno de honestidad: la pantalla decia "eliminada permanentemente",
+            # que es justo lo contrario de lo que el centro de privacidad de la
+            # misma aplicacion le explica al paciente. Ahora dice lo que ocurre.
             confirmation = request.form.get('confirm_text')
-            if confirmation != "ELIMINAR":
-                flash('Debes escribir ELIMINAR para confirmar la eliminación de tu cuenta.')
+            if confirmation != 'CERRAR':
+                flash('Escribe CERRAR para confirmar el cierre de tu cuenta.')
             else:
+                now = colombia_now()
                 user_id = current_user.id
+
+                current_user.is_active_account = False
+                current_user.deactivated_at = now
+                current_user.sensitive_data_consent_at = None
+                current_user.is_available = False
+
                 if current_user.role == 'doctor':
+                    # La disponibilidad se retira para que no aparezca en las
+                    # busquedas; los flujos y horarios dejan de ofrecerse.
                     DoctorSchedule.query.filter_by(doctor_id=user_id).delete()
                     QuestionFlow.query.filter_by(doctor_id=user_id).delete()
-                    Chat.query.filter_by(doctor_id=user_id).delete()
-                    Appointment.query.filter_by(doctor_id=user_id).delete()
-                    Rating.query.filter_by(doctor_id=user_id).delete()
                 elif current_user.role == 'patient':
                     Favorite.query.filter_by(patient_id=user_id).delete()
-                    Chat.query.filter_by(patient_id=user_id).delete()
-                    Appointment.query.filter_by(patient_id=user_id).delete()
-                    Rating.query.filter_by(patient_id=user_id).delete()
 
-                db.session.delete(current_user)
-                audit('account_deleted', user_id=user_id)
+                columna = Chat.doctor_id if current_user.role == 'doctor' else Chat.patient_id
+                for chat in Chat.query.filter(columna == user_id, Chat.status == 'open').all():
+                    chat.status = 'closed'
+                    chat.closed_by = 'cuenta_cerrada'
+
+                columna_cita = (Appointment.doctor_id if current_user.role == 'doctor'
+                                else Appointment.patient_id)
+                hoy = now.strftime('%Y-%m-%d')
+                for cita in Appointment.query.filter(
+                    columna_cita == user_id,
+                    Appointment.date >= hoy,
+                    Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
+                ).all():
+                    cita.status = 'cancelada'
+
+                # La solicitud queda registrada, que es lo que permite acreditar
+                # ante la autoridad que se atendio.
+                db.session.add(DataSubjectRequest(
+                    user_id=user_id,
+                    clinic_id=current_user.clinic_id,
+                    request_type='supresion',
+                    status='atendida',
+                    detail='Cierre de cuenta solicitado por el titular.',
+                    resolution_note=(
+                        'Cuenta desactivada y tratamientos no obligatorios detenidos. '
+                        'La historia clinica se conserva por el plazo legal de 15 anos '
+                        '(Resolucion 839 de 2017).'
+                    ),
+                    requested_at=now,
+                    resolved_at=now,
+                    requester_ip=request.remote_addr,
+                ))
+
+                audit('account_closed_by_owner', user_id=user_id)
                 db.session.commit()
-                flash('Tu cuenta ha sido eliminada permanentemente.')
+                flash(
+                    'Tu cuenta fue cerrada y ya no podras iniciar sesion. '
+                    'Tu historia clinica se conserva porque la ley obliga al '
+                    'prestador a guardarla 15 anos; nadie la usara para nuevas '
+                    'atenciones. Si necesitas una copia, pidela antes de cerrar.'
+                )
                 logout_user()
                 return redirect(url_for('auth.login'))
 

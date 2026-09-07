@@ -329,14 +329,14 @@ def reactivate(ticket_id):
     db.session.add(Notification(
         user_id=ticket.patient_id,
         clinic_id=current_user.clinic_id,
-        title='💊 Medicamentos listos para recoger',
+        title='Medicamentos listos para recoger',
         message=(f'Tu ticket {ticket.pickup_code} está listo en {pharmacy_name}. '
                  f'Fecha: {ticket.pickup_date} a las {ticket.pickup_time}.'),
         type='ticket_ready',
     ))
     audit('pickup_ticket_reactivated', details=f'ticket_id={ticket.id}')
     db.session.commit()
-    flash(f'✅ Ticket {ticket.pickup_code} reactivado. El paciente fue notificado.')
+    flash(f'Ticket {ticket.pickup_code} reactivado. El paciente fue notificado.')
     return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
 
 
