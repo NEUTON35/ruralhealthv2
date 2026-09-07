@@ -688,3 +688,149 @@ esos campos. Es trabajo de interfaz, no de mapeo, y depende de cómo el prestado
 quiera recolectar datos que son sensibles por sí mismos (la pertenencia étnica lo
 es). Se deja señalado en lugar de inventar valores por defecto: un dato étnico
 inventado en un registro nacional de salud es peor que un dato ausente.
+
+
+# Séptima pasada — 2026-09-07
+
+Barrida de cumplimiento por dominios normativos, en lugar de seguir hilos
+sueltos. Se revisó cada norma contra el código y se verificó cada cita en la
+fuente. Lo que sigue es el inventario, no las correcciones: salvo el cifrado,
+nada de esto está arreglado todavía.
+
+## P0 — Bloqueantes
+
+### P0-17 · El RIPS se genera en un formato derogado hace tres años
+
+`rips_service.py` produce archivos planos CT, AF, US y AC según la **Resolución
+3374 de 2000**.
+
+Esa resolución fue **derogada el 30 de junio de 2023** por la Resolución 1036 de
+2022. Lo vigente es la **Resolución 2275 de 2023**: el RIPS viaja en **JSON**,
+asociado a la factura electrónica de venta en salud, y se envía al validador del
+Ministerio a través de SISPRO para obtener el **CUV** (Código Único de
+Validación). El plazo máximo para operar bajo ese mecanismo fue el **1 de abril
+de 2024**.
+
+El módulo menciona la norma nueva en su documentación, pero la trata como un
+requisito adicional que queda fuera de alcance. Eso subestima el problema: el
+formato viejo no se quedó corto, es que **ya no lo recibe nadie**.
+
+Depende además del pendiente de facturación electrónica: sin factura validada por
+la DIAN no hay RIPS que radicar, porque el JSON se valida contra ella.
+
+### P0-18 · No existe notificación a SIVIGILA
+
+Cero referencias en todo el código a SIVIGILA, notificación obligatoria o eventos
+de interés en salud pública.
+
+El **Decreto 3518 de 2006** obliga a toda institución o profesional que genere
+información de interés en salud pública a notificar los eventos de reporte
+obligatorio, sin distinguir entre público y privado ni por tamaño, y prevé
+sanciones. El prestador actúa como Unidad Primaria Generadora de Datos (UPGD).
+
+En una plataforma de salud rural esto no es hipotético: dengue, malaria,
+tuberculosis, mortalidad materna, desnutrición aguda y los eventos de violencia
+son precisamente lo que aparece en ese territorio y lo que hay que notificar.
+
+## P1 — Correcciones necesarias
+
+### P1-16 · El RIPS fabrica la causa externa y la finalidad de la consulta
+
+`rips_service.py` se escribió expresamente para no inventar datos. Su propia
+documentación dice: «El generador **no inventa nada**». Pero en el registro AC
+quema valores fijos para todas las atenciones:
+
+| Campo | Valor fijo | Significado |
+| :--- | :--- | :--- |
+| finalidad de la consulta | `10` | atención general |
+| causa externa | `13` | enfermedad general |
+| tipo de diagnóstico principal | `1` | impresión diagnóstica |
+| valor de la consulta | `0` | |
+
+La causa externa es el que importa. No es un detalle administrativo: distingue
+enfermedad general de **accidente de trabajo** (que va a la ARL), **accidente de
+tránsito** (que va al SOAT) y **lesión por agresión**.
+
+Reportar toda atención como enfermedad general traslada el costo al sistema
+equivocado y, sobre todo, **borra del reporte los casos de agresión**, que son los
+que activan rutas de protección. Es el mismo defecto que el módulo fue escrito
+para corregir, sobreviviendo en cuatro columnas.
+
+### P1-17 · La historia clínica no registra la modalidad de atención
+
+`care_modality` existe en `MedicalOrder` pero no en `MedicalHistory`. No queda
+constancia de qué atenciones se prestaron por telemedicina, que es lo que exige la
+**Resolución 2654 de 2019**.
+
+Afecta también a la interoperabilidad: el `Encounter` del RDA se construye siempre
+como ambulatorio presencial, porque no hay de dónde sacar el dato.
+
+### P1-18 · No hay canal de PQRS del servicio de salud
+
+Existe `DataSubjectRequest`, que atiende habeas data (Ley 1581). No existe nada
+para peticiones, quejas y reclamos sobre **la prestación del servicio**.
+
+Los documentos legales ya prometen por escrito un canal de PQRS y una respuesta
+dentro de los quince días hábiles. Prometer un plazo sin tener el sistema que lo
+sostiene es peor que no prometerlo: queda la constancia del incumplimiento.
+
+### P1-19 · No hay farmacovigilancia
+
+La **Resolución 1403 de 2007** obliga al servicio farmacéutico a tener un programa
+de farmacovigilancia y a reportar las reacciones adversas a medicamentos al
+INVIMA.
+
+`PatientAllergy` registra la alergia **de un paciente** para prevenir una
+prescripción, que es otra cosa: no genera reporte, no tiene formato ni
+destinatario, y no distingue una reacción adversa nueva de un antecedente
+conocido. El sistema detecta el riesgo antes de prescribir y no hace nada con el
+evento cuando ocurre.
+
+### P1-20 · La cita no registra cuándo se solicitó
+
+`Appointment` guarda la fecha y la hora **asignadas**, pero no la fecha de la
+**solicitud**. Con eso es imposible calcular la oportunidad, que es el indicador
+con el que se mide el acceso.
+
+La **Resolución 1552 de 2013** exige que el sistema de información de citas
+registre la fecha en que el usuario solicitó la cita, la fecha solicitada, la
+asignada y la IPS con su código del registro especial de prestadores. La norma se
+dirige a las EPS, pero el dato lo genera el prestador y sin él no se puede
+producir.
+
+## P2 — Menor
+
+### P2-15 · No hay forma de corregir una historia clínica
+
+No existe ruta de edición ni de borrado de `MedicalHistory`, lo cual es correcto:
+la historia clínica no se altera. Pero tampoco existe el mecanismo que la norma sí
+prevé, que es la **adenda**: dejar constancia de la corrección sin borrar lo
+anterior.
+
+Hoy, un profesional que consigna un diagnóstico equivocado no tiene forma de
+enmendarlo. Y ese diagnóstico ya se remitió al IHCE.
+
+El propio perfil del Ministerio contempla el caso: `Composition.status` admite
+`amended` y `entered-in-error`, y el perfil fija `Composition.relatesTo.code` en
+`appends`. La corrección está prevista en la norma y en el estándar; falta en la
+aplicación.
+
+## Dominios revisados sin hallazgos
+
+- **Inmutabilidad de la historia clínica.** No hay ruta de edición ni de borrado.
+  Se escribe una vez y queda.
+- **Prescripción** (Resolución 1403 de 2007). Corregido en la tercera pasada.
+- **Rutas sin protección.** Las trece rutas públicas son las que deben serlo:
+  acceso, registro, documentos legales, recuperación de contraseña y emisión de
+  token.
+- **Secretos en registros, SQL construido por concatenación, `eval`, `exec`,
+  `pickle`, `debug=True`.** Cero hallazgos.
+- **Orígenes externos.** La política de seguridad de contenido solo autoriza
+  Jitsi y OpenStreetMap, ambos por naturaleza del servicio.
+
+## Estado de las prioridades
+
+El orden de ataque no es el orden de esta lista. Lo que sigue mandando es la
+rotación de las credenciales expuestas: mientras la semilla de cifrado siga
+siendo pública, la historia clínica es descifrable hoy por quien tuviera ese
+archivo, sin necesidad de ninguna de estas normas.
