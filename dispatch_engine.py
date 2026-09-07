@@ -283,7 +283,7 @@ def confirm_delivery(
             _notify(
                 ticket.patient_id, clinic_id,
                 'Entrega completada',
-                f'Tu ticket {ticket.pickup_code} fue entregado en su totalidad.',
+                f'Su ticket {ticket.pickup_code} fue entregado en su totalidad.',
                 'delivery_confirmed',
             )
         else:
@@ -393,7 +393,7 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
                 clinic_id=clinic_id,
                 title='Medicamentos disponibles para recoger',
                 message=(
-                    f'Tu ticket {ticket.pickup_code} está listo. '
+                    f'Su ticket {ticket.pickup_code} está listo. '
                     f'Los medicamentos ya están disponibles en {pharmacy_name}. '
                     f'{f"Dirección: {pharmacy_address}. " if pharmacy_address else ""}'
                     f'Fecha sugerida de recogida: {ticket.pickup_date} a las {ticket.pickup_time}. '

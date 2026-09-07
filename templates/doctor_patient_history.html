@@ -92,7 +92,7 @@
                               class="mt-2 space-y-2">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <p class="text-xs text-slate-500 leading-relaxed">
-                                No se elimina: queda en el historial con tu justificación.
+                                No se elimina: queda en el historial con su justificación.
                                 Una alergia mal atribuida también hace daño, porque cierra
                                 opciones terapéuticas sin fundamento.
                             </p>
@@ -110,9 +110,9 @@
             {% else %}
                 <div class="bg-slate-100 border border-slate-300 rounded-2xl p-4 text-sm text-slate-700 leading-relaxed">
                     <b class="text-slate-900">Sin alergias registradas.</b>
-                    Eso no significa que el paciente no tenga: significa que no lo sabemos.
-                    Pregúntale y registra lo que responda, incluso si la respuesta es
-                    «ninguna conocida».
+                    La verificación de seguridad solo puede advertir sobre lo que está
+                    en la historia. Pregunte al paciente y registre su respuesta,
+                    incluso cuando sea «ninguna conocida».
                 </div>
             {% endif %}
 

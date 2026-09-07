@@ -82,7 +82,7 @@
                             var warn = document.createElement('div');
                             warn.id = 'no-show-warn';
                             warn.className = 'bg-critical-border text-red-900 p-2 rounded-lg mt-2 text-sm font-bold';
-                            warn.innerHTML = "⚠️ Quedan pocos segundos para escribir o se marcará como No Asistida.";
+                            warn.textContent = "Quedan pocos segundos para escribir o la cita se marcara como no asistida.";
                             countdownDiv.appendChild(warn);
                         }
                     }
@@ -135,9 +135,9 @@
                     <span class="text-xs">{{ msg.timestamp|colombia_time }}</span>
                     {% if msg.sender_id == current_user.id %}
                         {% if msg.is_read %}
-                            <span class="text-blue-200 text-xs font-bold">✓✓</span>
+                            <i data-lucide="check-check" class="w-3.5 h-3.5 text-blue-200" aria-label="Leido"></i>
                         {% else %}
-                            <span class="text-xs font-bold">✓</span>
+                            <i data-lucide="check" class="w-3.5 h-3.5" aria-label="Enviado"></i>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -175,16 +175,16 @@
                     <form action="/patient/rate_chat/{{ chat.id }}" method="POST" class="space-y-3 text-left p-4 bg-caution-subtle border-l-4 border-caution rounded-r-lg">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <h3 class="font-bold text-lg text-yellow-800 flex items-center gap-2">
-                            <i data-lucide="star" class="w-5 h-5"></i> Califica tu consulta
+                            <i data-lucide="star" class="w-5 h-5"></i> Califique su consulta
                         </h3>
                         <div class="flex gap-2 items-center">
                             <label class="font-bold text-sm">Estrellas:</label>
                             <select name="stars" class="border-2 p-2 rounded-lg bg-white focus:outline-none" aria-label="Calificacion">
-                                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                                <option value="4">⭐⭐⭐⭐ (4)</option>
-                                <option value="3">⭐⭐⭐ (3)</option>
-                                <option value="2">⭐⭐ (2)</option>
-                                <option value="1">⭐ (1)</option>
+                                <option value="5">5 - Excelente</option>
+                                <option value="4">4 - Buena</option>
+                                <option value="3">3 - Aceptable</option>
+                                <option value="2">2 - Deficiente</option>
+                                <option value="1">1 - Muy deficiente</option>
                             </select>
                         </div>
                         <div class="flex flex-wrap gap-2">
@@ -219,7 +219,7 @@
                 <p class="font-bold flex items-center gap-2">
                     <i data-lucide="user-check" class="w-5 h-5"></i> Doctor en consulta
                 </p>
-                <p class="text-xs">El doctor está atendiendo a otro paciente. Tu chat se reanudará pronto.</p>
+                <p class="text-xs">El profesional está atendiendo a otro paciente. Su conversación se reanudará en breve.</p>
             </div>
 
         {% elif is_read_only %}
@@ -227,7 +227,7 @@
                 <p class="font-bold flex items-center gap-2">
                     <i data-lucide="eye" class="w-5 h-5"></i> Modo Solo Lectura
                 </p>
-                <p class="text-xs">El doctor está revisando tu historial. No puedes enviar mensajes por ahora.</p>
+                <p class="text-xs">El profesional está revisando su historia clínica. Por ahora no puede enviar mensajes.</p>
             </div>
 
         {% elif can_send %}

@@ -123,7 +123,7 @@ def has_sensitive_data_consent():
 
 def require_sensitive_data_consent():
     if not has_sensitive_data_consent():
-        flash('Antes de iniciar o continuar una consulta debes autorizar el tratamiento de datos sensibles de salud.')
+        flash('Antes de iniciar o continuar una consulta debe autorizar el tratamiento de datos sensibles de salud.')
         return redirect(url_for('patient.consent'))
     return None
 
@@ -133,7 +133,7 @@ def require_sensitive_data_consent():
 def consent():
     if request.method == 'POST':
         if request.form.get('accept_sensitive_data') != 'on':
-            flash('Debes marcar la autorización explícita para usar chat, citas y seguimiento clínico.')
+            flash('Debe marcar la autorización explícita para usar chat, citas y seguimiento clínico.')
             return redirect(url_for('patient.consent'))
             
         now = colombia_now()
@@ -159,7 +159,7 @@ def consent():
         
         audit('sensitive_data_consent_accepted', details=f"hash={digital_signature[:8]}...; ip={ip_addr}")
         db.session.commit()
-        flash('Autorización registrada con firma digital. Ya puedes iniciar tu consulta.')
+        flash('Autorización registrada con firma digital. Ya puede iniciar su consulta.')
         return redirect(url_for('patient.dashboard'))
     from app import legal_context
     return render_template('legal.html', consent_required=True, **legal_context('privacy'))
@@ -339,9 +339,9 @@ def notify_arriving(ticket_id):
     if notified_count > 0:
         audit('patient_notified_arriving', details=f'ticket_id={ticket.id}; notified={notified_count}')
         db.session.commit()
-        flash('¡Notificación enviada! El personal de la farmacia fue alertado de tu llegada.')
+        flash('Notificacion enviada. El personal de la farmacia fue avisado de su llegada.')
     else:
-        flash('Ticket válido. Por favor dirígete a la farmacia con tu código.')
+        flash('Ticket valido. Presentese en la farmacia con su codigo.')
     return redirect(url_for('patient.dashboard'))
 
 
@@ -382,7 +382,7 @@ def offline_agenda():
 @role_required('patient')
 def update_location():
     if request.form.get('accept_location') != 'on':
-        flash('Debes autorizar el uso de ubicacion para guardar coordenadas.')
+        flash('Debe autorizar el uso de ubicacion para guardar coordenadas.')
         return redirect(request.referrer or url_for('patient.dashboard'))
     current_user.address = bleach.clean((request.form.get('address') or '').strip()[:220]) or None
     current_user.latitude = request.form.get('latitude', type=float)
@@ -542,7 +542,7 @@ def chat(chat_id):
                         flash('Cita agendada desde el chat.')
                     except IntegrityError:
                         db.session.rollback()
-                        flash('Esa hora acaba de ser tomada. Elige otra.')
+                        flash('Esa hora acaba de ser tomada. Seleccione otra.')
                         return redirect(url_for('patient.chat', chat_id=chat_obj.id))
 
         # Acción: Respuesta a Flujo (Botones)
@@ -646,7 +646,7 @@ def doctor_payment(doctor_id):
         plan_type = request.form.get('plan_type')
         amount = price_for_plan(tariff, plan_type)
         if amount is None:
-            flash('Selecciona un plan valido.')
+            flash('Seleccione un plan valido.')
             return redirect(url_for('patient.doctor_payment', doctor_id=doctor.id))
         proof = request.files.get('proof')
         if not proof or not proof.filename:
@@ -727,7 +727,7 @@ def start_chat(doctor_id):
         if doctor.is_autonomous:
             flash('Este medico independiente requiere pago o poliza activa antes de iniciar consulta.')
             return redirect(url_for('patient.doctor_payment', doctor_id=doctor.id))
-        flash('Necesitas desbloquear esta clinica con un codigo activo.')
+        flash('Para acceder a esta clinica se requiere un codigo de acceso activo.')
         return redirect(url_for('settings.index'))
     chat_clinic_id = doctor.clinic_id if doctor.is_autonomous else current_user.clinic_id
     existing_chat = Chat.query.filter_by(patient_id=current_user.id, clinic_id=chat_clinic_id, doctor_id=doctor_id, status='open').execution_options(include_all_clinics=True).first()
@@ -760,7 +760,7 @@ def close_chat(chat_id):
 def rate_chat(chat_id):
     chat_obj = Chat.query.filter_by(id=chat_id).execution_options(include_all_clinics=True).first_or_404()
     if chat_obj.patient_id != current_user.id or chat_obj.status != 'closed':
-        flash('Solo puedes calificar consultas cerradas.')
+        flash('Solo pueden calificarse las consultas cerradas.')
         return redirect(url_for('patient.dashboard'))
 
     existing_rating = Rating.query.filter_by(chat_id=chat_obj.id, patient_id=current_user.id).first()
@@ -791,7 +791,7 @@ def rate_chat(chat_id):
     doctor.rating = round(avg, 1)
     
     db.session.commit()
-    flash('¡Gracias por tu reseña!')
+    flash('Su calificacion quedo registrada. Gracias.')
     return redirect(url_for('patient.chat', chat_id=chat_obj.id))
 
 @patient_bp.route('/rate_doctor/<int:doctor_id>', methods=['POST'])
@@ -800,7 +800,7 @@ def rate_chat(chat_id):
 def rate_doctor(doctor_id):
     closed_chat = Chat.query.filter_by(patient_id=current_user.id, doctor_id=doctor_id, status='closed').execution_options(include_all_clinics=True).order_by(Chat.id.desc()).first()
     if not closed_chat:
-        flash('No tienes una consulta cerrada para calificar con este doctor.')
+        flash('No hay una consulta cerrada con este profesional para calificar.')
         return redirect(url_for('patient.dashboard'))
     return rate_chat(closed_chat.id)
 
@@ -818,9 +818,9 @@ def book_appointment(doctor_id):
         return redirect(url_for('patient.dashboard'))
     if not patient_has_doctor_access(current_user, doctor):
         if doctor.is_autonomous:
-            flash('Para agendar con este medico independiente primero debes tener pago aprobado o poliza activa.')
+            flash('Para agendar con este medico independiente se requiere pago aprobado o poliza activa.')
             return redirect(url_for('patient.doctor_payment', doctor_id=doctor.id))
-        flash('Esta clinica esta bloqueada para tu cuenta. Redime un codigo en configuracion.')
+        flash('Esta clinica no esta habilitada para su cuenta. Redima un codigo en Configuracion.')
         return redirect(url_for('settings.index'))
     appointment_clinic_id = doctor.clinic_id if doctor.is_autonomous else current_user.clinic_id
     c = calendar.Calendar(firstweekday=0)
@@ -847,7 +847,7 @@ def book_appointment(doctor_id):
         try:
             appt_datetime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
             if appt_datetime < colombia_now() - timedelta(minutes=5):  # 5 min de margen
-                flash('No puedes agendar citas en el pasado.')
+                flash('No es posible agendar citas en una fecha pasada.')
                 return redirect(request.referrer or url_for('patient.dashboard'))
         except ValueError:
             flash('Formato de fecha u hora inválido.')
@@ -864,7 +864,7 @@ def book_appointment(doctor_id):
             Appointment.status.notin_(APPOINTMENT_FREEING_STATUSES),
         ).execution_options(include_all_clinics=True).first()
         if taken:
-            flash('Esa hora ya esta ocupada. Elige otra.')
+            flash('Esa hora ya esta ocupada. Seleccione otra.')
             return redirect(url_for('patient.book_appointment', doctor_id=doctor_id, date=date))
 
         appt = Appointment(clinic_id=appointment_clinic_id, patient_id=current_user.id,
@@ -876,7 +876,7 @@ def book_appointment(doctor_id):
             # Otro paciente tomo el horario en el intervalo entre la consulta y
             # la insercion. Sin esto, ambos quedarian citados a la misma hora.
             db.session.rollback()
-            flash('Esa hora acaba de ser tomada por otro paciente. Elige otra.')
+            flash('Esa hora acaba de ser tomada por otro paciente. Seleccione otra.')
             return redirect(url_for('patient.book_appointment', doctor_id=doctor_id, date=date))
 
         audit('appointment_booked', details=f'doctor_id={doctor_id}; fecha={date} {time}')
@@ -940,7 +940,7 @@ def join_appointment(appt_id):
     
     # Seguridad: Verificar que es su cita y que esté pendiente
     if appt.patient_id != current_user.id or appt.status != 'pending':
-        flash('No puedes unirte a esta cita.')
+        flash('No es posible unirse a esta cita.')
         return redirect(url_for('patient.dashboard'))
         
     # --- LÓGICA DE CONTROL DE TIEMPO ---
@@ -954,7 +954,7 @@ def join_appointment(appt_id):
 
     # 1. Bloquear entrada ANTES de la hora exacta
     if now < appt_datetime:
-        flash(f'Aún no es la hora de tu cita. Podrás unirte exactamente a las {appt.time}.')
+        flash(f'Aún no es la hora de su cita. Podra unirse a partir de las {appt.time}.')
         return redirect(url_for('patient.dashboard'))
         
     # 2. Tolerancia máxima de 2 minutos después de la hora

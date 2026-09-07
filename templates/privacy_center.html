@@ -8,8 +8,8 @@
             Mis datos personales
         </h1>
         <p class="text-slate-500 mt-2 font-medium leading-relaxed">
-            Aquí puedes ver qué información tenemos sobre ti, descargar una copia
-            y ejercer los derechos que te reconoce la Ley 1581 de 2012.
+            Consulte qué información se tiene registrada sobre usted, obtenga una
+            copia y ejerza los derechos que le reconoce la Ley 1581 de 2012.
         </p>
     </header>
 
@@ -17,7 +17,7 @@
     <section class="bg-white rounded-2xl border border-slate-200 p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="database" class="w-5 h-5 text-slate-500"></i>
-            Qué información tenemos sobre ti
+            Qué información tenemos sobre usted
         </h2>
         <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {% for label, count in [
@@ -43,13 +43,13 @@
             Descargar una copia
         </h2>
         <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-            Recibirás un archivo comprimido con todos tus datos en formato de hoja
-            de cálculo: tu perfil, citas, consultas, historia clínica, órdenes,
-            alergias, entregas de medicamentos y los consentimientos que otorgaste.
+            Recibirá un archivo comprimido con su información en formato de hoja
+            de cálculo: perfil, citas, consultas, historia clínica, órdenes médicas,
+            alergias, entregas de medicamentos y consentimientos otorgados.
         </p>
         <div class="bg-caution-subtle border border-caution-border rounded-xl p-3 mb-4 text-sm text-amber-900">
-            <b>Contiene información de salud.</b> Guárdalo en un lugar seguro y ten
-            cuidado con quién lo compartes.
+            El archivo contiene información de salud. Consérvelo en un lugar seguro
+            y tenga precaución al compartirlo.
         </div>
         <form method="POST" action="{{ url_for('privacy.export_my_data') }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -84,7 +84,7 @@
                     <tr>
                         <td class="py-2 text-slate-600">{{ consent.timestamp | colombia_date }}</td>
                         <td class="py-2 text-slate-800 font-medium">{{ consent.consent_type }}</td>
-                        <td class="py-2 text-slate-500 font-mono text-xs">{{ consent.document_version or '—' }}</td>
+                        <td class="py-2 text-slate-500 font-mono text-xs">{{ consent.document_version or 'Sin versión' }}</td>
                         <td class="py-2">
                             {% if consent.granted and not consent.revoked_at %}
                             <span class="text-emerald-700 bg-positive-subtle px-2 py-0.5 rounded-full text-xs font-bold">Vigente</span>
@@ -99,14 +99,14 @@
         </div>
 
         <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-slate-100"
-              onsubmit="return confirm('Al revocar la autorización no podrás usar el chat clínico ni agendar consultas hasta que la otorgues de nuevo. ¿Continuar?');">
+              onsubmit="return confirm('Al revocar la autorización no podrá usar el chat clínico ni agendar consultas hasta otorgarla de nuevo. ¿Continuar?');">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="consent_type" value="sensitive_data">
             <p class="text-sm text-slate-600 mb-3 leading-relaxed">
-                Puedes revocar en cualquier momento la autorización para tratar tus
-                datos de salud. Al hacerlo se cierran las funciones clínicas. Los
-                registros ya creados se conservan porque la ley obliga al prestador
-                a guardarlos.
+                La autorización para tratar datos de salud puede revocarse en
+                cualquier momento. La revocatoria suspende las funcionalidades
+                clínicas. Los registros ya creados se conservan por el término que
+                la ley impone al prestador.
             </p>
             <button type="submit"
                 class="text-rose-600 border-2 border-critical-border px-5 py-2.5 rounded-xl font-bold hover:bg-critical-subtle transition-colors inline-flex items-center gap-2">
@@ -132,11 +132,11 @@
 
         <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-sm text-slate-700 leading-relaxed">
             <b class="text-slate-900">Sobre la eliminación de la historia clínica.</b>
-            No podemos borrarla aunque la solicites: la Resolución 839 de 2017 obliga
-            al prestador a conservarla un mínimo de 15 años, y ese deber legal está
-            por encima de la solicitud de supresión. Lo que sí podemos hacer es
-            desactivar tu cuenta y dejar de usar tus datos para cualquier fin que no
-            sea obligatorio.
+            La historia clínica no puede suprimirse a solicitud del titular. La
+            Resolución 839 de 2017 obliga al prestador a conservarla por un término
+            mínimo de quince años, y ese deber legal prevalece sobre la solicitud de
+            supresión. Sí procede la desactivación de la cuenta y el cese de los
+            tratamientos que no obedezcan a una obligación legal.
         </div>
 
         <form method="POST" action="{{ url_for('privacy.create_request') }}" class="space-y-4">
@@ -154,7 +154,7 @@
             </div>
 
             <div>
-                <label for="detail" class="text-sm font-bold text-slate-700">Describe tu solicitud</label>
+                <label for="detail" class="text-sm font-bold text-slate-700">Describa su solicitud</label>
                 <textarea id="detail" name="detail" rows="4" required minlength="10" maxlength="2000"
                     placeholder="Por ejemplo: mi número de teléfono está mal escrito, el correcto es..."
                     class="w-full mt-1 px-4 py-3 border-2 border-slate-100 rounded-xl focus:border-primary outline-none resize-y"></textarea>

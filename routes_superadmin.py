@@ -246,7 +246,7 @@ def dashboard():
 
         elif clinic and action == 'delete_clinic':
             if User.query.filter_by(clinic_id=clinic.id, role='super').first():
-                flash('No puedes archivar la clinica que contiene usuarios superadmin.')
+                flash('No es posible archivar la clinica que contiene usuarios superadmin.')
                 return redirect(url_for('superadmin.dashboard'))
             clinic_name = clinic.name
             resumen = _archive_clinic(clinic)
@@ -339,7 +339,7 @@ def dashboard():
             discount_percent = min(max(request.form.get('discount_percent', type=float) or 0.0, 0.0), 100.0)
 
             if not policy_code or not consent_codes:
-                flash('Ingresa codigo de poliza y al menos un codigo de consentimiento.')
+                flash('Ingrese el codigo de poliza y al menos un codigo de consentimiento.')
             else:
                 policy = Policy.query.filter_by(code=policy_code).first()
                 if not policy:

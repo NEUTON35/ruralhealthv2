@@ -133,19 +133,19 @@ def describe_readiness(profile):
         if profile.numbering_expired():
             faltan.append(
                 f'La resolucion {profile.resolution_number} vencio el '
-                f'{profile.resolution_valid_until}. Solicita una nueva ante la DIAN.'
+                f'{profile.resolution_valid_until}. Debe solicitarse una nueva ante la DIAN.'
             )
         if profile.numbering_exhausted():
             faltan.append(
                 f'El rango autorizado ({profile.range_from}-{profile.range_to}) '
-                'se agoto. Solicita un rango nuevo ante la DIAN.'
+                'se agoto. Debe solicitarse un rango nuevo ante la DIAN.'
             )
         elif profile.range_to and profile.last_number:
             restantes = profile.range_to - profile.last_number
             if restantes <= 50:
                 faltan.append(
                     f'Quedan {restantes} numeros en el rango autorizado. '
-                    'Solicita uno nuevo antes de agotarlo.'
+                    'Conviene solicitar uno nuevo antes de agotarlo.'
                 )
     if not profile.provider_configured:
         faltan.append(
@@ -194,7 +194,7 @@ def _next_consecutive(profile):
     if resultado.rowcount != 1:
         raise NumberingExhausted(
             f'El rango autorizado ({profile.range_from}-{profile.range_to}) se agoto. '
-            'Solicita un rango nuevo ante la DIAN antes de seguir facturando.'
+            'Debe solicitarse un rango nuevo ante la DIAN antes de seguir facturando.'
         )
 
     db.session.expire(profile)

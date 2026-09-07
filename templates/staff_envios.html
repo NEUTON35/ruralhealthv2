@@ -104,7 +104,7 @@
                 <i data-lucide="{{ cfg[1] }}" class="w-3 h-3"></i> {{ cfg[2] }}
               </span>
               {% if shipment.expected_date <= today_str and shipment.status == 'en_camino' %}
-              <span class="bg-caution-subtle text-amber-700 border border-caution-border px-2 py-0.5 rounded-full text-xs font-bold">📅 Hoy / Vencido</span>
+              <span class="bg-caution-subtle text-amber-700 border border-caution-border px-2 py-0.5 rounded-full text-xs font-bold">Hoy o vencido</span>
               {% endif %}
             </div>
             <p class="text-xs text-slate-500">
@@ -166,7 +166,7 @@ function addMedRow() {
     <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Nombre del medicamento">
     <div class="flex gap-1">
       <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="flex-1 border-2 border-slate-100 p-2.5 rounded-xl focus:border-blue-500 focus:outline-none text-sm" aria-label="Cant.">
-      <button type="button" onclick="this.closest('.med-row').remove()" class="px-2 text-red-400 hover:text-red-600 transition">✕</button>
+      <button type="button" onclick="this.closest('.med-row').remove()" class="px-2 text-red-400 hover:text-red-600 transition" aria-label="Quitar medicamento">Quitar</button>
     </div>
   `;
   container.appendChild(div);

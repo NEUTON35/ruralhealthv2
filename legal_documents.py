@@ -76,191 +76,230 @@ class LegalDocument:
 TERMS = LegalDocument(
     key='terms',
     title='Términos y Condiciones de Uso',
-    version='2.0',
+    version='3.0',
     effective_date=date(2026, 9, 6),
     summary=(
-        'Reglas de uso de la plataforma, alcance del servicio, responsabilidades '
-        'de cada parte y límites de la telemedicina.'
+        'Condiciones que rigen el acceso y uso de la plataforma, alcance del '
+        'servicio, obligaciones de las partes y régimen de responsabilidad.'
     ),
     legal_basis=(
-        'Ley 1751 de 2015 (Estatutaria de Salud)',
-        'Resolución 2654 de 2019 (Telesalud y telemedicina)',
-        'Ley 1480 de 2011 (Estatuto del Consumidor)',
-        'Ley 527 de 1999 (Comercio electrónico y firmas digitales)',
+        'Ley 1751 de 2015, estatutaria del derecho fundamental a la salud',
+        'Resolución 2654 de 2019, telesalud y telemedicina',
+        'Ley 1480 de 2011, Estatuto del Consumidor',
+        'Ley 527 de 1999, comercio electrónico y mensajes de datos',
     ),
     sections=[
-        ('1. Quiénes somos', """
-RuralHealth Connect es una plataforma de apoyo a la prestación de servicios de
-salud, operada por [[RAZON_SOCIAL_OPERADOR]], identificada con NIT
-[[NIT_OPERADOR]], con domicilio en [[DOMICILIO_OPERADOR]].
+        ('Cláusula 1. Identificación del operador', """
+La plataforma RuralHealth Connect es operada por [[RAZON_SOCIAL_OPERADOR]],
+identificada con NIT [[NIT_OPERADOR]] y domicilio principal en
+[[DOMICILIO_OPERADOR]], en adelante EL OPERADOR.
 
-La plataforma es una herramienta. **No es un prestador de servicios de salud.**
-Los servicios asistenciales los prestan las instituciones y los profesionales
-inscritos, cada uno bajo su propia habilitación en el Registro Especial de
-Prestadores de Servicios de Salud (REPS) y bajo su propia responsabilidad
-profesional.
+EL OPERADOR no presta servicios de salud. Los servicios asistenciales son
+prestados por las instituciones prestadoras de servicios de salud y por los
+profesionales inscritos en la plataforma, cada uno bajo su propia habilitación
+en el Registro Especial de Prestadores de Servicios de Salud y bajo su propia
+responsabilidad profesional.
 """),
-        ('2. Qué hace y qué no hace la plataforma', """
-**Hace:** agendar citas, sostener consultas por mensajería y videollamada,
-registrar la historia clínica, emitir órdenes médicas, coordinar la entrega de
-medicamentos y generar los reportes que exige la normativa.
+        ('Cláusula 2. Definiciones', """
+Para efectos del presente documento se entiende por:
 
-**No hace:** diagnosticar, tratar ni decidir nada por el profesional. Toda
-decisión clínica —incluido el uso que se dé a las alertas de seguridad que el
-sistema muestra— es del profesional tratante y está bajo su exclusiva
-responsabilidad.
-
-Las verificaciones automáticas de alergias e interacciones son **apoyo a la
-decisión**. Que no aparezca una alerta no significa que la prescripción sea
-segura: significa que no se detectó ninguno de los patrones que el sistema
-conoce.
+1.  PLATAFORMA: el conjunto de aplicaciones y servicios informáticos operados por
+    EL OPERADOR bajo la denominación RuralHealth Connect.
+2.  USUARIO: toda persona natural que accede a la plataforma con credenciales
+    propias, en cualquiera de los perfiles habilitados.
+3.  PACIENTE: el usuario que recibe o solicita atención en salud.
+4.  PRESTADOR: la institución o el profesional independiente que presta el
+    servicio de salud a través de la plataforma.
+5.  TELEMEDICINA: la prestación de servicios de salud a distancia en los
+    componentes de promoción, prevención, diagnóstico, tratamiento y
+    rehabilitación, conforme a la Resolución 2654 de 2019.
 """),
-        ('3. La plataforma no atiende urgencias', """
-**Esta plataforma no sirve para emergencias vitales.** No hay atención
-permanente ni tiempo de respuesta garantizado.
+        ('Cláusula 3. Objeto y alcance del servicio', """
+La plataforma facilita el agendamiento de citas, la comunicación asincrónica y
+sincrónica entre paciente y profesional, el registro de la historia clínica, la
+emisión de órdenes médicas, la coordinación de la entrega de medicamentos y la
+generación de los reportes exigidos por la normativa vigente.
 
-Ante dolor en el pecho, dificultad para respirar, pérdida de conciencia,
-sangrado que no cede, signos de accidente cerebrovascular, intoxicación o
-cualquier situación que ponga en riesgo la vida, acude de inmediato al servicio
-de urgencias más cercano o llama a la línea 123.
+La plataforma no diagnostica, no prescribe ni sustituye el criterio del
+profesional tratante. Toda decisión clínica corresponde de manera exclusiva al
+profesional de la salud, quien la adopta bajo su propia responsabilidad.
 
-No esperes respuesta por la plataforma en una urgencia.
+Las verificaciones automáticas de alergias, interacciones medicamentosas y
+contraindicaciones constituyen apoyo a la decisión clínica. La ausencia de
+alertas no acredita la seguridad de una prescripción, sino únicamente que no se
+identificaron los patrones contenidos en la base de conocimiento del sistema.
 """),
-        ('4. Telemedicina: alcance y límites', """
-La atención por telemedicina se presta conforme a la Resolución 2654 de 2019.
-Antes de la primera consulta en esta modalidad se solicita un consentimiento
-informado específico, distinto del consentimiento general de datos.
+        ('Cláusula 4. Exclusión de urgencias', """
+La plataforma no está destinada a la atención de urgencias ni de emergencias
+vitales. No opera en forma continua ni garantiza tiempo de respuesta.
 
-La telemedicina tiene límites reales. El profesional puede determinar en
-cualquier momento que tu caso requiere examen físico presencial, y en ese caso
-debe remitirte. Que una consulta se pueda agendar por esta vía no significa que
-sea la vía adecuada para todo motivo de consulta.
+Ante dolor torácico, dificultad respiratoria, pérdida de conciencia, hemorragia
+que no cede, signos de enfermedad cerebrovascular, intoxicación o cualquier
+situación que comprometa la vida, el usuario debe acudir de inmediato al
+servicio de urgencias más cercano o comunicarse con la línea 123.
 
-Requisitos de tu parte: conexión suficiente, un lugar donde puedas hablar con
-privacidad y disposición a identificarte con tu documento.
+El usuario reconoce que el uso de la plataforma en una situación de urgencia es
+contrario a su destinación y asume las consecuencias que de ello se deriven.
 """),
-        ('5. Quién puede usar la plataforma', """
-Puedes registrarte si eres mayor de edad y tienes capacidad legal.
+        ('Cláusula 5. Atención por telemedicina', """
+La atención por telemedicina se presta conforme a la Resolución 2654 de 2019 y
+requiere el otorgamiento previo del consentimiento informado específico previsto
+para esa modalidad, distinto del consentimiento para el tratamiento de datos
+personales.
 
-**Menores de edad:** su cuenta la gestiona quien ejerce la patria potestad o la
-representación legal, que acredita esa condición ante la institución y responde
-por el uso. El menor tiene derecho a ser escuchado según su edad y madurez
-(Ley 1098 de 2006).
+El profesional tratante puede determinar en cualquier momento que el caso
+requiere valoración presencial y proceder a la remisión correspondiente. La
+disponibilidad de agenda en modalidad remota no implica que dicha modalidad sea
+idónea para todo motivo de consulta.
 
-**Profesionales:** deben acreditar su registro médico profesional vigente. La
-plataforma no permite emitir órdenes médicas sin ese registro.
+El usuario debe disponer de conectividad suficiente, de un espacio que permita
+preservar la confidencialidad de la consulta y de su documento de identidad.
 """),
-        ('6. Tus obligaciones', """
-- Entregar información veraz, completa y actualizada. Un dato clínico falso o
-  incompleto —una alergia que no mencionas— puede causarte daño directo.
-- Custodiar tus credenciales. No las compartas ni uses las de otra persona.
-- No suplantar a nadie ni cargar archivos maliciosos.
-- No usar la plataforma para obtener medicamentos por fuera de una indicación
-  médica legítima.
+        ('Cláusula 6. Capacidad y representación', """
+Podrán registrarse como usuarios las personas naturales mayores de edad con
+capacidad legal para obligarse.
 
-El incumplimiento puede llevar a la suspensión de la cuenta, sin perjuicio de
-las acciones legales que correspondan.
+Las cuentas de menores de edad serán gestionadas por quien ejerza la patria
+potestad o la representación legal, condición que deberá acreditarse ante el
+prestador. El representante responde por el uso de la cuenta. Se garantizará el
+derecho del menor a ser escuchado, conforme a su edad y grado de madurez, en los
+términos del artículo 26 de la Ley 1098 de 2006.
+
+Los profesionales de la salud deberán acreditar registro médico profesional
+vigente. La plataforma no permite la emisión de órdenes médicas a cuentas que
+carezcan de dicho registro.
 """),
-        ('7. Órdenes médicas y medicamentos', """
-Las órdenes emitidas llevan la firma del profesional, su registro médico y un
-sello criptográfico que permite verificar que no fueron alteradas.
+        ('Cláusula 7. Obligaciones del usuario', """
+El usuario se obliga a:
 
-Una orden tiene fecha de vencimiento. Vencida, no puede dispensarse.
+1.  Suministrar información veraz, completa y actualizada, en especial la
+    relativa a antecedentes y alergias. La omisión o inexactitud de un dato
+    clínico puede derivar en daño a su propia salud.
+2.  Custodiar sus credenciales de acceso y abstenerse de compartirlas o de
+    utilizar las de terceros.
+3.  Abstenerse de suplantar la identidad de otra persona y de cargar archivos
+    que puedan comprometer la seguridad del sistema.
+4.  Abstenerse de emplear la plataforma para obtener medicamentos por fuera de
+    una indicación médica legítima.
 
-Los medicamentos de control especial —estupefacientes y psicotrópicos— se rigen
-por la Resolución 1478 de 2006 y requieren receta oficial numerada, que **no**
-es la orden que genera esta plataforma.
-
-La disponibilidad de medicamentos depende del inventario real de cada farmacia.
-Que el sistema muestre existencias no garantiza la entrega si el inventario
-físico cambió entre tanto.
+El incumplimiento de estas obligaciones faculta al operador para suspender la
+cuenta, sin perjuicio de las acciones legales que correspondan.
 """),
-        ('8. Disponibilidad del servicio', """
-La plataforma está diseñada para zonas de baja conectividad, pero **no
-garantizamos disponibilidad continua**. Puede haber interrupciones por
-mantenimiento, fallas de conectividad, del proveedor de infraestructura o por
-causas fuera de nuestro control.
+        ('Cláusula 8. Órdenes médicas y medicamentos', """
+Las órdenes médicas emitidas a través de la plataforma incorporan la firma del
+profesional, su número de registro médico y un sello criptográfico que permite
+verificar su integridad.
+
+Toda orden tiene fecha de vencimiento. Vencida o anulada, no puede ser objeto de
+dispensación.
+
+Los medicamentos sometidos a control especial se rigen por la Resolución 1478 de
+2006 y requieren receta oficial numerada, documento que la plataforma no emite.
+
+La disponibilidad de medicamentos depende del inventario físico de cada
+establecimiento farmacéutico. La información de existencias que muestra el
+sistema es indicativa y no constituye garantía de entrega.
+"""),
+        ('Cláusula 9. Disponibilidad del servicio', """
+El operador desarrolla la plataforma para su funcionamiento en condiciones de
+conectividad limitada, sin que ello constituya garantía de disponibilidad
+continua.
+
+El servicio puede interrumpirse por labores de mantenimiento, por fallas de
+conectividad, por causas atribuibles a los proveedores de infraestructura o por
+circunstancias constitutivas de fuerza mayor o caso fortuito.
 
 Ninguna funcionalidad de la plataforma sustituye la atención presencial cuando
-esta es necesaria.
+esta resulte necesaria.
 """),
-        ('9. Ubicación, rutas y desplazamientos', """
-Las distancias y rutas son estimaciones calculadas a partir de coordenadas.
-**No** consideran el estado real de la vía, el clima, la disponibilidad de
-transporte ni las condiciones de seguridad.
+        ('Cláusula 10. Geolocalización y desplazamientos', """
+Las distancias y rutas que muestra la plataforma son estimaciones calculadas a
+partir de coordenadas geográficas. No consideran el estado de la vía, las
+condiciones climáticas, la disponibilidad de transporte ni las condiciones de
+seguridad de la zona.
 
-Verifica siempre las condiciones reales antes de desplazarte. En zonas rurales,
-una ruta que el mapa muestra como corta puede ser intransitable.
+El usuario debe verificar las condiciones reales antes de emprender cualquier
+desplazamiento. El operador no responde por los daños derivados del traslado.
 
-Tu ubicación solo se usa si la autorizas expresamente. Puedes revocar esa
-autorización en cualquier momento desde tu navegador o desde Ajustes.
+Los datos de ubicación se tratan únicamente previa autorización expresa del
+usuario, revocable en cualquier momento desde la configuración del navegador o
+desde el módulo de ajustes de la plataforma.
 """),
-        ('10. Cobros y facturación', """
-Los servicios que tengan costo se informan antes de contratarlos, con su valor
-total en pesos colombianos.
+        ('Cláusula 11. Condiciones económicas', """
+Los servicios que causen costo se informarán con anterioridad a su contratación,
+con indicación del valor total en pesos colombianos.
 
-Los servicios de salud humana están excluidos de IVA conforme al artículo 476
-numeral 1 del Estatuto Tributario.
+Los servicios de salud humana se encuentran excluidos del impuesto sobre las
+ventas, conforme al numeral 1 del artículo 476 del Estatuto Tributario.
 
-Quien factura es la institución prestadora o el profesional independiente, cada
-uno con su propia identificación tributaria. La plataforma no es parte de esa
-relación económica salvo que se indique expresamente.
+La facturación corresponde a la institución prestadora o al profesional
+independiente, según quien preste el servicio, con su propia identificación
+tributaria. El operador no es parte de dicha relación económica, salvo mención
+expresa en contrario.
 
-Derecho de retracto y reversión del pago: aplican en los términos de la Ley 1480
-de 2011 cuando la contratación se haya hecho por medios electrónicos y proceda
-según su naturaleza. Los servicios ya prestados no son susceptibles de retracto.
+El derecho de retracto y la reversión del pago operan en los términos de los
+artículos 47 y 51 de la Ley 1480 de 2011, cuando la contratación se haya
+efectuado por medios electrónicos y la naturaleza del servicio lo permita. Los
+servicios ya prestados no son susceptibles de retracto.
 """),
-        ('11. Propiedad intelectual', """
-El software, la marca y los contenidos de la plataforma pertenecen a
-[[RAZON_SOCIAL_OPERADOR]] o a sus licenciantes.
+        ('Cláusula 12. Propiedad intelectual y titularidad de la información', """
+El software, los signos distintivos y los contenidos de la plataforma son de
+titularidad del operador o de sus licenciantes.
 
-**Tu historia clínica es tuya.** La institución la custodia por mandato legal,
-pero los datos son del titular. Puedes obtener una copia completa en cualquier
-momento desde «Mis datos».
+La información clínica es de titularidad del paciente. El prestador la custodia
+por mandato legal, en los términos de la Resolución 1995 de 1999 y de la
+Resolución 839 de 2017. El titular puede obtener copia íntegra de sus datos en
+cualquier momento desde el módulo dispuesto para tal efecto.
 """),
-        ('12. Responsabilidad', """
-La plataforma responde por el correcto funcionamiento de las herramientas que
-provee y por la custodia de la información conforme a la ley.
+        ('Cláusula 13. Régimen de responsabilidad', """
+El operador responde por el correcto funcionamiento de las herramientas que
+provee y por la custodia de la información conforme a la normativa aplicable.
 
-**No responde** por: las decisiones clínicas de los profesionales, la exactitud
-de la información que suministre el usuario, los daños derivados de usar la
-plataforma en una urgencia, ni por las interrupciones atribuibles a terceros.
+El operador no responde por las decisiones clínicas adoptadas por los
+profesionales tratantes, por la inexactitud de la información suministrada por
+el usuario, por los daños derivados del uso de la plataforma en situaciones de
+urgencia, ni por las interrupciones atribuibles a terceros.
 
-Nada en este documento limita la responsabilidad por dolo o culpa grave, ni los
-derechos irrenunciables que la ley reconoce al consumidor y al paciente.
+Ninguna disposición del presente documento limita la responsabilidad derivada de
+dolo o culpa grave, ni afecta los derechos irrenunciables que la ley reconoce al
+consumidor y al paciente.
 """),
-        ('13. Suspensión y terminación', """
-Puedes cerrar tu cuenta cuando quieras desde Ajustes. Al hacerlo se desactiva el
-acceso y cesan los tratamientos no obligatorios.
+        ('Cláusula 14. Terminación', """
+El usuario puede solicitar el cierre de su cuenta en cualquier momento desde el
+módulo de ajustes. El cierre desactiva el acceso y cesa los tratamientos de
+datos que no obedezcan a una obligación legal.
 
-**Tu historia clínica no se elimina.** La Resolución 839 de 2017 obliga al
-prestador a conservarla un mínimo de 15 años. Ese deber legal prevalece sobre la
-solicitud de supresión, conforme al artículo 9 de la Ley 1581 de 2012.
+La historia clínica no se suprime. El prestador está obligado a conservarla por
+un término mínimo de quince años, conforme al artículo 2 de la Resolución 839 de
+2017. Este deber legal prevalece sobre la solicitud de supresión, en los
+términos del artículo 9 de la Ley 1581 de 2012.
 
-Descarga una copia de tus datos antes de cerrar la cuenta: después no podrás
-solicitarla por ti mismo.
+Se recomienda al usuario obtener copia de su información con anterioridad al
+cierre de la cuenta.
 """),
-        ('14. Modificaciones', """
-Podemos actualizar estos términos. Cada versión lleva número y fecha de entrada
-en vigencia, y la anterior queda archivada.
+        ('Cláusula 15. Modificaciones', """
+El operador puede modificar los presentes términos. Cada versión se identifica
+con número y fecha de entrada en vigencia, y las versiones anteriores permanecen
+archivadas.
 
-Los cambios sustanciales se avisan dentro de la plataforma con al menos 15 días
-de anticipación. Si no estás de acuerdo, puedes cerrar tu cuenta.
+Las modificaciones sustanciales se comunicarán dentro de la plataforma con una
+antelación no inferior a quince días calendario. El usuario que no acepte las
+nuevas condiciones puede solicitar el cierre de su cuenta.
 """),
-        ('15. Ley aplicable, reclamos y jurisdicción', """
-Estos términos se rigen por la ley colombiana.
+        ('Cláusula 16. Ley aplicable, reclamaciones y jurisdicción', """
+Los presentes términos se rigen por la ley colombiana.
 
-**Peticiones, quejas y reclamos (PQRS):** [[CANAL_PQRS]]. Respuesta dentro de los
-15 días hábiles siguientes.
+Las peticiones, quejas, reclamos y sugerencias se reciben en [[CANAL_PQRS]] y se
+atenderán dentro de los quince días hábiles siguientes a su radicación.
 
-Si el reclamo se relaciona con el tratamiento de tus datos personales, puedes
-acudir a la Superintendencia de Industria y Comercio una vez agotado el trámite
-ante nosotros (artículo 16 de la Ley 1581 de 2012).
+Agotado el trámite ante el operador, el usuario puede acudir a la
+Superintendencia de Industria y Comercio cuando la reclamación verse sobre el
+tratamiento de datos personales, en los términos del artículo 16 de la Ley 1581
+de 2012, o a la Superintendencia Nacional de Salud cuando verse sobre la
+prestación del servicio de salud.
 
-Si se relaciona con la prestación del servicio de salud, puedes acudir a la
-Superintendencia Nacional de Salud.
-
-Las controversias se someten a los jueces de la República de Colombia.
+Las controversias que no puedan resolverse de común acuerdo se someterán a los
+jueces de la República de Colombia.
 """),
     ],
 )
@@ -270,216 +309,235 @@ Las controversias se someten a los jueces de la República de Colombia.
 # Política de tratamiento de datos personales
 # =============================================================================
 #
-# Estructura conforme al artículo 13 del Decreto 1377 de 2013, que enumera lo
-# que la política debe contener como mínimo.
+# Estructura conforme al artículo 13 del Decreto 1377 de 2013, que enumera el
+# contenido mínimo obligatorio de la política.
 
 PRIVACY = LegalDocument(
     key='privacy',
     title='Política de Tratamiento de Datos Personales',
-    version='2.0',
+    version='3.0',
     effective_date=date(2026, 9, 6),
     summary=(
-        'Qué datos recogemos, para qué, con quién los compartimos, cuánto los '
-        'conservamos y cómo ejerces tus derechos.'
+        'Finalidades del tratamiento, derechos del titular, procedimiento para '
+        'ejercerlos, plazos de conservación y medidas de seguridad adoptadas.'
     ),
     legal_basis=(
-        'Ley 1581 de 2012 (Protección de datos personales)',
-        'Decreto 1377 de 2013',
-        'Ley 1266 de 2008 (Habeas data)',
-        'Resolución 1995 de 1999 (Historia clínica)',
-        'Resolución 839 de 2017 (Manejo y conservación de la historia clínica)',
-        'Ley 1712 de 2014 (Transparencia)',
+        'Ley 1581 de 2012, protección de datos personales',
+        'Decreto 1377 de 2013, reglamentario de la Ley 1581',
+        'Ley 1266 de 2008, habeas data',
+        'Resolución 1995 de 1999, historia clínica',
+        'Resolución 839 de 2017, manejo y conservación de la historia clínica',
     ),
     sections=[
-        ('1. Responsable del tratamiento', """
-**Razón social:** [[RAZON_SOCIAL_OPERADOR]]
-**NIT:** [[NIT_OPERADOR]]
-**Domicilio:** [[DOMICILIO_OPERADOR]]
-**Correo para protección de datos:** [[CORREO_PROTECCION_DATOS]]
-**Teléfono:** [[TELEFONO_CONTACTO]]
-**Área responsable:** [[AREA_RESPONSABLE]]
+        ('Artículo 1. Responsable del tratamiento', """
+Razón social: [[RAZON_SOCIAL_OPERADOR]]
+NIT: [[NIT_OPERADOR]]
+Domicilio: [[DOMICILIO_OPERADOR]]
+Correo electrónico para protección de datos: [[CORREO_PROTECCION_DATOS]]
+Teléfono: [[TELEFONO_CONTACTO]]
+Área responsable de la atención: [[AREA_RESPONSABLE]]
 
-Cada institución prestadora inscrita es responsable del tratamiento de la
-historia clínica de sus propios pacientes. La plataforma actúa como encargada
-del tratamiento respecto de esos datos, conforme al contrato suscrito con cada
-institución.
+Cada institución prestadora inscrita en la plataforma es responsable del
+tratamiento de la historia clínica de sus propios pacientes. Respecto de dichos
+datos, el operador actúa en calidad de encargado del tratamiento, en los términos
+del contrato suscrito con cada institución.
 """),
-        ('2. Qué datos recogemos', """
-**De identificación:** nombre completo desagregado, tipo y número de documento,
-fecha de nacimiento, sexo, teléfono, correo, dirección, municipio y departamento.
-
-**De salud (datos sensibles):** motivo de consulta, antecedentes, alergias,
-diagnósticos con código CIE-10, procedimientos con código CUPS, medicamentos
-prescritos y dispensados, notas de evolución, mensajes del chat clínico,
-archivos que adjuntes, y estado de gestación cuando lo registres.
-
-**De aseguramiento:** entidad, régimen y plan.
-
-**De ubicación:** coordenadas, **solo si las autorizas expresamente**. Puedes
-revocar esa autorización en cualquier momento.
-
-**Técnicos:** dirección IP, tipo de navegador, fecha y hora de acceso, y las
-acciones que realizas dentro del sistema. Se conservan como registro de
-auditoría y son obligatorios para poder demostrar quién accedió a una historia
-clínica.
-
-**De pago:** cuando aplique, el comprobante que cargues y el valor. **No
-almacenamos números de tarjeta ni claves bancarias.**
+        ('Artículo 2. Datos objeto de tratamiento', """
+1.  Datos de identificación: nombres y apellidos, tipo y número de documento,
+    fecha de nacimiento, sexo, teléfono, correo electrónico, dirección,
+    municipio y departamento de residencia.
+2.  Datos de salud, que tienen naturaleza sensible: motivo de consulta,
+    antecedentes, alergias, diagnósticos codificados según la Clasificación
+    Internacional de Enfermedades, procedimientos codificados según la
+    Clasificación Única de Procedimientos en Salud, medicamentos prescritos y
+    dispensados, notas de evolución, contenido de las consultas por mensajería,
+    documentos adjuntos y estado de gestación cuando se registre.
+3.  Datos de aseguramiento: entidad responsable de pago, régimen de afiliación
+    y plan de beneficios.
+4.  Datos de localización: coordenadas geográficas, cuyo tratamiento requiere
+    autorización expresa y revocable del titular.
+5.  Datos técnicos de acceso: dirección IP, agente de usuario, fecha y hora de
+    conexión y registro de las operaciones efectuadas. Su tratamiento es
+    necesario para acreditar quién accedió a cada historia clínica.
+6.  Datos de pago: comprobante aportado por el titular y valor de la
+    transacción. No se almacenan números de tarjeta ni claves bancarias.
 """),
-        ('3. Datos sensibles: autorización reforzada', """
-Los datos de salud son **datos sensibles** conforme al artículo 5 de la Ley 1581
-de 2012. Su tratamiento exige tu autorización previa, expresa e informada, que
-solicitamos de forma separada del resto.
+        ('Artículo 3. Autorización para el tratamiento de datos sensibles', """
+Los datos de salud tienen naturaleza sensible conforme al artículo 5 de la Ley
+1581 de 2012. Su tratamiento requiere autorización previa, expresa e informada
+del titular, que se solicita de manera separada de las demás autorizaciones.
 
-Tienes derecho a **no** autorizarlos. Si no lo haces, no podremos prestarte
-atención clínica por esta plataforma, porque no hay forma de hacerlo sin tratar
-esos datos. Sí podrás mantener tu cuenta y consultar tu información.
+El titular no está obligado a autorizar el tratamiento de datos sensibles. La
+negativa impide la prestación de atención clínica a través de la plataforma, por
+cuanto dicha prestación no es posible sin tratar esa categoría de datos. El
+titular conserva el acceso a su cuenta y a la consulta de su información.
 
-Puedes revocar esta autorización cuando quieras desde «Mis datos». Al revocarla
-se cierran las funciones clínicas; lo ya registrado se conserva por el deber
-legal descrito en la sección 7.
+La autorización es revocable en cualquier momento desde el módulo dispuesto para
+tal efecto. La revocatoria suspende las funcionalidades clínicas. La información
+previamente registrada se conserva por el término señalado en el artículo 7 del
+presente documento.
 """),
-        ('4. Para qué usamos tus datos', """
-1. Prestarte atención en salud y hacer su seguimiento.
-2. Llevar tu historia clínica conforme a la Resolución 1995 de 1999.
-3. Emitir órdenes médicas y coordinar la entrega de medicamentos.
-4. Verificar automáticamente alergias e interacciones antes de recetarte.
-5. Agendar y recordarte tus citas.
-6. Cumplir los reportes obligatorios al sistema de salud (RIPS).
-7. Facturar y llevar la contabilidad de los servicios prestados.
-8. Atender tus peticiones, quejas y reclamos.
-9. Mantener el registro de auditoría que la ley exige.
-10. Producir estadísticas **anonimizadas** de gestión, de las que no es posible
-    identificarte.
+        ('Artículo 4. Finalidades del tratamiento', """
+1.  Prestar atención en salud y efectuar su seguimiento.
+2.  Conformar y custodiar la historia clínica conforme a la Resolución 1995 de
+    1999.
+3.  Emitir órdenes médicas y coordinar la dispensación de medicamentos.
+4.  Verificar alergias, interacciones y contraindicaciones con anterioridad a la
+    prescripción.
+5.  Programar citas y remitir recordatorios.
+6.  Cumplir las obligaciones de reporte al Sistema General de Seguridad Social
+    en Salud, en particular el Registro Individual de Prestación de Servicios de
+    Salud.
+7.  Facturar los servicios prestados y llevar la contabilidad correspondiente.
+8.  Atender peticiones, quejas, reclamos y solicitudes de habeas data.
+9.  Conservar el registro de auditoría exigido por la normativa.
+10. Elaborar estadísticas de gestión previa anonimización irreversible de los
+    datos.
 
-**No usamos tus datos de salud para publicidad, ni los vendemos, ni los cedemos
-a aseguradoras o empleadores para que tomen decisiones sobre ti.**
+Los datos de salud no se tratan con fines publicitarios, no son objeto de venta
+ni se ceden a aseguradoras o empleadores para la adopción de decisiones respecto
+del titular.
 """),
-        ('5. Con quién los compartimos', """
-- **Profesionales que te atienden**, y únicamente los de la institución donde te
-  atiendes.
-- **Farmacia** de la institución, y solo los medicamentos de tu orden.
-- **Autoridades de salud**, en los reportes obligatorios (RIPS ante el
-  Ministerio de Salud y las entidades de vigilancia).
-- **Tu entidad aseguradora**, cuando sea necesaria para el reconocimiento y pago
-  de los servicios.
-- **Autoridades judiciales o administrativas**, cuando medie orden que así lo
-  disponga.
-- **Proveedores de infraestructura**, bajo contrato de encargo que los obliga a
-  la misma confidencialidad y les prohíbe cualquier uso propio.
+        ('Artículo 5. Destinatarios de la información', """
+1.  Los profesionales de la salud que prestan la atención, limitados a los
+    vinculados a la institución donde el titular se atiende.
+2.  El establecimiento farmacéutico de la institución, respecto de los
+    medicamentos contenidos en la orden.
+3.  Las autoridades del sector salud, en cumplimiento de las obligaciones de
+    reporte.
+4.  La entidad responsable de pago, cuando resulte necesario para el
+    reconocimiento y pago de los servicios.
+5.  Las autoridades judiciales y administrativas, en virtud de orden que así lo
+    disponga.
+6.  Los proveedores de infraestructura tecnológica, en calidad de encargados del
+    tratamiento y bajo contrato que les impone el deber de confidencialidad y
+    les prohíbe cualquier uso propio de la información.
 """),
-        ('6. Transferencia internacional de datos', """
-**Parte de la infraestructura que aloja la base de datos se encuentra fuera de
-Colombia**, en [[PAIS_ALOJAMIENTO]], operada por [[PROVEEDOR_ALOJAMIENTO]].
+        ('Artículo 6. Transferencia internacional de datos', """
+Parte de la infraestructura que aloja las bases de datos se encuentra ubicada en
+[[PAIS_ALOJAMIENTO]], operada por [[PROVEEDOR_ALOJAMIENTO]].
 
-Esto constituye una transferencia internacional de datos en los términos del
-artículo 26 de la Ley 1581 de 2012, que la restringe a países con nivel adecuado
-de protección, salvo que medie autorización expresa e inequívoca del titular,
-cláusulas contractuales que garanticen la protección, o declaración de
+Esta circunstancia configura una transferencia internacional de datos en los
+términos del artículo 26 de la Ley 1581 de 2012, disposición que la restringe a
+países que ofrezcan niveles adecuados de protección, salvo que medie
+autorización expresa e inequívoca del titular, se suscriban cláusulas
+contractuales que garanticen la protección o se obtenga declaración de
 conformidad de la Superintendencia de Industria y Comercio.
 
-Fundamento aplicado en nuestro caso: [[FUNDAMENTO_TRANSFERENCIA]].
+Fundamento aplicado: [[FUNDAMENTO_TRANSFERENCIA]].
 
-Los datos viajan cifrados en tránsito y permanecen cifrados en reposo con llaves
-que no están en poder del proveedor de infraestructura.
+La información se transmite mediante canal cifrado y permanece cifrada en
+reposo, con llaves que no están en poder del proveedor de infraestructura.
 
-Si no autorizas esta transferencia, indícalo por el canal de la sección 10.
+El titular que no autorice esta transferencia puede manifestarlo por el canal
+señalado en el artículo 10.
 """),
-        ('7. Cuánto tiempo los conservamos', """
-| Información | Conservación | Fundamento |
+        ('Artículo 7. Término de conservación', """
+| Información | Término | Fundamento |
 | :--- | :--- | :--- |
-| Historia clínica | Mínimo 15 años desde la última atención | Resolución 839 de 2017 |
-| Órdenes médicas | Mínimo 15 años (parte de la historia) | Resolución 839 de 2017 |
-| Registro de dispensación | 5 años | Resolución 1403 de 2007 |
-| Consentimientos informados | Mínimo 15 años | Resolución 839 de 2017 |
-| Registro de auditoría | 5 años | Deber de demostrar cumplimiento |
-| Facturación y contabilidad | 10 años | Código de Comercio, artículo 28 |
-| Datos de cuenta sin actividad | Hasta que solicites el cierre | — |
+| Historia clínica | Quince años desde la última atención | Resolución 839 de 2017 |
+| Órdenes médicas | Quince años, por integrar la historia clínica | Resolución 839 de 2017 |
+| Registro de dispensación | Cinco años | Resolución 1403 de 2007 |
+| Consentimientos informados | Quince años | Resolución 839 de 2017 |
+| Registro de auditoría | Cinco años | Deber de demostrar el cumplimiento |
+| Documentos de facturación | Diez años | Artículo 28 del Código de Comercio |
+| Datos de cuenta sin actividad | Hasta la solicitud de cierre | Ley 1581 de 2012 |
 
-Cumplido el plazo, la información se elimina o se anonimiza de forma
+Vencido el término aplicable, la información se suprime o se anonimiza de forma
 irreversible.
 """),
-        ('8. Tus derechos', """
-Como titular puedes, conforme al artículo 8 de la Ley 1581 de 2012:
+        ('Artículo 8. Derechos del titular', """
+Conforme al artículo 8 de la Ley 1581 de 2012, el titular tiene derecho a:
 
-- **Conocer** qué datos tuyos tratamos y cómo.
-- **Actualizar y rectificar** los que estén incompletos o sean inexactos.
-- **Solicitar prueba** de la autorización que otorgaste.
-- **Ser informado** del uso que damos a tus datos.
-- **Presentar quejas** ante la Superintendencia de Industria y Comercio.
-- **Revocar la autorización** y **solicitar la supresión**, con el límite de la
-  sección 7: la historia clínica no puede suprimirse mientras corra el plazo de
-  conservación.
-- **Acceder gratuitamente** a tus datos.
+1.  Conocer, actualizar y rectificar sus datos personales.
+2.  Solicitar prueba de la autorización otorgada.
+3.  Ser informado sobre el uso dado a sus datos personales.
+4.  Presentar quejas ante la Superintendencia de Industria y Comercio por
+    infracción a la ley.
+5.  Revocar la autorización y solicitar la supresión del dato, con la limitación
+    prevista en el artículo 7 del presente documento.
+6.  Acceder en forma gratuita a sus datos personales.
 
-Todo esto se ejerce desde «Mis datos» dentro de la plataforma, o por el canal de
-la sección 10.
+Estos derechos se ejercen a través del módulo dispuesto en la plataforma o por
+el canal señalado en el artículo siguiente.
 """),
-        ('9. Cómo protegemos la información', """
-- Cifrado de la historia clínica y de los datos personales **en reposo**, con
-  llaves fuera de la base de datos.
-- Cifrado en tránsito (HTTPS con HSTS).
-- Búsqueda por documento mediante índice ciego: el número no se almacena de
-  forma que permita buscarlo directamente.
-- Control de acceso por rol y aislamiento entre instituciones.
-- Registro de auditoría encadenado por hash: alterar una entrada rompe la
-  verificación de todas las siguientes.
-- Bloqueo de cuenta ante intentos repetidos de acceso.
-- Ninguna página con datos clínicos se almacena en el dispositivo.
+        ('Artículo 9. Medidas de seguridad', """
+1.  Cifrado de la historia clínica y de los datos personales en reposo, con
+    llaves custodiadas por fuera de la base de datos.
+2.  Cifrado en tránsito mediante protocolo seguro con política estricta de
+    transporte.
+3.  Índice ciego para la búsqueda por número de documento, que evita el
+    almacenamiento del dato en forma directamente consultable.
+4.  Control de acceso basado en roles y aislamiento entre instituciones.
+5.  Registro de auditoría encadenado criptográficamente, que permite detectar la
+    alteración o supresión posterior de sus entradas.
+6.  Bloqueo temporal de la cuenta ante intentos reiterados de acceso.
+7.  Exclusión de las respuestas con contenido clínico del almacenamiento local
+    del dispositivo.
 
-Ningún sistema es invulnerable. Ante un incidente que comprometa tus datos, te
-informaremos y reportaremos a la Superintendencia de Industria y Comercio
-conforme al artículo 17 literal n) de la Ley 1581 de 2012.
+Ningún sistema de información es invulnerable. Ante un incidente que comprometa
+los datos del titular, el operador se lo informará y reportará el hecho a la
+Superintendencia de Industria y Comercio, conforme al literal n del artículo 17
+de la Ley 1581 de 2012.
 """),
-        ('10. Cómo ejercer tus derechos', """
-**En línea:** entra a «Mis datos» dentro de la plataforma. Puedes descargar una
-copia completa, pedir correcciones, solicitar la supresión o revocar
-autorizaciones.
+        ('Artículo 10. Procedimiento para el ejercicio de los derechos', """
+El titular puede ejercer sus derechos por cualquiera de las siguientes vías:
 
-**Por escrito:** [[CORREO_PROTECCION_DATOS]] o [[DOMICILIO_OPERADOR]].
+1.  A través del módulo de datos personales disponible en la plataforma, que
+    permite obtener copia íntegra de la información, solicitar su rectificación
+    o supresión y revocar autorizaciones.
+2.  Mediante comunicación dirigida a [[CORREO_PROTECCION_DATOS]] o a
+    [[DOMICILIO_OPERADOR]], con indicación de su nombre, número de documento,
+    derecho que ejerce y canal para la respuesta.
 
-Indica tu nombre, documento, el derecho que ejerces y un canal de respuesta.
+Términos de respuesta, conforme al Decreto 1377 de 2013:
 
-**Plazos** (Decreto 1377 de 2013):
-- Consultas: 10 días hábiles, prorrogables por 5 más.
-- Reclamos: 15 días hábiles, prorrogables por 8 más.
+1.  Consultas: diez días hábiles, prorrogables por cinco días hábiles más,
+    informando previamente al interesado.
+2.  Reclamos: quince días hábiles, prorrogables por ocho días hábiles más, en
+    las mismas condiciones.
 
-Si la respuesta no te satisface o no llega, puedes acudir a la Superintendencia
-de Industria y Comercio.
+Vencidos los términos sin respuesta satisfactoria, el titular puede acudir a la
+Superintendencia de Industria y Comercio.
 """),
-        ('11. Menores de edad', """
-El tratamiento de datos de menores es excepcional y solo procede cuando responde
-a su interés superior y se respeta su derecho a ser escuchado (artículo 7 de la
-Ley 1581 de 2012 y artículo 12 del Decreto 1377 de 2013).
+        ('Artículo 11. Tratamiento de datos de menores de edad', """
+El tratamiento de datos personales de menores de edad tiene carácter excepcional
+y solo procede cuando responda al interés superior del menor y se respete su
+derecho a ser escuchado, conforme al artículo 7 de la Ley 1581 de 2012 y al
+artículo 12 del Decreto 1377 de 2013.
 
-La autorización la otorga quien ejerce la patria potestad o la representación
-legal, acreditando esa condición.
+La autorización es otorgada por quien ejerza la patria potestad o la
+representación legal, previa acreditación de dicha calidad.
 """),
-        ('12. Cookies y almacenamiento local', """
-Usamos únicamente lo necesario para que la plataforma funcione:
+        ('Artículo 12. Cookies y almacenamiento local', """
+La plataforma emplea únicamente los mecanismos necesarios para su
+funcionamiento:
 
-- **Cookie de sesión:** te mantiene identificado. Se borra al cerrar sesión.
-- **Token de seguridad (CSRF):** impide que otro sitio actúe en tu nombre.
-- **Almacenamiento local:** guarda mensajes que escribiste sin conexión, para
-  enviarlos al recuperar señal. Se borra al cerrar sesión.
+1.  Cookie de sesión, que mantiene la identificación del usuario durante su
+    permanencia y se elimina al cerrar la sesión.
+2.  Testigo de seguridad contra falsificación de peticiones entre sitios.
+3.  Almacenamiento local para conservar los mensajes redactados sin conexión y
+    remitirlos al restablecerse el servicio. Se elimina al cerrar la sesión.
 
-**No usamos cookies de publicidad, analítica de terceros ni rastreadores.**
+La plataforma no emplea cookies publicitarias, herramientas de analítica de
+terceros ni tecnologías de rastreo.
 """),
-        ('13. Registro Nacional de Bases de Datos', """
-Las bases de datos que administramos se registran ante el Registro Nacional de
-Bases de Datos de la Superintendencia de Industria y Comercio, conforme a la Ley
-1581 de 2012 y sus decretos reglamentarios.
+        ('Artículo 13. Registro Nacional de Bases de Datos', """
+Las bases de datos administradas por el operador se inscriben en el Registro
+Nacional de Bases de Datos de la Superintendencia de Industria y Comercio,
+conforme a la Ley 1581 de 2012 y sus decretos reglamentarios.
 
 Estado del registro: [[ESTADO_RNBD]].
 """),
-        ('14. Vigencia', """
-Esta política rige desde su fecha de entrada en vigencia y se mantiene mientras
-la plataforma opere.
+        ('Artículo 14. Vigencia', """
+La presente política rige a partir de su fecha de entrada en vigencia y
+permanecerá vigente mientras el operador ejerza su actividad.
 
-Las bases de datos se conservan por los plazos de la sección 7.
+Las bases de datos se conservarán por los términos señalados en el artículo 7.
 
-Los cambios sustanciales se comunican dentro de la plataforma con al menos 15
-días de anticipación. Cada versión queda archivada con su fecha.
+Las modificaciones sustanciales se comunicarán dentro de la plataforma con una
+antelación no inferior a quince días calendario. Cada versión permanece
+archivada con su respectiva fecha.
 """),
     ],
 )
@@ -492,81 +550,89 @@ días de anticipación. Cada versión queda archivada con su fecha.
 TELEMEDICINE_CONSENT = LegalDocument(
     key='telemedicine',
     title='Consentimiento Informado para Atención por Telemedicina',
-    version='1.0',
+    version='2.0',
     effective_date=date(2026, 9, 6),
     summary=(
-        'Qué implica atenderse a distancia, qué límites tiene y qué alternativas '
-        'existen. Se acepta antes de la primera consulta por esta modalidad.'
+        'Información sobre la modalidad de atención a distancia, sus beneficios, '
+        'sus limitaciones y las alternativas disponibles, previa a su aceptación.'
     ),
     legal_basis=(
-        'Resolución 2654 de 2019 (Telesalud y telemedicina)',
-        'Ley 1419 de 2010 (Telesalud)',
-        'Resolución 1995 de 1999 (Historia clínica)',
+        'Resolución 2654 de 2019, telesalud y telemedicina',
+        'Ley 1419 de 2010, lineamientos de telesalud',
+        'Ley 1751 de 2015, derecho a la información en salud',
+        'Resolución 1995 de 1999, historia clínica',
     ),
     sections=[
-        ('En qué consiste', """
-La telemedicina es atención en salud prestada a distancia, con apoyo de
-tecnologías de la información. El profesional que te atiende está habilitado y
-registrado igual que en una consulta presencial, y la atención queda en tu
-historia clínica de la misma forma.
+        ('1. Naturaleza de la atención', """
+La telemedicina es la prestación de servicios de salud a distancia con apoyo de
+tecnologías de la información y las comunicaciones.
+
+El profesional que lo atiende cuenta con la misma habilitación y el mismo
+registro médico exigidos para la consulta presencial. La atención se incorpora a
+su historia clínica en idénticos términos.
 """),
-        ('Qué ganas', """
-- Evitas desplazamientos largos, costosos o riesgosos.
-- Accedes a profesionales que no están en tu municipio.
-- Acortas los tiempos de espera.
-- Puedes hacer seguimiento de un tratamiento sin viajar.
+        ('2. Beneficios de la modalidad', """
+1.  Evita desplazamientos prolongados, costosos o riesgosos.
+2.  Permite el acceso a profesionales que no ejercen en su municipio.
+3.  Reduce los tiempos de espera para la atención.
+4.  Facilita el seguimiento de tratamientos sin necesidad de traslado.
 """),
-        ('Qué límites tiene — léelo con atención', """
-**El profesional no puede examinarte físicamente.** No puede palpar, auscultar,
-tomar tu presión ni revisar una lesión con sus manos. Eso significa que:
+        ('3. Limitaciones y riesgos', """
+En la atención a distancia el profesional no puede realizar examen físico. No
+puede palpar, auscultar, tomar signos vitales ni valorar directamente una lesión.
+De ello se derivan las siguientes limitaciones:
 
-- Hay diagnósticos que **no** pueden hacerse por esta vía.
-- El profesional puede determinar que necesitas consulta presencial y remitirte.
-- La calidad de la atención depende de la conexión: si el audio o el video
-  fallan, la consulta puede interrumpirse o suspenderse.
-- Si la información que das es incompleta, la orientación puede ser equivocada.
+1.  Existen diagnósticos que no pueden establecerse por esta modalidad.
+2.  El profesional puede determinar que su caso requiere valoración presencial y
+    proceder a la remisión correspondiente.
+3.  La calidad de la atención depende de la conectividad. Una falla en el audio
+    o en el video puede interrumpir o suspender la consulta.
+4.  La información incompleta o inexacta que usted suministre puede conducir a
+    una orientación equivocada.
 
-**La telemedicina no reemplaza la atención presencial cuando esta es
-necesaria.** Aceptar este consentimiento no te obliga a atenderte solo por esta
-vía: puedes pedir consulta presencial en cualquier momento.
+La telemedicina no sustituye la atención presencial cuando esta resulte
+necesaria. La aceptación del presente documento no lo obliga a atenderse
+exclusivamente por esta modalidad.
 """),
-        ('No sirve para urgencias', """
-**No uses la telemedicina en una emergencia.** No hay atención permanente ni
-tiempo de respuesta garantizado.
+        ('4. Exclusión de urgencias', """
+Esta modalidad no está destinada a la atención de urgencias. No opera en forma
+continua ni garantiza tiempo de respuesta.
 
-Ante una situación que ponga en riesgo la vida, acude al servicio de urgencias
-más cercano o llama a la línea 123.
+Ante una situación que comprometa la vida, acuda de inmediato al servicio de
+urgencias más cercano o comuníquese con la línea 123.
 """),
-        ('Tus datos en la consulta', """
-La consulta queda registrada en tu historia clínica: los mensajes, los archivos
-que compartas y las notas del profesional.
+        ('5. Tratamiento de la información', """
+La consulta se incorpora a su historia clínica, incluidos los mensajes
+intercambiados, los documentos que usted aporte y las notas del profesional.
 
-**Grabación:** las videollamadas no se graban salvo que lo autorices de forma
-expresa y separada para cada ocasión.
+Las videollamadas no son objeto de grabación, salvo autorización expresa y
+separada otorgada por usted para cada ocasión.
 
-Todo se cifra en reposo y en tránsito, y solo accede el equipo que te atiende en
-la institución donde te atiendes.
+La información se cifra en tránsito y en reposo, y su acceso se restringe al
+equipo asistencial de la institución donde usted se atiende.
 """),
-        ('Tus derechos', """
-- Puedes **rechazar** la telemedicina y pedir atención presencial, sin que eso
-  afecte tu acceso al servicio.
-- Puedes **interrumpir** la consulta en cualquier momento.
-- Puedes **revocar** este consentimiento cuando quieras desde «Mis datos».
-- Puedes **preguntar** todo lo que necesites antes de aceptar.
-- Puedes pedir una **copia** de este documento y de tu historia clínica.
+        ('6. Derechos del paciente', """
+1.  Rechazar la atención por telemedicina y solicitar atención presencial, sin
+    que ello afecte su acceso al servicio.
+2.  Interrumpir la consulta en cualquier momento.
+3.  Revocar el presente consentimiento en cualquier momento, desde el módulo de
+    datos personales de la plataforma.
+4.  Formular las preguntas que estime necesarias con anterioridad a su
+    aceptación.
+5.  Obtener copia del presente documento y de su historia clínica.
 """),
-        ('Declaración', """
-Al aceptar declaras que:
+        ('7. Declaración de aceptación', """
+Con la aceptación del presente documento usted declara que:
 
-1. Leíste y entendiste este documento.
-2. Tuviste oportunidad de preguntar y te resolvieron las dudas.
-3. Entiendes los límites de la atención a distancia, en especial que **no hay
-   examen físico**.
-4. Sabes que puedes pedir atención presencial en cualquier momento.
-5. Aceptas de forma libre y voluntaria atenderte por esta modalidad.
+1.  Leyó y comprendió su contenido.
+2.  Tuvo oportunidad de formular preguntas y estas le fueron resueltas.
+3.  Comprende las limitaciones de la atención a distancia, en particular la
+    imposibilidad de realizar examen físico.
+4.  Conoce su derecho a solicitar atención presencial en cualquier momento.
+5.  Acepta de manera libre y voluntaria recibir atención por esta modalidad.
 
-Queda constancia con la fecha, la hora, tu dispositivo y la versión de este
-documento.
+De la aceptación quedará constancia con indicación de la fecha, la hora, el
+dispositivo empleado y la versión del presente documento.
 """),
     ],
 )
@@ -579,102 +645,115 @@ documento.
 TRANSPARENCY = LegalDocument(
     key='transparency',
     title='Transparencia y Derechos del Paciente',
-    version='2.0',
+    version='3.0',
     effective_date=date(2026, 9, 6),
     summary=(
-        'Cómo funciona el sistema por dentro, qué decide un algoritmo y qué '
-        'decide una persona, y cuáles son tus derechos como paciente.'
+        'Derechos reconocidos al paciente, criterios de funcionamiento del '
+        'sistema, alcance de sus automatismos y limitaciones conocidas.'
     ),
     legal_basis=(
-        'Ley 1751 de 2015 (Estatutaria de Salud)',
-        'Ley 1712 de 2014 (Transparencia y acceso a la información)',
-        'Resolución 1995 de 1999 (Historia clínica)',
+        'Ley 1751 de 2015, estatutaria del derecho fundamental a la salud',
+        'Ley 1712 de 2014, transparencia y acceso a la información pública',
+        'Resolución 1995 de 1999, historia clínica',
     ),
     sections=[
-        ('Tus derechos como paciente', """
-La Ley 1751 de 2015 reconoce la salud como derecho fundamental. En particular
-tienes derecho a:
+        ('1. Derechos del paciente', """
+La Ley 1751 de 2015 reconoce la salud como derecho fundamental. En desarrollo de
+dicha ley, el paciente tiene derecho a:
 
-- Recibir atención **de urgencia sin requisito previo** de pago ni autorización.
-- **Elegir** libremente tu prestador dentro de la red disponible.
-- Recibir **información clara y completa** sobre tu estado de salud, las opciones
-  de tratamiento y sus riesgos, en lenguaje que entiendas.
-- **Aceptar o rechazar** cualquier procedimiento, después de estar informado.
-- Que tu información se mantenga **confidencial**.
-- Acceder a tu **historia clínica** y obtener copia.
-- Recibir un trato **digno**, sin discriminación de ningún tipo.
-- **Reclamar** y recibir respuesta.
-- Una **segunda opinión** médica.
+1.  Recibir atención de urgencia sin requisito previo de pago ni de
+    autorización.
+2.  Elegir libremente su prestador dentro de la red disponible.
+3.  Recibir información clara, apropiada y suficiente sobre su estado de salud,
+    las alternativas de tratamiento y sus riesgos.
+4.  Aceptar o rechazar cualquier procedimiento, previa información suficiente.
+5.  Que su información conserve el carácter confidencial.
+6.  Acceder a su historia clínica y obtener copia de la misma.
+7.  Recibir un trato digno, sin discriminación de ninguna naturaleza.
+8.  Presentar reclamaciones y obtener respuesta.
+9.  Solicitar una segunda opinión médica.
 """),
-        ('Qué decide el sistema y qué decide una persona', """
-Es importante que sepas dónde interviene un automatismo:
+        ('2. Alcance de los automatismos del sistema', """
+Se informa al paciente qué operaciones ejecuta el sistema de manera automática y
+cuáles corresponden a decisión humana.
 
-**Decide el sistema, sin criterio clínico:**
-- Qué horarios muestra como disponibles.
-- Qué farmacia sugiere según la distancia.
-- Si hay existencias de un medicamento.
-- Si una orden está vencida.
+Operaciones automáticas, sin criterio clínico:
 
-**Advierte el sistema, decide el profesional:**
-- Las alertas de alergia, interacción o contraindicación. El sistema las muestra;
-  **la decisión de recetar o no es del profesional**, y si decide continuar pese
-  a una alerta debe dejar por escrito su justificación, que queda registrada.
+1.  Determinación de los horarios disponibles en agenda.
+2.  Ordenamiento de establecimientos farmacéuticos por distancia.
+3.  Verificación de existencias de medicamentos.
+4.  Control de vigencia de las órdenes médicas.
 
-**Decide siempre una persona:**
-- Tu diagnóstico.
-- Tu tratamiento.
-- Si necesitas remisión o atención presencial.
-- Si te entregan o no un medicamento.
+Operaciones de apoyo a la decisión, con decisión humana:
 
-**Ningún algoritmo de esta plataforma diagnostica, prescribe ni niega atención.**
+5.  Alertas de alergia, interacción medicamentosa y contraindicación. El sistema
+    las presenta; la decisión de prescribir corresponde al profesional, quien,
+    de resolver continuar pese a la alerta, debe consignar por escrito su
+    justificación clínica, la cual queda registrada.
+
+Decisiones exclusivamente humanas:
+
+6.  Diagnóstico, tratamiento, remisión y dispensación.
+
+Ningún algoritmo de la plataforma diagnostica, prescribe ni niega la atención.
 """),
-        ('Cómo funcionan las alertas de seguridad', """
-Antes de que un profesional firme una orden, el sistema la contrasta con tus
-alergias registradas, tu tratamiento activo y tu estado de gestación, y busca
-interacciones conocidas.
+        ('3. Funcionamiento de las verificaciones de seguridad', """
+Con anterioridad a la firma de una orden médica, el sistema la contrasta con las
+alergias registradas del paciente, con su tratamiento activo y con su estado de
+gestación, e identifica interacciones conocidas entre los medicamentos
+prescritos.
 
-**Límite importante:** el sistema solo conoce lo que está registrado. Si tu
-alergia no está en tu historia, no puede advertirla. Por eso es fundamental que
-menciones todas tus alergias, incluso las que creas menores.
+La verificación opera sobre la información registrada. Una alergia que no conste
+en la historia clínica no puede ser advertida por el sistema. Por esta razón
+resulta necesario que el paciente informe todas sus alergias, incluidas aquellas
+que considere de menor entidad.
 
-Que no aparezca una alerta **no significa que sea seguro**: significa que no se
-detectó ninguno de los patrones que el sistema conoce.
+La ausencia de alertas no acredita la seguridad de la prescripción, sino
+únicamente que no se identificaron los patrones contenidos en la base de
+conocimiento del sistema.
 """),
-        ('Qué registramos de cada acceso', """
-Cada vez que alguien consulta tu historia clínica queda registrado quién fue,
-cuándo y desde dónde. Ese registro está encadenado criptográficamente: si
-alguien intentara borrar una entrada, la manipulación sería detectable.
+        ('4. Registro de accesos', """
+Cada consulta a la historia clínica queda registrada con indicación de quien la
+efectuó, la fecha y el origen de la conexión.
 
-Puedes solicitar el detalle de quién ha accedido a tu información.
+El registro se encuentra encadenado criptográficamente, de manera que la
+alteración o supresión posterior de una entrada resulta detectable.
+
+El paciente puede solicitar el detalle de los accesos a su información.
 """),
-        ('Reportes obligatorios', """
-La normativa obliga a reportar información de las atenciones al sistema de salud
-(RIPS). Ese reporte incluye tu identificación, el diagnóstico y el procedimiento.
+        ('5. Reportes obligatorios', """
+La normativa vigente impone al prestador el deber de reportar información de las
+atenciones al Sistema General de Seguridad Social en Salud, mediante el Registro
+Individual de Prestación de Servicios de Salud.
 
-Es una obligación legal, no requiere autorización adicional y no puede
-rechazarse sin incumplir la norma.
+Dicho reporte comprende la identificación del paciente, el diagnóstico y el
+procedimiento. Constituye una obligación legal, no requiere autorización
+adicional del titular y no admite oposición sin incurrir en incumplimiento
+normativo.
 """),
-        ('Limitaciones que debes conocer', """
-Preferimos decirlo antes que dejarte descubrirlo:
-
-- La plataforma **no atiende urgencias**.
-- Puede haber **interrupciones** por conectividad.
-- Las distancias y rutas son **estimaciones**; no consideran el estado de la vía
-  ni la seguridad.
-- La disponibilidad de medicamentos depende del **inventario físico**.
-- Los medicamentos de control especial requieren **receta oficial numerada**, que
-  esta plataforma no emite.
-- La verificación de interacciones **no cubre toda la farmacología**: se centra
-  en las alertas de mayor consecuencia en atención primaria.
+        ('6. Limitaciones conocidas del servicio', """
+1.  La plataforma no está destinada a la atención de urgencias.
+2.  El servicio puede interrumpirse por condiciones de conectividad.
+3.  Las distancias y rutas son estimaciones que no consideran el estado de la
+    vía ni las condiciones de seguridad.
+4.  La disponibilidad de medicamentos depende del inventario físico del
+    establecimiento farmacéutico.
+5.  Los medicamentos de control especial requieren receta oficial numerada,
+    documento que la plataforma no emite.
+6.  La verificación de interacciones no comprende la totalidad de la
+    farmacología; se concentra en las alertas de mayor consecuencia clínica en
+    el ámbito de la atención primaria.
 """),
-        ('Cómo reclamar', """
-**Dentro de la plataforma:** «Mis datos» para lo relacionado con tu información.
+        ('7. Canales de reclamación', """
+1.  Para asuntos relativos al tratamiento de datos personales: el módulo de
+    datos personales de la plataforma.
+2.  Para asuntos relativos a la prestación del servicio de salud:
+    [[CANAL_PQRS]], con respuesta dentro de los quince días hábiles siguientes.
 
-**Sobre el servicio de salud:** [[CANAL_PQRS]]. Respuesta en 15 días hábiles.
-
-**Si no te responden o no quedas conforme:**
-- Datos personales: Superintendencia de Industria y Comercio.
-- Servicio de salud: Superintendencia Nacional de Salud.
+Agotado el trámite ante el prestador sin respuesta satisfactoria, el interesado
+puede acudir a la Superintendencia de Industria y Comercio, tratándose de datos
+personales, o a la Superintendencia Nacional de Salud, tratándose de la
+prestación del servicio.
 """),
     ],
 )
@@ -765,7 +844,7 @@ PLACEHOLDER_LABELS = {
         'Fundamento de la transferencia internacional',
         'Cuál de las excepciones del artículo 26 aplica: autorización expresa '
         'del titular, cláusulas contractuales, o declaración de conformidad de '
-        'la SIC. Consúltalo con tu asesor jurídico.',
+        'la SIC. Debe definirse con concepto del asesor jurídico.',
     ),
     'ESTADO_RNBD': (
         'Estado del registro ante el RNBD',

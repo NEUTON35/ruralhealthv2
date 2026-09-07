@@ -118,7 +118,7 @@
     <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div>
             <h2 class="text-xl font-bold text-cyan-700 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5"></i> Consultorio presencial</h2>
-            <p class="text-xs text-slate-500">Puedes publicar u ocultar tu ubicacion en el mapa de pacientes.</p>
+            <p class="text-xs text-slate-500">Puede publicar u ocultar su ubicacion en el mapa de pacientes.</p>
         </div>
         <span class="text-xs font-semibold px-3 py-1 rounded-full {% if current_user.show_office_on_map %}bg-positive-subtle text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
             {% if current_user.show_office_on_map %}Visible en mapa{% else %}Oculto{% endif %}
@@ -160,7 +160,7 @@
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
         <div>
             <h2 class="text-xl font-bold text-purple-700 flex items-center gap-2"><i data-lucide="wallet-cards" class="w-5 h-5"></i> Tarifas y pagos</h2>
-            <p class="text-xs text-slate-500">Publica precios y una imagen con tus metodos de pago. Los pacientes suben el comprobante y tu apruebas el acceso.</p>
+            <p class="text-xs text-slate-500">Publique precios y una imagen con sus metodos de pago. El paciente sube el comprobante y usted aprueba el acceso.</p>
         </div>
         <form method="POST">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -307,19 +307,19 @@
                     <div class="mt-2">
                         {% if appt.status == 'pending' %}
                             <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-positive text-white py-2 rounded-lg font-bold text-sm hover:bg-positive transition shadow-md">
-                                🚀 Unirse a la Consulta
+                                <i data-lucide="video" class="w-4 h-4"></i> Unirse a la consulta
                             </a>
                         {% elif appt.status == 'in_progress' %}
                             <span class="block text-center bg-caution-subtle text-yellow-800 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">⏳ En Curso...</span>
                         {% elif appt.status == 'no_show' %}
                             <div class="bg-critical-subtle text-red-700 p-2 rounded-lg text-center">
-                                <p class="font-bold text-xs">❌ No Asistida</p>
+                                <p class="font-bold text-xs">No asistida</p>
                                 {% if current_user.role == 'patient' %}
                                     <a href="/patient/book_appointment/{{ appt.doctor_id }}" class="text-xs underline text-red-500 block mt-1">Reagendar Cita</a>
                                 {% endif %}
                             </div>
                         {% elif appt.status == 'attended' %}
-                            <span class="block text-center bg-positive-subtle text-green-700 py-2 rounded-lg font-bold text-xs">✅ Atendida</span>
+                            <span class="block text-center bg-positive-subtle text-green-700 py-2 rounded-lg font-bold text-xs">Atendida</span>
                         {% endif %}
                     </div>
                 </li>
@@ -433,7 +433,7 @@
                                 <form action="/doctor/delete_blockout" method="POST">
                                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="block_id" value="{{ block.id }}">
-                                    <button type="submit" class="text-rose-600 font-bold px-1 hover:text-rose-800">✕</button>
+                                    <button type="submit" class="text-rose-600 font-bold px-1 hover:text-rose-800" aria-label="Quitar"><i data-lucide="x" class="w-4 h-4"></i></button>
                                 </form>
                             </li>
                         {% endfor %}

@@ -171,15 +171,15 @@ def _create_pickup_ticket(order, patient_id, meds, pickup_date, pickup_time, pha
     # Notify patient about their ticket
     pharmacy_name = pharmacy.name if pharmacy else current_user.clinic.name
     if ticket_status == 'sin_stock':
-        patient_msg = (f'Tu ticket {pickup_code} fue generado pero no hay stock disponible en {pharmacy_name}. '
-                       'El personal está tramitando la reposición. Te notificaremos cuando estén listos.')
+        patient_msg = (f'Su ticket {pickup_code} fue generado, pero no hay existencias disponibles en {pharmacy_name}. '
+                       'El personal esta tramitando la reposicion. Se le avisara cuando esten disponibles.')
         patient_title = 'Ticket pendiente de stock'
     else:
         meds_summary = ', '.join(f"{m['nombre_med']} x{m['cantidad']}" for m in meds[:3])
-        patient_msg = (f'Tu ticket de recogida {pickup_code} está listo. '
+        patient_msg = (f'Su ticket de recogida {pickup_code} está listo. '
                        f'Medicamentos: {meds_summary}{" y más" if len(meds) > 3 else ""}. '
                        f'Fecha: {pickup_date} {pickup_time} en {pharmacy_name}. '
-                       f'Lleva tu código o hash al mostrador.')
+                       f'Presente su codigo en el mostrador.')
         patient_title = 'Medicamentos listos para recoger'
     patient_notif = Notification(
         user_id=patient_id,
@@ -560,7 +560,7 @@ def chat(chat_id):
                     group['meds'].append(med)
                     group['stock_rows'][stock.nombre_med] = stock
             if not groups:
-                flash('Selecciona al menos un medicamento.')
+                flash('Seleccione al menos un medicamento.')
             else:
                 pickup_date = request.form.get('pickup_date') or colombia_now().strftime('%Y-%m-%d')
                 pickup_time = request.form.get('pickup_time') or (colombia_now() + timedelta(hours=1)).strftime('%H:%M')
@@ -650,7 +650,7 @@ def pendientes():
                         user_id=ticket.patient_id,
                         clinic_id=current_user.clinic_id,
                         title='Medicamentos disponibles',
-                        message=f'Tu ticket {ticket.pickup_code} ya tiene stock disponible en la sede. Puedes acercarte a recogerlos.',
+                        message=f'Su ticket {ticket.pickup_code} ya tiene existencias en la sede. Puede acercarse a recogerlos.',
                         type='ticket_ready',
                     ))
                     audit('ticket_reactivated_by_staff', details=f'ticket_id={ticket.id}')
@@ -730,7 +730,7 @@ def envios():
             note = (request.form.get('note') or '').strip()
 
             if not pharmacy_id or not expected_date:
-                flash('Selecciona una farmacia y fecha estimada de llegada.')
+                flash('Seleccione una farmacia y una fecha estimada de llegada.')
                 return redirect(url_for('staff.envios'))
 
             # Parse items (med_name[], quantity[])
@@ -738,7 +738,7 @@ def envios():
             quantities = request.form.getlist('quantity[]')
 
             if not any(m.strip() for m in med_names):
-                flash('Agrega al menos un medicamento al cargamento.')
+                flash('Agregue al menos un medicamento al cargamento.')
                 return redirect(url_for('staff.envios'))
 
             shipment = IncomingShipment(

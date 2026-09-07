@@ -93,7 +93,7 @@ def index():
             if not check_password_hash(current_user.password, current_pass):
                 audit('password_change_failed', details='contrasena actual incorrecta')
                 db.session.commit()
-                flash('Tu contrasena actual es incorrecta.')
+                flash('La contrasena actual es incorrecta.')
             elif password_error:
                 flash(password_error)
             elif new_pass != confirm_pass:
@@ -101,7 +101,7 @@ def index():
             elif new_pass == current_pass:
                 flash('La nueva contrasena debe ser distinta de la actual.')
             elif check_password_reuse(current_user.id, new_pass):
-                flash('No puedes reutilizar una de tus ultimas 5 contrasenas.')
+                flash('No puede reutilizar ninguna de sus ultimas 5 contrasenas.')
             else:
                 record_password_change(current_user.id, current_user.password)
                 current_user.password = hash_password(new_pass)
@@ -116,7 +116,7 @@ def index():
 
         elif action == 'profile_location':
             if request.form.get('accept_location') != 'on':
-                flash('Debes autorizar el uso de ubicacion para guardar coordenadas.')
+                flash('Debe autorizar el uso de ubicacion para guardar coordenadas.')
                 return redirect(url_for('settings.index'))
             current_user.address = bleach.clean((request.form.get('address') or '').strip()[:220]) or None
             current_user.latitude = request.form.get('latitude', type=float)
@@ -251,7 +251,7 @@ def index():
             # misma aplicacion le explica al paciente. Ahora dice lo que ocurre.
             confirmation = request.form.get('confirm_text')
             if confirmation != 'CERRAR':
-                flash('Escribe CERRAR para confirmar el cierre de tu cuenta.')
+                flash('Escriba CERRAR para confirmar el cierre de su cuenta.')
             else:
                 now = colombia_now()
                 user_id = current_user.id
@@ -305,10 +305,10 @@ def index():
                 audit('account_closed_by_owner', user_id=user_id)
                 db.session.commit()
                 flash(
-                    'Tu cuenta fue cerrada y ya no podras iniciar sesion. '
-                    'Tu historia clinica se conserva porque la ley obliga al '
+                    'Su cuenta fue cerrada y no podra iniciar sesion nuevamente. '
+                    'Su historia clinica se conserva porque la ley obliga al '
                     'prestador a guardarla 15 anos; nadie la usara para nuevas '
-                    'atenciones. Si necesitas una copia, pidela antes de cerrar.'
+                    'atenciones. Si requiere una copia, solicitela antes de cerrar.'
                 )
                 logout_user()
                 return redirect(url_for('auth.login'))

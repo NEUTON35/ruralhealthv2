@@ -87,7 +87,7 @@ def socio():
         ciudad = bleach.clean((request.form.get('ciudad') or '').strip()[:120])
         mensaje = bleach.clean((request.form.get('mensaje') or '').strip()[:2000])
         if not nombre or not (telefono or email):
-            flash('Dejanos tu nombre y al menos un telefono o email para contactarte.')
+            flash('Indique su nombre y al menos un telefono o correo para poder responderle.')
             return redirect(url_for('auth.socio'))
 
         lead = Lead(
@@ -102,7 +102,7 @@ def socio():
         db.session.add(lead)
         audit('partner_lead_created', user_id=None, details=f'institucion={institucion}; ciudad={ciudad}')
         db.session.commit()
-        flash('Gracias. Recibimos tus datos y te contactaremos pronto.')
+        flash('Recibimos sus datos. Nos comunicaremos con usted a la brevedad.')
         return redirect(url_for('auth.socio'))
     return render_template('socio.html')
 
@@ -114,7 +114,7 @@ def login():
         if current_user.is_authenticated:
             return redirect_for_role(current_user.role)
         if request.args.get('expired'):
-            flash('Tu sesion se cerro por inactividad. Vuelve a iniciar sesion.')
+            flash('La sesion se cerro por inactividad. Inicie sesion nuevamente.')
         return render_template('login.html')
 
     if current_user.is_authenticated:
@@ -159,7 +159,7 @@ def login():
         db.session.commit()
 
         if user.must_change_password:
-            flash('Debes cambiar la contrasena inicial antes de continuar.')
+            flash('Debe cambiar la contrasena inicial antes de continuar.')
             return redirect(url_for('settings.index', force_password_change=1))
 
         return redirect_for_role(user.role)
@@ -230,7 +230,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         if not (accepted_terms and accepted_privacy and accepted_transparency):
-            flash('Debes confirmar que leíste y aceptas los términos, la política de datos y el aviso de transparencia.')
+            flash('Debe confirmar que leyó y acepta los términos, la política de datos y el aviso de transparencia.')
             return redirect(url_for('auth.register'))
 
         if password_error:
@@ -364,8 +364,8 @@ def request_password_reset():
         # La respuesta es la misma exista o no la cuenta: lo contrario permitiria
         # comprobar que usuarios estan registrados.
         flash(
-            'Si la cuenta existe, el administrador de tu clinica recibio la solicitud. '
-            'Acercate al puesto de salud o comunicate con el para obtener tu codigo '
+            'Si la cuenta existe, el administrador de su clinica recibio la solicitud. '
+            'Acerquese al puesto de salud o comuniquese con el para obtener su codigo '
             'de restablecimiento.'
         )
         return redirect(url_for('auth.login'))
@@ -383,7 +383,7 @@ def complete_password_reset(token):
     if not reset or not reset.is_usable():
         audit('password_reset_token_invalid')
         db.session.commit()
-        flash('El codigo de restablecimiento no es valido o ya vencio. Solicita uno nuevo.')
+        flash('El codigo de restablecimiento no es valido o ya vencio. Solicite uno nuevo.')
         return redirect(url_for('auth.request_password_reset'))
 
     user = reset.user
@@ -403,7 +403,7 @@ def complete_password_reset(token):
             flash('Las contrasenas no coinciden.')
             return render_template('password_reset_complete.html', token=token)
         if check_password_reuse(user.id, new_password):
-            flash('No puedes reutilizar una de tus ultimas 5 contrasenas.')
+            flash('No puede reutilizar ninguna de sus ultimas 5 contrasenas.')
             return render_template('password_reset_complete.html', token=token)
 
         record_password_change(user.id, user.password)
@@ -427,7 +427,7 @@ def complete_password_reset(token):
         audit('password_reset_completed', user_id=user.id)
         db.session.commit()
 
-        flash('Contrasena actualizada. Ya puedes iniciar sesion.')
+        flash('Contrasena actualizada. Ya puede iniciar sesion.')
         return redirect(url_for('auth.login'))
 
     return render_template('password_reset_complete.html', token=token)
@@ -472,7 +472,7 @@ def issue_token():
         db.session.commit()
         return jsonify({
             'error': 'password_change_required',
-            'message': 'Debes cambiar la contrasena inicial desde la aplicacion web.',
+            'message': 'Debe cambiar la contrasena inicial desde la aplicacion web.',
         }), 403
 
     clear_login_failures(username)

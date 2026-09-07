@@ -28,7 +28,7 @@
         </p>
         <ul class="text-xs font-mono text-rose-800 space-y-1 bg-white/60 rounded-lg p-3 max-h-40 overflow-y-auto">
             {% for issue in chain_breaks[:20] %}
-            <li>Entrada #{{ issue.id }} — {{ issue.event }} — {{ issue.timestamp | colombia_iso }}</li>
+            <li>Entrada #{{ issue.id }} · {{ issue.event }} · {{ issue.timestamp | colombia_iso }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -119,10 +119,10 @@
                         </td>
                         <td class="px-4 py-2.5 font-mono text-xs text-slate-800 font-semibold">{{ entry.event }}</td>
                         <td class="px-4 py-2.5 text-slate-700">
-                            {{ actor_names.get(entry.user_id, '—') }}
+                            {{ actor_names.get(entry.user_id, 'Sistema') }}
                         </td>
-                        <td class="px-4 py-2.5 text-slate-600 font-mono text-xs truncate max-w-[160px]">{{ entry.path or '—' }}</td>
-                        <td class="px-4 py-2.5 text-slate-600 font-mono text-xs">{{ entry.ip_address or '—' }}</td>
+                        <td class="px-4 py-2.5 text-slate-600 font-mono text-xs truncate max-w-[160px]">{{ entry.path or 'Sin ruta' }}</td>
+                        <td class="px-4 py-2.5 text-slate-600 font-mono text-xs">{{ entry.ip_address or 'Sin registro' }}</td>
                         <td class="px-4 py-2.5 text-slate-500 text-xs max-w-xs break-words">{{ entry.details or '' }}</td>
                     </tr>
                     {% else %}
@@ -156,7 +156,7 @@
     </section>
 
     <p class="text-xs text-slate-600 text-center pb-4 leading-relaxed">
-        Conservación mínima: 5 años. Verifica la cadena completa con
+        Conservación mínima: 5 años. La cadena completa se verifica con
         <code class="bg-slate-100 px-1.5 py-0.5 rounded">python manage.py verify-audit-chain</code>.
     </p>
 </div>

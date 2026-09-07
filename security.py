@@ -250,7 +250,7 @@ def validate_password(password, username=None, name=None):
 
     lowered = password.lower()
     if lowered in _FORBIDDEN_PASSWORDS:
-        return "Esa contrasena es demasiado comun. Elige una diferente."
+        return "Esa contrasena es demasiado comun. Elija una diferente."
     for forbidden in _FORBIDDEN_PASSWORDS:
         if len(forbidden) >= 8 and forbidden in lowered:
             return "La contrasena contiene una secuencia demasiado predecible."
@@ -258,11 +258,11 @@ def validate_password(password, username=None, name=None):
     # El nombre de usuario o el nombre propio dentro de la contraseña la vuelve
     # adivinable por cualquiera que conozca a la persona.
     if username and len(username) >= 4 and username.lower() in lowered:
-        return "La contrasena no puede contener tu nombre de usuario."
+        return "La contrasena no puede contener el nombre de usuario."
     if name:
         for part in str(name).lower().split():
             if len(part) >= 4 and part in lowered:
-                return "La contrasena no puede contener tu nombre."
+                return "La contrasena no puede contener su nombre."
 
     # Repeticiones y secuencias: "aaaaaaaaaaaa", "123456789012".
     if re.search(r"(.)\1{3,}", password):

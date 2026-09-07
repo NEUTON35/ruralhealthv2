@@ -5,7 +5,7 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
             <h1 class="text-3xl font-bold mb-1 text-slate-800">Bienvenido, <span class="text-primary">{{ current_user.name }}</span></h1>
-            <p class="text-slate-500 font-medium tracking-wide">Encuentra al especialista que necesitas hoy.</p>
+            <p class="text-slate-500 font-medium tracking-wide">Encuentre al profesional que necesita hoy.</p>
         </div>
         <div class="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3">
             <div class="bg-primary/10 p-1.5 rounded-lg">
@@ -146,7 +146,7 @@
                 <i data-lucide="pill" class="w-5 h-5"></i>
             </div>
             <div>
-                <h2 class="font-semibold text-lg leading-tight">Tus Medicamentos</h2>
+                <h2 class="font-semibold text-lg leading-tight">Sus medicamentos</h2>
                 <p class="text-emerald-100 text-xs">Tickets de recogida activos y recientes</p>
             </div>
         </div>
@@ -185,7 +185,7 @@
                             <span class="bg-slate-700 text-white text-xs font-semibold px-2 py-0.5 rounded-full">SUB-TICKET</span>
                             {% endif %}
                             {% if is_today and ticket.status in ('autorizado', 'parcial') %}
-                            <span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-xs font-bold">📅 Hoy</span>
+                            <span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-xs font-bold">Hoy</span>
                             {% endif %}
                         </div>
                         
@@ -413,19 +413,19 @@
                                 <div class="mt-2">
                                     {% if appt.status == 'pending' %}
                                         <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-positive text-white py-2 rounded-lg font-bold text-sm hover:bg-positive transition shadow-md">
-                                            🚀 Unirse a la Consulta
+                                            <i data-lucide="video" class="w-4 h-4"></i> Unirse a la consulta
                                         </a>
                                     {% elif appt.status == 'in_progress' %}
                                         <span class="block text-center bg-caution-subtle text-yellow-800 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">⏳ En Curso...</span>
                                     {% elif appt.status == 'no_show' %}
                                         <div class="bg-critical-subtle text-red-700 p-2 rounded-lg text-center">
-                                            <p class="font-bold text-xs">❌ No Asistida</p>
+                                            <p class="font-bold text-xs">No asistida</p>
                                             {% if current_user.role == 'patient' %}
                                                 <a href="/patient/book_appointment/{{ appt.doctor_id }}" class="text-xs underline text-red-500 block mt-1">Reagendar Cita</a>
                                             {% endif %}
                                         </div>
                                     {% elif appt.status == 'attended' %}
-                                        <span class="block text-center bg-positive-subtle text-green-700 py-2 rounded-lg font-bold text-xs">✅ Atendida</span>
+                                        <span class="block text-center bg-positive-subtle text-green-700 py-2 rounded-lg font-bold text-xs">Atendida</span>
                                     {% endif %}
                                 </div>
                             </div>

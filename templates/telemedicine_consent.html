@@ -13,39 +13,41 @@
     <div class="border border-positive-border bg-positive-subtle rounded-lg p-4 mb-6 flex items-start gap-3">
         <i data-lucide="check-circle" class="w-5 h-5 text-positive shrink-0 mt-0.5"></i>
         <div class="text-sm text-positive-text leading-relaxed">
-            <p class="font-semibold">Ya otorgaste este consentimiento.</p>
+            <p class="font-semibold">Consentimiento otorgado</p>
             <p class="mt-1">
-                Versión {{ current_consent.document_version or '—' }}, aceptada el
+                Versión {{ current_consent.document_version or 'sin versión' }}, aceptada el
                 {{ current_consent.timestamp | colombia_date }}.
                 {% if current_consent.document_version != document.version %}
-                <b>Hay una versión más reciente del documento.</b> Léela y acéptala
-                de nuevo si estás de acuerdo.
+                Existe una versión posterior del documento. Revísela y acéptela si
+                está de acuerdo con sus términos.
                 {% endif %}
             </p>
             <p class="mt-2">
-                Puedes revocarlo cuando quieras desde
+                Puede revocarlo en cualquier momento desde
                 <a href="{{ url_for('privacy.index') }}" class="font-semibold underline underline-offset-2">Mis datos</a>.
             </p>
         </div>
     </div>
     {% endif %}
 
-    {# Lo que el paciente debe entender antes de nada: que no habrá examen
-       físico. Va arriba y con peso visual, no enterrado en el cuerpo del texto. #}
+    {# La limitacion sustantiva de la modalidad se anticipa aqui. Va arriba
+       porque es lo que determina si el paciente acepta con conocimiento. #}
     <div class="border border-caution-border bg-caution-subtle rounded-lg p-5 mb-6">
         <h2 class="font-semibold text-caution-text flex items-center gap-2 mb-2">
             <i data-lucide="info" class="w-5 h-5"></i>
-            Lo más importante que debes saber
+            Antes de aceptar
         </h2>
         <p class="text-sm text-caution-text leading-relaxed">
-            En una consulta a distancia <b>el profesional no puede examinarte
-            físicamente</b>: no puede palpar, auscultar ni revisar una lesión con
-            sus manos. Hay diagnósticos que no se pueden hacer así, y puede
-            determinar que necesitas consulta presencial.
+            En la atención a distancia el profesional no puede realizar examen
+            físico. No puede palpar, auscultar ni valorar directamente una lesión.
+            Existen diagnósticos que no pueden establecerse por esta modalidad, y
+            el profesional puede determinar que su caso requiere valoración
+            presencial.
         </p>
         <p class="text-sm text-caution-text leading-relaxed mt-2">
-            <b>Esto no sirve para urgencias.</b> Ante una situación que ponga en
-            riesgo la vida, acude al servicio de urgencias más cercano o llama al 123.
+            Esta modalidad no está destinada a la atención de urgencias. Ante una
+            situación que comprometa la vida, acuda al servicio de urgencias más
+            cercano o comuníquese con la línea 123.
         </p>
     </div>
 
@@ -97,17 +99,17 @@
             <input type="checkbox" id="accept_telemedicine" name="accept_telemedicine" required
                    class="mt-0.5 w-4 h-4 rounded border-slate-300 shrink-0">
             <span class="text-sm text-slate-700 leading-relaxed">
-                Leí y entendí este documento. Sé que en la atención a distancia
-                <b>no hay examen físico</b> y que puedo pedir consulta presencial
-                en cualquier momento. Acepto de forma libre y voluntaria atenderme
-                por telemedicina.
+                Declaro que leí y comprendí el presente documento, que conozco la
+                imposibilidad de realizar examen físico en esta modalidad y que
+                puedo solicitar atención presencial en cualquier momento. Acepto de
+                manera libre y voluntaria recibir atención por telemedicina.
             </span>
         </label>
 
         <div class="mt-5 flex flex-wrap gap-3 items-center">
             <button type="submit"
                 class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
-                {{ 'Aceptar la nueva versión' if current_consent else 'Aceptar y continuar' }}
+                {{ 'Aceptar la versión vigente' if current_consent else 'Aceptar y continuar' }}
             </button>
             <button type="button" onclick="window.print()"
                 class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors">
@@ -115,14 +117,15 @@
             </button>
             <a href="{{ url_for('privacy.index') }}"
                class="text-slate-600 font-medium text-sm hover:text-slate-900">
-                Ahora no
+                En otro momento
             </a>
         </div>
 
         <p class="text-xs text-slate-600 mt-4 leading-relaxed">
-            Al aceptar queda constancia con la fecha, la hora, tu dispositivo y la
-            versión exacta de este documento. Puedes revocarlo en cualquier momento
-            sin que eso afecte tu derecho a la atención presencial.
+            De la aceptación quedará constancia con indicación de la fecha, la hora,
+            el dispositivo empleado y la versión del documento. La revocatoria puede
+            solicitarse en cualquier momento y no afecta el derecho a recibir
+            atención presencial.
         </p>
     </form>
 </div>

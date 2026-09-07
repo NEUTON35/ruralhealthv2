@@ -15,7 +15,7 @@
     <!-- Selección de Hora -->
     {% if selected_date %}
         <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 mt-6">
-            <h3 class="font-bold text-gray-800 mb-4 text-lg">Tus horas para el {{ selected_date }}</h3>
+            <h3 class="font-bold text-gray-800 mb-4 text-lg">Sus horas para el {{ selected_date }}</h3>
             
             {% if slots %}
                 <form method="POST" action="/doctor/book_appointment/{{ patient.id }}" class="space-y-6">
@@ -79,14 +79,14 @@
             {% else %}
                 <div class="bg-caution-subtle p-6 rounded-xl text-yellow-800 font-semibold text-center flex flex-col items-center gap-2">
                     <i data-lucide="calendar-x-2" class="w-10 h-10 text-caution"></i>
-                    No atiendes este día. Selecciona otro día en verde.
+                    No atiende este día. Seleccione otro día en verde.
                 </div>
             {% endif %}
         </div>
     {% else %}
         <div class="bg-blue-50 p-6 rounded-xl text-blue-800 font-semibold text-center flex flex-col items-center gap-2 mt-6">
             <i data-lucide="mouse-pointer-click" class="w-10 h-10 text-slate-500"></i>
-            Selecciona un día en el calendario para ver tus horas.
+            Seleccione un día en el calendario para ver sus horas.
         </div>
     {% endif %}
 </div>

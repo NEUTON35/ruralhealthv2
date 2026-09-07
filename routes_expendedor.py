@@ -106,7 +106,7 @@ def dashboard():
             flash('Hash de entrega inválido.')
             ticket = None
         elif ticket.pharmacy_id and ticket.pharmacy_id != pharmacy.id:
-            flash(f'Este ticket pertenece a otra farmacia. Verifica tu asignación.')
+            flash('Este ticket pertenece a otra farmacia. Verifique la sede asignada.')
             ticket = None
         elif ticket.status == 'entregado':
             flash(f'Ticket {ticket.pickup_code} ya fue entregado el {ticket.delivered_at}.')
@@ -182,7 +182,7 @@ def confirm(ticket_id):
     ).first_or_404()
 
     if ticket.pharmacy_id and ticket.pharmacy_id != pharmacy.id:
-        flash('Este ticket pertenece a otra farmacia. Verifica tu asignación.')
+        flash('Este ticket pertenece a otra farmacia. Verifique la sede asignada.')
         return redirect(url_for('expendedor.dashboard'))
 
     if ticket.status not in ('autorizado', 'parcial'):
@@ -208,7 +208,7 @@ def confirm(ticket_id):
 
     if not identity_verified:
         flash(
-            'Debes confirmar que verificaste el documento de identidad de quien '
+            'Debe confirmar que verifico el documento de identidad de quien '
             'retira antes de registrar la entrega.'
         )
         return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
@@ -229,7 +229,7 @@ def confirm(ticket_id):
             return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
 
     if receiver_kind == 'tercero' and not (receiver_name and receiver_document):
-        flash('Para una entrega a tercero debes registrar su nombre y su documento.')
+        flash('Para una entrega a tercero debe registrar su nombre y su documento.')
         return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
 
     # `ignore_commitments=True` se retiro: ignorar el stock ya reservado permitia
@@ -330,7 +330,7 @@ def reactivate(ticket_id):
         user_id=ticket.patient_id,
         clinic_id=current_user.clinic_id,
         title='Medicamentos listos para recoger',
-        message=(f'Tu ticket {ticket.pickup_code} está listo en {pharmacy_name}. '
+        message=(f'Su ticket {ticket.pickup_code} está listo en {pharmacy_name}. '
                  f'Fecha: {ticket.pickup_date} a las {ticket.pickup_time}.'),
         type='ticket_ready',
     ))

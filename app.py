@@ -357,7 +357,7 @@ def register_error_handlers(app):
         if wants_json():
             return jsonify({'error': 'forbidden'}), 403
         return render_template('error.html', code=403, title='Acceso denegado',
-                               message='No tienes permiso para ver este recurso.'), 403
+                               message='Su cuenta no tiene permiso para ver este recurso.'), 403
 
     @app.errorhandler(404)
     def not_found(error):
@@ -408,7 +408,7 @@ def register_error_handlers(app):
             title='Error interno',
             message=(
                 'Algo fallo de nuestro lado. El equipo tecnico fue notificado. '
-                f'Si necesitas reportarlo, indica el codigo {incident}.'
+                f'Si necesita reportarlo, indique el codigo {incident}.'
             ),
         ), 500
 

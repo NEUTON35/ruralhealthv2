@@ -27,7 +27,7 @@
             con valores supuestos sería reportar información falsa. Además, estos
             datos alimentan las estadísticas con las que se planifica la salud del
             territorio, así que un dato inventado aquí distorsiona decisiones reales.
-            Completa lo que falta y vuelve a intentarlo.
+            Complete lo que falta y vuelva a intentarlo.
         </p>
     </div>
 
@@ -40,7 +40,7 @@
     <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
             <h2 class="font-semibold text-slate-800 capitalize">
-                {{ scope }} — {{ scope_issues | length }} problema(s)
+                {{ scope|capitalize }}: {{ scope_issues | length }} problema(s)
             </h2>
             {% if scope == 'prestador' %}
             <p class="text-xs text-slate-500 mt-1">
@@ -98,8 +98,8 @@
                 placeholder="Por ejemplo: FE-2026-00123"
                 class="w-full mt-1 px-4 py-3 border-2 border-slate-100 rounded-xl focus:border-primary outline-none">
             <p class="text-xs text-slate-500 mt-2 leading-relaxed">
-                Si lo dejas vacío, el archivo llevará un marcador provisional que
-                debes reemplazar antes de radicar. La norma no admite un número
+                Si se deja vacío, el archivo llevará un marcador provisional que
+                deberá reemplazarse antes de radicar. La norma no admite un número
                 supuesto.
             </p>
         </div>

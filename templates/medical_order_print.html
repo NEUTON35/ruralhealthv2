@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orden Médica #{{ order.order_number or order.id }} — RuralHealth Connect</title>
+    <title>Orden Médica #{{ order.order_number or order.id }} | RuralHealth Connect</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', Arial, sans-serif; color: #1e293b; background: #f8fafc; padding: 20px; }
@@ -84,7 +84,7 @@
 <body>
     <!-- Print Controls (hidden in print) -->
     <div class="print-controls no-print">
-        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
         <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-secondary">← Volver al panel</a>
     </div>
 
@@ -110,7 +110,7 @@
 
         <!-- DATOS BÁSICOS DEL PACIENTE -->
         <div class="section">
-            <div class="section-header">Datos Básicos — Cliente (Aseguramiento)</div>
+            <div class="section-header">Datos básicos del aseguramiento</div>
             <div class="data-grid">
                 <div class="cell cell-span-2">
                     <div class="cell-label">Paciente</div>

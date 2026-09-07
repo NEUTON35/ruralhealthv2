@@ -283,7 +283,7 @@ def dashboard():
                     'Las consultas ya registradas se conservan por el plazo legal.'
                 )
             else:
-                flash('Solo puedes archivar profesionales y personal de tu propia clinica.')
+                flash('Solo pueden archivarse profesionales y personal de la propia clinica.')
 
         elif action == 'add_inventory':
             item = InventoryItem(

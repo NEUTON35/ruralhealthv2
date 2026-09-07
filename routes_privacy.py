@@ -226,14 +226,14 @@ def export_my_data():
         ))
 
         archive.writestr('LEEME.txt', (
-            'Copia de tus datos personales — RuralHealth Connect\n'
+            'Copia de sus datos personales en RuralHealth Connect\n'
             f'Generada el {colombia_strftime(colombia_now(), "%d/%m/%Y a las %H:%M")}\n\n'
-            'Este paquete contiene la informacion que el sistema tiene sobre ti,\n'
+            'Este paquete contiene la informacion que el sistema tiene sobre usted,\n'
             'entregada en cumplimiento del derecho de acceso reconocido en el\n'
             'articulo 8 de la Ley 1581 de 2012.\n\n'
             'Los archivos .csv se abren con cualquier hoja de calculo.\n'
-            'El archivo perfil.json contiene tus datos de identificacion.\n\n'
-            'Contiene informacion de salud. Guardalo en un lugar seguro y ten\n'
+            'El archivo perfil.json contiene sus datos de identificacion.\n\n'
+            'Contiene informacion de salud. Conservelo en un lugar seguro y tenga\n'
             'cuidado al compartirlo.\n'
         ))
 
@@ -269,7 +269,7 @@ def create_request():
 
     detail = (request.form.get('detail') or '').strip()[:2000]
     if len(detail) < 10:
-        flash('Describe tu solicitud con al menos 10 caracteres para poder atenderla.')
+        flash('Describa su solicitud con al menos 10 caracteres para poder atenderla.')
         return redirect(url_for('privacy.index'))
 
     now = colombia_now()
@@ -292,8 +292,8 @@ def create_request():
         flash(
             'Solicitud registrada. Ten en cuenta que la historia clinica no puede '
             'eliminarse a peticion del titular: la ley obliga al prestador a '
-            'conservarla un minimo de 15 anos (Resolucion 839 de 2017). Si lo pides, '
-            'si podemos desactivar tu cuenta y cesar los usos no obligatorios de tus datos.'
+            'conservarla un minimo de 15 anos (Resolucion 839 de 2017). A su solicitud '
+            'si es posible desactivar la cuenta y cesar los usos no obligatorios de sus datos.'
         )
     else:
         flash(
@@ -329,7 +329,7 @@ def telemedicine_consent():
 
     if request.method == 'POST':
         if request.form.get('accept_telemedicine') != 'on':
-            flash('Debes marcar la aceptación para poder atenderte por telemedicina.')
+            flash('Debe marcar la aceptación para recibir atención por telemedicina.')
             return redirect(url_for('privacy.telemedicine_consent'))
 
         now = colombia_now()
@@ -367,7 +367,7 @@ def telemedicine_consent():
         )
         db.session.commit()
 
-        flash('Consentimiento registrado. Ya puedes atenderte por telemedicina.')
+        flash('Consentimiento registrado. Ya puede recibir atención por telemedicina.')
         return redirect(url_for('privacy.index'))
 
     return render_template(
@@ -485,7 +485,7 @@ def resolve_request(request_id):
         outcome = 'atendida'
 
     if len(note) < 10:
-        flash('Registra la respuesta dada al titular (minimo 10 caracteres).')
+        flash('Registre la respuesta dada al titular (minimo 10 caracteres).')
         return redirect(url_for('privacy.manage_requests'))
 
     entry.status = outcome

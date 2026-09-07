@@ -10,7 +10,7 @@
                 </div>
                 Dashboard Analítica
             </h1>
-            <p class="text-sm text-slate-500 mt-1">Métricas en tiempo real de tu clínica</p>
+            <p class="text-sm text-slate-500 mt-1">Métricas en tiempo real de la clínica</p>
         </div>
         <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
             <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
@@ -23,25 +23,25 @@
         <div class="bg-accent p-5 rounded-2xl shadow-sm text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
             <p class="text-xs font-semibold uppercase tracking-widest text-sky-100">Consultas este mes</p>
-            <p class="text-3xl font-semibold mt-1" id="kpi-consultations">—</p>
+            <p class="text-3xl font-semibold mt-1" id="kpi-consultations">0</p>
             <p class="text-xs text-sky-200 mt-1" id="kpi-consultations-trend"></p>
         </div>
         <div class="bg-positive p-5 rounded-2xl shadow-sm text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
             <p class="text-xs font-semibold uppercase tracking-widest text-emerald-100">Pacientes registrados</p>
-            <p class="text-3xl font-semibold mt-1" id="kpi-patients">—</p>
+            <p class="text-3xl font-semibold mt-1" id="kpi-patients">0</p>
             <p class="text-xs text-emerald-200 mt-1">Total en la clínica</p>
         </div>
         <div class="bg-caution p-5 rounded-2xl shadow-sm text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
             <p class="text-xs font-semibold uppercase tracking-widest text-amber-100">Satisfacción</p>
-            <p class="text-3xl font-semibold mt-1" id="kpi-rating">—</p>
+            <p class="text-3xl font-semibold mt-1" id="kpi-rating">0</p>
             <p class="text-xs text-amber-200 mt-1" id="kpi-rating-count"></p>
         </div>
         <div class="bg-accent p-5 rounded-2xl shadow-sm text-white relative overflow-hidden">
             <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-xl"></div>
             <p class="text-xs font-semibold uppercase tracking-widest text-violet-100">Chats activos</p>
-            <p class="text-3xl font-semibold mt-1" id="kpi-chats">—</p>
+            <p class="text-3xl font-semibold mt-1" id="kpi-chats">0</p>
             <p class="text-xs text-violet-200 mt-1" id="kpi-alerts"></p>
         </div>
     </div>
@@ -146,7 +146,7 @@
                 `${arrow} ${Math.abs(diff)} vs. mes anterior`;
 
             document.getElementById('kpi-patients').textContent = k.new_patients;
-            document.getElementById('kpi-rating').textContent = k.avg_rating > 0 ? `${k.avg_rating} ★` : 'N/A';
+            document.getElementById('kpi-rating').textContent = k.avg_rating > 0 ? `${k.avg_rating} / 5` : 'Sin datos';
             document.getElementById('kpi-rating-count').textContent = `${k.total_ratings} calificaciones`;
             document.getElementById('kpi-chats').textContent = k.active_chats;
             const alertParts = [];
@@ -261,7 +261,7 @@
                         <td class="text-center py-3 px-2 font-bold text-slate-600">${doc.chats_closed}</td>
                         <td class="text-center py-3 px-2">
                             <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg ${doc.rating >= 4 ? 'bg-positive-subtle text-emerald-700' : doc.rating > 0 ? 'bg-caution-subtle text-amber-700' : 'bg-slate-100 text-slate-500'} font-semibold text-xs">
-                                ${doc.rating > 0 ? doc.rating + ' ★' : 'N/A'}
+                                ${doc.rating > 0 ? doc.rating + ' / 5' : 'Sin calificar'}
                             </span>
                         </td>
                     </tr>

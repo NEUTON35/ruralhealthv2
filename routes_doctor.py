@@ -545,13 +545,13 @@ def prescription(patient_id):
         # nunca llegaba a poblarse.
         if not (current_user.medical_registration or '').strip():
             flash(
-                'No puedes emitir ordenes medicas sin registrar tu numero de registro '
-                'medico profesional. Registralo en Configuracion.'
+                'No es posible emitir ordenes medicas sin el numero de registro '
+                'medico profesional. Registrelo en Configuracion.'
             )
             return redirect(url_for('settings.index'))
 
         if not (current_user.signature_path or request.form.get('signature_data')):
-            flash('Debes registrar tu firma digital antes de emitir una orden medica.')
+            flash('Debe registrar su firma digital antes de emitir una orden medica.')
             return back_to_form()
 
         # --- Modalidad de atencion (Resolucion 2654 de 2019) -----------------
@@ -566,14 +566,14 @@ def prescription(patient_id):
                 flash(
                     'Esta atencion es por telemedicina y el paciente aun no ha '
                     'otorgado el consentimiento informado especifico que exige la '
-                    'Resolucion 2654 de 2019. Pidele que lo acepte en "Mis datos" '
+                    'Resolucion 2654 de 2019. Solicitele que lo acepte en "Mis datos" '
                     'antes de emitir la orden.'
                 )
                 return back_to_form()
 
         meds, errores_receta = _medications_from_form_legal()
         if not meds:
-            flash('Agrega al menos un medicamento.')
+            flash('Agregue al menos un medicamento.')
             return back_to_form()
         if errores_receta:
             # La Resolucion 1403 de 2007 enumera lo que debe contener cada
@@ -656,7 +656,7 @@ def prescription(patient_id):
             for finding in safety.blocking:
                 flash(f'[{finding.severity_label}] {finding.title}: {finding.detail}')
             flash(
-                'Para continuar pese a estas alertas debes escribir la justificacion '
+                'Para continuar pese a estas alertas debe consignar la justificacion '
                 'clinica (minimo 20 caracteres). Quedara registrada en la orden.'
             )
             return render_template(
@@ -854,7 +854,7 @@ def annul_order(order_id):
 
     motivo = bleach.clean((request.form.get('reason') or '').strip())[:500]
     if len(motivo) < 15:
-        flash('Indica el motivo de la anulacion (minimo 15 caracteres). Queda en la historia clinica.')
+        flash('Indique el motivo de la anulacion (minimo 15 caracteres). Quedara en la historia clinica.')
         return redirect(url_for('doctor.view_order', order_id=order.id))
 
     if order.status in ('autorizada', 'completada'):
@@ -883,7 +883,7 @@ def annul_order(order_id):
         title='Orden medica anulada',
         message=(
             f'La orden {order.order_number} fue anulada por el profesional que la '
-            f'emitio. Motivo: {motivo} Si necesitas el medicamento, comunicate con tu medico.'
+            f'emitio. Motivo: {motivo} Si requiere el medicamento, comuniquese con su medico.'
         ),
         type='order_annulled',
     ))
@@ -941,7 +941,7 @@ def prescription_check():
 def view_order(order_id):
     order = MedicalOrder.query.filter_by(id=order_id, clinic_id=current_user.clinic_id).first_or_404()
     if order.doctor_id != current_user.id:
-        flash('No tienes acceso a esta orden.')
+        flash('Esta orden no corresponde a su cuenta.')
         return redirect(url_for('doctor.dashboard'))
 
     clinic = current_user.clinic
@@ -1318,7 +1318,7 @@ def add_allergy(patient_id):
 
     substance = bleach.clean((request.form.get('substance') or '').strip())[:180]
     if len(substance) < 2:
-        flash('Indica la sustancia a la que el paciente es alergico.')
+        flash('Indique la sustancia a la que el paciente es alergico.')
         return redirect(url_for('doctor.patient_history', patient_id=patient.id))
 
     severity = (request.form.get('severity') or 'moderada').strip().lower()
@@ -1376,7 +1376,7 @@ def discard_allergy(allergy_id):
 
     reason = bleach.clean((request.form.get('reason') or '').strip())[:300]
     if len(reason) < 10:
-        flash('Indica por que se descarta la alergia (minimo 10 caracteres).')
+        flash('Indique por que se descarta la alergia (minimo 10 caracteres).')
         return redirect(url_for('doctor.patient_history', patient_id=allergy.patient_id))
 
     allergy.status = 'descartada'
@@ -1399,7 +1399,7 @@ def add_condition(patient_id):
 
     condition = bleach.clean((request.form.get('condition') or '').strip())[:200]
     if len(condition) < 3:
-        flash('Describe la condicion cronica.')
+        flash('Describa la condicion cronica.')
         return redirect(url_for('doctor.patient_history', patient_id=patient.id))
 
     cie10 = (request.form.get('cie10_code') or '').strip().upper()[:10]
@@ -1558,7 +1558,7 @@ def book_appointment(patient_id):
         try:
             appt_datetime = datetime.strptime(f"{date} {time}", '%Y-%m-%d %H:%M')
             if appt_datetime < colombia_now() - timedelta(minutes=5):  # 5 min de margen
-                flash('No puedes agendar citas en el pasado.')
+                flash('No es posible agendar citas en una fecha pasada.')
                 return redirect(request.referrer or url_for('patient.dashboard'))
         except ValueError:
             flash('Formato de fecha u hora inválido.')
@@ -1584,7 +1584,7 @@ def book_appointment(patient_id):
             # El indice unico de la base cierra la ventana entre la comprobacion
             # anterior y esta insercion.
             db.session.rollback()
-            flash('Esa hora acaba de ser tomada. Elige otra.')
+            flash('Esa hora acaba de ser tomada. Seleccione otra.')
             return redirect(url_for('doctor.book_appointment', patient_id=patient_id, date=date))
 
         audit('appointment_booked_by_doctor', details=f'patient_id={patient_id}; fecha={date} {time}')
@@ -1655,7 +1655,7 @@ def join_appointment(appt_id):
     appt = Appointment.query.get_or_404(appt_id)
     
     if appt.doctor_id != current_user.id or appt.clinic_id != current_user.clinic_id or appt.status != 'pending':
-        flash('No puedes unirte a esta cita.')
+        flash('No es posible unirse a esta cita.')
         return redirect(url_for('doctor.dashboard'))
         
     # --- LÓGICA DE HORA EXACTA ---
@@ -1668,7 +1668,7 @@ def join_appointment(appt_id):
 
     # 1. No puedes entrar ANTES de la hora
     if now < appt_datetime:
-        flash(f'Aún no es la hora. Podrás iniciar la consulta exactamente a las {appt.time}.')
+        flash(f'Aún no es la hora. La consulta puede iniciarse a partir de las {appt.time}.')
         return redirect(url_for('doctor.dashboard'))
         
     # 2. Solo tienes 2 minutos de tolerancia si llegas tarde
