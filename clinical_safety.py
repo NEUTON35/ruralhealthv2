@@ -423,6 +423,16 @@ CLASS_LABELS = {
 }
 
 
+# Lista para el autocompletado del formulario de prescripción.
+#
+# Escribir el principio activo a mano invita al error de digitación, y un nombre
+# mal escrito es un nombre que el motor de seguridad no reconoce: la alerta de
+# alergia no salta. Sugerir los nombres del catálogo reduce ese riesgo.
+COMMON_MEDICATIONS = tuple(sorted(
+    nombre.capitalize() for nombre in DRUG_CLASSES
+))
+
+
 def drug_class(name):
     return DRUG_CLASSES.get(normalize_drug(name))
 

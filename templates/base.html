@@ -28,28 +28,136 @@
             integrity="sha384-8nT3SpButyvenpAdKYPJzXdSz3zidMGduMoaMvwjKnAWVv238n6P1mhveiJJQWrV"
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        tailwind.config = { 
-            theme: { 
-                extend: { 
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { 
-                        primary: '#0EA5E9', 
-                        'primary-dark': '#0284C7',
-                        accent: '#10B981',
+        /* =====================================================================
+           SISTEMA VISUAL — software clínico
+           =====================================================================
+           Regla central: el color significa algo. Si todo tiene color, nada lo
+           tiene, y en una pantalla clínica eso es peligroso: la alerta de
+           alergia debe destacar sobre lo demás, no competir con un icono
+           decorativo del mismo tono.
+
+           Solo hay tres familias:
+             neutral  — estructura, texto, iconos. Todo lo que no significa nada.
+             critical — alergia, contraindicación, dato que puede dañar.
+             caution  — advertencia que exige revisión, no bloqueo.
+
+           `accent` se reserva para la acción principal de cada pantalla, una
+           sola por vista. `positive` confirma que algo se completó; nunca se usa
+           como decoración.
+           ===================================================================== */
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+                    },
+                    colors: {
+                        /* Acción principal. Azul clínico, no saturado. */
+                        accent: {
+                            DEFAULT: '#0369A1',
+                            hover:   '#075985',
+                            subtle:  '#F0F9FF',
+                            border:  '#BAE6FD',
+                        },
+                        /* Riesgo para el paciente. Solo aquí. */
+                        critical: {
+                            DEFAULT: '#B91C1C',
+                            hover:   '#991B1B',
+                            subtle:  '#FEF2F2',
+                            border:  '#FECACA',
+                            text:    '#7F1D1D',
+                        },
+                        /* Requiere revisión del profesional. */
+                        caution: {
+                            DEFAULT: '#B45309',
+                            subtle:  '#FFFBEB',
+                            border:  '#FDE68A',
+                            text:    '#78350F',
+                        },
+                        /* Confirmación de una acción completada. */
+                        positive: {
+                            DEFAULT: '#047857',
+                            subtle:  '#ECFDF5',
+                            border:  '#A7F3D0',
+                            text:    '#064E3B',
+                        },
+                        /* Compatibilidad con las clases que ya existían. */
+                        primary: '#0369A1',
+                        'primary-dark': '#075985',
                         background: '#F8FAFC',
-                        medical: '#0EA5E9',
-                        'medical-dark': '#0284C7',
-                        'medical-light': '#E0F2FE'
-                    } 
-                } 
-            } 
+                        medical: '#0369A1',
+                        'medical-dark': '#075985',
+                        'medical-light': '#F0F9FF',
+                    },
+                    borderRadius: {
+                        /* Radios discretos: un expediente clínico no es una
+                           tarjeta de red social. */
+                        'xl':  '0.5rem',
+                        '2xl': '0.625rem',
+                        '3xl': '0.75rem',
+                    },
+                    fontSize: {
+                        /* 13px en lugar de 12px: se lee al sol, en pantalla
+                           barata, por personas de cualquier edad. */
+                        'xs': ['0.8125rem', { lineHeight: '1.125rem' }],
+                        'sm': ['0.875rem',  { lineHeight: '1.25rem' }],
+                    },
+                    boxShadow: {
+                        /* Sombras casi planas: la jerarquía la da el borde y el
+                           espacio, no la elevación. */
+                        'sm': '0 1px 2px 0 rgb(15 23 42 / 0.04)',
+                        'DEFAULT': '0 1px 3px 0 rgb(15 23 42 / 0.06)',
+                        'md': '0 2px 6px -1px rgb(15 23 42 / 0.07)',
+                        'lg': '0 4px 10px -2px rgb(15 23 42 / 0.08)',
+                        'xl': '0 6px 16px -4px rgb(15 23 42 / 0.09)',
+                        '2xl': '0 8px 24px -6px rgb(15 23 42 / 0.10)',
+                    },
+                }
+            }
         };
     </script>
     <style>
         .toast-enter { transform: translateY(100%); opacity: 0; }
-        .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 300ms ease-out; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; transition: transform 200ms ease-out, opacity 200ms ease-out; }
         .toast-exit { transform: translateY(0); opacity: 1; }
-        .toast-exit-active { transform: translateY(100%); opacity: 0; transition: all 300ms ease-in; }
+        .toast-exit-active { transform: translateY(100%); opacity: 0; transition: transform 200ms ease-in, opacity 200ms ease-in; }
+
+        /* --- Iconos ------------------------------------------------------
+           Trazo más fino y tamaño uniforme. Lucide viene con stroke-width 2,
+           que a tamaño pequeño empasta el trazo y hace que el icono compita
+           con el texto en vez de acompañarlo. */
+        [data-lucide] { stroke-width: 1.75; }
+
+        /* --- Impresión ---------------------------------------------------
+           La orden médica y el ticket se imprimen. La navegación, los botones
+           y los avisos no deben aparecer en el papel que se archiva. */
+        @media print {
+            nav, footer, .no-print, #toast-container,
+            #command-palette, #install-home-screen,
+            #low-bandwidth-banner { display: none !important; }
+            body { background: #fff !important; }
+            main { padding: 0 !important; max-width: none !important; }
+            .print-only { display: block !important; }
+            a[href]:after { content: none !important; }
+        }
+        .print-only { display: none; }
+
+        /* --- Foco visible ------------------------------------------------
+           Necesario para quien navega con teclado; Tailwind lo quita en
+           varios componentes con `outline-none`. */
+        :focus-visible {
+            outline: 2px solid #0369A1;
+            outline-offset: 2px;
+        }
+
+        /* --- Movimiento reducido ----------------------------------------- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-background text-slate-800 min-h-screen font-sans flex flex-col {% if request.path != '/login' and request.path != '/register' %}md:flex-row{% endif %}">

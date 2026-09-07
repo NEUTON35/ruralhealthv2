@@ -1,10 +1,28 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 from flask_login import UserMixin
 from sqlalchemy.orm import declared_attr
 from time_utils import colombia_now
 from security import EncryptedText
 
-db = SQLAlchemy()
+# Convencion de nombres para las restricciones.
+#
+# SQLite no sabe alterar una tabla en sitio: Alembic la reconstruye copiando los
+# datos, y para eso necesita poder nombrar cada restriccion. Sin esta convencion,
+# cualquier migracion que toque una tabla con una restriccion anonima falla con
+# "Constraint must have a name" a mitad de camino, dejando el esquema a medias.
+#
+# Tambien sirve en PostgreSQL: permite referirse a una restriccion por su nombre
+# en lugar del identificador que el motor genere.
+NAMING_CONVENTION = {
+    'ix': 'ix_%(column_0_label)s',
+    'uq': 'uq_%(table_name)s_%(column_0_name)s',
+    'ck': 'ck_%(table_name)s_%(constraint_name)s',
+    'fk': 'fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s',
+    'pk': 'pk_%(table_name)s',
+}
+
+db = SQLAlchemy(metadata=MetaData(naming_convention=NAMING_CONVENTION))
 
 ROLE_SUPER = 'super'
 ROLE_CLINIC_ADMIN = 'admin'
@@ -44,6 +62,29 @@ DOCUMENT_TYPES = (
     DOC_CEDULA, DOC_TARJETA_IDENTIDAD, DOC_REGISTRO_CIVIL, DOC_CEDULA_EXTRANJERIA,
     DOC_PASAPORTE, DOC_MENOR_SIN_ID, DOC_ADULTO_SIN_ID, DOC_PERMISO_ESPECIAL,
     DOC_PERMISO_PROTECCION,
+)
+
+# Modalidad de atencion (Resolucion 2654 de 2019).
+CARE_IN_PERSON = 'presencial'
+CARE_TELEMEDICINE = 'telemedicina'
+CARE_MODALITIES = (CARE_IN_PERSON, CARE_TELEMEDICINE)
+
+# Formas farmaceuticas. La Resolucion 1403 de 2007 exige consignarla junto a la
+# concentracion: "amoxicilina 500 mg" no dice si es capsula o suspension, y esa
+# diferencia cambia como se dispensa y como se administra.
+DOSAGE_FORMS = (
+    'tableta', 'tableta recubierta', 'capsula', 'jarabe', 'suspension',
+    'solucion oral', 'solucion inyectable', 'polvo para inyeccion', 'ampolla',
+    'crema', 'unguento', 'gel', 'gotas', 'colirio', 'supositorio', 'ovulo',
+    'parche', 'inhalador', 'aerosol', 'polvo para reconstituir', 'sobre',
+    'jeringa prellenada', 'otro',
+)
+
+# Vias de administracion.
+ADMINISTRATION_ROUTES = (
+    'oral', 'sublingual', 'intravenosa', 'intramuscular', 'subcutanea',
+    'topica', 'oftalmica', 'otica', 'nasal', 'rectal', 'vaginal',
+    'inhalatoria', 'transdermica', 'otra',
 )
 
 # Movimientos del libro mayor de inventario.
@@ -482,6 +523,44 @@ class MedicalOrder(ClinicScoped, db.Model):
     insurance_regime = db.Column(db.String(50), nullable=True)
     observations = db.Column(db.Text, nullable=True)
 
+    # --- Datos del paciente en el momento de prescribir --------------------
+    # Se copian a la orden en lugar de leerse del perfil. Una orden medica es un
+    # documento con fecha: debe reflejar los datos que tenia el paciente cuando
+    # se emitio, no los que tenga hoy. Si el paciente cambia de direccion, la
+    # orden de hace seis meses no puede cambiar sola.
+    #
+    # La Resolucion 1403 de 2007 los exige expresamente (numeral 2.5 del Manual
+    # de Condiciones Esenciales del Servicio Farmaceutico).
+    patient_document_type = db.Column(db.String(4), nullable=True)
+    patient_document = db.Column(EncryptedText, nullable=True)
+    patient_address = db.Column(EncryptedText, nullable=True)
+    patient_phone = db.Column(EncryptedText, nullable=True)
+    # Numero de historia clinica. Exigido por la norma y ausente hasta ahora.
+    clinical_record_number = db.Column(db.String(50), nullable=True, index=True)
+
+    # --- Modalidad de atencion ---------------------------------------------
+    # La Resolucion 2654 de 2019 obliga a dejar constancia de si la atencion fue
+    # presencial o por telemedicina, y en este ultimo caso a registrar el
+    # consentimiento informado especifico para esa modalidad.
+    care_modality = db.Column(db.String(30), default=CARE_IN_PERSON, nullable=True)
+    telemedicine_consent_id = db.Column(
+        db.Integer, db.ForeignKey('informed_consent_log.id'), nullable=True)
+
+    # --- Anulacion ----------------------------------------------------------
+    # Una orden mal emitida no se borra ni se edita: se anula dejando constancia.
+    # Antes solo se podia esperar a que venciera, de modo que una orden con un
+    # error seguia siendo dispensable hasta su fecha de caducidad.
+    annulled_at = db.Column(db.DateTime, nullable=True)
+    annulled_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    annulment_reason = db.Column(EncryptedText, nullable=True)
+    replaced_by_order_id = db.Column(db.Integer, db.ForeignKey('medical_order.id'), nullable=True)
+
+    # --- Prescripcion no financiada con UPC ---------------------------------
+    # Los medicamentos fuera del plan de beneficios se prescriben por MIPRES.
+    # El sistema no se integra con esa plataforma; guarda el numero para que la
+    # orden y el reporte oficial queden vinculados.
+    mipres_number = db.Column(db.String(40), nullable=True, index=True)
+
     # --- Firma profesional ---
     # `signature_hash` sella el contenido de la orden junto con la identidad y el
     # registro medico de quien la firma. Permite demostrar despues que la orden
@@ -906,6 +985,232 @@ class DataSubjectRequest(db.Model):
         if self.resolved_at or not self.due_at:
             return False
         return colombia_now() > self.due_at
+
+
+# =============================================================================
+# Facturacion
+# =============================================================================
+#
+# Dos cosas que el modelo anterior no contemplaba y que en Colombia no son
+# opcionales:
+#
+# 1. **Quien factura.** Una consulta puede facturarla la clinica (persona
+#    juridica, con su NIT y su resolucion de numeracion) o el medico
+#    independiente (persona natural, con su propia numeracion y su propio perfil
+#    tributario). Son emisores distintos, con numeraciones distintas que no
+#    pueden mezclarse: cada resolucion de la DIAN autoriza un rango a un emisor
+#    concreto.
+#
+# 2. **El dinero.** Estaba en `Float`. A las magnitudes de esta aplicacion no
+#    produce errores —lo comprobe— pero es el tipo equivocado para dinero: basta
+#    con acumular o comparar para que aparezca la diferencia. `Numeric` es exacto
+#    por construccion.
+#
+# Lo que este modulo **no** hace: enviar la factura a la DIAN. Eso exige un
+# proveedor tecnologico autorizado y las credenciales del prestador. La
+# estructura queda lista para enchufarlo (`billing.py`).
+
+INVOICE_DRAFT = 'borrador'
+INVOICE_ISSUED = 'emitida'
+INVOICE_SENT = 'radicada'          # entregada al proveedor tecnologico
+INVOICE_ACCEPTED = 'aceptada'      # validada por la DIAN
+INVOICE_REJECTED = 'rechazada'
+INVOICE_ANNULLED = 'anulada'
+
+# Tipo de documento soporte.
+DOC_ELECTRONIC_INVOICE = 'factura_electronica'
+DOC_EQUIVALENT = 'documento_equivalente'
+DOC_SUPPORT = 'documento_soporte'     # cuando el adquiriente no esta obligado
+DOC_CREDIT_NOTE = 'nota_credito'
+
+ISSUER_CLINIC = 'clinica'
+ISSUER_INDEPENDENT = 'profesional_independiente'
+
+
+class BillingProfile(db.Model):
+    """Perfil tributario de quien emite. Una clinica o un medico independiente.
+
+    El medico independiente factura a su propio nombre: su documento, su
+    direccion fiscal y su propia resolucion de numeracion de la DIAN. Mezclar su
+    numeracion con la de la clinica invalidaria ambas.
+
+    Nada de lo que hay aqui determina las obligaciones tributarias de nadie: son
+    los datos que el titular declara, para que la aplicacion los use tal cual.
+    Quien decide si esta obligado a facturar electronicamente es su contador.
+    """
+    __tablename__ = 'billing_profile'
+
+    id = db.Column(db.Integer, primary_key=True)
+    issuer_kind = db.Column(db.String(30), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, index=True)
+
+    # --- Identificacion fiscal ---
+    legal_name = db.Column(db.String(220), nullable=False)
+    document_type = db.Column(db.String(4), default='NIT', nullable=False)  # NIT | CC
+    document_number = db.Column(db.String(40), nullable=False)
+    verification_digit = db.Column(db.String(1), nullable=True)
+    fiscal_address = db.Column(db.String(300), nullable=True)
+    department_code = db.Column(db.String(2), nullable=True)
+    municipality_code = db.Column(db.String(3), nullable=True)
+    email = db.Column(db.String(180), nullable=True)
+    phone = db.Column(db.String(80), nullable=True)
+
+    # --- Regimen ---
+    # Los servicios de salud humana estan excluidos de IVA (Estatuto Tributario,
+    # articulo 476 numeral 1). Se declara en la factura, no se calcula.
+    is_vat_responsible = db.Column(db.Boolean, default=False, nullable=False)
+    tax_regime = db.Column(db.String(60), nullable=True)
+    economic_activity_code = db.Column(db.String(10), nullable=True)  # CIIU
+
+    # --- Numeracion autorizada por la DIAN ---
+    resolution_number = db.Column(db.String(40), nullable=True)
+    resolution_date = db.Column(db.Date, nullable=True)
+    resolution_valid_until = db.Column(db.Date, nullable=True)
+    invoice_prefix = db.Column(db.String(10), nullable=True)
+    range_from = db.Column(db.Integer, nullable=True)
+    range_to = db.Column(db.Integer, nullable=True)
+    # Ultimo consecutivo usado. La asignacion se hace bajo bloqueo de fila.
+    last_number = db.Column(db.Integer, default=0, nullable=False)
+
+    # --- Proveedor tecnologico ---
+    provider_name = db.Column(db.String(80), nullable=True)
+    provider_configured = db.Column(db.Boolean, default=False, nullable=False)
+
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+
+    clinic = db.relationship('Clinic')
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+    @property
+    def display_document(self):
+        if self.document_type == 'NIT' and self.verification_digit:
+            return f'{self.document_number}-{self.verification_digit}'
+        return self.document_number
+
+    @property
+    def has_numbering(self):
+        return bool(self.resolution_number and self.range_from and self.range_to)
+
+    def numbering_exhausted(self):
+        return bool(self.range_to and self.last_number >= self.range_to)
+
+    def numbering_expired(self, today=None):
+        if not self.resolution_valid_until:
+            return False
+        from datetime import date as _date
+        return self.resolution_valid_until < (today or _date.today())
+
+
+class Invoice(db.Model):
+    """Documento de cobro por un servicio prestado."""
+    __tablename__ = 'invoice'
+
+    id = db.Column(db.Integer, primary_key=True)
+    billing_profile_id = db.Column(
+        db.Integer, db.ForeignKey('billing_profile.id'), nullable=False, index=True)
+    clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'), nullable=True, index=True)
+
+    document_type = db.Column(db.String(30), default=DOC_ELECTRONIC_INVOICE, nullable=False)
+    # Numero completo con prefijo, tal como se radica.
+    number = db.Column(db.String(40), nullable=True, unique=True, index=True)
+    consecutive = db.Column(db.Integer, nullable=True)
+
+    # --- Adquiriente ---
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    buyer_name = db.Column(EncryptedText, nullable=True)
+    buyer_document_type = db.Column(db.String(4), nullable=True)
+    buyer_document = db.Column(EncryptedText, nullable=True)
+
+    # --- Importes. `Numeric` y no `Float`: el dinero debe ser exacto. ---
+    currency = db.Column(db.String(3), default='COP', nullable=False)
+    subtotal = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+    discount_amount = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+    tax_amount = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+    total = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+    # Motivo por el que no se cobra IVA. Debe constar en el documento.
+    tax_exclusion_note = db.Column(db.String(300), nullable=True)
+
+    # --- Concepto ---
+    concept = db.Column(db.String(300), nullable=True)
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'), nullable=True)
+    chat_id = db.Column(db.Integer, db.ForeignKey('chat.id'), nullable=True)
+    subscription_id = db.Column(
+        db.Integer, db.ForeignKey('patient_doctor_subscription.id'), nullable=True)
+    payment_ticket_id = db.Column(
+        db.Integer, db.ForeignKey('payment_verification_ticket.id'), nullable=True)
+
+    status = db.Column(db.String(30), default=INVOICE_DRAFT, nullable=False, index=True)
+    issued_at = db.Column(db.DateTime, nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+
+    # --- Trazabilidad con la DIAN ---
+    cufe = db.Column(db.String(120), nullable=True, index=True)
+    provider_reference = db.Column(db.String(120), nullable=True)
+    provider_response = db.Column(db.Text, nullable=True)
+    sent_at = db.Column(db.DateTime, nullable=True)
+
+    # --- Anulacion ---
+    # Una factura emitida no se borra ni se edita: se anula con nota credito.
+    annulled_at = db.Column(db.DateTime, nullable=True)
+    annulment_reason = db.Column(db.String(300), nullable=True)
+    credit_note_for_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=True)
+
+    entry_hash = db.Column(db.String(64), nullable=True, index=True)
+    previous_hash = db.Column(db.String(64), nullable=True)
+
+    billing_profile = db.relationship('BillingProfile')
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    credit_note_for = db.relationship('Invoice', remote_side='Invoice.id')
+
+    @property
+    def is_editable(self):
+        return self.status == INVOICE_DRAFT
+
+    @property
+    def is_annulled(self):
+        return self.annulled_at is not None
+
+
+class InvoiceLine(db.Model):
+    """Renglon de una factura."""
+    __tablename__ = 'invoice_line'
+
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False, index=True)
+    description = db.Column(db.String(300), nullable=False)
+    cups_code = db.Column(db.String(20), nullable=True)
+    quantity = db.Column(db.Numeric(10, 2), default=1, nullable=False)
+    unit_price = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+    discount_amount = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+    tax_rate = db.Column(db.Numeric(5, 2), default=0, nullable=False)
+    line_total = db.Column(db.Numeric(14, 2), default=0, nullable=False)
+
+    invoice = db.relationship('Invoice', backref=db.backref('lines', lazy=True))
+
+
+class LegalConfiguration(db.Model):
+    """Datos del prestador que completan los textos legales.
+
+    Los documentos de `legal_documents.py` llevan marcadores como
+    `[[NIT_OPERADOR]]`. Un documento legal con un marcador sin reemplazar no es
+    un documento legal, así que estos valores son los que lo vuelven publicable.
+
+    Se guardan como pares clave/valor y no como columnas fijas porque los textos
+    evolucionan: añadir una cláusula que exija un dato nuevo no debe requerir una
+    migración de esquema.
+    """
+    __tablename__ = 'legal_configuration'
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(60), unique=True, nullable=False, index=True)
+    value = db.Column(db.Text, nullable=True)
+    updated_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+
+    updated_by = db.relationship('User', foreign_keys=[updated_by_id])
 
 
 class RetentionPolicy(db.Model):

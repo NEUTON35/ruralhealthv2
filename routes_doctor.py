@@ -7,9 +7,9 @@ from io import StringIO
 from flask import Blueprint, Response, jsonify, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from security import audit, csv_safe_row, generate_signed_order_hash, role_required, save_secure_upload, validate_medical_code
-from clinical_safety import evaluate_prescription, normalize_drug
+from clinical_safety import COMMON_MEDICATIONS, evaluate_prescription, normalize_drug
 from sqlalchemy.exc import IntegrityError
-from models import APPOINTMENT_FREEING_STATUSES, MedicalHistory, ACCESS_ACTIVE, Clinic, DoctorTariff, PatientAllergy, PatientChronicCondition, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_APPROVED, PAYMENT_PENDING, PAYMENT_REJECTED, db, User, Chat, Message, Appointment, QuestionFlow, DoctorSchedule, MedicalOrder
+from models import ADMINISTRATION_ROUTES, APPOINTMENT_FREEING_STATUSES, CARE_IN_PERSON, CARE_MODALITIES, CARE_TELEMEDICINE, DOSAGE_FORMS, InformedConsentLog, MedicalHistory, Notification, ACCESS_ACTIVE, Clinic, DoctorTariff, PatientAllergy, PatientChronicCondition, PaymentVerificationTicket, PatientDoctorSubscription, PAYMENT_APPROVED, PAYMENT_PENDING, PAYMENT_REJECTED, db, User, Chat, Message, Appointment, QuestionFlow, DoctorSchedule, MedicalOrder
 from datetime import datetime, timedelta
 from time_utils import colombia_now, colombia_strftime
 from pharmacy_utils import doctor_distance, doctor_visible_on_map
@@ -283,39 +283,151 @@ def upload_pfp():
 
 
 def _medications_from_form_legal():
-    """Extended medication parser with dosage, frequency, and route."""
-    names = request.form.getlist('med_name')
-    quantities = request.form.getlist('quantity')
-    units = request.form.getlist('unit')
-    instructions = request.form.getlist('instructions')
-    dosages = request.form.getlist('dosage')
-    frequencies = request.form.getlist('frequency')
-    routes = request.form.getlist('route')
+    """Lee los medicamentos del formulario y valida lo que exige la norma.
+
+    La Resolucion 1403 de 2007 enumera lo que debe contener cada renglon de una
+    prescripcion. Faltaban cuatro cosas:
+
+    - **Denominacion Comun Internacional.** La norma exige prescribir por nombre
+      generico. Antes el campo era texto libre, asi que "Dolex" y "paracetamol"
+      entraban igual y la farmacia no podia saber si era una marca.
+    - **Concentracion y forma farmaceutica por separado.** "Amoxicilina 500 mg"
+      no dice si es capsula o suspension, y esa diferencia cambia como se
+      dispensa y como se administra a un nino.
+    - **Duracion del tratamiento.** Sin ella no se puede verificar que la
+      cantidad prescrita corresponda a la pauta.
+    - **Cantidad en letras.** La norma la exige para los medicamentos de control
+      especial, porque una cifra en numeros se altera con un trazo.
+
+    Devuelve `(medicamentos, errores)`. Con errores no se emite la orden.
+    """
+    campos = {
+        clave: request.form.getlist(clave)
+        for clave in ('med_name', 'generic_name', 'quantity', 'unit', 'instructions',
+                      'concentration', 'dosage_form', 'dosage', 'frequency',
+                      'route', 'duration_days', 'is_brand')
+    }
+
+    def leer(clave, indice, defecto=''):
+        lista = campos[clave]
+        return (lista[indice] if indice < len(lista) else defecto) or defecto
+
     meds = []
-    for index, name in enumerate(names):
-        med_name = bleach.clean((name or '').strip()[:180])
+    errores = []
+
+    for indice, nombre in enumerate(campos['med_name']):
+        med_name = bleach.clean((nombre or '').strip()[:180])
         if not med_name:
             continue
+
+        renglon = indice + 1
+        generico = bleach.clean(leer('generic_name', indice).strip()[:180])
+        # Si no se indica generico aparte, se asume que el nombre ya lo es.
+        if not generico:
+            generico = med_name
+
+        concentracion = bleach.clean(leer('concentration', indice).strip()[:60])
+        forma = bleach.clean(leer('dosage_form', indice).strip().lower()[:60])
+        via = bleach.clean(leer('route', indice, 'oral').strip().lower()[:30])
+        dosis = bleach.clean(leer('dosage', indice).strip()[:80])
+        frecuencia = bleach.clean(leer('frequency', indice).strip()[:100])
+        instruccion = bleach.clean(leer('instructions', indice).strip()[:500])
+        unidad = bleach.clean(leer('unit', indice, 'unidad').strip()[:40]) or 'unidad'
+
         try:
-            quantity = int(quantities[index])
-        except (IndexError, TypeError, ValueError):
-            quantity = 1
-        unit = bleach.clean((units[index] if index < len(units) else 'unidad') or 'unidad')
-        instruction = bleach.clean((instructions[index] if index < len(instructions) else '') or '')
-        dosage = bleach.clean((dosages[index] if index < len(dosages) else '') or '')
-        freq = bleach.clean((frequencies[index] if index < len(frequencies) else '') or '')
-        route = bleach.clean((routes[index] if index < len(routes) else 'ORAL') or 'ORAL')
+            cantidad = int(leer('quantity', indice, '0'))
+        except (TypeError, ValueError):
+            cantidad = 0
+
+        try:
+            duracion = int(leer('duration_days', indice, '0'))
+        except (TypeError, ValueError):
+            duracion = 0
+
+        # --- Requisitos de la norma ---
+        if not concentracion:
+            errores.append(f'Renglon {renglon} ({med_name}): falta la concentracion.')
+        if not forma:
+            errores.append(f'Renglon {renglon} ({med_name}): falta la forma farmaceutica.')
+        elif forma not in DOSAGE_FORMS:
+            errores.append(
+                f'Renglon {renglon} ({med_name}): forma farmaceutica "{forma}" no reconocida.'
+            )
+        if via not in ADMINISTRATION_ROUTES:
+            errores.append(
+                f'Renglon {renglon} ({med_name}): via de administracion "{via}" no reconocida.'
+            )
+        if not dosis:
+            errores.append(f'Renglon {renglon} ({med_name}): falta la dosis.')
+        if not frecuencia:
+            errores.append(f'Renglon {renglon} ({med_name}): falta la frecuencia.')
+        if cantidad < 1:
+            errores.append(f'Renglon {renglon} ({med_name}): la cantidad debe ser mayor que cero.')
+        if duracion < 1:
+            errores.append(
+                f'Renglon {renglon} ({med_name}): falta la duracion del tratamiento en dias.'
+            )
+
         meds.append({
             'medicamento': med_name,
-            'nombre_med': med_name,
-            'cantidad': max(1, quantity),
-            'unidad': unit[:40],
-            'instrucciones': instruction.strip()[:500],
-            'dosis': dosage.strip()[:50],
-            'frecuencia': freq.strip()[:100],
-            'via': route.strip()[:20],
+            'nombre_med': generico,           # lo que consulta el motor de seguridad
+            'denominacion_comun': generico,
+            'nombre_comercial': med_name if med_name.lower() != generico.lower() else None,
+            'es_marca': leer('is_brand', indice) == 'on',
+            'concentracion': concentracion,
+            'forma_farmaceutica': forma,
+            'via': via,
+            'dosis': dosis,
+            'frecuencia': frecuencia,
+            'duracion_dias': max(0, duracion),
+            'cantidad': max(0, cantidad),
+            'cantidad_en_letras': _number_to_words(cantidad),
+            'unidad': unidad,
+            'instrucciones': instruccion,
         })
-    return meds
+
+    return meds, errores
+
+
+_UNIDADES = ('cero', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete',
+             'ocho', 'nueve', 'diez', 'once', 'doce', 'trece', 'catorce',
+             'quince', 'dieciseis', 'diecisiete', 'dieciocho', 'diecinueve')
+_DECENAS = ('', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta',
+            'setenta', 'ochenta', 'noventa')
+_CENTENAS = ('', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos',
+             'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos')
+
+
+def _number_to_words(numero):
+    """Escribe la cantidad en letras.
+
+    La norma la exige para medicamentos de control especial: una cifra en
+    numeros se altera con un trazo de boligrafo, "10" se convierte en "100".
+    En letras hace falta reescribir la palabra entera.
+    """
+    try:
+        numero = int(numero)
+    except (TypeError, ValueError):
+        return ''
+    if numero < 0:
+        return ''
+    if numero == 100:
+        return 'cien'
+    if numero < 20:
+        return _UNIDADES[numero]
+    if numero < 30:
+        return 'veinti' + _UNIDADES[numero - 20] if numero > 20 else 'veinte'
+    if numero < 100:
+        decena, unidad = divmod(numero, 10)
+        return _DECENAS[decena] + (f' y {_UNIDADES[unidad]}' if unidad else '')
+    if numero < 1000:
+        centena, resto = divmod(numero, 100)
+        return (_CENTENAS[centena] + (f' {_number_to_words(resto)}' if resto else '')).strip()
+    if numero < 1000000:
+        millar, resto = divmod(numero, 1000)
+        prefijo = 'mil' if millar == 1 else f'{_number_to_words(millar)} mil'
+        return (prefijo + (f' {_number_to_words(resto)}' if resto else '')).strip()
+    return str(numero)
 
 
 def _generate_order_number(clinic_id, order_id):
@@ -376,6 +488,42 @@ def _active_allergies_for(patient):
     ).all()
 
 
+def _clinical_record_number(patient):
+    """Numero de historia clinica del paciente.
+
+    La Resolucion 1403 de 2007 lo exige en la prescripcion y no existia. Se
+    deriva de la clinica y del identificador del paciente, que es estable y
+    unico dentro de la institucion, en lugar de crear un contador aparte que
+    habria que mantener sincronizado.
+    """
+    return f'HC-{patient.clinic_id}-{patient.id:06d}'
+
+
+def _resolve_care_modality(chat_id, patient):
+    """Determina si la atencion fue presencial o por telemedicina.
+
+    La Resolucion 2654 de 2019 obliga a dejar constancia de la modalidad. Si la
+    orden nace de un chat clinico, la atencion fue a distancia; si no, se toma
+    lo que indique el profesional.
+    """
+    declarada = (request.form.get('care_modality') or '').strip().lower()
+    if chat_id:
+        return CARE_TELEMEDICINE
+    if declarada in CARE_MODALITIES:
+        return declarada
+    return CARE_IN_PERSON
+
+
+def _telemedicine_consent(patient):
+    """Consentimiento de telemedicina vigente del paciente, si existe."""
+    return InformedConsentLog.query.filter_by(
+        patient_id=patient.id,
+        consent_type='telemedicine',
+        granted=True,
+        revoked_at=None,
+    ).order_by(InformedConsentLog.timestamp.desc()).first()
+
+
 @doctor_bp.route('/prescription/<int:patient_id>', methods=['GET', 'POST'])
 @login_required
 @role_required('doctor')
@@ -406,9 +554,35 @@ def prescription(patient_id):
             flash('Debes registrar tu firma digital antes de emitir una orden medica.')
             return back_to_form()
 
-        meds = _medications_from_form_legal()
+        # --- Modalidad de atencion (Resolucion 2654 de 2019) -----------------
+        # Si la orden nace de una consulta por chat, la atencion fue a distancia
+        # y requiere el consentimiento especifico de telemedicina, distinto del
+        # consentimiento general de datos.
+        care_modality = _resolve_care_modality(chat_id, patient)
+        telemedicine_consent = None
+        if care_modality == CARE_TELEMEDICINE:
+            telemedicine_consent = _telemedicine_consent(patient)
+            if not telemedicine_consent:
+                flash(
+                    'Esta atencion es por telemedicina y el paciente aun no ha '
+                    'otorgado el consentimiento informado especifico que exige la '
+                    'Resolucion 2654 de 2019. Pidele que lo acepte en "Mis datos" '
+                    'antes de emitir la orden.'
+                )
+                return back_to_form()
+
+        meds, errores_receta = _medications_from_form_legal()
         if not meds:
             flash('Agrega al menos un medicamento.')
+            return back_to_form()
+        if errores_receta:
+            # La Resolucion 1403 de 2007 enumera lo que debe contener cada
+            # renglon. Una prescripcion incompleta no es dispensable: la farmacia
+            # no puede saber que forma farmaceutica entregar ni por cuanto tiempo.
+            for error in errores_receta[:8]:
+                flash(error)
+            if len(errores_receta) > 8:
+                flash(f'... y {len(errores_receta) - 8} dato(s) mas por completar.')
             return back_to_form()
 
         # --- Vigencia --------------------------------------------------------
@@ -490,6 +664,9 @@ def prescription(patient_id):
                 patient=patient,
                 chat_id=chat_id,
                 default_expiration=expires_date,
+                dosage_forms=DOSAGE_FORMS,
+                administration_routes=ADMINISTRATION_ROUTES,
+                common_medications=COMMON_MEDICATIONS,
                 safety=safety,
                 allergies=allergies,
                 active_meds=active_meds,
@@ -548,8 +725,20 @@ def prescription(patient_id):
             insurance_plan=bleach.clean((request.form.get('insurance_plan') or '').strip()[:80]) or None,
             insurance_regime=bleach.clean((request.form.get('insurance_regime') or '').strip()[:50]) or None,
             observations=bleach.clean((request.form.get('observations') or '').strip()[:2000]) or None,
+
+            # Datos del paciente congelados en el momento de prescribir. Una
+            # orden es un documento con fecha: si el paciente cambia de telefono
+            # manana, la orden de hoy no puede cambiar sola.
+            patient_document_type=patient.document_type,
+            patient_document=patient.cedula,
+            patient_address=patient.address,
+            patient_phone=patient.phone,
+            clinical_record_number=_clinical_record_number(patient),
+            care_modality=care_modality,
+
             doctor_registration=current_user.medical_registration,
             signed_at=created_at,
+            mipres_number=bleach.clean((request.form.get('mipres_number') or '').strip()[:40]) or None,
             safety_report_json=json.dumps(safety.to_dict(), ensure_ascii=False),
             safety_kb_version=safety.knowledge_base_version,
             safety_override_reason=override_reason or None,
@@ -565,6 +754,8 @@ def prescription(patient_id):
         db.session.flush()   # obtiene el identificador real de la base de datos
 
         order.order_number = _generate_order_number(current_user.clinic_id, order.id)
+        if telemedicine_consent:
+            order.telemedicine_consent_id = telemedicine_consent.id
 
         # Sello de la orden firmada: vincula contenido, autor y registro
         # profesional. Permite demostrar despues que el documento no se altero.
@@ -622,10 +813,84 @@ def prescription(patient_id):
         patient=patient,
         chat_id=chat_id,
         default_expiration=default_expiration,
+        dosage_forms=DOSAGE_FORMS,
+        administration_routes=ADMINISTRATION_ROUTES,
+        common_medications=COMMON_MEDICATIONS,
         allergies=allergies,
         active_meds=active_meds,
         patient_age_years=age_years,
     )
+
+
+@doctor_bp.route('/order/<int:order_id>/anular', methods=['POST'])
+@login_required
+@role_required('doctor')
+def annul_order(order_id):
+    """Anula una orden medica emitida por error.
+
+    No existia ninguna via para esto: una orden con un error —dosis equivocada,
+    medicamento cambiado, paciente confundido— seguia siendo dispensable hasta su
+    fecha de vencimiento, que puede ser meses despues.
+
+    La orden no se borra ni se edita. Se marca como anulada con el motivo y la
+    identidad de quien la anula, y deja de poder dispensarse. El documento
+    original permanece porque forma parte de la historia clinica.
+    """
+    order = MedicalOrder.query.filter_by(
+        id=order_id, clinic_id=current_user.clinic_id
+    ).first_or_404()
+
+    if order.doctor_id != current_user.id:
+        # Solo quien firmo puede anular: la firma es lo que da validez al
+        # documento y a su retiro.
+        audit('order_annulment_denied', details=f'order_id={order.id}')
+        db.session.commit()
+        flash('Solo el profesional que firmo la orden puede anularla.')
+        return redirect(url_for('doctor.dashboard'))
+
+    if order.annulled_at:
+        flash('Esta orden ya estaba anulada.')
+        return redirect(url_for('doctor.view_order', order_id=order.id))
+
+    motivo = bleach.clean((request.form.get('reason') or '').strip())[:500]
+    if len(motivo) < 15:
+        flash('Indica el motivo de la anulacion (minimo 15 caracteres). Queda en la historia clinica.')
+        return redirect(url_for('doctor.view_order', order_id=order.id))
+
+    if order.status in ('autorizada', 'completada'):
+        # Si ya se genero ticket o se entrego algo, anular la orden no deshace la
+        # entrega: se advierte para que el profesional lo tenga en cuenta.
+        flash(
+            'Atencion: esta orden ya fue autorizada en farmacia. Anularla impide '
+            'nuevas entregas, pero no revierte lo ya dispensado. Coordina con la '
+            'farmacia si es necesario.'
+        )
+
+    now = colombia_now()
+    order.annulled_at = now
+    order.annulled_by_id = current_user.id
+    order.annulment_reason = motivo
+    order.status = 'anulada'
+
+    audit(
+        'medical_order_annulled',
+        details=f'order_id={order.id}; numero={order.order_number}; estado_previo={order.status}',
+    )
+
+    db.session.add(Notification(
+        user_id=order.patient_id,
+        clinic_id=order.clinic_id,
+        title='Orden medica anulada',
+        message=(
+            f'La orden {order.order_number} fue anulada por el profesional que la '
+            f'emitio. Motivo: {motivo} Si necesitas el medicamento, comunicate con tu medico.'
+        ),
+        type='order_annulled',
+    ))
+    db.session.commit()
+
+    flash(f'Orden {order.order_number} anulada. El paciente fue notificado.')
+    return redirect(url_for('doctor.view_order', order_id=order.id))
 
 
 @doctor_bp.route('/api/prescription_check', methods=['POST'])

@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+    <header class="mb-6">
+        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+            {{ document.title }}
+        </h1>
+        <p class="text-slate-600 mt-1.5 text-sm leading-relaxed">{{ document.summary }}</p>
+    </header>
+
+    {% if current_consent %}
+    <div class="border border-positive-border bg-positive-subtle rounded-lg p-4 mb-6 flex items-start gap-3">
+        <i data-lucide="check-circle" class="w-5 h-5 text-positive shrink-0 mt-0.5"></i>
+        <div class="text-sm text-positive-text leading-relaxed">
+            <p class="font-semibold">Ya otorgaste este consentimiento.</p>
+            <p class="mt-1">
+                Versión {{ current_consent.document_version or '—' }}, aceptada el
+                {{ current_consent.timestamp | colombia_date }}.
+                {% if current_consent.document_version != document.version %}
+                <b>Hay una versión más reciente del documento.</b> Léela y acéptala
+                de nuevo si estás de acuerdo.
+                {% endif %}
+            </p>
+            <p class="mt-2">
+                Puedes revocarlo cuando quieras desde
+                <a href="{{ url_for('privacy.index') }}" class="font-semibold underline underline-offset-2">Mis datos</a>.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Lo que el paciente debe entender antes de nada: que no habrá examen
+       físico. Va arriba y con peso visual, no enterrado en el cuerpo del texto. #}
+    <div class="border border-caution-border bg-caution-subtle rounded-lg p-5 mb-6">
+        <h2 class="font-semibold text-caution-text flex items-center gap-2 mb-2">
+            <i data-lucide="info" class="w-5 h-5"></i>
+            Lo más importante que debes saber
+        </h2>
+        <p class="text-sm text-caution-text leading-relaxed">
+            En una consulta a distancia <b>el profesional no puede examinarte
+            físicamente</b>: no puede palpar, auscultar ni revisar una lesión con
+            sus manos. Hay diagnósticos que no se pueden hacer así, y puede
+            determinar que necesitas consulta presencial.
+        </p>
+        <p class="text-sm text-caution-text leading-relaxed mt-2">
+            <b>Esto no sirve para urgencias.</b> Ante una situación que ponga en
+            riesgo la vida, acude al servicio de urgencias más cercano o llama al 123.
+        </p>
+    </div>
+
+    <article class="bg-white border border-slate-200 rounded-lg">
+        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 rounded-t-lg">
+            <dl class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600">
+                <div class="flex gap-1.5">
+                    <dt class="font-medium">Versión:</dt>
+                    <dd class="font-mono">{{ document.version }}</dd>
+                </div>
+                <div class="flex gap-1.5">
+                    <dt class="font-medium">Vigente desde:</dt>
+                    <dd>{{ document.effective_date.strftime('%d/%m/%Y') }}</dd>
+                </div>
+                <div class="flex gap-1.5">
+                    <dt class="font-medium">Huella:</dt>
+                    <dd class="font-mono">{{ document.content_hash[:16] }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="px-6 py-6 space-y-6">
+            {% for title, body in document.sections %}
+            <section>
+                <h3 class="font-semibold text-slate-900 mb-2">{{ title }}</h3>
+                <div class="text-sm text-slate-700 leading-relaxed space-y-3 legal-body">
+                    {{ body | legal_markup }}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+
+        {% if document.legal_basis %}
+        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-2">
+                Normativa aplicable
+            </h3>
+            <ul class="text-xs text-slate-600 space-y-0.5">
+                {% for norma in document.legal_basis %}<li>{{ norma }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </article>
+
+    <form method="POST" class="mt-6 bg-white border border-slate-200 rounded-lg p-6 no-print">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <label for="accept_telemedicine" class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" id="accept_telemedicine" name="accept_telemedicine" required
+                   class="mt-0.5 w-4 h-4 rounded border-slate-300 shrink-0">
+            <span class="text-sm text-slate-700 leading-relaxed">
+                Leí y entendí este documento. Sé que en la atención a distancia
+                <b>no hay examen físico</b> y que puedo pedir consulta presencial
+                en cualquier momento. Acepto de forma libre y voluntaria atenderme
+                por telemedicina.
+            </span>
+        </label>
+
+        <div class="mt-5 flex flex-wrap gap-3 items-center">
+            <button type="submit"
+                class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
+                {{ 'Aceptar la nueva versión' if current_consent else 'Aceptar y continuar' }}
+            </button>
+            <button type="button" onclick="window.print()"
+                class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors">
+                <i data-lucide="printer" class="w-4 h-4"></i> Guardar copia
+            </button>
+            <a href="{{ url_for('privacy.index') }}"
+               class="text-slate-600 font-medium text-sm hover:text-slate-900">
+                Ahora no
+            </a>
+        </div>
+
+        <p class="text-xs text-slate-600 mt-4 leading-relaxed">
+            Al aceptar queda constancia con la fecha, la hora, tu dispositivo y la
+            versión exacta de este documento. Puedes revocarlo en cualquier momento
+            sin que eso afecte tu derecho a la atención presencial.
+        </p>
+    </form>
+</div>
+
+<style>
+    .legal-body ul { list-style: disc; padding-left: 1.25rem; }
+    .legal-body ul li { margin-bottom: 0.25rem; }
+    .legal-body ol { list-style: decimal; padding-left: 1.25rem; }
+    .legal-body ol li { margin-bottom: 0.25rem; }
+    .legal-body strong { font-weight: 600; color: #0f172a; }
+    .legal-body table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.8125rem; }
+    .legal-body th, .legal-body td { border: 1px solid #e2e8f0; padding: 0.5rem 0.625rem; text-align: left; }
+    .legal-body th { background: #f8fafc; font-weight: 600; }
+    .legal-body .pendiente { background: #fef2f2; color: #7f1d1d; padding: 0 0.25rem; border-radius: 0.1875rem; font-weight: 600; }
+</style>
+{% endblock %}

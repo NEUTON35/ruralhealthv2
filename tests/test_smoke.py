@@ -98,7 +98,7 @@ def populated(app, make_user, make_stock):
 # Rutas públicas: deben responder sin sesión.
 PUBLIC_ROUTES = [
     '/login', '/register', '/terminos', '/privacidad', '/transparencia',
-    '/socio', '/offline', '/recuperar', '/health', '/ready',
+    '/socio', '/offline', '/recuperar', '/health', '/ready', '/telemedicina',
     '/manifest.json', '/service-worker.js',
 ]
 
@@ -265,7 +265,12 @@ class TestFormsWorkWithoutJavaScript:
 class TestAccessibleMarkup:
 
     def test_form_fields_have_accessible_names(self):
-        """Un campo sin nombre se anuncia como "campo de texto, en blanco"."""
+        """Un campo sin nombre se anuncia como "campo de texto, en blanco".
+
+        Se admiten las tres formas válidas de nombrarlo: `<label for>` explícita,
+        `aria-label`, y la etiqueta implícita —el campo dentro de un `<label>`—,
+        que es igual de válida para un lector de pantalla.
+        """
         import glob
         import os
         import re
@@ -274,6 +279,13 @@ class TestAccessibleMarkup:
         for path in glob.glob('templates/*.html'):
             src = open(path, encoding='utf-8').read()
             etiquetados = set(re.findall(r'<label[^>]*\bfor="([^"]+)"', src))
+
+            # Rangos de texto que quedan dentro de un <label>...</label>.
+            rangos_label = [
+                (m.start(), m.end())
+                for m in re.finditer(r'<label\b[^>]*>.*?</label>', src, re.I | re.S)
+            ]
+
             for m in re.finditer(r'<(input|select|textarea)\b((?:[^<>"]|"[^"]*")*?)/?>',
                                  src, re.I):
                 attrs = m.group(2)
@@ -283,6 +295,9 @@ class TestAccessibleMarkup:
                 if ident and ident.group(1) in etiquetados:
                     continue
                 if 'aria-label' in attrs or 'aria-labelledby' in attrs:
+                    continue
+                # Etiqueta implícita.
+                if any(inicio < m.start() < fin for inicio, fin in rangos_label):
                     continue
                 nombre = re.search(r'name="([^"]+)"', attrs)
                 sin_nombre.append(

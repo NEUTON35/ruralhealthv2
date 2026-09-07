@@ -204,12 +204,45 @@ def create_app(environment=None, config_override=None):
 
 
 def register_jinja(app):
+    from legal_markup import render as render_legal_markup
+
     app.jinja_env.filters['colombia_iso'] = colombia_iso
     app.jinja_env.filters['colombia_time'] = lambda dt: colombia_strftime(dt, '%H:%M')
     app.jinja_env.filters['colombia_date'] = lambda dt: colombia_strftime(dt, '%d/%m/%Y')
     app.jinja_env.filters['from_json'] = lambda s: json.loads(s) if s else []
+    app.jinja_env.filters['legal_markup'] = render_legal_markup
     app.jinja_env.globals['csrf_token'] = generate_csrf_token
     app.jinja_env.globals['app_env'] = app.config['ENV_NAME']
+
+
+def legal_values():
+    """Datos del prestador que completan los textos legales."""
+    from models import LegalConfiguration
+    try:
+        return {row.key: row.value for row in LegalConfiguration.query.all() if row.value}
+    except Exception:
+        # La tabla puede no existir todavia en un arranque previo a la migracion.
+        return {}
+
+
+def legal_context(active_tab):
+    """Contexto comun de las paginas legales."""
+    from legal_documents import DOCUMENTS, pending_configuration, render_document
+
+    valores = legal_values()
+    documentos = {clave: render_document(clave, valores) for clave in DOCUMENTS}
+
+    return {
+        'active_tab': active_tab,
+        'documents': documentos,
+        'pending_config': pending_configuration(valores),
+        'tabs': [
+            ('terms', 'Términos de uso', url_for('terminos')),
+            ('privacy', 'Datos personales', url_for('privacidad')),
+            ('telemedicine', 'Telemedicina', url_for('telemedicina')),
+            ('transparency', 'Transparencia', url_for('transparencia')),
+        ],
+    }
 
 
 def register_login(app):
@@ -427,15 +460,19 @@ def register_core_routes(app):
 
     @app.route('/terminos')
     def terminos():
-        return render_template('legal.html', active_tab='terms')
+        return render_template('legal.html', **legal_context('terms'))
 
     @app.route('/privacidad')
     def privacidad():
-        return render_template('legal.html', active_tab='privacy')
+        return render_template('legal.html', **legal_context('privacy'))
+
+    @app.route('/telemedicina')
+    def telemedicina():
+        return render_template('legal.html', **legal_context('telemedicine'))
 
     @app.route('/transparencia')
     def transparencia():
-        return render_template('legal.html', active_tab='transparency')
+        return render_template('legal.html', **legal_context('transparency'))
 
     @app.route('/manifest.json')
     @limiter.exempt

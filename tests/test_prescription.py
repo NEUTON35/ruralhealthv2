@@ -27,21 +27,32 @@ def doctor_and_patient(app, make_user):
 
 
 def prescription_form(**overrides):
-    """Formulario mínimo válido para emitir una orden."""
+    """Formulario mínimo válido para emitir una orden.
+
+    Incluye los campos que exige la Resolución 1403 de 2007: concentración,
+    forma farmacéutica, vía, dosis, frecuencia, duración y cantidad. Sin ellos
+    la orden se rechaza, que es el comportamiento buscado: una prescripción a la
+    que le falta la forma farmacéutica no se puede dispensar.
+    """
     from time_utils import colombia_now
     data = {
         'med_name': 'Paracetamol',
-        'quantity': '20',
-        'unit': 'tableta',
-        'dosage': '500 mg',
+        'generic_name': 'Paracetamol',
+        'concentration': '500 mg',
+        'dosage_form': 'tableta',
+        'route': 'oral',
+        'dosage': '1 tableta',
         'frequency': 'cada 8 horas',
-        'route': 'ORAL',
+        'duration_days': '5',
+        'quantity': '15',
+        'unit': 'tableta',
         'instructions': 'Tomar con alimentos',
         'dx_code': 'Z000',
         'dx_description': 'Examen medico general',
         'expires_date': (colombia_now() + timedelta(days=30)).strftime('%Y-%m-%d'),
         'expires_time': '23:59',
         'patient_level': '1',
+        'care_modality': 'presencial',
     }
     data.update(overrides)
     return data
@@ -407,3 +418,275 @@ class TestAllergyManagement:
         assert response.status_code == 302
         with app.app_context():
             assert MedicalOrder.query.count() == 1
+
+
+# =============================================================================
+# Requisitos de la Resolución 1403 de 2007
+# =============================================================================
+
+class TestPrescriptionLegalContent:
+    """La norma enumera qué debe contener cada renglón de una prescripción.
+
+    Faltaban seis elementos. Una receta a la que le falta la forma farmacéutica
+    no es dispensable: la farmacia no sabe si entregar cápsulas o suspensión, y
+    esa diferencia importa sobre todo en pediatría.
+    """
+
+    @pytest.mark.parametrize('campo', [
+        'concentration', 'dosage_form', 'dosage', 'frequency', 'duration_days',
+    ])
+    def test_missing_required_field_blocks_issue(self, app, doctor_and_patient,
+                                                 client, campo):
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(**{campo: ''}))
+
+        from models import MedicalOrder
+        with app.app_context():
+            assert MedicalOrder.query.count() == 0, (
+                f'la orden no debe emitirse sin {campo}'
+            )
+
+    def test_unknown_dosage_form_rejected(self, app, doctor_and_patient, client):
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(dosage_form='inventada'))
+        from models import MedicalOrder
+        with app.app_context():
+            assert MedicalOrder.query.count() == 0
+
+    def test_unknown_route_rejected(self, app, doctor_and_patient, client):
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(route='telepatica'))
+        from models import MedicalOrder
+        with app.app_context():
+            assert MedicalOrder.query.count() == 0
+
+    def test_order_stores_every_required_element(self, app, doctor_and_patient, client):
+        import json
+
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form())
+
+        from models import MedicalOrder
+        with app.app_context():
+            order = MedicalOrder.query.one()
+
+            # Datos del paciente congelados en la orden.
+            assert order.patient_document, 'falta el numero de documento'
+            assert order.patient_document_type, 'falta el tipo de documento'
+            assert order.clinical_record_number, 'falta el numero de historia clinica'
+            assert order.care_modality, 'falta la modalidad de atencion'
+
+            # Datos del prescriptor.
+            assert order.doctor_registration == 'RM-12345'
+            assert order.signed_at is not None
+
+            # Cada renglon.
+            med = json.loads(order.meds_json)[0]
+            for campo in ('denominacion_comun', 'concentracion', 'forma_farmaceutica',
+                          'via', 'dosis', 'frecuencia', 'duracion_dias',
+                          'cantidad', 'cantidad_en_letras'):
+                assert med.get(campo), f'falta {campo} en el renglon'
+
+            assert med['cantidad'] == 15
+            assert med['cantidad_en_letras'] == 'quince'
+
+    def test_brand_name_and_generic_are_distinguished(self, app, doctor_and_patient, client):
+        """La norma exige prescribir por denominación común internacional."""
+        import json
+
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(med_name='Dolex', generic_name='Paracetamol'))
+
+        from models import MedicalOrder
+        with app.app_context():
+            med = json.loads(MedicalOrder.query.one().meds_json)[0]
+            assert med['denominacion_comun'] == 'Paracetamol'
+            assert med['nombre_comercial'] == 'Dolex'
+            # El motor de seguridad debe evaluar el principio activo, no la marca.
+            assert med['nombre_med'] == 'Paracetamol'
+
+    def test_quantity_in_words_matches_number(self, app, doctor_and_patient, client):
+        """La cantidad en letras evita que una cifra se altere con un trazo."""
+        import json
+
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(quantity='30', duration_days='10'))
+
+        from models import MedicalOrder
+        with app.app_context():
+            med = json.loads(MedicalOrder.query.one().meds_json)[0]
+            assert med['cantidad'] == 30
+            assert med['cantidad_en_letras'] == 'treinta'
+
+
+class TestTelemedicineConsent:
+    """La Resolución 2654 de 2019 exige consentimiento específico."""
+
+    def test_telemedicine_order_requires_specific_consent(self, app, doctor_and_patient,
+                                                          client):
+        from models import Chat, MedicalOrder, db
+
+        with app.app_context():
+            chat = Chat(clinic_id=1,
+                        patient_id=doctor_and_patient['patient'].id,
+                        doctor_id=doctor_and_patient['doctor'].id, status='open')
+            db.session.add(chat)
+            db.session.commit()
+            chat_id = chat.id
+
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(chat_id=str(chat_id)))
+
+        with app.app_context():
+            assert MedicalOrder.query.count() == 0, (
+                'sin consentimiento de telemedicina no debe emitirse la orden'
+            )
+
+    def test_order_records_modality_and_consent(self, app, doctor_and_patient, client):
+        from models import CARE_TELEMEDICINE, Chat, InformedConsentLog, MedicalOrder, db
+        from time_utils import colombia_now
+        from legal_documents import consent_reference
+
+        version, huella = consent_reference('telemedicine')
+
+        with app.app_context():
+            chat = Chat(clinic_id=1,
+                        patient_id=doctor_and_patient['patient'].id,
+                        doctor_id=doctor_and_patient['doctor'].id, status='open')
+            db.session.add(chat)
+            db.session.add(InformedConsentLog(
+                patient_id=doctor_and_patient['patient'].id,
+                clinic_id=1, consent_type='telemedicine',
+                document_version=version, document_hash=huella,
+                granted=True, digital_signature_hash='firma',
+                timestamp=colombia_now(),
+            ))
+            db.session.commit()
+            chat_id = chat.id
+
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{doctor_and_patient["patient"].id}',
+                    data=prescription_form(chat_id=str(chat_id)))
+
+        with app.app_context():
+            order = MedicalOrder.query.one()
+            assert order.care_modality == CARE_TELEMEDICINE
+            assert order.telemedicine_consent_id is not None
+
+    def test_patient_can_grant_consent(self, app, make_user, client):
+        from models import InformedConsentLog
+        from legal_documents import consent_reference
+
+        make_user(role='patient', username='pac_telemed')
+        client.post('/login', data={'username': 'pac_telemed', 'password': VALID_PASSWORD})
+
+        assert client.get('/privacidad-datos/consentimiento-telemedicina').status_code == 200
+
+        client.post('/privacidad-datos/consentimiento-telemedicina',
+                    data={'accept_telemedicine': 'on'})
+
+        version, huella = consent_reference('telemedicine')
+        with app.app_context():
+            log = InformedConsentLog.query.filter_by(consent_type='telemedicine').one()
+            assert log.granted is True
+            # Queda registrado QUE texto acepto, no solo que acepto.
+            assert log.document_version == version
+            assert log.document_hash == huella
+            assert log.digital_signature_hash
+
+
+class TestOrderAnnulment:
+    """Una orden mal emitida debe poder retirarse."""
+
+    def _emitir(self, client, patient_id):
+        client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/prescription/{patient_id}', data=prescription_form())
+
+    def test_doctor_can_annul_with_reason(self, app, doctor_and_patient, client):
+        from models import MedicalOrder
+
+        self._emitir(client, doctor_and_patient['patient'].id)
+        with app.app_context():
+            order_id = MedicalOrder.query.one().id
+
+        client.post(f'/doctor/order/{order_id}/anular',
+                    data={'reason': 'Dosis equivocada, se emite orden corregida.'})
+
+        with app.app_context():
+            order = MedicalOrder.query.one()
+            assert order.annulled_at is not None
+            assert order.status == 'anulada'
+            assert order.annulled_by_id == doctor_and_patient['doctor'].id
+            assert 'Dosis equivocada' in order.annulment_reason
+
+    def test_annulment_requires_a_real_reason(self, app, doctor_and_patient, client):
+        from models import MedicalOrder
+
+        self._emitir(client, doctor_and_patient['patient'].id)
+        with app.app_context():
+            order_id = MedicalOrder.query.one().id
+
+        client.post(f'/doctor/order/{order_id}/anular', data={'reason': 'error'})
+
+        with app.app_context():
+            assert MedicalOrder.query.one().annulled_at is None
+
+    def test_order_is_never_deleted(self, app, doctor_and_patient, client):
+        """Anular no borra: la orden es parte de la historia clinica."""
+        from models import MedicalOrder
+
+        self._emitir(client, doctor_and_patient['patient'].id)
+        with app.app_context():
+            order_id = MedicalOrder.query.one().id
+
+        client.post(f'/doctor/order/{order_id}/anular',
+                    data={'reason': 'Se prescribio al paciente equivocado.'})
+
+        with app.app_context():
+            assert MedicalOrder.query.count() == 1
+            assert MedicalOrder.query.one().meds_json
+
+    def test_annulled_order_cannot_be_dispensed(self, app, doctor_and_patient,
+                                                make_user, client):
+        """El fallo que esto previene: dispensar una receta retirada."""
+        from models import MedicalOrder, MedicationPickupTicket
+
+        self._emitir(client, doctor_and_patient['patient'].id)
+        with app.app_context():
+            order_id = MedicalOrder.query.one().id
+
+        client.post(f'/doctor/order/{order_id}/anular',
+                    data={'reason': 'Medicamento contraindicado, se retira la orden.'})
+
+        make_user(role='staff', username='staff_anulada')
+        client.post('/login', data={'username': 'staff_anulada', 'password': VALID_PASSWORD})
+        client.post(f'/staff/dispense/{order_id}', data={})
+
+        with app.app_context():
+            assert MedicationPickupTicket.query.count() == 0, (
+                'una orden anulada no puede generar ticket de entrega'
+            )
+
+    def test_only_the_signing_doctor_may_annul(self, app, doctor_and_patient,
+                                               make_user, client):
+        from models import MedicalOrder
+
+        self._emitir(client, doctor_and_patient['patient'].id)
+        with app.app_context():
+            order_id = MedicalOrder.query.one().id
+
+        make_user(role='doctor', username='doc_ajeno', medical_registration='RM-999',
+                  signature_path='clinic_1/f.png')
+        client.post('/login', data={'username': 'doc_ajeno', 'password': VALID_PASSWORD})
+        client.post(f'/doctor/order/{order_id}/anular',
+                    data={'reason': 'Intento de anulacion por otro profesional.'})
+
+        with app.app_context():
+            assert MedicalOrder.query.one().annulled_at is None

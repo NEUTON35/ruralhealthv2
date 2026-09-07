@@ -1,103 +1,186 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-        <div class="p-6 sm:p-10 bg-gradient-to-r from-primary to-primary-dark text-white relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-8 opacity-10"><i data-lucide="shield-check" class="w-32 h-32"></i></div>
-            <div class="relative z-10">
-                <p class="text-xs font-bold uppercase tracking-widest text-primary-100 flex items-center gap-2"><i data-lucide="heart-pulse" class="w-4 h-4"></i> RuralHealth Connect</p>
-                <h1 class="text-3xl sm:text-4xl font-bold mt-2">Tu salud, nuestra prioridad.</h1>
-                <p class="text-sm sm:text-base text-blue-50 mt-3 max-w-2xl leading-relaxed">Este documento está diseñado para ser claro y transparente. Tu confianza es el pilar de nuestra plataforma, por lo que hemos redactado estos términos pensando siempre en tu bienestar y en el respeto por tu privacidad. *No reemplaza asesoría jurídica ni consentimiento médico informado específico.*</p>
-            </div>
-        </div>
 
-        <div class="grid sm:grid-cols-3 border-b border-slate-100 text-sm font-bold bg-slate-50">
-            <a href="/terminos" class="p-4 text-center transition-colors {% if active_tab == 'terms' %}bg-white text-primary border-b-2 border-primary{% else %}text-slate-500 hover:bg-slate-100{% endif %}">Términos de Uso</a>
-            <a href="/privacidad" class="p-4 text-center transition-colors {% if active_tab == 'privacy' %}bg-white text-primary border-b-2 border-primary{% else %}text-slate-500 hover:bg-slate-100{% endif %}">Privacidad y Datos</a>
-            <a href="/transparencia" class="p-4 text-center transition-colors {% if active_tab == 'transparency' %}bg-white text-primary border-b-2 border-primary{% else %}text-slate-500 hover:bg-slate-100{% endif %}">Transparencia</a>
-        </div>
+    {# --- Consentimiento pendiente -----------------------------------------
+       Cuando el paciente llega aquí porque debe autorizar el tratamiento de
+       datos sensibles, la acción va arriba: es lo que vino a hacer. #}
+    {% if consent_required %}
+    <div class="border border-caution-border bg-caution-subtle rounded-lg p-5 mb-6">
+        <h2 class="font-semibold text-caution-text flex items-center gap-2 mb-2">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+            Autorización pendiente
+        </h2>
+        <p class="text-sm text-caution-text leading-relaxed mb-4">
+            Para usar el chat clínico, agendar consultas y recibir seguimiento
+            necesitamos tu autorización expresa para tratar tus datos de salud.
+            Son datos sensibles y la ley exige que la otorgues por separado.
+        </p>
+        <p class="text-sm text-caution-text leading-relaxed mb-4">
+            Puedes negarte. En ese caso conservarás tu cuenta y podrás consultar
+            tu información, pero no podremos prestarte atención clínica por esta
+            plataforma: no hay forma de hacerlo sin tratar esos datos.
+        </p>
 
-        <article class="p-5 sm:p-8 prose max-w-none text-slate-700">
-            {% if active_tab == 'terms' %}
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">Términos y Condiciones de Uso</h2>
-            <p class="mb-4">Queremos que tu experiencia en RuralHealth Connect sea segura y útil. Al usar nuestra plataforma, aceptas que estamos aquí para facilitar la comunicación, la agenda y el seguimiento básico entre tú y los profesionales de la salud. Recuerda siempre que la atención médica, diagnóstico, tratamiento y decisiones clínicas son responsabilidad exclusiva de tu profesional tratante.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5 text-primary"></i> Uso seguro y responsable</h3>
-            <ul class="list-none space-y-3 pl-1 mb-6">
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span>Te pedimos que entregues información veraz, completa y actualizada para asegurar que recibes la mejor atención posible.</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span>Tu seguridad es clave: no compartas tus credenciales, no accedas a cuentas ajenas ni cargues archivos maliciosos.</span></li>
-                <li class="flex items-start gap-2 bg-red-50 p-3 rounded-lg text-red-800 border border-red-100"><i data-lucide="alert-circle" class="w-5 h-5 mt-0.5 text-red-600 flex-shrink-0"></i><span><strong>Importante:</strong> Esta plataforma no está diseñada para emergencias vitales. Si enfrentas una urgencia, acude inmediatamente a la línea local de emergencia o al centro de salud más cercano.</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span>Para tu tranquilidad, el sistema registra auditorías de acceso y eventos de seguridad. Esto nos permite proteger la información tanto de pacientes como de profesionales.</span></li>
-            </ul>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="wifi" class="w-5 h-5 text-primary"></i> Nuestra Promesa de Disponibilidad</h3>
-            <p class="mb-6">Hemos diseñado la plataforma pensando en las zonas rurales, optimizando el uso de datos. Sin embargo, sabemos que pueden existir interrupciones por conectividad, mantenimientos o factores externos. Estamos comprometidos a trabajar continuamente para minimizar estos inconvenientes.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="map" class="w-5 h-5 text-primary"></i> Desplazamientos y Rutas Seguras</h3>
-            <p class="mb-3">Las rutas y distancias que sugerimos son apoyos calculados con GPS. Te pedimos encarecidamente que siempre confirmes las condiciones reales de la vía, el clima, el transporte y tu seguridad antes de emprender cualquier desplazamiento.</p>
-            <p class="mb-6">Cuidamos celosamente tu ubicación: solo se utiliza si nos la proporcionas o la autorizas expresamente desde tu navegador. Los médicos, por su parte, deciden libremente si publican la ubicación de su consultorio.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="user-check" class="w-5 h-5 text-primary"></i> Tu Rol en la Seguridad</h3>
-            <p>Tú eres el primer guardián de tus datos. Te recomendamos crear una contraseña segura, cerrar sesión en dispositivos compartidos y reportar cualquier actividad inusual que observes en tu cuenta.</p>
-
-            {% elif active_tab == 'privacy' %}
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">Política de Privacidad y Confidencialidad</h2>
-            <p class="mb-6">Respetar tu privacidad no es solo un deber legal (Ley 1581 de 2012 y Decreto 1377 de 2013 en Colombia), es nuestro compromiso ético contigo. Tus datos médicos son tratados con la máxima confidencialidad, aplicando los principios de autorización previa, finalidad estricta, y seguridad técnica.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5 text-primary"></i> Información que Cuidamos</h3>
-            <ul class="list-none space-y-3 pl-1 mb-6">
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span><strong>Identificación y Contacto:</strong> Tu nombre, usuario, cédula, teléfono y correo (solo si lo provees).</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span><strong>Tu Salud (Datos Sensibles):</strong> Motivos de consulta, mensajes con tu médico, historial, citas y notas clínicas. Esta es la información más delicada y la protegemos como tal.</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span><strong>Ubicación Geográfica:</strong> Tu latitud y longitud, únicamente para ayudarte a encontrar el profesional o farmacia más cercanos.</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span><strong>Seguridad Forense:</strong> Registramos IP y eventos de auditoría exclusivamente para prevenir fraudes y proteger tus datos ante cualquier amenaza.</span></li>
-            </ul>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="target" class="w-5 h-5 text-primary"></i> ¿Para qué usamos tus datos?</h3>
-            <p class="mb-6">Única y exclusivamente para brindarte los servicios de salud que solicitas, agendar tus citas, permitir la comunicación confidencial con tu médico, facilitar tus desplazamientos, y garantizar el cumplimiento normativo exigido por la ley colombiana.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="lock" class="w-5 h-5 text-primary"></i> Nuestro Fuerte: La Seguridad</h3>
-            <p class="mb-6">Tus datos sensibles están cifrados bajo estándares de grado militar. Utilizamos tokens de seguridad, validación exhaustiva de archivos médicos y un modelo de permisos donde solo el personal estrictamente necesario puede acceder a fragmentos específicos de tu información. Tu historia clínica es tuya y de tu médico, de nadie más.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="user-cog" class="w-5 h-5 text-primary"></i> Tienes el Control</h3>
-            <p>En cualquier momento puedes solicitarnos acceder a tu información, actualizarla, rectificarla o conocer el uso que le hemos dado. Tienes el poder de revocar tu autorización cuando lo desees, comprendiendo que algunas regulaciones nos exigen conservar la historia clínica por tiempos definidos legalmente.</p>
-
-            {% if consent_required %}
-            <form method="POST" action="/patient/consentimiento-datos-sensibles" class="not-prose mt-10 bg-primary/5 border border-primary/20 rounded-2xl p-6 sm:p-8 space-y-5 shadow-sm">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <h3 class="text-xl font-bold text-primary-dark flex items-center gap-3">
-                    <div class="bg-primary/10 p-2 rounded-lg"><i data-lucide="shield-check" class="w-6 h-6 text-primary"></i></div>
-                    Consentimiento para el cuidado de tu salud
-                </h3>
-                <p class="text-sm text-slate-700 leading-relaxed">Para poder brindarte nuestros servicios de telemedicina, agendar tus citas y permitir que te comuniques con tu doctor, necesitamos tu permiso explícito. Tu autorización nos permite procesar tus <strong>datos de salud (datos sensibles)</strong> de manera estrictamente confidencial. Es tu decisión otorgar este permiso, y es indispensable para que la plataforma funcione para ti.</p>
-                <label class="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4 text-sm font-bold text-slate-700 cursor-pointer hover:border-primary transition-colors">
-                    <input type="checkbox" name="accept_sensitive_data" class="mt-1 w-5 h-5 accent-primary" required aria-label="Accept sensitive data">
-                    <span class="leading-relaxed">He leído con atención y comprendido la política de privacidad. Otorgo mi autorización expresa para el tratamiento confidencial de mis datos sensibles de salud.</span>
-                </label>
-                <button type="submit" class="w-full bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition shadow-md hover:shadow-lg text-lg">Acepto y deseo continuar</button>
-            </form>
-            {% endif %}
-
-            {% else %}
-            <h2 class="text-2xl font-bold text-slate-900 mb-4">Nuestro Compromiso de Transparencia</h2>
-            <p class="mb-6">Creemos firmemente en que una relación médico-paciente basada en tecnología requiere absoluta claridad. Siguiendo los principios de la Ley 1712 de 2014, garantizamos que nuestras políticas y formas de operar sean abiertas y comprensibles para todos, manteniendo al mismo tiempo el secreto profesional y médico inquebrantable.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="eye" class="w-5 h-5 text-primary"></i> Lo que puedes ver y conocer</h3>
-            <ul class="list-none space-y-3 pl-1 mb-6">
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span>Nuestros términos, políticas de privacidad y cómo gestionamos tus datos.</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span>Las finalidades exactas para las que recolectamos la información y nuestras estrictas reglas de seguridad.</span></li>
-                <li class="flex items-start gap-2"><i data-lucide="asterisk" class="w-4 h-4 mt-1 text-slate-400"></i><span>Los canales habilitados para ejercer todos tus derechos y hacer solicitudes o reclamos.</span></li>
-            </ul>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="eye-off" class="w-5 h-5 text-primary"></i> Lo que permanece estrictamente confidencial</h3>
-            <p class="mb-6">Tu historia clínica, tus cédulas, los mensajes con tu médico, tus coordenadas exactas y cualquier información que te identifique de forma personal <strong>no se publica ni se comparte con terceros</strong>, a menos que tú lo autorices explícitamente o exista un requerimiento judicial obligatorio.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5 text-primary"></i> Claridad sobre las Ubicaciones</h3>
-            <p class="mb-6">Para proteger a todos nuestros usuarios, los consultorios médicos solo son visibles si el profesional decide activamente mostrarlos. Queremos que te sientas seguro sabiendo exactamente con quién compartes tu información.</p>
-            
-            <h3 class="font-bold text-slate-900 mt-8 mb-3 flex items-center gap-2"><i data-lucide="history" class="w-5 h-5 text-primary"></i> Trazabilidad y Rendición de Cuentas</h3>
-            <p>Conservamos registros detallados de accesos y cambios en el sistema, lo cual nos permite identificar cualquier irregularidad de manera inmediata y garantizar que podemos responder por la seguridad de la plataforma ante ti y ante las autoridades correspondientes.</p>
-            {% endif %}
-        </article>
+        <form method="POST" action="{{ url_for('patient.consent') }}" class="space-y-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label class="flex items-start gap-3 text-sm text-caution-text cursor-pointer">
+                <input type="checkbox" name="accept_sensitive_data" required
+                       class="mt-0.5 w-4 h-4 rounded border-caution-border shrink-0">
+                <span>
+                    Autorizo el tratamiento de mis datos de salud en los términos
+                    de la Política de Tratamiento de Datos
+                    {% if documents.privacy %}(versión {{ documents.privacy.version }}){% endif %}.
+                </span>
+            </label>
+            <button type="submit"
+                class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
+                Autorizar y continuar
+            </button>
+        </form>
     </div>
+    {% endif %}
+
+    {# --- Aviso de configuración pendiente ---------------------------------
+       Solo para administradores. Un documento legal con datos sin completar no
+       es publicable, y quien puede completarlos debe saberlo. #}
+    {% if pending_config and current_user.is_authenticated and current_user.role in ('admin', 'super') %}
+    <div class="border border-critical-border bg-critical-subtle rounded-lg p-5 mb-6 no-print">
+        <h2 class="font-semibold text-critical-text flex items-center gap-2 mb-2">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            Estos documentos no están listos para publicarse
+        </h2>
+        <p class="text-sm text-critical-text leading-relaxed mb-3">
+            Faltan datos obligatorios del prestador. Mientras no se completen, los
+            textos muestran marcadores en lugar de la información legal y no
+            cumplen los requisitos del artículo 13 del Decreto 1377 de 2013.
+        </p>
+        <ul class="text-sm text-critical-text space-y-1 mb-4">
+            {% for doc_key, missing in pending_config.items() %}
+            <li><b>{{ documents[doc_key].title if doc_key in documents else doc_key }}:</b>
+                {{ missing | join(', ') }}</li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('settings.index') }}#legal"
+           class="inline-flex items-center gap-2 text-critical font-medium text-sm hover:underline">
+            <i data-lucide="settings" class="w-4 h-4"></i> Completar en Ajustes
+        </a>
+    </div>
+    {% endif %}
+
+    <header class="mb-6">
+        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+            Documentos legales
+        </h1>
+        <p class="text-slate-600 mt-1.5 text-sm leading-relaxed">
+            Cada documento indica su versión y su fecha de entrada en vigencia.
+            Las versiones anteriores quedan archivadas: si aceptaste una, podemos
+            acreditar exactamente qué texto era.
+        </p>
+    </header>
+
+    {# --- Pestañas --------------------------------------------------------- #}
+    <nav class="border-b border-slate-200 mb-6 no-print" aria-label="Documentos legales">
+        <ul class="flex flex-wrap gap-x-6 -mb-px text-sm">
+            {% for key, label, href in tabs %}
+            <li>
+                <a href="{{ href }}"
+                   class="inline-block py-3 border-b-2 font-medium transition-colors
+                          {% if active_tab == key %}border-accent text-accent
+                          {% else %}border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300{% endif %}"
+                   {% if active_tab == key %}aria-current="page"{% endif %}>
+                    {{ label }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    {# --- Documento -------------------------------------------------------- #}
+    {% set doc = documents.get(active_tab) %}
+    {% if doc %}
+    <article class="bg-white border border-slate-200 rounded-lg">
+
+        <div class="px-6 py-5 border-b border-slate-200 bg-slate-50 rounded-t-lg">
+            <h2 class="text-lg font-semibold text-slate-900">{{ doc.title }}</h2>
+            <p class="text-sm text-slate-600 mt-1 leading-relaxed">{{ doc.summary }}</p>
+            <dl class="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-xs text-slate-600">
+                <div class="flex gap-1.5">
+                    <dt class="font-medium">Versión:</dt>
+                    <dd class="font-mono">{{ doc.version }}</dd>
+                </div>
+                <div class="flex gap-1.5">
+                    <dt class="font-medium">Vigente desde:</dt>
+                    <dd>{{ doc.effective_date.strftime('%d/%m/%Y') }}</dd>
+                </div>
+                <div class="flex gap-1.5">
+                    <dt class="font-medium">Huella:</dt>
+                    <dd class="font-mono" title="Identifica esta versión exacta del texto">
+                        {{ doc.content_hash[:16] }}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="px-6 py-6 space-y-7">
+            {% for title, body in doc.sections %}
+            <section>
+                <h3 class="font-semibold text-slate-900 mb-2">{{ title }}</h3>
+                <div class="text-sm text-slate-700 leading-relaxed space-y-3 legal-body">
+                    {{ body | legal_markup }}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+
+        {% if doc.legal_basis %}
+        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-2">
+                Normativa aplicable
+            </h3>
+            <ul class="text-xs text-slate-600 space-y-0.5">
+                {% for norma in doc.legal_basis %}
+                <li>{{ norma }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </article>
+
+    <div class="mt-5 flex flex-wrap gap-3 items-center no-print">
+        <button type="button" onclick="window.print()"
+            class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors">
+            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir o guardar en PDF
+        </button>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('privacy.index') }}"
+           class="inline-flex items-center gap-2 text-accent font-medium text-sm hover:underline">
+            <i data-lucide="shield" class="w-4 h-4"></i> Ver y gestionar mis datos
+        </a>
+        {% endif %}
+    </div>
+
+    <p class="text-xs text-slate-600 mt-6 leading-relaxed">
+        Este documento no sustituye asesoría jurídica ni el consentimiento
+        informado específico que tu profesional debe explicarte antes de un
+        procedimiento concreto.
+    </p>
+    {% endif %}
 </div>
+
+<style>
+    /* El cuerpo de los documentos legales viene en texto plano con marcado
+       mínimo: negritas, listas y tablas. Se le da forma aquí en vez de meter
+       clases en cada línea del texto, para que el contenido legal siga siendo
+       legible en el código fuente. */
+    .legal-body ul { list-style: disc; padding-left: 1.25rem; }
+    .legal-body ul li { margin-bottom: 0.25rem; }
+    .legal-body ol { list-style: decimal; padding-left: 1.25rem; }
+    .legal-body ol li { margin-bottom: 0.25rem; }
+    .legal-body strong { font-weight: 600; color: #0f172a; }
+    .legal-body table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.8125rem; }
+    .legal-body th, .legal-body td { border: 1px solid #e2e8f0; padding: 0.5rem 0.625rem; text-align: left; }
+    .legal-body th { background: #f8fafc; font-weight: 600; }
+    .legal-body .pendiente { background: #fef2f2; color: #7f1d1d; padding: 0 0.25rem; border-radius: 0.1875rem; font-weight: 600; }
+</style>
 {% endblock %}

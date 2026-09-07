@@ -52,17 +52,20 @@ def redirect_for_role(role):
 
 @auth_bp.route('/terminos')
 def terms():
-    return render_template('legal.html', active_tab='terms')
+    from app import legal_context
+    return render_template('legal.html', **legal_context('terms'))
 
 
 @auth_bp.route('/privacidad')
 def privacy():
-    return render_template('legal.html', active_tab='privacy')
+    from app import legal_context
+    return render_template('legal.html', **legal_context('privacy'))
 
 
 @auth_bp.route('/transparencia')
 def transparency():
-    return render_template('legal.html', active_tab='transparency')
+    from app import legal_context
+    return render_template('legal.html', **legal_context('transparency'))
 
 @auth_bp.route('/manual')
 def manual():

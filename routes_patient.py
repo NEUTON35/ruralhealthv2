@@ -161,7 +161,8 @@ def consent():
         db.session.commit()
         flash('Autorización registrada con firma digital. Ya puedes iniciar tu consulta.')
         return redirect(url_for('patient.dashboard'))
-    return render_template('legal.html', active_tab='privacy', consent_required=True)
+    from app import legal_context
+    return render_template('legal.html', consent_required=True, **legal_context('privacy'))
 
 # --- DASHBOARD ---
 @patient_bp.route('/dashboard')

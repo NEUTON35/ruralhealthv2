@@ -20,6 +20,7 @@ límite se le explica al titular en la propia respuesta, no se aplica en silenci
 """
 
 import csv
+import hashlib
 import io
 import json
 import zipfile
@@ -35,10 +36,20 @@ from models import (
     MedicalOrder, MedicationPickupTicket, Message, PatientAllergy,
     PatientChronicCondition, Rating, User, db,
 )
+from legal_documents import get_document, render_document
 from security import audit, csv_safe_row, role_required
 from time_utils import colombia_now, colombia_strftime
 
 privacy_bp = Blueprint('privacy', __name__)
+
+
+def _legal_values():
+    """Datos del prestador que completan los textos legales."""
+    from models import LegalConfiguration
+    try:
+        return {row.key: row.value for row in LegalConfiguration.query.all() if row.value}
+    except Exception:
+        return {}
 
 # Plazos del Decreto 1377 de 2013: diez días hábiles para consulta, quince para
 # reclamos. Se usa el calendario natural con margen, porque calcular días hábiles
@@ -290,6 +301,80 @@ def create_request():
             f'{RESPONSE_DAYS[request_type]} dias siguientes.'
         )
     return redirect(url_for('privacy.index'))
+
+
+@privacy_bp.route('/consentimiento-telemedicina', methods=['GET', 'POST'])
+@login_required
+def telemedicine_consent():
+    """Consentimiento informado específico para atención por telemedicina.
+
+    La Resolución 2654 de 2019 lo exige aparte del consentimiento general de
+    datos, y por una razón sustantiva: lo que el paciente debe entender aquí no
+    es cómo se tratan sus datos, sino que **no habrá examen físico** y qué
+    implica eso para su diagnóstico.
+
+    Antes no existía: se emitían órdenes por telemedicina sin constancia de que
+    el paciente conociera los límites de esa modalidad.
+    """
+    documento = get_document('telemedicine')
+    valores = _legal_values()
+    rendered = render_document('telemedicine', valores)
+
+    vigente = InformedConsentLog.query.filter_by(
+        patient_id=current_user.id,
+        consent_type='telemedicine',
+        granted=True,
+        revoked_at=None,
+    ).order_by(InformedConsentLog.timestamp.desc()).first()
+
+    if request.method == 'POST':
+        if request.form.get('accept_telemedicine') != 'on':
+            flash('Debes marcar la aceptación para poder atenderte por telemedicina.')
+            return redirect(url_for('privacy.telemedicine_consent'))
+
+        now = colombia_now()
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        agente = (request.user_agent.string or '')[:300]
+
+        # La firma vincula al titular, el texto exacto que acepto y el momento.
+        firma = hashlib.sha256(
+            '|'.join([
+                str(current_user.id),
+                current_user.cedula_hash or '',
+                documento.version,
+                documento.content_hash,
+                now.isoformat(),
+                str(ip),
+                agente,
+            ]).encode('utf-8')
+        ).hexdigest()
+
+        db.session.add(InformedConsentLog(
+            patient_id=current_user.id,
+            clinic_id=current_user.clinic_id,
+            consent_type='telemedicine',
+            document_version=documento.version,
+            document_hash=documento.content_hash,
+            granted=True,
+            ip_address=ip,
+            user_agent=agente,
+            digital_signature_hash=firma,
+            timestamp=now,
+        ))
+        audit(
+            'telemedicine_consent_accepted',
+            details=f'version={documento.version}; hash={documento.content_hash[:12]}',
+        )
+        db.session.commit()
+
+        flash('Consentimiento registrado. Ya puedes atenderte por telemedicina.')
+        return redirect(url_for('privacy.index'))
+
+    return render_template(
+        'telemedicine_consent.html',
+        document=rendered,
+        current_consent=vigente,
+    )
 
 
 @privacy_bp.route('/revocar-consentimiento', methods=['POST'])

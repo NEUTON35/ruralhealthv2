@@ -348,6 +348,11 @@ def verify_order(verification_hash):
         (MedicalOrder.verification_hash == verification_hash) | (MedicalOrder.hash_seguridad == verification_hash),
     ).first_or_404()
 
+    if order.annulled_at:
+        audit('verify_blocked_annulled_order', details=f'order_id={order.id}')
+        db.session.commit()
+        flash('Esta orden fue anulada por el profesional que la emitio.')
+        return redirect(url_for('staff.dashboard'))
     if order.expires_at < colombia_now():
         order.status = 'vencido'
         audit('medical_order_expired_on_verify', details=f'order_id={order.id}')
@@ -374,6 +379,12 @@ def verify_order(verification_hash):
 @role_required(ROLE_STAFF, ROLE_RECEPTIONIST)
 def dispense(order_id):
     order = MedicalOrder.query.filter_by(id=order_id, clinic_id=current_user.clinic_id).first_or_404()
+    if order.annulled_at:
+        # Una orden anulada no puede dispensarse aunque no haya vencido.
+        audit('dispense_blocked_annulled_order', details=f'order_id={order.id}')
+        db.session.commit()
+        flash('Esta orden fue anulada por el profesional que la emitio y no puede dispensarse.')
+        return redirect(url_for('staff.dashboard'))
     if order.status not in {'pendiente', 'pendiente_stock'}:
         flash('Esta orden ya no esta disponible para autorizar.')
         return redirect(url_for('staff.dashboard'))
