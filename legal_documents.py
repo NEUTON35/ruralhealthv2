@@ -76,7 +76,7 @@ class LegalDocument:
 TERMS = LegalDocument(
     key='terms',
     title='Términos y Condiciones de Uso',
-    version='3.0',
+    version='4.0',
     effective_date=date(2026, 9, 6),
     summary=(
         'Condiciones que rigen el acceso y uso de la plataforma, alcance del '
@@ -87,6 +87,9 @@ TERMS = LegalDocument(
         'Resolución 2654 de 2019, telesalud y telemedicina',
         'Ley 1480 de 2011, Estatuto del Consumidor',
         'Ley 527 de 1999, comercio electrónico y mensajes de datos',
+        'Decreto 2364 de 2012, firma electrónica',
+        'Resolución 3100 de 2019, habilitación de servicios de salud',
+        'Ley 1438 de 2011, artículo 136, reserva de la historia clínica',
     ),
     sections=[
         ('Cláusula 1. Identificación del operador', """
@@ -200,7 +203,27 @@ La disponibilidad de medicamentos depende del inventario físico de cada
 establecimiento farmacéutico. La información de existencias que muestra el
 sistema es indicativa y no constituye garantía de entrega.
 """),
-        ('Cláusula 9. Disponibilidad del servicio', """
+        ('Cláusula 9. Firma electrónica y valor probatorio', """
+Las órdenes médicas, los consentimientos y las aceptaciones que se otorgan en la
+plataforma se suscriben mediante firma electrónica, en los términos del artículo
+7 de la Ley 527 de 1999 y del Decreto 2364 de 2012.
+
+El método empleado asocia cada acto a su autor mediante la autenticación previa
+con credenciales personales e intransferibles, el registro de la fecha, la hora y
+el origen de la conexión, y el cálculo de una huella criptográfica del contenido
+que permite advertir cualquier alteración posterior. El registro de auditoría se
+encuentra encadenado, de modo que la supresión o modificación de una entrada
+resulta detectable.
+
+Conforme al artículo 7 de la Ley 527 de 1999, este método es confiable y
+apropiado para los fines de los actos que se otorgan por esta vía. Ello no
+sustituye la firma digital con certificado emitido por entidad de certificación
+en aquellos casos en que la normativa la exija de manera expresa.
+
+Los mensajes de datos generados y conservados por la plataforma tienen el valor
+probatorio que les reconocen los artículos 10 y 11 de la Ley 527 de 1999.
+"""),
+        ('Cláusula 10. Disponibilidad del servicio', """
 El operador desarrolla la plataforma para su funcionamiento en condiciones de
 conectividad limitada, sin que ello constituya garantía de disponibilidad
 continua.
@@ -212,7 +235,7 @@ circunstancias constitutivas de fuerza mayor o caso fortuito.
 Ninguna funcionalidad de la plataforma sustituye la atención presencial cuando
 esta resulte necesaria.
 """),
-        ('Cláusula 10. Geolocalización y desplazamientos', """
+        ('Cláusula 11. Geolocalización y desplazamientos', """
 Las distancias y rutas que muestra la plataforma son estimaciones calculadas a
 partir de coordenadas geográficas. No consideran el estado de la vía, las
 condiciones climáticas, la disponibilidad de transporte ni las condiciones de
@@ -225,7 +248,7 @@ Los datos de ubicación se tratan únicamente previa autorización expresa del
 usuario, revocable en cualquier momento desde la configuración del navegador o
 desde el módulo de ajustes de la plataforma.
 """),
-        ('Cláusula 11. Condiciones económicas', """
+        ('Cláusula 12. Condiciones económicas', """
 Los servicios que causen costo se informarán con anterioridad a su contratación,
 con indicación del valor total en pesos colombianos.
 
@@ -237,12 +260,17 @@ independiente, según quien preste el servicio, con su propia identificación
 tributaria. El operador no es parte de dicha relación económica, salvo mención
 expresa en contrario.
 
-El derecho de retracto y la reversión del pago operan en los términos de los
-artículos 47 y 51 de la Ley 1480 de 2011, cuando la contratación se haya
-efectuado por medios electrónicos y la naturaleza del servicio lo permita. Los
-servicios ya prestados no son susceptibles de retracto.
+El derecho de retracto procede dentro de los cinco días hábiles siguientes a la
+celebración del contrato, conforme al artículo 47 de la Ley 1480 de 2011. No
+procede respecto de servicios que hayan comenzado a ejecutarse con anuencia del
+consumidor antes del vencimiento de dicho término, ni respecto de servicios ya
+prestados.
+
+La reversión del pago opera en los términos del artículo 51 de la Ley 1480 de
+2011 cuando la contratación se haya efectuado por medios electrónicos con
+instrumento de pago electrónico.
 """),
-        ('Cláusula 12. Propiedad intelectual y titularidad de la información', """
+        ('Cláusula 13. Propiedad intelectual y titularidad de la información', """
 El software, los signos distintivos y los contenidos de la plataforma son de
 titularidad del operador o de sus licenciantes.
 
@@ -251,7 +279,7 @@ por mandato legal, en los términos de la Resolución 1995 de 1999 y de la
 Resolución 839 de 2017. El titular puede obtener copia íntegra de sus datos en
 cualquier momento desde el módulo dispuesto para tal efecto.
 """),
-        ('Cláusula 13. Régimen de responsabilidad', """
+        ('Cláusula 14. Régimen de responsabilidad', """
 El operador responde por el correcto funcionamiento de las herramientas que
 provee y por la custodia de la información conforme a la normativa aplicable.
 
@@ -264,7 +292,7 @@ Ninguna disposición del presente documento limita la responsabilidad derivada d
 dolo o culpa grave, ni afecta los derechos irrenunciables que la ley reconoce al
 consumidor y al paciente.
 """),
-        ('Cláusula 14. Terminación', """
+        ('Cláusula 15. Terminación', """
 El usuario puede solicitar el cierre de su cuenta en cualquier momento desde el
 módulo de ajustes. El cierre desactiva el acceso y cesa los tratamientos de
 datos que no obedezcan a una obligación legal.
@@ -277,7 +305,7 @@ términos del artículo 9 de la Ley 1581 de 2012.
 Se recomienda al usuario obtener copia de su información con anterioridad al
 cierre de la cuenta.
 """),
-        ('Cláusula 15. Modificaciones', """
+        ('Cláusula 16. Modificaciones', """
 El operador puede modificar los presentes términos. Cada versión se identifica
 con número y fecha de entrada en vigencia, y las versiones anteriores permanecen
 archivadas.
@@ -286,7 +314,7 @@ Las modificaciones sustanciales se comunicarán dentro de la plataforma con una
 antelación no inferior a quince días calendario. El usuario que no acepte las
 nuevas condiciones puede solicitar el cierre de su cuenta.
 """),
-        ('Cláusula 16. Ley aplicable, reclamaciones y jurisdicción', """
+        ('Cláusula 17. Ley aplicable, reclamaciones y jurisdicción', """
 Los presentes términos se rigen por la ley colombiana.
 
 Las peticiones, quejas, reclamos y sugerencias se reciben en [[CANAL_PQRS]] y se
@@ -315,7 +343,7 @@ jueces de la República de Colombia.
 PRIVACY = LegalDocument(
     key='privacy',
     title='Política de Tratamiento de Datos Personales',
-    version='3.0',
+    version='4.0',
     effective_date=date(2026, 9, 6),
     summary=(
         'Finalidades del tratamiento, derechos del titular, procedimiento para '
@@ -324,9 +352,10 @@ PRIVACY = LegalDocument(
     legal_basis=(
         'Ley 1581 de 2012, protección de datos personales',
         'Decreto 1377 de 2013, reglamentario de la Ley 1581',
-        'Ley 1266 de 2008, habeas data',
         'Resolución 1995 de 1999, historia clínica',
         'Resolución 839 de 2017, manejo y conservación de la historia clínica',
+        'Ley 1438 de 2011, artículo 136, reserva de la historia clínica',
+        'Ley 2015 de 2020, historia clínica electrónica interoperable',
     ),
     sections=[
         ('Artículo 1. Responsable del tratamiento', """
@@ -339,8 +368,17 @@ Teléfono: [[TELEFONO_CONTACTO]]
 
 Cada institución prestadora inscrita en la plataforma es responsable del
 tratamiento de la historia clínica de sus propios pacientes. Respecto de dichos
-datos, el operador actúa en calidad de encargado del tratamiento, en los términos
-del contrato suscrito con cada institución.
+datos, el operador actúa en calidad de encargado del tratamiento.
+
+La relación entre cada institución responsable y el operador consta en un
+contrato de transmisión de datos personales que cumple lo previsto en el
+artículo 25 del Decreto 1377 de 2013, en el que se señalan el alcance del
+tratamiento, las obligaciones del encargado y el deber de devolver o suprimir la
+información a la terminación del vínculo.
+
+El profesional independiente que atiende por la plataforma sin vinculación a una
+institución obra como responsable del tratamiento de las historias clínicas que
+conforma, y le son aplicables las mismas obligaciones.
 """),
         ('Artículo 2. Datos objeto de tratamiento', """
 1.  Datos de identificación: nombres y apellidos, tipo y número de documento,
@@ -439,12 +477,25 @@ señalado en el artículo 10.
 | Órdenes médicas | Quince años, por integrar la historia clínica | Resolución 839 de 2017 |
 | Registro de dispensación | Cinco años | Resolución 1403 de 2007 |
 | Consentimientos informados | Quince años | Resolución 839 de 2017 |
-| Registro de auditoría | Cinco años | Deber de demostrar el cumplimiento |
+| Registro de auditoría | Cinco años | Responsabilidad demostrada, Decreto 1377 de 2013 |
 | Documentos de facturación | Diez años | Artículo 28 del Código de Comercio |
 | Datos de cuenta sin actividad | Hasta la solicitud de cierre | Ley 1581 de 2012 |
 
-Vencido el término aplicable, la información se suprime o se anonimiza de forma
-irreversible.
+El término de quince años previsto para la historia clínica se cumple en dos
+etapas, conforme al artículo 2 de la Resolución 839 de 2017: los primeros cinco
+años en el archivo de gestión del prestador y los diez años siguientes en el
+archivo central.
+
+Términos especiales previstos en la misma disposición:
+
+1.  Tratándose de historias clínicas de víctimas de violaciones de derechos
+    humanos o de infracciones graves al derecho internacional humanitario, los
+    términos de retención y conservación se duplican.
+2.  Cuando la historia clínica llegue a formar parte de un proceso relacionado
+    con delitos de lesa humanidad, su conservación es permanente.
+
+Vencido el término aplicable, y siempre que no concurra ninguno de los supuestos
+anteriores, la información se suprime o se anonimiza de forma irreversible.
 """),
         ('Artículo 8. Derechos del titular', """
 Conforme al artículo 8 de la Ley 1581 de 2012, el titular tiene derecho a:
@@ -459,7 +510,7 @@ Conforme al artículo 8 de la Ley 1581 de 2012, el titular tiene derecho a:
 6.  Acceder en forma gratuita a sus datos personales.
 
 Estos derechos se ejercen a través del módulo dispuesto en la plataforma o por
-el canal señalado en el artículo siguiente.
+el canal señalado en el artículo 10 del presente documento.
 """),
         ('Artículo 9. Medidas de seguridad', """
 1.  Cifrado de la historia clínica y de los datos personales en reposo, con
@@ -523,13 +574,36 @@ La plataforma no emplea cookies publicitarias, herramientas de analítica de
 terceros ni tecnologías de rastreo.
 """),
         ('Artículo 13. Registro Nacional de Bases de Datos', """
-Las bases de datos administradas por el operador se inscriben en el Registro
-Nacional de Bases de Datos de la Superintendencia de Industria y Comercio,
-conforme a la Ley 1581 de 2012 y sus decretos reglamentarios.
+El Decreto 090 de 2018 circunscribe la obligación de inscribir las bases de datos
+en el Registro Nacional de Bases de Datos de la Superintendencia de Industria y
+Comercio a las sociedades y entidades sin ánimo de lucro cuyos activos totales
+superen cien mil unidades de valor tributario, y a las personas jurídicas de
+naturaleza pública.
 
-Estado del registro: [[ESTADO_RNBD]].
+Situación del responsable frente a esa obligación: [[ESTADO_RNBD]].
+
+La circunstancia de no estar obligado a la inscripción no exime del cumplimiento
+de la Ley 1581 de 2012 ni del deber de atender las solicitudes del titular en los
+términos del artículo 10 del presente documento.
 """),
-        ('Artículo 14. Vigencia', """
+        ('Artículo 14. Interoperabilidad de la historia clínica', """
+La Ley 2015 de 2020 creó la historia clínica electrónica interoperable. La
+Resolución 1888 de 2025 adoptó el Resumen Digital de Atención en Salud y dispuso
+que los prestadores lo remitan a la plataforma nacional dispuesta por el
+Ministerio de Salud y Protección Social, en el estándar HL7 FHIR.
+
+En virtud de dicha remisión, los datos clínicos relevantes de cada atención
+quedan disponibles para los profesionales de la salud que atiendan al titular en
+cualquier punto del país. La finalidad es la continuidad de la atención.
+
+El titular puede consultar en su historia clínica qué atenciones fueron objeto de
+remisión. Por tratarse del cumplimiento de una obligación legal, esta remisión no
+está sujeta a autorización adicional del titular ni admite oposición, en los
+términos del literal b del artículo 10 de la Ley 1581 de 2012.
+
+Estado de implementación en esta plataforma: [[ESTADO_IHCE]].
+"""),
+        ('Artículo 15. Vigencia', """
 La presente política rige a partir de su fecha de entrada en vigencia y
 permanecerá vigente mientras el operador ejerza su actividad.
 
@@ -645,7 +719,7 @@ dispositivo empleado y la versión del presente documento.
 TRANSPARENCY = LegalDocument(
     key='transparency',
     title='Transparencia y Derechos del Paciente',
-    version='3.0',
+    version='4.0',
     effective_date=date(2026, 9, 6),
     summary=(
         'Derechos reconocidos al paciente, criterios de funcionamiento del '
@@ -653,13 +727,16 @@ TRANSPARENCY = LegalDocument(
     ),
     legal_basis=(
         'Ley 1751 de 2015, estatutaria del derecho fundamental a la salud',
-        'Ley 1712 de 2014, transparencia y acceso a la información pública',
+        'Resolución 13437 de 1991, derechos de los pacientes',
+        'Ley 23 de 1981, ética médica',
         'Resolución 1995 de 1999, historia clínica',
+        'Ley 2015 de 2020 y Resolución 1888 de 2025, interoperabilidad',
     ),
     sections=[
         ('1. Derechos del paciente', """
-La Ley 1751 de 2015 reconoce la salud como derecho fundamental. En desarrollo de
-dicha ley, el paciente tiene derecho a:
+La Ley 1751 de 2015 reconoce la salud como derecho fundamental. Sus artículos 6
+y 10 y la Resolución 13437 de 1991 reconocen al paciente, entre otros, el
+derecho a:
 
 1.  Recibir atención de urgencia sin requisito previo de pago ni de
     autorización.
@@ -730,6 +807,14 @@ Dicho reporte comprende la identificación del paciente, el diagnóstico y el
 procedimiento. Constituye una obligación legal, no requiere autorización
 adicional del titular y no admite oposición sin incurrir en incumplimiento
 normativo.
+
+La Ley 2015 de 2020 y la Resolución 1888 de 2025 imponen además la remisión del
+Resumen Digital de Atención a la plataforma nacional de interoperabilidad del
+Ministerio de Salud y Protección Social, con la finalidad de que cualquier
+profesional que atienda al paciente en el país pueda conocer sus datos clínicos
+relevantes. Esta remisión tiene la misma naturaleza de obligación legal.
+
+Estado de implementación en esta plataforma: [[ESTADO_IHCE]].
 """),
         ('6. Limitaciones conocidas del servicio', """
 1.  La plataforma no está destinada a la atención de urgencias.
@@ -760,12 +845,90 @@ prestación del servicio.
 
 
 # =============================================================================
+# Aviso de privacidad
+# =============================================================================
+#
+# El artículo 14 del Decreto 1377 de 2013 exige el aviso de privacidad cuando no
+# resulte posible poner la política completa a disposición del titular en el
+# momento de la recolección. El artículo 15 fija su contenido mínimo.
+#
+# No es un resumen de la política ni la sustituye: es un documento autónomo y
+# obligatorio, y su ausencia es de las cosas que la SIC verifica primero.
+
+PRIVACY_NOTICE = LegalDocument(
+    key='privacy_notice',
+    title='Aviso de Privacidad',
+    version='1.0',
+    effective_date=date(2026, 9, 7),
+    summary=(
+        'Comunicación que se pone a disposición del titular en el momento de '
+        'recolectar sus datos, con el contenido mínimo del artículo 15 del '
+        'Decreto 1377 de 2013.'
+    ),
+    legal_basis=(
+        'Ley 1581 de 2012, protección de datos personales',
+        'Decreto 1377 de 2013, artículos 14 y 15',
+    ),
+    sections=[
+        ('1. Responsable del tratamiento', """
+[[RAZON_SOCIAL_OPERADOR]], identificada con NIT [[NIT_OPERADOR]], con domicilio
+en [[DOMICILIO_OPERADOR]], correo electrónico [[CORREO_PROTECCION_DATOS]] y
+teléfono [[TELEFONO_CONTACTO]].
+"""),
+        ('2. Tratamiento y finalidad', """
+Sus datos personales serán tratados con el fin de prestarle atención en salud y
+efectuar su seguimiento, conformar y custodiar su historia clínica, emitir
+órdenes médicas y coordinar la entrega de medicamentos, programar citas, cumplir
+las obligaciones de reporte al Sistema General de Seguridad Social en Salud,
+facturar los servicios y atender sus solicitudes.
+"""),
+        ('3. Datos sensibles', """
+La atención en salud exige tratar datos sensibles, entendidos como aquellos que
+afectan la intimidad del titular o cuyo uso indebido puede generar
+discriminación. En su caso comprenden los datos relativos a su salud.
+
+Usted no está obligado a autorizar el tratamiento de datos sensibles. Si decide
+no hacerlo, conservará el acceso a su cuenta y a su información, pero no será
+posible prestarle atención clínica a través de la plataforma, por cuanto dicha
+atención no puede darse sin tratar esa categoría de datos.
+"""),
+        ('4. Derechos del titular', """
+Le asisten los derechos previstos en el artículo 8 de la Ley 1581 de 2012, en
+particular los de conocer, actualizar y rectificar sus datos, solicitar prueba
+de la autorización otorgada, ser informado sobre el uso dado a sus datos,
+revocar la autorización, solicitar la supresión del dato cuando no medie un deber
+legal de conservación, acceder gratuitamente a sus datos y presentar quejas ante
+la Superintendencia de Industria y Comercio.
+"""),
+        ('5. Cómo ejercer sus derechos', """
+A través del módulo de datos personales disponible en la plataforma, o mediante
+comunicación dirigida a [[CORREO_PROTECCION_DATOS]] o a [[DOMICILIO_OPERADOR]].
+
+Las consultas se atienden en diez días hábiles y los reclamos en quince días
+hábiles, prorrogables en los términos del Decreto 1377 de 2013.
+"""),
+        ('6. Consulta de la política de tratamiento', """
+La Política de Tratamiento de Datos Personales, que contiene la información
+completa sobre las finalidades, los destinatarios, los términos de conservación
+y las medidas de seguridad adoptadas, se encuentra permanentemente disponible en
+la sección de documentos legales de la plataforma.
+
+Las modificaciones sustanciales se comunicarán por el mismo medio con una
+antelación no inferior a quince días calendario, y cada versión permanece
+archivada con su fecha de entrada en vigencia.
+"""),
+    ],
+)
+
+
+# =============================================================================
 # Registro
 # =============================================================================
 
 DOCUMENTS = {
     'terms': TERMS,
     'privacy': PRIVACY,
+    'privacy_notice': PRIVACY_NOTICE,
     'telemedicine': TELEMEDICINE_CONSENT,
     'transparency': TRANSPARENCY,
 }
@@ -847,9 +1010,19 @@ PLACEHOLDER_LABELS = {
         'la SIC. Debe definirse con concepto del asesor jurídico.',
     ),
     'ESTADO_RNBD': (
-        'Estado del registro ante el RNBD',
-        'Registro Nacional de Bases de Datos de la SIC. Ejemplo: '
-        '«Registrado el 12/03/2026» o «En trámite».',
+        'Situación frente al RNBD',
+        'El Decreto 090 de 2018 solo obliga a sociedades y entidades sin ánimo '
+        'de lucro con activos superiores a 100.000 UVT, y a personas jurídicas '
+        'públicas. Indique cuál es su caso: «No obligado conforme al Decreto '
+        '090 de 2018», «Registrado el 12/03/2026» o «En trámite». Afirmar un '
+        'registro que no existe es una declaración falsa ante la SIC.',
+    ),
+    'ESTADO_IHCE': (
+        'Estado de la interoperabilidad (IHCE)',
+        'La Resolución 1888 de 2025 obliga a remitir el Resumen Digital de '
+        'Atención a la plataforma nacional del Ministerio de Salud. Indique si '
+        'ya se remite o si está en implementación. No declare que se remite '
+        'mientras el desarrollo no esté en operación.',
     ),
 }
 

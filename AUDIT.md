@@ -397,3 +397,176 @@ la aplicación no requiere ni Node ni internet.
 
 Quedan dos recursos externos, ambos por naturaleza: Jitsi para videollamada y
 las teselas de OpenStreetMap. Una prueba impide que se cuele cualquier otro.
+
+
+# Quinta pasada — 2026-09-07
+
+Revisión de los documentos legales contra la norma citada, verificando cada
+referencia en la fuente y no de memoria.
+
+## P0 — Bloqueante
+
+### P0-16 · El sistema incumple la Resolución 1888 de 2025 (plazo vencido)
+
+Este es el hallazgo más grave de las cinco pasadas y no se corrige con texto.
+
+La Ley 2015 de 2020 creó la historia clínica electrónica interoperable. La
+Resolución 1888 de 2025 adoptó el **Resumen Digital de Atención en Salud (RDA)**
+y obliga a todo prestador a generar, por cada atención, un documento en estándar
+**HL7 FHIR R4** y transmitirlo a la plataforma nacional del Ministerio de Salud,
+de modo que cualquier profesional que atienda al paciente en el país pueda
+consultar sus datos clínicos relevantes.
+
+- Entrada en vigencia: **15 de octubre de 2025**
+- Plazo de integración: **seis meses**, es decir hasta el **15 de abril de 2026**
+- Fecha de esta revisión: **7 de septiembre de 2026**
+
+El plazo venció hace casi cinco meses. El sistema no tiene ninguna
+implementación: cero referencias a FHIR, RDA o IHCE en todo el código.
+
+No es un problema de redacción. Es desarrollo: mapear el modelo clínico a los
+recursos FHIR del Resumen Digital, implementar el cliente contra la plataforma
+nacional, gestionar credenciales y reintentos, y dejar constancia por atención
+de qué se remitió y cuándo.
+
+**Estado:** documentado, no corregido. Excede lo que puede resolverse editando
+textos y requiere decisión del prestador sobre calendario y recursos.
+
+**Mitigación aplicada:** los documentos ya informan al paciente de esta remisión
+y de su fundamento, con un marcador `[[ESTADO_IHCE]]` que obliga a declarar por
+escrito si ya opera o si está en implementación. El marcador se muestra señalado
+en la pantalla de documentos legales mientras no se complete.
+
+## P1 — Errores en los documentos legales
+
+### P1-9 · Se citaba la Ley 1266 de 2008 como fundamento
+
+La política de datos invocaba la Ley 1266 de 2008. Esa ley regula el habeas data
+**financiero, crediticio, comercial y de servicios**; no cubre datos de salud,
+que se rigen por la Ley 1581 de 2012. Citarla es atribuirle al documento un
+fundamento que no tiene. Retirada.
+
+### P1-10 · Se afirmaba un registro ante el RNBD que puede no existir
+
+El artículo 13 declaraba, sin condición alguna, que las bases de datos se
+inscriben en el Registro Nacional de Bases de Datos.
+
+El Decreto 090 de 2018 redujo el universo de obligados a las sociedades y
+entidades sin ánimo de lucro con activos superiores a **100.000 UVT** y a las
+personas jurídicas de naturaleza pública. Un operador pequeño no está obligado,
+y afirmar un registro inexistente es una declaración falsa ante la SIC.
+
+El artículo ahora explica el criterio del Decreto 090 y exige declarar la
+situación real, advirtiendo además que no estar obligado no exime del resto de
+la Ley 1581.
+
+### P1-11 · Faltaban los términos especiales de conservación
+
+El artículo 7 prometía suprimir la información a los quince años. La Resolución
+839 de 2017 establece dos excepciones que el documento omitía por completo:
+
+1. Historias de **víctimas de violaciones de derechos humanos o de infracciones
+   graves al DIH**: los términos **se duplican**.
+2. Historias que formen parte de un proceso por **delitos de lesa humanidad**:
+   conservación **permanente**.
+
+En una plataforma de salud rural colombiana esto no es un caso de borde: es
+población que va a estar en la base de datos. La política prometía por escrito
+una destrucción que en esos casos sería ilegal.
+
+Se añadieron ambos supuestos al documento y dos filas a `RetentionPolicy`, para
+que cualquier rutina de depuración que se escriba después las encuentre en
+datos. Hoy no existe ninguna rutina de borrado automático, así que el riesgo era
+de promesa, no de destrucción efectiva.
+
+Se añadió además el desglose que exige la norma: cinco años en archivo de
+gestión y diez en archivo central.
+
+### P1-12 · Faltaba el Aviso de Privacidad
+
+Los artículos 14 y 15 del Decreto 1377 de 2013 exigen un **aviso de privacidad**
+como documento autónomo, con contenido mínimo propio, para el momento en que se
+recolectan los datos. No existía. Se redactó (`privacy_notice`, versión 1.0), se
+publicó en `/aviso-de-privacidad` y se enlazó desde el formulario de registro,
+que es donde ocurre la recolección.
+
+### P1-13 · Una sola casilla autorizaba datos personales y sensibles
+
+El formulario de registro pedía en una única casilla la autorización para
+"Datos Personales y Sensibles". El artículo 6 de la Ley 1581 exige que la
+autorización para datos sensibles se obtenga **de forma separada** y advirtiendo
+al titular que **no está obligado a otorgarla**.
+
+El flujo separado ya existía (`patient.consent`), pero la casilla del registro lo
+contradecía y viciaba ambos consentimientos. Ahora la casilla cubre solo datos
+personales y anuncia que la de salud se pedirá aparte y puede negarse.
+
+### P1-14 · Faltaba el fundamento de la firma electrónica
+
+Los documentos afirmaban que las órdenes llevan firma del profesional y sello
+criptográfico, sin decir qué es eso jurídicamente. De ello depende que la orden
+sea oponible.
+
+Nueva cláusula 9 de los términos: firma electrónica del artículo 7 de la Ley 527
+de 1999 y del Decreto 2364 de 2012, describiendo el método (autenticación con
+credenciales personales, registro de fecha, hora y origen, huella criptográfica
+del contenido y auditoría encadenada) y advirtiendo que no sustituye la firma
+digital certificada donde la norma la exija expresamente.
+
+### P1-15 · Derecho de retracto sin plazo
+
+Se mencionaba el artículo 47 de la Ley 1480 de 2011 sin indicar el término. Son
+**cinco días hábiles**. Añadido, junto con la excepción de los servicios que ya
+comenzaron a ejecutarse con anuencia del consumidor.
+
+## P2 — Precisión de las citas
+
+- **Ley 1712 de 2014** se citaba como fundamento del documento de transparencia.
+  Esa ley obliga a los sujetos obligados: entidades públicas y particulares que
+  ejercen función pública o administran recursos públicos. Un operador privado
+  normalmente no lo es. Retirada y sustituida por la **Resolución 13437 de 1991**,
+  que es la fuente real del decálogo de derechos del paciente que el documento
+  enumera, y por la **Ley 23 de 1981**.
+- Añadidas **Resolución 3100 de 2019** (habilitación, en la que se apoya la
+  cláusula 1) y **Ley 1438 de 2011 artículo 136** (reserva de la historia clínica).
+- Corregida una referencia cruzada interna: el artículo 8 remitía al "artículo
+  siguiente" para el canal de atención, pero el siguiente es el de medidas de
+  seguridad. El canal está en el artículo 10.
+- El fundamento de los cinco años de auditoría pasó de "deber de demostrar el
+  cumplimiento" a **responsabilidad demostrada, Decreto 1377 de 2013**.
+- Añadido el contrato de **transmisión de datos** del artículo 25 del Decreto
+  1377, que rige la relación entre cada IPS responsable y el operador encargado,
+  y se aclaró que el profesional independiente obra como responsable.
+
+## Versiones
+
+| Documento | Antes | Ahora |
+| :--- | :--- | :--- |
+| Términos y condiciones | 3.0 | 4.0 |
+| Política de tratamiento de datos | 3.0 | 4.0 |
+| Aviso de privacidad | no existía | 1.0 |
+| Consentimiento de telemedicina | 2.0 | 2.0 (sin cambios) |
+| Transparencia y derechos | 3.0 | 4.0 |
+
+5.129 palabras en cinco documentos. Cero rayas, cero negritas de énfasis, trato
+de usted en todo.
+
+## Lo que sigue requiriendo un abogado
+
+Esta pasada verifica citas y estructura. No sustituye el concepto de un abogado
+con tarjeta profesional, que sigue siendo necesario para:
+
+1. **La cláusula 14 de responsabilidad.** Un límite de responsabilidad mal
+   redactado se cae entero, y el que hay no ha sido revisado por nadie.
+2. **El fundamento de la transferencia internacional** (`FUNDAMENTO_TRANSFERENCIA`).
+   Cuál de las tres excepciones del artículo 26 se invoca es una decisión
+   jurídica, no técnica.
+3. **El contrato de transmisión de datos** con cada IPS. El documento lo anuncia;
+   alguien tiene que redactarlo y firmarlo.
+4. **El régimen del profesional independiente** como responsable autónomo: qué
+   pasa cuando deja la plataforma y quién custodia entonces esas historias.
+5. **Menores de edad.** La cláusula 6 y el artículo 11 recogen el estándar de la
+   Sentencia C-748 de 2011, pero el procedimiento de acreditación de la patria
+   potestad no está definido ni en el texto ni en el sistema.
+6. **Consentimiento informado asistencial** distinto del de telemedicina, para
+   procedimientos concretos, conforme a la Ley 23 de 1981.

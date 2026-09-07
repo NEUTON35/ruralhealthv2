@@ -124,10 +124,20 @@
                             </span>
                         </label>
                         
+                        {# La autorizacion para datos sensibles NO va aqui. El
+                           articulo 6 de la Ley 1581 exige que se obtenga de forma
+                           separada y advirtiendo que el titular no esta obligado
+                           a darla. Se pide en `patient.consent`, antes de la
+                           primera atencion. Juntarlas en una sola casilla es lo
+                           que vicia el consentimiento. #}
                         <label class="flex gap-4 items-start cursor-pointer group">
-                            <input type="checkbox" name="accept_privacy" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0" aria-label="Accept privacy">
+                            <input type="checkbox" name="accept_privacy" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0" aria-label="Autorizo el tratamiento de mis datos personales">
                             <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
-                                Autorizo el tratamiento de <a href="/privacidad" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Datos Personales y Sensibles</a>.
+                                Autorizo el tratamiento de mis datos personales conforme al
+                                <a href="/aviso-de-privacidad" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Aviso de Privacidad</a>
+                                y a la <a href="/privacidad" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Política de Tratamiento de Datos</a>.
+                                La autorización para tratar mis datos de salud se solicitará
+                                por separado y puedo negarla.
                             </span>
                         </label>
 

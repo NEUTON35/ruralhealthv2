@@ -900,7 +900,36 @@ def seed_reference_data(db):
                 record_type="historia_clinica",
                 retention_years=15,
                 legal_basis="Resolucion 839 de 2017, articulo 2",
-                notes="Minimo 15 anos contados desde la ultima atencion.",
+                notes=(
+                    "Minimo 15 anos contados desde la ultima atencion: los "
+                    "primeros 5 en archivo de gestion y los 10 siguientes en "
+                    "archivo central."
+                ),
+            ),
+            # La Resolucion 839 de 2017 duplica el termino para las historias de
+            # victimas de violaciones de derechos humanos o de infracciones
+            # graves al DIH. En una plataforma de salud rural colombiana esto no
+            # es un caso de borde: es poblacion que va a estar en la base.
+            # Cualquier rutina de depuracion que se escriba mas adelante tiene
+            # que consultar estas filas antes de borrar nada.
+            RetentionPolicy(
+                record_type="historia_clinica_victima_ddhh",
+                retention_years=30,
+                legal_basis="Resolucion 839 de 2017, articulo 2, paragrafo",
+                notes=(
+                    "Victimas de violaciones de DDHH o de infracciones graves "
+                    "al DIH: los terminos de retencion se duplican."
+                ),
+            ),
+            RetentionPolicy(
+                record_type="historia_clinica_lesa_humanidad",
+                retention_years=0,
+                legal_basis="Resolucion 839 de 2017, articulo 2, paragrafo",
+                notes=(
+                    "Conservacion PERMANENTE. Historia que forma parte de un "
+                    "proceso por delitos de lesa humanidad. retention_years=0 "
+                    "significa que no vence, no que se pueda borrar."
+                ),
             ),
             RetentionPolicy(
                 record_type="orden_medica",

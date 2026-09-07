@@ -247,6 +247,7 @@ def legal_context(active_tab):
         'tabs': [
             ('terms', 'Términos de uso', url_for('terminos')),
             ('privacy', 'Datos personales', url_for('privacidad')),
+            ('privacy_notice', 'Aviso de privacidad', url_for('aviso_privacidad')),
             ('telemedicine', 'Telemedicina', url_for('telemedicina')),
             ('transparency', 'Transparencia', url_for('transparencia')),
         ],
@@ -256,7 +257,7 @@ def legal_context(active_tab):
 def register_login(app):
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
-    login_manager.login_message = 'Inicia sesion para continuar.'
+    login_manager.login_message = 'Inicie sesion para continuar.'
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -473,6 +474,10 @@ def register_core_routes(app):
     @app.route('/privacidad')
     def privacidad():
         return render_template('legal.html', **legal_context('privacy'))
+
+    @app.route('/aviso-de-privacidad')
+    def aviso_privacidad():
+        return render_template('legal.html', **legal_context('privacy_notice'))
 
     @app.route('/telemedicina')
     def telemedicina():
