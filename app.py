@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import secrets
+import sys
 from logging.handlers import RotatingFileHandler
 
 try:
@@ -780,6 +781,21 @@ def get_local_ip():
         sock.close()
 
 
+# `--local` se procesa aqui, antes de construir la aplicacion.
+#
+# Flask-SQLAlchemy crea el motor cuando se inicializa la extension, asi que
+# cambiar `SQLALCHEMY_DATABASE_URI` despues no tiene efecto: el motor seguiria
+# apuntando a la base anterior y el fallo de conexion sería el mismo con un
+# mensaje distinto.
+if __name__ == '__main__' and '--local' in sys.argv:
+    _instancia = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
+    os.makedirs(_instancia, exist_ok=True)
+    _ruta_local = os.path.join(_instancia, 'ruralhealth.db')
+    os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + _ruta_local.replace(os.sep, '/')
+    os.environ.setdefault('FLASK_ENV', 'development')
+    print(f'\nModo local: base de datos en {_ruta_local}')
+
+
 # Instancia de modulo, para compatibilidad con `flask` y con los scripts que
 # importan `from app import app`.
 try:
@@ -792,8 +808,64 @@ except ConfigurationError as error:
     raise SystemExit(1)
 
 
+def explain_database_failure(error):
+    """Traduce un fallo de conexion a algo accionable.
+
+    SQLAlchemy escupe sesenta lineas de traza cuando no puede conectar, y
+    ninguna de ellas dice que hacer. Quien opera un puesto de salud no tiene por
+    que leer un traceback para enterarse de que la base de datos no responde.
+    """
+    uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    detalle = str(error)
+    # El destino, sin la contrasena.
+    destino = uri.split('@')[-1].split('?')[0] if '@' in uri else uri
+
+    print('\n' + '=' * 72)
+    print(' NO SE PUDO CONECTAR A LA BASE DE DATOS')
+    print('=' * 72)
+    print(f'\n  Destino: {destino}\n')
+
+    if 'SSL connection has been closed' in detalle or 'server closed the connection' in detalle:
+        print('  El servidor responde pero cierra la conexion.')
+        print('  Suele significar que la base de datos fue suspendida o eliminada.')
+        print('  Las instancias gratuitas de Render caducan a los 30 dias.\n')
+    elif 'could not translate host name' in detalle or 'Name or service not known' in detalle:
+        print('  El nombre del servidor no resuelve. Revisa la direccion o tu conexion.\n')
+    elif 'password authentication failed' in detalle:
+        print('  Usuario o contrasena incorrectos. Es lo esperado si ya rotaste\n'
+              '  las credenciales siguiendo SECURITY.md.\n')
+    elif 'timeout' in detalle.lower() or 'timed out' in detalle.lower():
+        print('  El servidor no responde a tiempo. Puede estar caido o bloqueado\n'
+              '  por un cortafuegos.\n')
+    elif 'no such table' in detalle.lower():
+        print('  La base existe pero le falta el esquema. Ejecuta:\n')
+        print('      flask db upgrade\n')
+        return
+    else:
+        print(f'  Detalle: {detalle.strip()[:200]}\n')
+
+    print('-' * 72)
+    print(' PARA TRABAJAR EN LOCAL AHORA MISMO')
+    print('-' * 72)
+    print('\n  Usa una base local en tu propio equipo:\n')
+    print('      python app.py --local\n')
+    print('  Crea el archivo ruralhealth.db en la carpeta instance/ y arranca')
+    print('  sin depender de ningun servidor externo.\n')
+    print('-' * 72)
+    print(' PARA VOLVER A UNA BASE REMOTA')
+    print('-' * 72)
+    print('\n  Edita SQLALCHEMY_DATABASE_URI en el archivo .env y aplica el')
+    print('  esquema con:\n')
+    print('      flask db upgrade\n')
+    print('=' * 72 + '\n')
+
+
 if __name__ == '__main__':
-    bootstrap_database(app)
+    try:
+        bootstrap_database(app)
+    except Exception as error:
+        explain_database_failure(error)
+        raise SystemExit(1)
 
     port = int(os.environ.get('PORT', 5000))
     local_ip = get_local_ip()

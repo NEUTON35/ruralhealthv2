@@ -176,7 +176,10 @@ python manage.py load-cups  cups_oficial.csv
 ### Ejecución
 
 ```bash
-# Desarrollo
+# Desarrollo con base de datos local (no necesita servidor externo)
+python app.py --local
+
+# Desarrollo usando la base configurada en .env
 python app.py
 
 # Producción — nunca `python app.py`
@@ -189,6 +192,13 @@ gunicorn -c gunicorn.conf.py wsgi:app
 pytest                # 205 pruebas
 pytest -q tests/test_clinical_safety.py   # solo seguridad clínica
 ```
+
+> **`--local`** crea `instance/ruralhealth.db` en tu equipo y arranca sin
+> depender de ningún servidor. Es la forma de trabajar cuando la base remota no
+> está disponible, sin tener que editar `.env` cada vez.
+>
+> Si la conexión falla, la aplicación te dice **por qué** y **qué hacer** en vez
+> de mostrar una traza de SQLAlchemy.
 
 Guía completa de despliegue: [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
