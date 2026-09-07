@@ -19,6 +19,11 @@ sencillamente no existía:
     python manage.py load-cups  <archivo>   Carga el catálogo oficial CUPS
     python manage.py check-knowledge-base   Antigüedad de la base clínica
     python manage.py purge-login-attempts   Limpia intentos de acceso antiguos
+    python manage.py rda-status             Estado de la interoperabilidad IHCE
+    python manage.py rda-send               Transmite los RDA pendientes
+    python manage.py rda-problems           Envios de RDA que requieren revision
+    python manage.py rda-backfill           Encola atenciones sin registro de envio
+    python manage.py rda-preview <id>       Revisa un RDA sin transmitirlo
 
 Los comandos que modifican datos piden confirmación explícita.
 """
@@ -216,6 +221,33 @@ def cmd_preflight(args):
         warn(f'Base de conocimiento {KNOWLEDGE_BASE_VERSION}: {age} meses sin revision')
     else:
         ok(f'Base de conocimiento {KNOWLEDGE_BASE_VERSION} ({age} meses)')
+
+    # --- Interoperabilidad IHCE ---
+    # La Resolucion 1888 de 2025 la exige a todo prestador inscrito en REPS. Sin
+    # credenciales el sistema funciona, pero el prestador esta incumpliendo, asi
+    # que en produccion es un problema y no un aviso.
+    print(bold('\nInteroperabilidad IHCE (Resolucion 1888 de 2025)'))
+    from ihce import IHCEConfig
+
+    ihce = IHCEConfig.from_env()
+    if ihce.is_configured:
+        ok(f'Credenciales completas. Ambiente: {ihce.base_url}')
+        if not ihce.is_enabled:
+            warnings.append('La transmision de RDA esta desactivada por IHCE_ENABLED.')
+            warn('Transmision desactivada a proposito (IHCE_ENABLED).')
+        else:
+            ok('Transmision activa.')
+    else:
+        faltan = ', '.join(ihce.faltantes())
+        if environment == 'production':
+            problems.append(
+                'Faltan credenciales del IHCE (%s). La Resolucion 1888 de 2025 '
+                'obliga a remitir un RDA por cada atencion.' % faltan)
+            fail(f'Faltan: {faltan}')
+            print('     Se obtienen en Hercules (SISPRO). Ver DEPLOYMENT.md, seccion 13.')
+        else:
+            warnings.append('Sin credenciales del IHCE; los RDA se acumularan.')
+            warn(f'Faltan: {faltan}')
 
     # --- Resultado ---
     print(bold('\n' + '=' * 60))
@@ -669,6 +701,231 @@ def cmd_check_knowledge_base(args):
 # Entrada
 # =============================================================================
 
+
+# =============================================================================
+# Interoperabilidad IHCE (Resolucion 1888 de 2025)
+# =============================================================================
+
+def cmd_rda_status(args):
+    """Estado de la cola de Resumenes Digitales de Atencion."""
+    app = get_app()
+    from ihce import IHCEConfig, resumen_estado
+    from models import db
+
+    with app.app_context():
+        config = IHCEConfig.from_env()
+        estado = config.describe()
+
+        print(bold('Conexion con el IHCE'))
+        print('  Ambiente:      %s' % estado['ambiente'])
+        print('  Habilitacion:  %s' % estado['habilitacion'])
+        print('  Sede:          %s' % estado['sede'])
+        if estado['credenciales_completas']:
+            ok('Credenciales completas.')
+        else:
+            fail('Faltan credenciales: %s' % ', '.join(estado['faltantes']))
+            print('  Se obtienen en Hercules (SISPRO) tras registrar al')
+            print('  prestador y a su delegado. Ver DEPLOYMENT.md.')
+        if estado['transmision_activa']:
+            ok('Transmision activa.')
+        else:
+            warn('Transmision inactiva: los RDA se acumulan en la cola.')
+
+        print()
+        print(bold('Cola de envios'))
+        conteo = resumen_estado(db)
+        if conteo is None:
+            fail('La tabla rda_submission no existe todavia.')
+            print('  Ejecute: flask db upgrade')
+            return 1
+        if not conteo:
+            print('  Sin envios registrados.')
+            return 0
+        etiquetas = {
+            'pendiente': 'Pendientes de transmitir',
+            'enviando': 'En vuelo',
+            'aceptado': 'Aceptados por el Ministerio',
+            'duplicado': 'Ya estaban en el Ministerio',
+            'rechazado': 'Rechazados, requieren revision',
+            'bloqueado': 'Bloqueados por datos incompletos',
+        }
+        for clave, etiqueta in etiquetas.items():
+            if clave in conteo:
+                print('  %-34s %d' % (etiqueta + ':', conteo[clave]))
+
+        problemas = conteo.get('rechazado', 0) + conteo.get('bloqueado', 0)
+        if problemas:
+            print()
+            warn('%d envio(s) necesitan intervencion. '
+                 'Vealos con: python manage.py rda-problems' % problemas)
+        return 0
+
+
+def cmd_rda_send(args):
+    """Transmite los RDA pendientes."""
+    app = get_app()
+    from ihce import IHCEConfig, procesar_pendientes
+    from models import db
+
+    with app.app_context():
+        config = IHCEConfig.from_env()
+        if not config.is_enabled:
+            fail('Transmision inactiva.')
+            faltan = config.faltantes()
+            if faltan:
+                print('  Faltan: %s' % ', '.join(faltan))
+            return 1
+
+        resumen = procesar_pendientes(db, config, limite=args.limit)
+        print('Procesados:  %d' % resumen['procesados'])
+        print('Aceptados:   %d' % resumen['aceptados'])
+        print('Duplicados:  %d' % resumen['duplicados'])
+        print('Reintentar:  %d' % resumen['reintentar'])
+        print('Rechazados:  %d' % resumen['rechazados'])
+        print('Bloqueados:  %d' % resumen['bloqueados'])
+        if resumen['rechazados'] or resumen['bloqueados']:
+            warn('Hay envios que no saldran solos.')
+            return 2
+        ok('Cola procesada.')
+        return 0
+
+
+def cmd_rda_problems(args):
+    """Lista los envios que necesitan intervencion humana."""
+    app = get_app()
+    from models import RDA_BLOQUEADO, RDA_RECHAZADO, RDASubmission
+
+    with app.app_context():
+        envios = (RDASubmission.query
+                  .filter(RDASubmission.status.in_([RDA_RECHAZADO, RDA_BLOQUEADO]))
+                  .order_by(RDASubmission.updated_at.desc())
+                  .limit(args.limit).all())
+        if not envios:
+            ok('No hay envios con problemas.')
+            return 0
+        for envio in envios:
+            print()
+            print(bold('Atencion %s  (envio %s)' % (envio.medical_history_id, envio.id)))
+            print('  Estado:   %s tras %d intento(s)' % (envio.status, envio.attempts or 0))
+            print('  Fecha:    %s' % envio.created_at)
+            print('  Motivo:   %s' % (envio.last_error or 'sin detalle'))
+        print()
+        warn('%d envio(s) con problemas.' % len(envios))
+        return 2
+
+
+def cmd_rda_retry(args):
+    """Devuelve a la cola envios rechazados, tras corregir la causa."""
+    app = get_app()
+    from time_utils import colombia_now
+    from models import RDA_BLOQUEADO, RDA_PENDIENTE, RDA_RECHAZADO, RDASubmission, db
+
+    with app.app_context():
+        consulta = RDASubmission.query.filter(
+            RDASubmission.status.in_([RDA_RECHAZADO, RDA_BLOQUEADO]))
+        if args.id:
+            consulta = consulta.filter(RDASubmission.id == args.id)
+        envios = consulta.all()
+        if not envios:
+            print('No hay envios que reencolar.')
+            return 0
+
+        print('Se reencolaran %d envio(s).' % len(envios))
+        print('Reintentar sin haber corregido la causa vuelve a fallar igual.')
+        if not args.yes and not confirm('Continuar'):
+            print('Cancelado.')
+            return 1
+
+        for envio in envios:
+            envio.status = RDA_PENDIENTE
+            envio.attempts = 0
+            envio.next_attempt_at = colombia_now()
+            envio.last_error = None
+        db.session.commit()
+        ok('%d envio(s) devueltos a la cola.' % len(envios))
+        return 0
+
+
+def cmd_rda_backfill(args):
+    """Encola las atenciones que quedaron sin registro de envio.
+
+    Sirve para dos casos: la puesta en marcha, cuando ya hay historias clinicas
+    anteriores a la integracion, y el hueco que deje un fallo al encolar.
+    """
+    app = get_app()
+    from ihce import encolar
+    from models import MedicalHistory, RDASubmission, db
+
+    with app.app_context():
+        con_envio = db.session.query(RDASubmission.medical_history_id).subquery()
+        consulta = (MedicalHistory.query
+                    .filter(~MedicalHistory.id.in_(db.session.query(con_envio.c.medical_history_id)))
+                    .order_by(MedicalHistory.id))
+        if args.since:
+            consulta = consulta.filter(MedicalHistory.created_at >= args.since)
+        pendientes = consulta.limit(args.limit).all()
+
+        if not pendientes:
+            ok('Todas las atenciones tienen registro de envio.')
+            return 0
+
+        print('Se encolaran %d atencion(es) sin registro de envio.' % len(pendientes))
+        if not args.yes and not confirm('Continuar'):
+            print('Cancelado.')
+            return 1
+
+        for historia in pendientes:
+            encolar(db, historia)
+        db.session.commit()
+        ok('%d atencion(es) encoladas.' % len(pendientes))
+        return 0
+
+
+def cmd_rda_preview(args):
+    """Muestra el Bundle que se enviaria para una atencion, sin transmitirlo.
+
+    Util para revisar el mapeo antes de tener credenciales. El Bundle contiene
+    datos clinicos: no lo pegue en un ticket ni en un chat.
+    """
+    import json as _json
+
+    app = get_app()
+    from ihce import armar_bundle
+    from models import MedicalHistory
+
+    with app.app_context():
+        historia = MedicalHistory.query.get(args.history_id)
+        if historia is None:
+            fail('No existe la atencion %s.' % args.history_id)
+            return 1
+        bundle, errores = armar_bundle(historia)
+        if errores:
+            fail('El documento no pasa la validacion local:')
+            for e in errores:
+                print('   - %s' % e)
+            if bundle is None:
+                return 2
+        else:
+            ok('El documento pasa la validacion local.')
+        if args.json:
+            print(_json.dumps(bundle, indent=2, ensure_ascii=False))
+        else:
+            print()
+            print('Recursos del Bundle:')
+            for entrada in bundle.get('entry', []):
+                recurso = entrada.get('resource', {})
+                print('   %-22s %s' % (recurso.get('resourceType'), recurso.get('id', '')))
+            composition = bundle['entry'][0]['resource']
+            print()
+            print('Secciones:')
+            for seccion in composition.get('section', []):
+                estado = ('%d entrada(s)' % len(seccion['entry'])
+                          if seccion.get('entry') else 'vacia (emptyReason)')
+                print('   %-62s %s' % (seccion.get('title', '')[:60], estado))
+            print()
+            print('Use --json para ver el documento completo.')
+        return 0
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog='manage.py',
@@ -737,6 +994,34 @@ def build_parser():
 
     sub.add_parser('check-knowledge-base', help='Antiguedad de la base clinica'
                    ).set_defaults(func=cmd_check_knowledge_base)
+
+
+    sub.add_parser('rda-status', help='Estado de la interoperabilidad IHCE'
+                   ).set_defaults(func=cmd_rda_status)
+
+    p = sub.add_parser('rda-send', help='Transmite los RDA pendientes al IHCE')
+    p.add_argument('--limit', type=int, default=50, help='Maximo de envios por corrida')
+    p.set_defaults(func=cmd_rda_send)
+
+    p = sub.add_parser('rda-problems', help='Envios de RDA que requieren revision')
+    p.add_argument('--limit', type=int, default=25)
+    p.set_defaults(func=cmd_rda_problems)
+
+    p = sub.add_parser('rda-retry', help='Devuelve envios rechazados a la cola')
+    p.add_argument('--id', type=int, help='Solo este envio')
+    p.add_argument('--yes', action='store_true', help='No preguntar')
+    p.set_defaults(func=cmd_rda_retry)
+
+    p = sub.add_parser('rda-backfill', help='Encola atenciones sin registro de envio')
+    p.add_argument('--limit', type=int, default=500)
+    p.add_argument('--since', help='Solo desde esta fecha (AAAA-MM-DD)')
+    p.add_argument('--yes', action='store_true', help='No preguntar')
+    p.set_defaults(func=cmd_rda_backfill)
+
+    p = sub.add_parser('rda-preview', help='Muestra el RDA de una atencion sin enviarlo')
+    p.add_argument('history_id', type=int)
+    p.add_argument('--json', action='store_true', help='Documento FHIR completo')
+    p.set_defaults(func=cmd_rda_preview)
 
     return parser
 

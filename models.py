@@ -1228,3 +1228,88 @@ class RetentionPolicy(db.Model):
     legal_basis = db.Column(db.String(300), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+
+
+# =============================================================================
+# Interoperabilidad IHCE (Resolucion 1888 de 2025)
+# =============================================================================
+
+RDA_PENDIENTE = 'pendiente'
+RDA_ENVIANDO = 'enviando'
+RDA_ACEPTADO = 'aceptado'
+RDA_DUPLICADO = 'duplicado'
+RDA_RECHAZADO = 'rechazado'
+RDA_BLOQUEADO = 'bloqueado'
+
+RDA_ESTADOS_FINALES = (RDA_ACEPTADO, RDA_DUPLICADO)
+
+
+class RDASubmission(ClinicScoped, db.Model):
+    """Envio del Resumen Digital de Atencion al IHCE.
+
+    Por que hay una cola y no una llamada directa
+    ---------------------------------------------
+    La Resolucion 1888 de 2025 obliga a remitir un RDA por cada atencion. La
+    tentacion es llamar al Ministerio al cerrar la consulta, pero eso ata la
+    atencion clinica a que la red responda. En un puesto de salud rural la red
+    es justamente lo que falla, y un profesional no puede quedarse sin poder
+    cerrar una historia porque un servidor de Bogota no contesta.
+
+    Asi que al cerrar la atencion solo se encola. Un proceso aparte transmite y
+    reintenta. La atencion nunca depende de la disponibilidad del Ministerio, y
+    el deber de remitir queda registrado en una tabla que puede auditarse: en
+    cualquier momento se puede responder cuantas atenciones estan pendientes de
+    remision y por que.
+
+    Estados
+    -------
+    pendiente  encolado, aun no transmitido
+    enviando   tomado por un proceso, en vuelo
+    aceptado   el Ministerio lo recibio (200)
+    duplicado  el Ministerio ya lo tenia (409). Cumple igual: no se reintenta
+    rechazado  400, estructura invalida. Necesita correccion, no reintento
+    bloqueado  faltan datos locales para armarlo. Se corrige en la interfaz
+    """
+    __tablename__ = 'rda_submission'
+
+    id = db.Column(db.Integer, primary_key=True)
+    medical_history_id = db.Column(db.Integer, db.ForeignKey('medical_history.id'),
+                                   nullable=False, index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    status = db.Column(db.String(20), default=RDA_PENDIENTE, nullable=False, index=True)
+    attempts = db.Column(db.Integer, default=0, nullable=False)
+    # Huella del Bundle transmitido. Permite demostrar despues exactamente que
+    # se envio, sin conservar una segunda copia del dato clinico.
+    bundle_hash = db.Column(db.String(64), nullable=True)
+    # Identificador que devuelve el Ministerio. Es el acuse de recibo.
+    remote_id = db.Column(db.String(120), nullable=True, index=True)
+    # Motivo del ultimo fallo. Solo texto del OperationOutcome, que describe el
+    # campo invalido y no el dato del paciente.
+    last_error = db.Column(db.Text, nullable=True)
+    guide_version = db.Column(db.String(20), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+    updated_at = db.Column(db.DateTime, default=colombia_now, onupdate=colombia_now)
+    next_attempt_at = db.Column(db.DateTime, nullable=True, index=True)
+    sent_at = db.Column(db.DateTime, nullable=True)
+
+    medical_history = db.relationship('MedicalHistory', foreign_keys=[medical_history_id])
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    doctor = db.relationship('User', foreign_keys=[doctor_id])
+
+    __table_args__ = (
+        # Una atencion se remite una sola vez. Si el proceso se ejecuta dos
+        # veces en paralelo, la base lo impide en lugar de confiar en el codigo.
+        db.UniqueConstraint('medical_history_id', name='uq_rda_por_atencion'),
+    )
+
+    @property
+    def is_final(self):
+        return self.status in RDA_ESTADOS_FINALES
+
+    @property
+    def needs_attention(self):
+        """Requiere que una persona intervenga."""
+        return self.status in (RDA_RECHAZADO, RDA_BLOQUEADO)

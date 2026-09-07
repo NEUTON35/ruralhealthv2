@@ -429,13 +429,7 @@ recursos FHIR del Resumen Digital, implementar el cliente contra la plataforma
 nacional, gestionar credenciales y reintentos, y dejar constancia por atención
 de qué se remitió y cuándo.
 
-**Estado:** documentado, no corregido. Excede lo que puede resolverse editando
-textos y requiere decisión del prestador sobre calendario y recursos.
-
-**Mitigación aplicada:** los documentos ya informan al paciente de esta remisión
-y de su fundamento, con un marcador `[[ESTADO_IHCE]]` que obliga a declarar por
-escrito si ya opera o si está en implementación. El marcador se muestra señalado
-en la pantalla de documentos legales mientras no se complete.
+**Estado: implementado** en la sexta pasada. Ver más abajo.
 
 ## P1 — Errores en los documentos legales
 
@@ -570,3 +564,121 @@ con tarjeta profesional, que sigue siendo necesario para:
    potestad no está definido ni en el texto ni en el sistema.
 6. **Consentimiento informado asistencial** distinto del de telemedicina, para
    procedimientos concretos, conforme a la Ley 23 de 1981.
+
+
+# Sexta pasada — 2026-09-07
+
+Implementación de la interoperabilidad IHCE, que la quinta pasada había
+identificado como P0-16 y dejado sin resolver.
+
+## P0-16 · Resumen Digital de Atención (Resolución 1888 de 2025)
+
+### De dónde salió la especificación
+
+No se inventó nada. El mapeo se construyó contra las fuentes oficiales:
+
+- **Guía de implementación FHIR** publicada en `https://vulcano.ihcecol.gov.co/`.
+  El `StructureDefinition-CompositionAmbulatoryRDA` se descargó y se parseó para
+  extraer las diez secciones con sus códigos LOINC y sus títulos literales, que
+  el perfil fija como valores constantes.
+- **Manual de operaciones de interoperabilidad IHCE v1.4** del Ministerio, de
+  donde salen los endpoints, el flujo de autenticación, las convenciones de
+  referencias y las reglas de validación 1 a 8.
+- **ValueSet ColombianPersonIdentifierCodes**, para los diecisiete tipos de
+  documento admitidos.
+
+### Arquitectura: por qué una cola y no una llamada directa
+
+Lo natural sería llamar al Ministerio al cerrar la consulta. Sería un error.
+
+Eso ataría la atención clínica a que la red responda, y la red es justamente lo
+que falla en un puesto de salud rural. Un profesional no puede quedarse sin poder
+cerrar una historia clínica porque un servidor de Bogotá no contesta.
+
+Al cerrar la atención solo se encola (`RDASubmission`). Un proceso aparte
+transmite y reintenta con espera creciente. La atención nunca depende de la
+disponibilidad del Ministerio, y el deber de remitir queda en una tabla
+auditable: en cualquier momento puede responderse cuántas atenciones están
+pendientes de remisión y por qué.
+
+### Validación local antes de transmitir
+
+El propio manual la pide, pero aquí pesa una razón adicional: la conectividad
+rural es cara y escasa. Gastar una llamada en un documento que va a devolver 400
+no solo pierde esa llamada, sino que mete el envío en la cola de reintentos y
+retrasa a los que sí estaban bien.
+
+Se implementan las reglas del manual que pueden comprobarse sin consultar
+registros nacionales. Las que dependen de EVOL, REPS y RETHUS solo puede
+resolverlas el servidor.
+
+### Clasificación de errores
+
+Determina si reintentar sirve de algo:
+
+| Respuesta | Tratamiento | Motivo |
+| :--- | :--- | :--- |
+| 200 | aceptado | se guarda el acuse de recibo |
+| 409 | duplicado, no se reintenta | el Ministerio ya lo tenía: el deber está cumplido |
+| 400 | rechazado, no se reintenta | reintentar da 400 otra vez |
+| 401/403 | un reintento con token nuevo | puede ser un token vencido antes de tiempo |
+| 5xx y red | reintento con espera creciente | el otro lado no está disponible |
+
+Los reintentos tienen techo (ocho). Un envío con cien fallos no se arregla con el
+ciento uno, y la cola dejaría de ser legible.
+
+### Archivos
+
+| Archivo | Contenido |
+| :--- | :--- |
+| `ihce/terminology.py` | Códigos, perfiles, secciones y endpoints oficiales |
+| `ihce/config.py` | Credenciales por entorno, sin exponerlas en logs |
+| `ihce/mapping.py` | Construcción del Bundle FHIR |
+| `ihce/validation.py` | Reglas del manual, comprobadas en local |
+| `ihce/client.py` | OAuth2 contra Azure AD y transmisión |
+| `ihce/outbox.py` | Cola, reintentos y clasificación de estados |
+| `models.py` | `RDASubmission`, con índice único por atención |
+| `manage.py` | `rda-status`, `rda-send`, `rda-problems`, `rda-retry`, `rda-backfill`, `rda-preview` |
+
+`preflight` ahora falla en producción si faltan credenciales del IHCE, porque sin
+ellas el prestador está incumpliendo.
+
+### Pruebas
+
+60 pruebas nuevas, sin red. Cubren las reglas 1 a 6 del manual, el contenido
+clínico del documento, la clasificación de errores, la espera creciente, el techo
+de reintentos y que guardar una historia clínica encole su RDA.
+
+Una prueba comprueba que la base de datos impide remitir dos veces la misma
+atención, y no solo la comprobación previa en código.
+
+### Lo que estas pruebas no demuestran
+
+**Que el Ministerio acepte los documentos.** Eso exige credenciales reales contra
+el ambiente de pruebas, que solo se obtienen tras registrar al prestador en
+Hércules. Lo verificado es que el documento cumple las reglas que el propio
+manual dice que el servidor aplica.
+
+Quedan tres validaciones que solo puede hacer el servidor, y que dependen de
+datos que no están en esta aplicación:
+
+1. el paciente debe existir en **EVOL** y coincidir en tipo y número de documento,
+   primer apellido, primer nombre y sexo;
+2. el profesional debe estar activo en **RETHUS**;
+3. la institución y la sede deben estar habilitadas en **REPS**.
+
+**Antes de atender al primer paciente en producción hay que transmitir al sandbox
+y confirmar que responde 200.** Está documentado en DEPLOYMENT.md, sección 13.7.
+
+### Datos que el perfil exige y la aplicación aún no captura
+
+El perfil `PatientRDA` marca como obligatorias varias extensiones que hoy no
+existen en el modelo: nacionalidad, pertenencia étnica, condición de discapacidad,
+ocupación y zona de residencia. La aplicación sí tiene `zone`, `department_code`
+y `municipality_code`.
+
+Mientras no se capturen, el Ministerio puede devolver advertencias o rechazos por
+esos campos. Es trabajo de interfaz, no de mapeo, y depende de cómo el prestador
+quiera recolectar datos que son sensibles por sí mismos (la pertenencia étnica lo
+es). Se deja señalado en lugar de inventar valores por defecto: un dato étnico
+inventado en un registro nacional de salud es peor que un dato ausente.

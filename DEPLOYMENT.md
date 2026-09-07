@@ -266,6 +266,116 @@ python manage.py check-knowledge-base
 
 ---
 
+
+## 13 · Interoperabilidad IHCE (obligatoria)
+
+La **Resolución 1888 de 2025** obliga a todo prestador inscrito en REPS a remitir
+un **Resumen Digital de Atención (RDA)** a la plataforma nacional por cada
+atención que preste, en estándar HL7 FHIR R4. Entró en vigencia el 15 de octubre
+de 2025 con un plazo de integración de seis meses.
+
+No es opcional y no depende del tamaño del prestador.
+
+### 13.1 · Obtener las credenciales
+
+Son cuatro pasos ante el Ministerio, y ninguno es instantáneo. Empiece por aquí,
+no el día antes de salir a producción.
+
+1. Registre el prestador en **Mi Seguridad Social**.
+2. Designe formalmente un **delegado** del prestador.
+3. Inscriba al delegado, con su documento de identidad, en el **módulo IHCE de
+   Hércules** (SISPRO).
+4. Hércules genera el **ClientID** y el **ClientSecret**, y le entrega la **clave
+   de suscripción** y la **URL base** del ambiente.
+
+Ponga esos valores en las variables `IHCE_*` del archivo `.env`.
+
+### 13.2 · Verificar la conexión
+
+```bash
+python manage.py rda-status
+```
+
+Dice si faltan credenciales, contra qué ambiente apunta y cuántos RDA hay en cada
+estado.
+
+### 13.3 · Revisar un documento antes de transmitir
+
+Antes de tener credenciales ya puede comprobar que el mapeo es correcto:
+
+```bash
+python manage.py rda-preview <id_de_la_atencion>
+python manage.py rda-preview <id_de_la_atencion> --json
+```
+
+Valida localmente contra las reglas del Manual de operaciones v1.4 y muestra qué
+secciones llevan datos y cuáles viajan vacías. El documento contiene información
+clínica: no lo pegue en un ticket ni en un chat.
+
+### 13.4 · Transmitir
+
+La transmisión **no ocurre durante la atención**. Al cerrar una historia clínica
+el RDA solo se encola; un proceso aparte lo envía y reintenta.
+
+Esto es deliberado. Si se llamara al Ministerio dentro de la consulta, una caída
+de su servidor impediría cerrar la historia clínica, y en una zona rural con mala
+conectividad eso pasa. La atención nunca puede depender de que Bogotá conteste.
+
+Programe el envío cada pocos minutos:
+
+```bash
+*/5 * * * * cd /ruta/al/proyecto && python manage.py rda-send >> logs/rda.log 2>&1
+```
+
+### 13.5 · Atender los que no salen
+
+```bash
+python manage.py rda-problems
+```
+
+Hay dos causas distintas:
+
+- **bloqueado**: faltan datos locales. Lo dice explícitamente: el paciente no
+  tiene fecha de nacimiento, el profesional no tiene registro médico, la
+  institución no tiene código de habilitación, la atención no tiene diagnóstico
+  CIE-10. Se corrige en la interfaz, no en el código.
+- **rechazado**: el Ministerio devolvió un error de estructura, o se agotaron los
+  reintentos. El mensaje trae el `OperationOutcome` con el campo señalado.
+
+Una vez corregida la causa:
+
+```bash
+python manage.py rda-retry --id <id>
+```
+
+### 13.6 · Puesta en marcha con historias anteriores
+
+Si ya hay atenciones registradas antes de configurar la integración:
+
+```bash
+python manage.py rda-backfill --since 2026-01-01
+```
+
+Encola las que no tengan registro de envío. Revise antes con `--limit` pequeño.
+
+### 13.7 · Lo que no se puede verificar sin credenciales
+
+El mapeo se construyó contra los perfiles publicados en
+`https://vulcano.ihcecol.gov.co/` y se valida en local contra las reglas del
+manual. Pero **que el Ministerio acepte los documentos solo se comprueba contra
+el ambiente de pruebas**. Antes de atender al primer paciente en producción,
+transmita al sandbox y confirme que responde 200.
+
+Hay además tres validaciones que solo puede hacer el servidor y que dependen de
+datos que no están en esta aplicación:
+
+- el paciente debe existir en **EVOL** y coincidir en tipo y número de documento,
+  primer apellido, primer nombre y sexo;
+- el profesional debe estar activo en **RETHUS**;
+- la institución y la sede deben estar habilitadas en **REPS**.
+
+Si alguno falla, el RDA se rechaza aunque el documento esté bien armado.
+
 ## Problemas frecuentes
 
 **La aplicación no arranca y muestra «ARRANQUE DETENIDO».**

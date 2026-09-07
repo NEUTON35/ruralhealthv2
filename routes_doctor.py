@@ -13,6 +13,7 @@ from models import ADMINISTRATION_ROUTES, APPOINTMENT_FREEING_STATUSES, CARE_IN_
 from datetime import datetime, timedelta
 from time_utils import colombia_now, colombia_strftime
 from pharmacy_utils import doctor_distance, doctor_visible_on_map
+from ihce import encolar as encolar_rda
 from monetization import PLAN_LABELS, expiration_for_plan, generate_human_code, remaining_label
 import json
 import calendar
@@ -1086,6 +1087,21 @@ def chat(chat_id):
             )
             db.session.add(history)
             audit('medical_history_recorded', details=f'patient_id={chat_obj.patient_id}')
+
+            # Resolucion 1888 de 2025: cada atencion debe remitirse al IHCE.
+            # Solo se encola. Si se llamara al Ministerio aqui, una caida de su
+            # servidor impediria cerrar la historia clinica, y en una zona rural
+            # eso pasa. La transmision corre aparte y reintenta.
+            db.session.flush()
+            try:
+                encolar_rda(db, history)
+            except Exception:
+                # Encolar nunca puede tumbar el registro de la atencion. Si la
+                # cola falla, queda el hueco documentado en la auditoria y
+                # `manage.py rda-backfill` lo recupera despues.
+                current_app.logger.exception('No se pudo encolar el RDA')
+                audit('rda_enqueue_failed', details=f'history_id={history.id}')
+
             flash('Historia clínica guardada exitosamente.')
         
         audit('doctor_chat_updated', details=f'chat_id={chat_obj.id}; action={action}')
