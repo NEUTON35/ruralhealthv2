@@ -1,30 +1,172 @@
-{% extends "base.html" %}
+{#
+  Página de error. Deliberadamente autónoma.
 
-{% block content %}
-<div class="min-h-[70vh] flex items-center justify-center px-4">
-    <div class="max-w-md w-full text-center">
-        <div class="mb-8 flex justify-center">
-            <div class="p-4 bg-critical-subtle rounded-full">
-                <i data-lucide="alert-triangle" class="w-16 h-16 text-critical"></i>
-            </div>
-        </div>
-        
-        <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ title or "Algo salió mal" }}</h1>
-        <p class="text-lg text-gray-600 mb-8">
-            {{ message or "Ha ocurrido un error inesperado en nuestro sistema." }}
-        </p>
-        
-        <div class="space-y-4">
-            <a href="{{ url_for('index') }}" 
-               class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-sm">
-                <i data-lucide="home" class="w-5 h-5 mr-2"></i>
-                Volver al inicio
-            </a>
-            
-            <p class="text-sm text-gray-600">
-                Código de error: <span class="font-mono">{{ code or 500 }}</span>
-            </p>
-        </div>
-    </div>
-</div>
-{% endblock %}
+  Antes extendía `base.html`, que consulta la sesión, el usuario y la clínica.
+  Eso significa que un error 500 causado por la base de datos hacía fallar
+  también a la página que debía informarlo, y el usuario terminaba viendo la
+  pantalla de error genérica del servidor.
+
+  Por eso aquí no hay herencia de plantilla, ni CSS externo, ni JavaScript, ni
+  iconos: todo va embebido. Si lo único que queda en pie es el proceso de Flask,
+  esta página se dibuja igual.
+
+  El aviso de urgencias aparece en los fallos del sistema (500 y 503). Si la
+  plataforma se cae en mitad de una consulta, lo que el paciente necesita saber
+  no es el código del error: es a dónde ir.
+#}<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title or 'Error' }} · RuralHealth Connect</title>
+<style>
+  :root {
+    --tinta: #0f172a;
+    --tenue: #475569;
+    --borde: #e2e8f0;
+    --fondo: #f8fafc;
+    --papel: #ffffff;
+    --acento: #0f766e;
+    --acento-oscuro: #115e59;
+    --alerta-borde: #fecaca;
+    --alerta-fondo: #fef2f2;
+    --alerta-tinta: #7f1d1d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--tinta);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  main {
+    background: var(--papel);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    max-width: 560px;
+    width: 100%;
+    padding: 40px 36px;
+  }
+  .codigo {
+    font: 600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .08em;
+    color: var(--tenue);
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  h1 { font-size: 26px; line-height: 1.25; margin: 0 0 12px; letter-spacing: -.01em; }
+  p  { margin: 0 0 16px; color: var(--tenue); }
+  p.principal { color: var(--tinta); font-size: 17px; }
+  ul { margin: 0 0 20px; padding-left: 20px; color: var(--tenue); }
+  li { margin-bottom: 6px; }
+
+  .urgencias {
+    background: var(--alerta-fondo);
+    border: 1px solid var(--alerta-borde);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 0 0 24px;
+  }
+  .urgencias p { color: var(--alerta-tinta); margin: 0; font-size: 15px; }
+  .urgencias strong { font-weight: 600; }
+
+  .incidente {
+    background: var(--fondo);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 0 0 24px;
+  }
+  .incidente p { margin: 0 0 4px; font-size: 13px; }
+  .incidente code {
+    font: 600 15px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--tinta);
+    user-select: all;
+  }
+
+  .acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+  a.boton {
+    display: inline-block;
+    background: var(--acento);
+    color: #fff;
+    text-decoration: none;
+    padding: 11px 20px;
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  a.boton:hover { background: var(--acento-oscuro); }
+  a.secundario {
+    display: inline-block;
+    border: 1px solid var(--borde);
+    color: var(--tenue);
+    text-decoration: none;
+    padding: 11px 20px;
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  a.secundario:hover { color: var(--tinta); border-color: var(--tenue); }
+
+  footer { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--borde); }
+  footer p { font-size: 13px; margin: 0; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --tinta: #e2e8f0; --tenue: #94a3b8; --borde: #334155;
+      --fondo: #0f172a; --papel: #1e293b;
+      --acento: #14b8a6; --acento-oscuro: #0d9488;
+      --alerta-borde: #7f1d1d; --alerta-fondo: #2a1414; --alerta-tinta: #fca5a5;
+    }
+  }
+</style>
+</head>
+<body>
+<main role="main">
+  <p class="codigo">Error {{ code or 500 }}</p>
+  <h1>{{ title or 'Algo salió mal' }}</h1>
+
+  <p class="principal">{{ message or 'Ocurrió un error inesperado.' }}</p>
+
+  {# El aviso de urgencias solo en fallos del sistema. En un 404 sería ruido. #}
+  {% if code in (500, 502, 503, 504) %}
+  <div class="urgencias">
+    <p>
+      <strong>Si esto es una urgencia, no espere.</strong> Esta plataforma no
+      atiende urgencias ni siquiera cuando funciona. Acuda al servicio de
+      urgencias más cercano o comuníquese con la línea 123.
+    </p>
+  </div>
+  {% endif %}
+
+  {% if incident %}
+  <div class="incidente">
+    <p>Código del incidente, para reportarlo:</p>
+    <code>{{ incident }}</code>
+  </div>
+  {% endif %}
+
+  {% if pasos %}
+  <ul>
+    {% for paso in pasos %}<li>{{ paso }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="acciones">
+    <a class="boton" href="/">Volver al inicio</a>
+    {% if code == 403 or code == 401 %}
+    <a class="secundario" href="/login">Iniciar sesión</a>
+    {% endif %}
+  </div>
+
+  <footer>
+    <p>RuralHealth Connect</p>
+  </footer>
+</main>
+</body>
+</html>

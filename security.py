@@ -1033,10 +1033,12 @@ def seed_reference_data(db):
                 ('04', 'Anticipo'),
                 ('05', 'No aplica'),
             ],
-            'RIPSTipoDiagnosticoPrincipal': [
-                ('1', 'Impresion diagnostica'),
-                ('2', 'Confirmado nuevo'),
-                ('3', 'Confirmado repetido'),
+            # Version2, de dos caracteres. La tabla anterior usaba un solo
+            # digito; el anexo tecnico de la Resolucion 948 fija C 2.
+            'RIPSTipoDiagnosticoPrincipalVersion2': [
+                ('01', 'Impresion diagnostica'),
+                ('02', 'Confirmado nuevo'),
+                ('03', 'Confirmado repetido'),
             ],
         }
         for tabla, filas in semilla.items():

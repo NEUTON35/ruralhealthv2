@@ -32,20 +32,23 @@ la generacion con el detalle de que falta y en que atencion. La regla RVC096 de
 la Resolucion 948 bloquea los codigos de relleno, asi que rellenar no es una
 opcion ni siquiera pragmatica.
 
-Lo que falta por confirmar
---------------------------
-La Resolucion 948 anadio tres campos obligatorios cuyos nombres exactos no
-pudieron extraerse del texto publicado:
+Los tres campos que anadio la Resolucion 948
+--------------------------------------------
+Se confirmaron contra el **Documento Tecnico 1** de la Resolucion 948, que el
+Ministerio publica aparte del cuerpo normativo, en el micrositio de FEV RIPS:
 
-- **CIE-11** y **Codigo VIDA** en consultas y procedimientos (exigible desde el
-  1 de julio de 2026).
-- **SIRAS** (campo U12), obligatorio para usuarios tipo 10, victimas de
-  accidente de transito cubiertas por SOAT (exigible desde el 1 de septiembre
-  de 2026).
-
-Estan declarados en `CAMPOS_PENDIENTES_RES948` y el generador avisa de ellos en
-lugar de emitirlos con un nombre inventado. Un campo mal nombrado se rechaza
-igual que uno ausente, pero ademas hace creer que esta resuelto.
+- **`codigoVIDA`** (C22). El anexo lo define como "el id unico de la atencion en
+  el sistema IHCE". Es decir: **es el acuse que devuelve el IHCE al recibir el
+  RDA**, que esta aplicacion ya guarda en `RDASubmission.remote_id`. Los dos
+  modulos quedan enlazados por ese campo, que es justamente lo que el Ministerio
+  persigue al exigirlo: que la factura y la historia clinica interoperable
+  apunten a la misma atencion.
+- **`codDiagnosticoPrincipalCIE11`** y sus relacionados (C23 a C30), cada uno con
+  su nombre en el campo `nom...`. La aplicacion codifica en CIE-10, asi que
+  viajan vacios hasta que se cargue el catalogo CIE-11.
+- **`registroSIRAS`** (U12), a nivel de usuario: la radicacion del reporte a la
+  plataforma SIRAS para victimas de accidente de transito. La regla RVC095
+  notifica los tres primeros meses y despues rechaza.
 """
 
 import json
@@ -57,16 +60,17 @@ from models import (Clinic, MedicalHistory, RIPSReferenceCode, TABLA_CAUSA_EXTER
 
 VERSION_NORMA = 'Resolucion 948 de 2026'
 
-# Campos que la Resolucion 948 exige y que aun no se emiten porque no se pudo
-# confirmar su nombre exacto en el anexo tecnico. Se listan para que el
-# operador sepa que le falta antes de intentar radicar.
-CAMPOS_PENDIENTES_RES948 = (
-    ('CIE-11', 'Obligatorio en consultas desde el 1 de julio de 2026. Requiere '
-               'ademas cargar el catalogo CIE-11, que la aplicacion no tiene.'),
-    ('Codigo VIDA', 'Obligatorio en consultas desde el 1 de julio de 2026.'),
-    ('SIRAS', 'Obligatorio para usuarios tipo 10 (victimas de accidente de '
-              'transito, SOAT) desde el 1 de septiembre de 2026.'),
+# Lo unico que sigue sin poder emitirse, y por que. Ya no es un nombre
+# desconocido: es un dato que la aplicacion no tiene todavia.
+CAMPOS_SIN_DATO = (
+    ('CIE-11', 'Los campos codDiagnosticoPrincipalCIE11 y sus relacionados '
+               'viajan vacios: la aplicacion codifica en CIE-10 y no tiene '
+               'cargado el catalogo CIE-11. Exigible desde el 1 de julio de 2026.'),
 )
+
+# Tipo de usuario que obliga a informar el registro SIRAS: victima de accidente
+# de transito cubierta por SOAT.
+TIPO_USUARIO_SOAT = '10'
 
 # Grupo de servicios y servicio para consulta externa. Vienen de las tablas
 # del Ministerio; se dejan como constantes porque esta aplicacion solo presta
@@ -239,7 +243,31 @@ def _usuario_json(paciente, consecutivo):
         'incapacidad': 'NO',
         'consecutivo': consecutivo,
         'codPaisOrigen': (getattr(paciente, 'nationality_code', None) or '170'),
+        # U12. Solo aplica a victimas de accidente de transito cubiertas por
+        # SOAT; en los demas casos viaja nulo.
+        'registroSIRAS': (getattr(paciente, 'siras_registration', None) or None),
     }
+
+
+def _codigo_vida(historia):
+    """`codigoVIDA` (C22): el id unico de la atencion en el IHCE.
+
+    El anexo tecnico lo define asi literalmente. Es el acuse que devuelve el
+    Ministerio al recibir el RDA, que ya se guarda en `RDASubmission.remote_id`.
+    Enlazar la factura con la historia clinica interoperable es exactamente lo
+    que el Ministerio persigue con este campo.
+
+    Viaja nulo mientras el RDA no se haya transmitido: no hay id que informar.
+    """
+    try:
+        from models import RDA_ACEPTADO, RDA_DUPLICADO, RDASubmission
+    except ImportError:
+        return None
+    envio = RDASubmission.query.filter_by(
+        medical_history_id=historia.id).first()
+    if envio is None or envio.status not in (RDA_ACEPTADO, RDA_DUPLICADO):
+        return None
+    return envio.remote_id or None
 
 
 def _consulta_json(historia, clinica, consecutivo, valor=0):
@@ -257,12 +285,24 @@ def _consulta_json(historia, clinica, consecutivo, valor=0):
         'finalidadTecnologiaSalud': (historia.consultation_purpose or '').strip(),
         'causaMotivoAtencion': (historia.external_cause or '').strip(),
         'codDiagnosticoPrincipal': (historia.cie10_code or '').strip().upper(),
+        # C23 a C30. La aplicacion codifica en CIE-10; estos viajan nulos hasta
+        # que se cargue el catalogo CIE-11. Van igual porque el anexo los
+        # declara con longitud "0, 4-256": cero es un valor admitido.
+        'codDiagnosticoPrincipalCIE11': None,
+        'nomCodDiagnosticoPrincipalCIE11': None,
         'codDiagnosticoRelacionado1': None,
+        'codDiagnosticoRelacionado1CIE11': None,
+        'nomCodDiagnosticoRelacionado1CIE11': None,
         'codDiagnosticoRelacionado2': None,
+        'codDiagnosticoRelacionado2CIE11': None,
+        'nomCodDiagnosticoRelacionado2CIE11': None,
         'codDiagnosticoRelacionado3': None,
-        # 1 = impresion diagnostica. Es lo que corresponde a una consulta
-        # externa de primer nivel: el diagnostico se confirma despues.
-        'tipoDiagnosticoPrincipal': '1',
+        'codDiagnosticoRelacionado3CIE11': None,
+        'nomCodDiagnosticoRelacionado3CIE11': None,
+        # 01 = impresion diagnostica, segun RIPSTipoDiagnosticoPrincipalVersion2.
+        # Es lo que corresponde a una consulta externa de primer nivel: el
+        # diagnostico se confirma despues. El anexo fija dos caracteres.
+        'tipoDiagnosticoPrincipal': '01',
         'tipoDocumentoIdentificacion': (
             getattr(profesional, 'document_type', None) or 'CC').strip().upper(),
         'numDocumentoIdentificacion': (getattr(profesional, 'cedula', None) or '').strip(),
@@ -272,6 +312,7 @@ def _consulta_json(historia, clinica, consecutivo, valor=0):
         'valorPagoModerador': 0,
         'numFEVPagoModerador': None,
         'consecutivo': consecutivo,
+        'codigoVIDA': _codigo_vida(historia),
     }
 
 
@@ -364,8 +405,23 @@ def generar(clinic_id, start, end, num_factura, nit_obligado=None,
         'Unico de Validacion, que devuelve el CUV.',
         'Sin CUV la factura no puede radicarse ante el pagador.',
     ]
-    for nombre, detalle in CAMPOS_PENDIENTES_RES948:
-        avisos.append('PENDIENTE %s: %s' % (nombre, detalle))
+    for nombre, detalle in CAMPOS_SIN_DATO:
+        avisos.append('SIN DATO %s: %s' % (nombre, detalle))
+
+    sin_vida = sum(1 for c in consultas if not c.get('codigoVIDA'))
+    if sin_vida:
+        avisos.append(
+            '%d consulta(s) sin codigoVIDA: su RDA aun no fue aceptado por el '
+            'IHCE. Ese campo es el id de la atencion que devuelve el Ministerio, '
+            'asi que conviene transmitir los RDA antes de radicar la factura.'
+            % sin_vida)
+
+    soat = [u for u in usuarios
+            if u.get('tipoUsuario') == TIPO_USUARIO_SOAT and not u.get('registroSIRAS')]
+    if soat:
+        avisos.append(
+            '%d usuario(s) tipo SOAT sin registro SIRAS. La regla RVC095 lo '
+            'notifica los tres primeros meses y despues lo rechaza.' % len(soat))
 
     return documento, avisos
 

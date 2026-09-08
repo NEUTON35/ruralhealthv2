@@ -346,40 +346,117 @@ def register_error_handlers(app):
             or request.accept_mimetypes.best == 'application/json'
         )
 
+    # Contenido de cada pagina de error.
+    #
+    # Un mensaje de error sirve para dos cosas: decir que paso y decir que hacer
+    # ahora. Lo segundo es lo que casi siempre falta. En una plataforma de salud
+    # rural pesa mas de lo normal: quien esta al otro lado puede haber caminado
+    # dos horas para llegar a la senal.
+    #
+    # Ninguno explica de mas. Un 403 que detalle por que se denego el acceso le
+    # esta diciendo a quien no deberia estar ahi como funciona el permiso.
+    PAGINAS = {
+        400: (
+            'Solicitud invalida',
+            'El formulario llego incompleto o con datos que el sistema no pudo leer.',
+            ['Vuelva atras y revise que los campos obligatorios esten llenos.',
+             'Si copio y pego algun dato, verifique que no arrastre espacios.'],
+        ),
+        401: (
+            'Sesion no iniciada',
+            'Para ver esta pagina necesita haber iniciado sesion.',
+            ['Su sesion pudo haber caducado por inactividad.'],
+        ),
+        403: (
+            'Acceso denegado',
+            'Su cuenta no tiene permiso para ver este recurso.',
+            ['Si cree que deberia tenerlo, comuniquese con el administrador de su clinica.',
+             'Este intento queda registrado en la auditoria.'],
+        ),
+        404: (
+            'Pagina no encontrada',
+            'La direccion no corresponde a ninguna pagina del sistema.',
+            ['Revise el enlace por si llego incompleto.',
+             'Si lo guardo en favoritos, la pagina pudo haber cambiado de sitio.'],
+        ),
+        405: (
+            'Operacion no permitida',
+            'Esa accion no esta disponible en esta pagina.',
+            ['Vuelva al inicio y navegue desde el menu.'],
+        ),
+        413: (
+            'El archivo es demasiado grande',
+            'El archivo supera el limite permitido.',
+            ['Si es una foto, tomela con menor resolucion o reduzca su tamano.',
+             'Los documentos escaneados pesan menos en blanco y negro.'],
+        ),
+        429: (
+            'Demasiadas solicitudes',
+            'Se recibieron demasiadas peticiones desde su conexion en poco tiempo.',
+            ['Espere un minuto y vuelva a intentarlo.',
+             'Si esta en una red compartida, el limite pudo alcanzarlo otra persona.'],
+        ),
+        503: (
+            'Servicio no disponible',
+            'El sistema esta temporalmente fuera de servicio.',
+            ['Intente de nuevo en unos minutos.'],
+        ),
+    }
+
+    def pagina_error(code, incident=None):
+        titulo, mensaje, pasos = PAGINAS.get(
+            code, ('Algo salio mal', 'Ocurrio un error inesperado.', []))
+        return render_template('error.html', code=code, title=titulo,
+                               message=mensaje, pasos=pasos,
+                               incident=incident), code
+
     @app.errorhandler(400)
     def bad_request(error):
         if wants_json():
             return jsonify({'error': 'bad_request'}), 400
-        return render_template('error.html', code=400, title='Solicitud invalida',
-                               message='La solicitud no pudo procesarse.'), 400
+        return pagina_error(400)
+
+    @app.errorhandler(401)
+    def unauthorized(error):
+        if wants_json():
+            return jsonify({'error': 'unauthorized'}), 401
+        return pagina_error(401)
 
     @app.errorhandler(403)
     def forbidden(error):
         if wants_json():
             return jsonify({'error': 'forbidden'}), 403
-        return render_template('error.html', code=403, title='Acceso denegado',
-                               message='Su cuenta no tiene permiso para ver este recurso.'), 403
+        return pagina_error(403)
 
     @app.errorhandler(404)
     def not_found(error):
         if wants_json():
             return jsonify({'error': 'not_found'}), 404
-        return render_template('error.html', code=404, title='No encontrado',
-                               message='La pagina que buscas no existe.'), 404
+        return pagina_error(404)
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        if wants_json():
+            return jsonify({'error': 'method_not_allowed'}), 405
+        return pagina_error(405)
 
     @app.errorhandler(413)
     def too_large(error):
         if wants_json():
             return jsonify({'error': 'payload_too_large'}), 413
-        return render_template('error.html', code=413, title='Archivo demasiado grande',
-                               message='El archivo supera el limite permitido.'), 413
+        return pagina_error(413)
 
     @app.errorhandler(429)
     def rate_limited(error):
         if wants_json():
             return jsonify({'error': 'too_many_requests'}), 429
-        return render_template('error.html', code=429, title='Demasiadas solicitudes',
-                               message='Ha realizado demasiadas solicitudes. Espere un momento.'), 429
+        return pagina_error(429)
+
+    @app.errorhandler(503)
+    def unavailable(error):
+        if wants_json():
+            return jsonify({'error': 'service_unavailable'}), 503
+        return pagina_error(503)
 
     @app.errorhandler(Exception)
     def handle_exception(error):
@@ -406,11 +483,13 @@ def register_error_handlers(app):
         return render_template(
             'error.html',
             code=500,
-            title='Error interno',
-            message=(
-                'Algo fallo de nuestro lado. El equipo tecnico fue notificado. '
-                f'Si necesita reportarlo, indique el codigo {incident}.'
-            ),
+            title='Error del sistema',
+            message='Algo fallo de nuestro lado, no en lo que usted hizo. '
+                    'El equipo tecnico ya fue notificado.',
+            pasos=['Su informacion no se perdio: lo que ya estaba guardado sigue ahi.',
+                   'Si estaba llenando un formulario, revise antes de volver a '
+                   'enviarlo para no duplicarlo.'],
+            incident=incident,
         ), 500
 
 

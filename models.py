@@ -180,6 +180,11 @@ class User(UserMixin, ClinicScoped, db.Model):
     # dejarlo vacio. Nacionalidad trae 170 (Colombia) por ser el caso
     # abrumadoramente mayoritario, pero el formulario permite cambiarlo.
     nationality_code = db.Column(db.String(3), default='170', nullable=True)
+    # Radicacion del reporte a la plataforma SIRAS, obligatoria para victimas de
+    # accidente de transito cubiertas por SOAT (campo U12 de la Resolucion 948
+    # de 2026). La regla RVC095 notifica los tres primeros meses y despues
+    # rechaza.
+    siras_registration = db.Column(db.String(60), nullable=True)
     ethnic_group = db.Column(db.String(2), nullable=True)   # ColombianEthnicGroup
     disability = db.Column(db.String(2), nullable=True)     # ColombianDisabilityClassification
     occupation_code = db.Column(db.String(10), nullable=True)  # CIUO
@@ -1428,7 +1433,7 @@ TABLA_MODALIDAD = 'ModalidadAtencion'
 TABLA_TIPO_USUARIO = 'RIPSTipoUsuarioVersion2'
 TABLA_ZONA = 'ZonaVersion2'
 TABLA_CONCEPTO_RECAUDO = 'conceptoRecaudo'
-TABLA_TIPO_DIAGNOSTICO = 'RIPSTipoDiagnosticoPrincipal'
+TABLA_TIPO_DIAGNOSTICO = 'RIPSTipoDiagnosticoPrincipalVersion2'
 
 
 # =============================================================================

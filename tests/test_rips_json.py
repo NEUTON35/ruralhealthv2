@@ -210,13 +210,87 @@ class TestHonestidadDelAlcance:
         assert 'NO esta radicado' in texto
         assert 'CUV' in texto
 
-    def test_los_avisos_listan_los_campos_de_la_948_que_faltan(
+    def test_los_avisos_dicen_que_el_cie11_va_vacio(
             self, app, atencion_completa, periodo):
         with app.app_context():
             _, avisos = rips_json.generar(1, *periodo, num_factura='FE-1')
-        texto = ' '.join(avisos)
-        for campo in ('CIE-11', 'Codigo VIDA', 'SIRAS'):
-            assert campo in texto, campo
+        assert 'CIE-11' in ' '.join(avisos)
+
+
+class TestCamposDeLaResolucion948:
+    """Los tres campos que anadio la 948, confirmados contra el Documento
+    Tecnico 1 que el Ministerio publica aparte del cuerpo normativo."""
+
+    def test_la_consulta_lleva_los_campos_cie11(self, app, atencion_completa, periodo):
+        with app.app_context():
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        consulta = doc['servicios']['consultas'][0]
+        for campo in ('codDiagnosticoPrincipalCIE11',
+                      'nomCodDiagnosticoPrincipalCIE11',
+                      'codDiagnosticoRelacionado1CIE11',
+                      'nomCodDiagnosticoRelacionado3CIE11'):
+            assert campo in consulta, campo
+
+    def test_el_cie11_viaja_nulo_mientras_no_haya_catalogo(
+            self, app, atencion_completa, periodo):
+        """La aplicacion codifica en CIE-10. El anexo admite longitud cero."""
+        with app.app_context():
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert doc['servicios']['consultas'][0]['codDiagnosticoPrincipalCIE11'] is None
+
+    def test_el_tipo_de_diagnostico_va_con_dos_caracteres(
+            self, app, atencion_completa, periodo):
+        """El anexo lo fija como C 2 y la tabla Version2 usa 01, 02 y 03."""
+        with app.app_context():
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert doc['servicios']['consultas'][0]['tipoDiagnosticoPrincipal'] == '01'
+
+    def test_el_usuario_lleva_el_campo_de_registro_siras(
+            self, app, atencion_completa, periodo):
+        with app.app_context():
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert 'registroSIRAS' in doc['usuarios'][0]
+
+    def test_sin_rda_aceptado_el_codigovida_va_nulo(
+            self, app, atencion_completa, periodo):
+        """No hay id de atencion que informar mientras el IHCE no acuse."""
+        with app.app_context():
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert doc['servicios']['consultas'][0]['codigoVIDA'] is None
+
+    def test_el_codigovida_es_el_acuse_del_ihce(self, app, atencion_completa, periodo):
+        """El anexo lo define como el id unico de la atencion en el IHCE. Es
+        lo que enlaza la factura con la historia clinica interoperable."""
+        from models import RDA_ACEPTADO, RDASubmission, db as _db
+        with app.app_context():
+            _db.session.add(RDASubmission(
+                medical_history_id=atencion_completa['history_id'],
+                patient_id=atencion_completa['patient'].id, clinic_id=1,
+                status=RDA_ACEPTADO, remote_id='DV64588521'))
+            _db.session.commit()
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert doc['servicios']['consultas'][0]['codigoVIDA'] == 'DV64588521'
+
+    def test_se_avisa_de_las_consultas_sin_codigovida(
+            self, app, atencion_completa, periodo):
+        with app.app_context():
+            _, avisos = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert any('codigoVIDA' in a for a in avisos)
+
+    def test_el_registro_siras_viaja_cuando_existe(self, app, atencion_completa, periodo):
+        """U12. Regla RVC095: notifica tres meses y despues rechaza."""
+        from models import User, db as _db
+        with app.app_context():
+            _db.session.get(User, atencion_completa['patient'].id
+                            ).siras_registration = 'SIRAS-2026-1234'
+            _db.session.commit()
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert doc['usuarios'][0]['registroSIRAS'] == 'SIRAS-2026-1234'
+
+    def test_sin_registro_siras_va_nulo_no_vacio(self, app, atencion_completa, periodo):
+        with app.app_context():
+            doc, _ = rips_json.generar(1, *periodo, num_factura='FE-1')
+        assert doc['usuarios'][0]['registroSIRAS'] is None
 
     def test_preview_no_construye_el_archivo(self, app, atencion_completa, periodo):
         with app.app_context():
