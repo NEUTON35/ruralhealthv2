@@ -1,4 +1,4 @@
-# Seguridad — RuralHealth Connect
+# Seguridad, RuralHealth Connect
 
 ---
 

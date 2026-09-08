@@ -339,8 +339,8 @@ def logout():
 #
 # El flujo no envia correo: en las zonas donde opera el sistema no puede darse
 # por supuesto ni el correo ni la cobertura. En su lugar, un administrador emite
-# un codigo de un solo uso que entrega por el canal que corresponda —presencial,
-# telefonico o el que la clinica tenga establecido— y que caduca en minutos.
+# un codigo de un solo uso que entrega por el canal que corresponda -presencial,
+# telefonico o el que la clinica tenga establecido- y que caduca en minutos.
 # =============================================================================
 
 @auth_bp.route('/recuperar', methods=['GET', 'POST'])
@@ -449,8 +449,8 @@ def issue_token():
 
     Este endpoint aplica exactamente el mismo bloqueo por intentos fallidos que
     el formulario web. En la version anterior no lo hacia: un atacante podia
-    probar contrasenas aqui sin limite contra cualquier cuenta —incluida la de
-    superadministrador— mientras el formulario quedaba bloqueado a los cinco
+    probar contrasenas aqui sin limite contra cualquier cuenta -incluida la de
+    superadministrador- mientras el formulario quedaba bloqueado a los cinco
     intentos, y a cambio recibia un token de refresco valido por siete dias.
     """
     data = request.get_json(silent=True) or {}

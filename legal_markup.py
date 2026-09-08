@@ -4,8 +4,8 @@ Los textos de `legal_documents.py` se escriben en texto plano para que sigan
 siendo legibles y revisables en el código fuente: un abogado puede leerlos sin
 pelear con etiquetas HTML. Este módulo les da forma al mostrarlos.
 
-Es un subconjunto muy pequeño y cerrado de marcado —negritas, listas, tablas y
-párrafos— construido a partir del texto, nunca copiándolo tal cual. Todo el
+Es un subconjunto muy pequeño y cerrado de marcado -negritas, listas, tablas y
+párrafos- construido a partir del texto, nunca copiándolo tal cual. Todo el
 contenido pasa por escape antes de insertarse, así que no hay forma de que una
 etiqueta escrita en el documento llegue al navegador como marcado.
 """

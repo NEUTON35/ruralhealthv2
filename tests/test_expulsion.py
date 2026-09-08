@@ -33,7 +33,7 @@ class TestLaSesionCae:
         make_user(role='doctor', username='doc_exp',
                   medical_registration='RM-EXP')
 
-        # `client` hace de sesión ya abierta — la del atacante.
+        # `client` hace de sesión ya abierta, la del atacante.
         login('doc_exp')
         assert client.get('/doctor/dashboard').status_code == 200
 

@@ -211,7 +211,7 @@ def dashboard():
 @login_required
 @role_required(ROLE_EXPENDOR)
 def confirm(ticket_id):
-    """Confirm delivery — handles full, partial, and no-stock cases via dispatch_engine."""
+    """Confirm delivery, handles full, partial, and no-stock cases via dispatch_engine."""
     pharmacy = _assigned_pharmacy()
     ticket = MedicationPickupTicket.query.filter_by(
         id=ticket_id,
@@ -247,7 +247,7 @@ def confirm(ticket_id):
 
     # --- Verificacion de identidad de quien retira ---------------------------
     # Antes se confirmaba la entrega sin contrastar a quien se le entregaba. Para
-    # medicamentos —y en especial los de control especial— la constancia de quien
+    # medicamentos (y en especial los de control especial) la constancia de quien
     # retiro es parte de la trazabilidad exigida.
     receiver_kind = (request.form.get('receiver_kind') or 'paciente').strip().lower()
     if receiver_kind not in {'paciente', 'tercero'}:

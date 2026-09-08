@@ -111,7 +111,7 @@ class TestCoberturaDeRecifrado:
     """Rotar la llave debe alcanzar TODOS los campos cifrados.
 
     La lista estaba escrita a mano y cubria 13 de 33 campos. Los 20 restantes
-    —alergias, orden medica, dispensacion, nombres y apellidos— habrian quedado
+    (alergias, orden medica, dispensacion, nombres y apellidos) habrian quedado
     ilegibles tras una rotacion, sin error y sin aviso.
     """
 

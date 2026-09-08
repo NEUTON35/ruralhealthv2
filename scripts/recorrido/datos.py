@@ -4,6 +4,7 @@
 No es una fixture de pruebas: es un escenario completo, con contenido en cada
 pantalla, para poder mirarlas sin tener que crear cuentas a mano.
 """
+import json
 import os
 import sys
 import tempfile
@@ -51,6 +52,7 @@ def preparar():
                     nit='900123456-7', habilitacion_code='0500112345',
                     department_code='05', municipality_code='001',
                     location='El Carmen de Viboral, Antioquia',
+                    contact_email='contacto@eseelcarmen.gov.co',
                     latitude=6.08, longitude=-75.33,
                     status='active', activa=True, access_type='public')
         db.session.add(cl)
@@ -172,11 +174,42 @@ def preparar():
                 appointment_type='Consulta', status=estado,
                 description='Control de presión arterial'))
 
-        meds = '[{"nombre_med":"Losartán 50mg","cantidad":30,"unidad":"tabletas","indicaciones":"1 tableta cada 24 horas"}]'
+        # La orden lleva todos los campos del articulo 17 del Decreto 2200 de
+        # 2005: denominacion comun, concentracion y forma farmaceutica
+        # separadas, via, dosis, frecuencia, duracion, cantidad en numeros y en
+        # letras, e indicaciones. Con la version corta de antes, el documento
+        # impreso salia con media docena de casillas vacias.
+        meds = json.dumps([
+            {"nombre_med": "Losartán", "denominacion_comun": "Losartán",
+             "nombre_comercial": None, "concentracion": "50 mg",
+             "forma_farmaceutica": "tableta", "via": "oral",
+             "dosis": "1 tableta", "frecuencia": "cada 24 horas",
+             "duracion_dias": 30, "cantidad": 30, "unidad": "tabletas",
+             "cantidad_en_letras": "treinta",
+             "instrucciones": "Tomar en la mañana, con o sin alimentos. "
+                              "No suspender sin indicación médica."},
+            {"nombre_med": "Acetaminofén", "denominacion_comun": "Acetaminofén",
+             "nombre_comercial": "Dolex", "concentracion": "500 mg",
+             "forma_farmaceutica": "tableta", "via": "oral",
+             "dosis": "1 tableta", "frecuencia": "cada 8 horas si hay dolor",
+             "duracion_dias": 3, "cantidad": 9, "unidad": "tabletas",
+             "cantidad_en_letras": "nueve",
+             "instrucciones": "Máximo 3 tabletas al día. Con alimentos."},
+        ], ensure_ascii=False)
+        diagnosticos = json.dumps([
+            {"code": "I10", "description": "Hipertensión esencial (primaria)"},
+        ], ensure_ascii=False)
         sello = generate_signed_order_hash(doc.id, pac.id, meds, cl.id)
         orden = MedicalOrder(
             clinic_id=cl.id, order_number='OM-000001', doctor_id=doc.id,
             patient_id=pac.id, meds_json=meds, status='activa',
+            diagnosis_json=diagnosticos,
+            clinical_record_number='HC-2026-000148',
+            patient_age='41 años', patient_level='1',
+            patient_address='Vereda La Chapa, El Carmen de Viboral',
+            patient_phone='3001234567',
+            observations=('Control de presión arterial en cuatro semanas. '
+                          'Si presenta mareo o tos persistente, consultar antes.'),
             verification_hash=sello, hash_seguridad=sello,
             doctor_registration='RM-12345', signed_at=colombia_now(),
             patient_document='10pac', patient_document_type='CC',

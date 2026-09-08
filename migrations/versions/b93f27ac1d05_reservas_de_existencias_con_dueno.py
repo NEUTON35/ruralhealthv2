@@ -17,7 +17,7 @@ los dos reproducidos:
 hay pantallas que lo leen, pero deja de ser la fuente de verdad.
 
 Las reservas que ya existan quedan sin fila: no hay forma de saber a qué ticket
-pertenecían. Se reconstruyen solas — al reactivar o al volver a emitir — y
+pertenecían. Se reconstruyen solas (al reactivar o al volver a emitir) y
 mientras tanto el efecto es conservador: el ticket ve menos disponible del que
 tiene, nunca más.
 

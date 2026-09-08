@@ -114,7 +114,7 @@ declararlo de forma explícita, lo que lo vuelve visible en revisión de código
 
 **Auditoría encadenada.** Cada entrada incorpora el hash de la anterior, de modo
 que alterar o borrar una rompe la verificación de todas las siguientes. No impide
-la manipulación —nada lo hace desde dentro de la misma base de datos— pero la
+la manipulación (nada lo hace desde dentro de la misma base de datos) pero la
 vuelve detectable, que es el requisito real de un registro clínico.
 
 **Transporte.** TLS 1.3 obligatorio hacia las API del Ministerio, como exige el

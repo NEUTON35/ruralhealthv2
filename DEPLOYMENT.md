@@ -1,4 +1,4 @@
-# Despliegue — RuralHealth Connect
+# Despliegue, RuralHealth Connect
 
 Guía para poner el sistema en operación real. Cada paso está aquí porque su
 ausencia causa un fallo concreto, no por completitud.
@@ -218,11 +218,11 @@ es una copia: es una suposición.
 
 Eventos que merecen alerta, consultables en **Admin → Auditoría**:
 
-- `login_blocked_by_lockout`, `jwt_blocked_by_lockout` — ataque de fuerza bruta.
-- `medical_order_hash_rejected` — orden médica manipulada.
-- `delivery_identity_mismatch` — el documento presentado no coincide con el titular.
-- `prescription_safety_override` — se prescribió pese a una alerta bloqueante.
-- Cadena de auditoría rota — manipulación del registro.
+- `login_blocked_by_lockout`, `jwt_blocked_by_lockout`, ataque de fuerza bruta.
+- `medical_order_hash_rejected`, orden médica manipulada.
+- `delivery_identity_mismatch`, el documento presentado no coincide con el titular.
+- `prescription_safety_override`, se prescribió pese a una alerta bloqueante.
+- Cadena de auditoría rota, manipulación del registro.
 
 ---
 
@@ -236,7 +236,7 @@ python manage.py verify-stock-ledger
 # Mensual
 python manage.py purge-login-attempts
 
-# Semestral — requiere revisión por químico farmacéutico
+# Semestral, requiere revisión por químico farmacéutico
 python manage.py check-knowledge-base
 ```
 

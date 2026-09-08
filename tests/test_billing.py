@@ -1,7 +1,7 @@
 """Pruebas de la emisión de documentos de cobro.
 
 Dos cosas que el modelo anterior no contemplaba: que el médico independiente
-factura a su propio nombre —con su propia numeración autorizada— y que el dinero
+factura a su propio nombre (con su propia numeración autorizada) y que el dinero
 no puede vivir en un `float`.
 """
 

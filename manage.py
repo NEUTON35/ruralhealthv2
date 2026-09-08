@@ -111,7 +111,7 @@ def cmd_preflight(args):
             fail(f'{name}: ausente')
         elif value in KNOWN_COMPROMISED:
             problems.append(f'{name} usa un valor expuesto en el repositorio.')
-            fail(f'{name}: COMPROMETIDA — rotala (SECURITY.md)')
+            fail(f'{name}: COMPROMETIDA, rotala (SECURITY.md)')
         elif len(value) < MIN_SECRET_LENGTH:
             problems.append(f'{name} es demasiado corta.')
             fail(f'{name}: {len(value)} caracteres, minimo {MIN_SECRET_LENGTH}')
@@ -125,7 +125,7 @@ def cmd_preflight(args):
     elif field_seed:
         if field_seed in KNOWN_COMPROMISED:
             problems.append('RURALHEALTH_FIELD_KEY_SEED esta comprometida.')
-            fail('RURALHEALTH_FIELD_KEY_SEED: COMPROMETIDA — toda la historia '
+            fail('RURALHEALTH_FIELD_KEY_SEED: COMPROMETIDA, toda la historia '
                  'clinica es descifrable por terceros')
         else:
             warn('Se usa semilla derivada. Es preferible una llave Fernet explicita.')

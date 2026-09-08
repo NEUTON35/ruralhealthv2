@@ -107,7 +107,7 @@ La plataforma ha sido optimizada para operar eficientemente en servidores locale
 
 *   **Backend**: Python 3.10+ / Flask / Flask-SQLAlchemy / Flask-Login
 *   **Frontend**: Jinja2 / Tailwind CSS (compilado en el build) / Lucide / Chart.js
-    — **sin dependencias de CDN**: todo se sirve desde el propio servidor, para
+    - **sin dependencias de CDN**: todo se sirve desde el propio servidor, para
     que la interfaz funcione sin conexión
 *   **PWA**: Service Worker / Manifest.json (Soporte Offline y Caché)
 *   **Mapas**: Leaflet.js / OpenStreetMap
@@ -193,7 +193,7 @@ python app.py --local
 # Desarrollo usando la base configurada en .env
 python app.py
 
-# Producción — nunca `python app.py`
+# Producción, nunca `python app.py`
 gunicorn -c gunicorn.conf.py wsgi:app
 ```
 
@@ -399,7 +399,7 @@ Como parte del desarrollo, se aplicó una encuesta de validación de campo a los
     *   **Atención Médica**: Calificada mayoritariamente como "Excelente".
     *   **Fluidez**: la retroalimentación sobre velocidad motivó la optimización de las
     consultas de farmacia. La auditoría posterior encontró que la causa principal
-    era otra —la derivación de clave repetida en cada campo cifrado— y también
+    era otra (la derivación de clave repetida en cada campo cifrado) y también
     quedó corregida.
 
 > [!NOTE]

@@ -121,8 +121,8 @@
 
        Aqui se volcaba el sello criptografico completo de la orden: media
        pantalla de caracteres ilegibles en un telefono. No le sirve de nada al
-       paciente —quien lo verifica es la farmacia, y lo hace contra la base de
-       datos, no leyendolo— y ademas queda expuesto a cualquiera que mire la
+       paciente -quien lo verifica es la farmacia, y lo hace contra la base de
+       datos, no leyendolo- y ademas queda expuesto a cualquiera que mire la
        pantalla por encima del hombro.
 
        Se conservan los primeros caracteres, que es lo unico util: permiten
@@ -247,13 +247,27 @@
                     <!-- Right: actions -->
                     <div class="flex flex-col gap-2 shrink-0 sm:min-w-[140px]">
                         {% if ticket.status in ('autorizado', 'parcial') %}
+                        {#
+                          Una vez avisado, el boton deja de ofrecerse y en su
+                          sitio queda la constancia con la hora. Sin esa senal
+                          el paciente no sabia si su aviso habia salido y
+                          volvia a pulsar, y cada pulsacion notificaba de nuevo
+                          a toda la farmacia.
+                        #}
+                        {% if ticket.arrival_notified_at %}
+                        <div class="{{ CHIP['completado'] }} justify-center py-2">
+                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                            Avisaste a las {{ ticket.arrival_notified_at|colombia_time }}
+                        </div>
+                        {% else %}
                         <form method="POST" action="{{ url_for('patient.notify_arriving', ticket_id=ticket.id) }}">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="{{ BOTON_MINI }}">
-                                <i data-lucide="navigation" class="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                                <i data-lucide="navigation" class="w-4 h-4"></i>
                                 Estoy en camino
                             </button>
                         </form>
+                        {% endif %}
                         {% endif %}
                         
                         <div class="text-center py-2 px-3 bg-lienzo-seccion rounded-lg border border-linea">

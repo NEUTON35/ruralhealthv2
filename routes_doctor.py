@@ -324,9 +324,8 @@ def _medications_from_form_legal():
     #
     # Antes se iteraba `campos['med_name']`, que es el nombre COMERCIAL y es
     # opcional: el campo obligatorio del formulario es el principio activo.
-    # Prescribir por generico — que es lo que exige la Resolucion 1403 de 2007
-    # y lo que hace un medico que no quiere atar al paciente a una marca —
-    # dejaba la lista vacia y devolvia "Agregue al menos un medicamento". El
+    # Prescribir por generico, que es lo que exige la Resolucion 1403 de 2007
+    # y lo que hace un medico que no quiere atar al paciente a una marca,     # dejaba la lista vacia y devolvia "Agregue al menos un medicamento". El
     # unico camino que funcionaba era escribir la marca.
     renglones = max(len(campos['med_name']), len(campos['generic_name']))
 
@@ -847,8 +846,8 @@ def prescription(patient_id):
 def annul_order(order_id):
     """Anula una orden medica emitida por error.
 
-    No existia ninguna via para esto: una orden con un error —dosis equivocada,
-    medicamento cambiado, paciente confundido— seguia siendo dispensable hasta su
+    No existia ninguna via para esto: una orden con un error -dosis equivocada,
+    medicamento cambiado, paciente confundido- seguia siendo dispensable hasta su
     fecha de vencimiento, que puede ser meses despues.
 
     La orden no se borra ni se edita. Se marca como anulada con el motivo y la
@@ -966,8 +965,6 @@ def view_order(order_id):
     clinic = current_user.clinic
     meds = json.loads(order.meds_json or '[]')
     diagnoses = json.loads(order.diagnosis_json or '[]') if order.diagnosis_json else []
-    med_instructions = [m.get('instrucciones', '') for m in meds]
-    has_instructions = any(inst for inst in med_instructions)
 
     validity_days = max(1, (order.expires_at - order.created_at).days) if order.expires_at and order.created_at else 30
     print_date = colombia_strftime(colombia_now(), '%d/%m/%Y %H:%M:%S')
@@ -977,7 +974,6 @@ def view_order(order_id):
                            clinic=clinic,
                            meds=meds,
                            diagnoses=diagnoses,
-                           med_instructions=med_instructions if has_instructions else [],
                            validity_days=validity_days,
                            print_date=print_date)
 

@@ -5,7 +5,7 @@ El defecto que estas pruebas previenen es el peor que ha tenido este sistema.
 El formulario de prescripción guarda la marca en `medicamento` y el principio
 activo en `nombre_med`. El motor de seguridad leía `medicamento` primero, así
 que al recetar «Amoxal» normalizaba «amoxal», no lo encontraba en la tabla de
-clases y devolvía cero hallazgos — en un paciente con alergia a la penicilina
+clases y devolvía cero hallazgos, en un paciente con alergia a la penicilina
 registrada y confirmada. No saltaba nada: ni alergia, ni interacción, ni
 duplicidad, ni embarazo, ni pediatría. Y la orden quedaba archivada con un
 informe que decía «sin hallazgos», es decir, con constancia escrita de que se
@@ -16,7 +16,7 @@ activos son los que están en las tablas. Se evalúa el genérico, siempre.
 
 La segunda mitad: el campo obligatorio del formulario es el principio activo,
 pero el parser recorría la lista del nombre comercial, que es opcional. Recetar
-por genérico —lo que exige la Resolución 1403 de 2007— devolvía «agregue al
+por genérico (lo que exige la Resolución 1403 de 2007) devolvía «agregue al
 menos un medicamento». El único camino que funcionaba era escribir la marca, y
 ése era justo el que apagaba la verificación.
 """

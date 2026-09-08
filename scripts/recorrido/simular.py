@@ -2,8 +2,7 @@
 """Ejecuta la aplicacion entera, rol por rol y funcion por funcion.
 
 El recorrido de capturas mira las pantallas. Esto hace lo otro: pulsa los
-botones. Entra como cada uno de los siete roles y ejecuta las acciones reales
-—agendar, prescribir, dispensar, exportar datos, radicar una queja— y despues
+botones. Entra como cada uno de los siete roles y ejecuta las acciones reales (agendar, prescribir, dispensar, exportar datos, radicar una queja) y despues
 comprueba en la base de datos que lo que se pedia efectivamente ocurrio.
 
 La diferencia importa. Un formulario que responde 200 y no guarda nada se ve
@@ -203,6 +202,36 @@ def simular():
         with app.app_context():
             existe = Appointment.query.filter_by(date=fecha, time='09:00').first()
         assert existe is not None, 'la cita no quedo registrada'
+
+    with Paso('paciente', 'Avisar que voy en camino') as p:
+        from models import Notification
+        with app.app_context():
+            antes = Notification.query.filter_by(type='patient_arriving').count()
+        r = pac.post('/patient/notify_arriving/%d' % ids['ticket'],
+                     follow_redirects=True)
+        p.estado = r.status_code
+        with app.app_context():
+            ahora = Notification.query.filter_by(type='patient_arriving').count()
+            ticket = db.session.get(MedicationPickupTicket, ids['ticket'])
+        assert ahora > antes, 'no se notifico a la farmacia'
+        assert ticket.arrival_notified_at is not None, (
+            'no quedo constancia de que el paciente aviso')
+
+    with Paso('paciente', 'Avisar cinco veces no notifica cinco veces') as p:
+        # Sin constancia visible, el paciente no sabia si su aviso habia salido
+        # y volvia a pulsar. Cada pulsacion notificaba de nuevo a todo el
+        # personal: seis clics, doce notificaciones para un solo paciente.
+        from models import Notification
+        with app.app_context():
+            antes = Notification.query.filter_by(type='patient_arriving').count()
+        for _ in range(5):
+            r = pac.post('/patient/notify_arriving/%d' % ids['ticket'],
+                         follow_redirects=True)
+        p.estado = r.status_code
+        with app.app_context():
+            ahora = Notification.query.filter_by(type='patient_arriving').count()
+        assert ahora == antes, (
+            'cinco pulsaciones generaron %d notificaciones mas' % (ahora - antes))
 
     with Paso('paciente', 'Radicar una PQRS') as p:
         r = pac.post('/pqrs/radicar', data={

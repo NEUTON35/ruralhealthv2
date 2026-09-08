@@ -85,7 +85,7 @@ def _archive_patient(patient):
     auditoria, que referencian al usuario.
 
     Lo que si hace: desactivar la cuenta, cerrar sus consultas abiertas, cancelar
-    las citas futuras —liberando esos horarios para otros pacientes— y retirar los
+    las citas futuras (liberando esos horarios para otros pacientes) y retirar los
     datos que no tienen deber de conservacion (favoritos, calificaciones).
     """
     now = colombia_now()
@@ -126,7 +126,7 @@ def _archive_clinic(clinic):
     Igual que con el paciente: la version anterior vaciaba todas las tablas de la
     clinica, incluidas las historias clinicas de todos sus pacientes. Una clinica
     que cierra sigue teniendo la obligacion de custodiar esos registros durante el
-    plazo legal, y quien los reclame despues —un paciente, un ente de control—
+    plazo legal, y quien los reclame despues (un paciente, un ente de control)
     tiene derecho a que existan.
     """
     clinic.status = CLINIC_SUSPENDED

@@ -4,10 +4,10 @@
 Junta las tres cosas que se pueden comprobar de una aplicacion sin ponerla en
 manos de un paciente:
 
-  1. Como se ve      — 90 capturas, escritorio y movil, de las 45 pantallas.
-  2. Si funciona     — 49 acciones reales ejecutadas rol por rol, cada una con
+  1. Como se ve      - 90 capturas, escritorio y movil, de las 45 pantallas.
+  2. Si funciona     - 49 acciones reales ejecutadas rol por rol, cada una con
                        su comprobacion posterior en la base de datos.
-  3. Que se arreglo  — los hallazgos de las auditorias, con su escenario de
+  3. Que se arreglo  - los hallazgos de las auditorias, con su escenario de
                        fallo y el commit que los corrige.
 
 Se ejecuta despues de `capturar.py` y de `simular.py`.
@@ -53,7 +53,7 @@ HALLAZGOS = [
      'routes_doctor.py',
      'El campo obligatorio del formulario es el principio activo. El parser '
      'recorría la lista del nombre comercial, que es opcional. Recetar por '
-     'genérico —lo que exige la Resolución 1403 de 2007— devolvía «agregue al '
+     'genérico (lo que exige la Resolución 1403 de 2007) devolvía «agregue al '
      'menos un medicamento». El único camino que funcionaba era escribir la '
      'marca, que era justo el que apagaba la verificación anterior.'),
 
@@ -65,7 +65,7 @@ HALLAZGOS = [
      'restaba al paciente <b>su propia reserva</b>. Con diez unidades en '
      'estante y un ticket por diez, disponible daba cero: el ticket caía a «sin '
      'stock» con el frasco delante y no había forma de reactivarlo. En un '
-     'puesto con existencias justas —el caso normal— pasaba siempre.'),
+     'puesto con existencias justas (el caso normal) pasaba siempre.'),
 
     ('P0', 'La reserva de un paciente se la llevaba otro',
      'ledger.py',
@@ -77,7 +77,7 @@ HALLAZGOS = [
      'dispatch_engine.py',
      'El estado del ticket se comprobaba en la ruta, fuera de toda transacción. '
      'Se bloqueaba la fila de existencias pero nunca la del ticket. Dos '
-     'peticiones simultáneas —un doble clic, un reenvío del formulario— leían '
+     'peticiones simultáneas (un doble clic, un reenvío del formulario) leían '
      '«autorizado» a la vez y ambas dispensaban. Reproducido: 20 unidades '
      'entregadas contra una prescripción de 10.'),
 
@@ -117,8 +117,8 @@ HALLAZGOS = [
     ('P1', 'La mercancía que llegaba a una sede secuestraba tickets de otra',
      'dispatch_engine.py',
      'Se reasignaba <code>pharmacy_id</code> dejando '
-     '<code>pickup_location</code> —lo impreso en el papel que el paciente '
-     'lleva en la mano— apuntando a la sede anterior. En una vereda, «la otra '
+     '<code>pickup_location</code> -lo impreso en el papel que el paciente '
+     'lleva en la mano- apuntando a la sede anterior. En una vereda, «la otra '
      'sede» puede ser media jornada de camino.'),
 
     ('P1', 'Reactivar un pendiente multiplicaba la reserva',
@@ -140,7 +140,7 @@ HALLAZGOS = [
 
     ('P2', 'Estados de la base en inglés en la cara del profesional',
      'estados.py',
-     'El historial mostraba «OPEN», «pending», «attended» y «no_show» — el '
+     'El historial mostraba «OPEN», «pending», «attended» y «no_show», el '
      'valor crudo de la columna. Diecinueve sitios en catorce plantillas.'),
 
     ('P2', 'Textos por debajo del contraste mínimo AA',
@@ -222,7 +222,7 @@ def main():
             pasos.append(
                 '<tr><td>%s</td><td><code>%s</code></td>'
                 '<td class="%s">%s</td></tr>'
-                % (escapar(x['accion']), x['http'] if x['http'] else '—',
+                % (escapar(x['accion']), x['http'] if x['http'] else '-',
                    'ok' if ok else 'mal',
                    'pasó' if ok else escapar(x.get('error', 'falló'))[:220]))
         pasos.append('</tbody></table></section>')
@@ -363,8 +363,8 @@ footer{color:var(--tenue);font-size:12.5px;padding:0 32px 40px;max-width:1500px;
 
   <div id="p2" class="oculto">
     <p class="tenue" style="margin-top:0">
-      Cada paso ejecuta la acción real por la ruta de la aplicación —con su token
-      CSRF, su sesión y su rol— y después comprueba en la base de datos que lo que
+      Cada paso ejecuta la acción real por la ruta de la aplicación -con su token
+      CSRF, su sesión y su rol- y después comprueba en la base de datos que lo que
       se pedía efectivamente ocurrió. Un formulario que responde 200 y no guarda
       nada se ve perfecto en una captura; aquí no pasa.
     </p>

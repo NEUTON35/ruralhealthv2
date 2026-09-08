@@ -20,7 +20,7 @@ Cambiar el sistema visual entero es cambiar este archivo.
 El criterio
 -----------
 Sale de un sistema de diseño hecho para esto: *sobriedad clínica*. Sin
-sombras — la sombra simula profundidad, y en una pantalla barata a plena luz no
+sombras, la sombra simula profundidad, y en una pantalla barata a plena luz no
 se ve, solo ensucia el borde. La jerarquía la dan el contorno, el tono de fondo
 y el peso tipográfico, que sí sobreviven al sol.
 

@@ -1,7 +1,7 @@
 """Descarga la tipografía Inter para servirla en local.
 
-Google Fonts es un recurso externo más. Sin él la interfaz no se rompe —cae al
-tipo de letra del sistema— pero en una aplicación para zonas de baja
+Google Fonts es un recurso externo más. Sin él la interfaz no se rompe -cae al
+tipo de letra del sistema- pero en una aplicación para zonas de baja
 conectividad conviene que nada dependa de una petición que puede no llegar.
 """
 

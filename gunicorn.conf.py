@@ -52,7 +52,7 @@ loglevel = os.environ.get('GUNICORN_LOG_LEVEL', 'info')
 # Formato de acceso SIN cadena de consulta.
 #
 # La ruta con `?` puede llevar términos de búsqueda escritos por el personal
-# clínico —nombres, documentos— y el registro de acceso suele enviarse a
+# clínico (nombres, documentos) y el registro de acceso suele enviarse a
 # sistemas de agregación con controles más laxos que la base de datos.
 access_log_format = '%(h)s "%(m)s %(U)s" %(s)s %(b)s %(D)sus "%(a)s"'
 
@@ -62,7 +62,7 @@ preload_app = False   # cada worker construye su app: evita compartir conexiones
 
 
 def on_starting(server):
-    server.log.info('RuralHealth Connect — iniciando (%s workers)', workers)
+    server.log.info('RuralHealth Connect, iniciando (%s workers)', workers)
 
 
 def post_fork(server, worker):
@@ -80,4 +80,4 @@ def worker_int(worker):
 
 
 def on_exit(server):
-    server.log.info('RuralHealth Connect — detenido')
+    server.log.info('RuralHealth Connect, detenido')

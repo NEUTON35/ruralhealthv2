@@ -197,8 +197,8 @@ def end_of_epidemiological_week(momento=None):
 def age_on(birth_date, reference=None):
     """Edad en años cumplidos.
 
-    Existe aquí y no calculada a ojo porque el error clásico —dividir los días
-    entre 365— desplaza la edad en los años bisiestos, y la dosificación
+    Existe aquí y no calculada a ojo porque el error clásico -dividir los días
+    entre 365- desplaza la edad en los años bisiestos, y la dosificación
     pediátrica depende de ella.
     """
     if not birth_date:

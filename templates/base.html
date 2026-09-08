@@ -15,16 +15,16 @@
     <meta name="user-role" content="{{ current_user.role if current_user.is_authenticated else '' }}">
     <title>RuralHealth Connect</title>
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/static/icon.svg">
+    <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/static/logo.svg">
     {# Tipografia servida en local: nada depende de una peticion externa. #}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.css') }}">
     {# Hoja de estilos propia, servida desde este mismo servidor.
 
        Antes se cargaba Tailwind desde `cdn.tailwindcss.com`, que compila el CSS
-       en el navegador. Si ese CDN no era alcanzable —red rural, cortafuegos,
-       bloqueo regional— la interfaz aparecía **sin ningún estilo**: no se
+       en el navegador. Si ese CDN no era alcanzable -red rural, cortafuegos,
+       bloqueo regional- la interfaz aparecía **sin ningún estilo**: no se
        degradaba, se rompía. En una aplicación pensada para zonas de baja
        conectividad eso no es un caso raro, es el caso esperado.
 
@@ -78,7 +78,7 @@
                 {% if current_user.is_authenticated and current_user.clinic and current_user.clinic.logo_path %}
                     <img src="/uploads/{{ current_user.clinic.logo_path }}" class="w-7 h-7 rounded object-cover border border-linea" alt="">
                 {% else %}
-                    <i data-lucide="activity" class="w-6 h-6 text-slate-500"></i>
+                    <svg viewBox="0 0 32 32" class="w-6 h-6 text-accent" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 24 H8.5 L10.5 16 L13 29 L15.5 21 L21 5 L29 24"/></svg>
                 {% endif %}
                 <span>RuralHealth</span>
             </a>

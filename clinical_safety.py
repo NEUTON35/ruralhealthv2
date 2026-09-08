@@ -818,7 +818,7 @@ def _med_display(med):
     El formulario guarda la marca en `medicamento` y el generico en
     `nombre_med`. Esta funcion leia `medicamento` primero, asi que con una
     receta de "Amoxal" el motor normalizaba "amoxal", no lo encontraba en
-    `DRUG_CLASSES` y devolvia cero hallazgos — en un paciente con alergia a la
+    `DRUG_CLASSES` y devolvia cero hallazgos, en un paciente con alergia a la
     penicilina registrada y confirmada. Ninguna comprobacion saltaba: ni
     alergia, ni interaccion, ni duplicidad, ni embarazo, ni pediatria. Y la
     orden quedaba archivada con un `safety_report_json` que decia "sin

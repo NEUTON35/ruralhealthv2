@@ -36,7 +36,7 @@
         {% for entry in alerts %}
         <tr>
           <td class="{{ TABLA_TD }} font-mono text-xs font-semibold text-slate-900">{{ entry.event }}</td>
-          <td class="{{ TABLA_TD }} text-xs text-slate-600 break-words">{{ entry.details or '—' }}</td>
+          <td class="{{ TABLA_TD }} text-xs text-slate-600 break-words">{{ entry.details or '-' }}</td>
           <td class="{{ TABLA_TD }} text-xs tabular-nums whitespace-nowrap">
             {{ entry.timestamp | colombia_date }} {{ entry.timestamp | colombia_time }}
           </td>

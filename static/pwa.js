@@ -292,8 +292,8 @@
   function maybePurge() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('purge') === '1' || window.location.pathname === '/login') {
-      // Se purga también al llegar al login por cualquier vía —sesión caducada,
-      // acceso directo—: si no hay sesión activa, no debe quedar dato clínico
+      // Se purga también al llegar al login por cualquier vía -sesión caducada,
+      // acceso directo-: si no hay sesión activa, no debe quedar dato clínico
       // en este dispositivo.
       purgeLocalClinicalData();
     }

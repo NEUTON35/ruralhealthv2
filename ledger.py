@@ -190,8 +190,8 @@ def record_stock_movement(
 # `Stock.cantidad_comprometida` sigue existiendo como total, porque hay codigo
 # y pantallas que lo leen, pero deja de ser la fuente de verdad: el reparto por
 # ticket vive en `StockReservation`. Un total sin dueno no puede responder a la
-# unica pregunta que importa en el mostrador — cuanto puede llevarse ESTE
-# paciente — y por no poder responderla dejaba sin medicamento al que tenia el
+# unica pregunta que importa en el mostrador, cuanto puede llevarse ESTE
+# paciente, y por no poder responderla dejaba sin medicamento al que tenia el
 # ticket en la mano.
 
 

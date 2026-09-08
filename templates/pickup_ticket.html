@@ -49,7 +49,7 @@
       <tr>
         <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ med.nombre_med }}</td>
         <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">{{ med.cantidad }} {{ med.unidad }}</td>
-        <td class="{{ TABLA_TD }} text-slate-600">{{ med.instrucciones or '—' }}</td>
+        <td class="{{ TABLA_TD }} text-slate-600">{{ med.instrucciones or '-' }}</td>
       </tr>
       {% endfor %}
     {% endcall %}

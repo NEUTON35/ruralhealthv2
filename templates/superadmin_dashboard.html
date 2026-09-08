@@ -223,7 +223,7 @@
               <span class="font-semibold text-slate-900">{{ policy.name }}</span>
               <span class="block font-mono text-xs text-slate-500">{{ policy.code }}</span>
             </td>
-            <td class="{{ TABLA_TD }} text-slate-600">{{ policy.insurer_name or '—' }}</td>
+            <td class="{{ TABLA_TD }} text-slate-600">{{ policy.insurer_name or '-' }}</td>
           </tr>
           {% else %}
           <tr><td class="{{ TABLA_TD }}" colspan="2">{{ vacio('Sin pólizas.') }}</td></tr>
@@ -267,7 +267,7 @@
       {% for row in clinic_rows %}
       <tr>
         <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ row.clinic.name }}</td>
-        <td class="{{ TABLA_TD }} text-slate-600">{{ row.clinic.location or '—' }}</td>
+        <td class="{{ TABLA_TD }} text-slate-600">{{ row.clinic.location or '-' }}</td>
         <td class="{{ TABLA_TD }} text-slate-600">{{ row.clinic.access_type }}</td>
         <td class="{{ TABLA_TD }} text-slate-600">{{ row.clinic.plan_pago or row.clinic.plan }}</td>
         <td class="{{ TABLA_TD }}">
@@ -313,10 +313,10 @@ Las historias clinicas NO se eliminan: la ley obliga a conservarlas 15 anos.
         <tr>
           <td class="{{ TABLA_TD }}">
             <span class="font-semibold text-slate-900">{{ lead.nombre }}</span>
-            <span class="block text-xs text-slate-500">{{ lead.telefono or '—' }} · {{ lead.email or '—' }}</span>
+            <span class="block text-xs text-slate-500">{{ lead.telefono or '-' }} · {{ lead.email or '-' }}</span>
             {% if lead.mensaje %}<span class="block text-xs text-slate-600 mt-1">{{ lead.mensaje }}</span>{% endif %}
           </td>
-          <td class="{{ TABLA_TD }} text-slate-600">{{ lead.institucion or '—' }}<span class="block text-xs text-slate-500">{{ lead.ciudad or '—' }}</span></td>
+          <td class="{{ TABLA_TD }} text-slate-600">{{ lead.institucion or '-' }}<span class="block text-xs text-slate-500">{{ lead.ciudad or '-' }}</span></td>
           <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">{{ lead.fecha|colombia_date }}</td>
         </tr>
         {% else %}
@@ -331,7 +331,7 @@ Las historias clinicas NO se eliminan: la ley obliga a conservarlas 15 anos.
         <tr>
           <td class="{{ TABLA_TD }}">
             <span class="font-semibold text-slate-900">{{ patient.name }}</span>
-            <span class="block text-xs text-slate-500">{{ patient.email or '—' }}</span>
+            <span class="block text-xs text-slate-500">{{ patient.email or '-' }}</span>
           </td>
           <td class="{{ TABLA_TD }} text-slate-600">#{{ patient.clinic_id }}</td>
           <td class="{{ TABLA_TD }} text-right">

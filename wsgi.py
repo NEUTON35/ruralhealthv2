@@ -24,7 +24,7 @@ except ConfigurationError as error:
     # Fallar aquí, y no más adelante, es deliberado: un worker que arranca con
     # una llave por defecto cifraría los datos con una clave pública.
     print('\n' + '=' * 72, file=sys.stderr)
-    print(' RURALHEALTH CONNECT — ARRANQUE DETENIDO', file=sys.stderr)
+    print(' RURALHEALTH CONNECT, ARRANQUE DETENIDO', file=sys.stderr)
     print('=' * 72, file=sys.stderr)
     print(f'\n{error}\n', file=sys.stderr)
     raise

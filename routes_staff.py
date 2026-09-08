@@ -640,7 +640,7 @@ def chat(chat_id):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# PANEL DE FALTANTES — Pending Tickets Dashboard
+# PANEL DE FALTANTES, Pending Tickets Dashboard
 # ─────────────────────────────────────────────────────────────────────────────
 
 @staff_bp.route('/pendientes', methods=['GET', 'POST'])
@@ -752,7 +752,7 @@ def pendientes():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MÓDULO EN CAMINO — Incoming Shipments
+# MÓDULO EN CAMINO, Incoming Shipments
 # ─────────────────────────────────────────────────────────────────────────────
 
 @staff_bp.route('/envios', methods=['GET', 'POST'])
@@ -889,7 +889,7 @@ def envios():
                 flash('Cargamento cancelado.')
             return redirect(url_for('staff.envios'))
 
-    # GET — list all shipments
+    # GET, list all shipments
     shipments = IncomingShipment.query.filter_by(
         clinic_id=current_user.clinic_id,
     ).order_by(IncomingShipment.expected_date.desc()).limit(50).all()

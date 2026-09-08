@@ -18,8 +18,8 @@ def available_quantity(stock):
 #
 # Una sola definicion de "stock bajo" para toda la aplicacion. Antes habia dos
 # que no se hablaban: la pantalla del expendedor pintaba en verde cualquier
-# cantidad por encima de cinco unidades — un cinco fijo, igual para un
-# antibiotico que para un analgesico — y las alertas del administrador solo
+# cantidad por encima de cinco unidades, un cinco fijo, igual para un
+# antibiotico que para un analgesico, y las alertas del administrador solo
 # nacian cuando un paciente ya se habia quedado sin su medicamento.
 #
 # Ahora el umbral es el punto de reposicion de la sede (`Stock.cantidad_minima`)
@@ -94,8 +94,8 @@ def pharmacies_for_clinic(clinic_id, active_only=True, patient=None):
         # La distancia se calcula una vez por farmacia, no dos.
         #
         # La version anterior llamaba `pharmacy_distance` dos veces dentro de la
-        # misma clave de ordenacion —una para comparar y otra para el valor por
-        # defecto— y `sort` evalua la clave por elemento, asi que cada farmacia
+        # misma clave de ordenacion -una para comparar y otra para el valor por
+        # defecto- y `sort` evalua la clave por elemento, asi que cada farmacia
         # pagaba dos veces la trigonometria. Con pocas farmacias no se nota;
         # con la red completa de un municipio, si.
         def orden(pharmacy):
@@ -240,7 +240,7 @@ def create_replenishment_alert(clinic_id, pharmacy_id, med, available, order_id=
     #
     # El fallo al notificar no debe impedir que la alerta de reposicion se cree:
     # lo importante es que quede registrado el faltante. Pero tampoco debe
-    # desaparecer sin rastro, que es lo que hacia el `print` anterior — en
+    # desaparecer sin rastro, que es lo que hacia el `print` anterior, en
     # produccion la salida estandar de un worker de Gunicorn no la lee nadie.
     try:
         from models import Notification

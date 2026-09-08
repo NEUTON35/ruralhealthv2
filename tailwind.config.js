@@ -23,7 +23,7 @@
  *   npm run watch:css     mientras se editan plantillas
  *
  * Regla del sistema: el color significa algo. Si todo tiene color, nada lo
- * tiene, y en una pantalla clínica eso es peligroso — la alerta de alergia debe
+ * tiene, y en una pantalla clínica eso es peligroso, la alerta de alergia debe
  * destacar sobre lo demás, no competir con un icono decorativo del mismo tono.
  */
 
@@ -134,7 +134,7 @@ module.exports = {
          * La sombra es profundidad simulada: dice "esto flota por encima de
          * aquello". En una pantalla clínica no hay nada que flote, y en la
          * pantalla barata de un puesto de salud a plena luz una sombra suave
-         * no se ve — solo ensucia el borde. La jerarquía la dan el contorno,
+         * no se ve, solo ensucia el borde. La jerarquía la dan el contorno,
          * el tono de fondo y el peso tipográfico, que sí sobreviven al sol.
          *
          * Se dejan definidas en cero en lugar de borrarlas: así una clase

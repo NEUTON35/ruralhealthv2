@@ -10,7 +10,7 @@ de salud se va sin su medicamento.
    paciente su propia reserva. Con diez unidades en estante y un ticket por
    diez, disponible daba cero. El ticket caía a «sin stock» con el frasco
    delante, y reactivarlo daba lo mismo: quedaba muerto. En un puesto con
-   existencias justas —el caso normal— pasaba siempre.
+   existencias justas (el caso normal) pasaba siempre.
 
 2. **La reserva de un paciente se la llevaba otro.** Al dispensar se restaba de
    `cantidad_comprometida` sin mirar de quién era.

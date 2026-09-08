@@ -204,7 +204,7 @@ class User(UserMixin, ClinicScoped, db.Model):
     # La columna ya existia en el esquema base; lo que faltaba era declararla
     # aqui. Esa es la parte insidiosa del fallo: `user.password_changed_at =
     # colombia_now()` en el restablecimiento y en el cambio de contrasena
-    # parecia funcionar — no daba error, no avisaba de nada — y lo unico que
+    # parecia funcionar (no daba error, no avisaba de nada) y lo unico que
     # hacia era poner un atributo de Python que se descartaba al confirmar la
     # transaccion. El dato nunca llegaba a la base.
     #
@@ -446,7 +446,7 @@ class Appointment(ClinicScoped, db.Model):
     # comprobacion y ambos quedaban agendados con el mismo medico a la misma hora.
     # Solo una restriccion en la base de datos cierra esa ventana.
     #
-    # Es parcial —excluye citas canceladas y no asistidas— para que un horario
+    # Es parcial (excluye citas canceladas y no asistidas) para que un horario
     # liberado pueda volver a ofrecerse.
     __table_args__ = (
         db.Index(
@@ -722,6 +722,16 @@ class MedicationPickupTicket(ClinicScoped, db.Model):
     is_partial = db.Column(db.Boolean, default=False, nullable=False)  # True = this is a partial delivery sub-ticket
     created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
     delivered_at = db.Column(db.DateTime, nullable=True)
+
+    # Cuando el paciente aviso que venia en camino.
+    #
+    # El boton funcionaba: notificaba al expendedor y al personal. Lo que no
+    # hacia era dejar rastro. Al paciente no le quedaba ninguna senal de haber
+    # avisado (el mensaje de confirmacion desaparece con la siguiente pagina),
+    # asi que volvia a pulsarlo; y cada pulsacion notificaba otra vez a todo el
+    # mundo. Seis pulsaciones, doce notificaciones para un solo paciente, y la
+    # bandeja de la farmacia inservible.
+    arrival_notified_at = db.Column(db.DateTime, nullable=True)
     order = db.relationship('MedicalOrder')
     pharmacy = db.relationship('Pharmacy')
     patient = db.relationship('User', foreign_keys=[patient_id])
@@ -784,7 +794,7 @@ class StockReservation(ClinicScoped, db.Model):
        o sea le restaba al paciente su propia reserva. Con diez unidades en
        estante y un ticket por diez, disponible daba cero: el ticket caia a
        "sin stock" con el frasco delante, y no habia forma de reactivarlo. En
-       un puesto con existencias justas —el caso normal— eso pasa siempre.
+       un puesto con existencias justas (el caso normal) eso pasa siempre.
 
     2. **La reserva de un paciente se la llevaba otro.** Al dispensar se
        restaba de `cantidad_comprometida` sin mirar de quien era, asi que una
@@ -1183,7 +1193,7 @@ class DataSubjectRequest(db.Model):
 #    concreto.
 #
 # 2. **El dinero.** Estaba en `Float`. A las magnitudes de esta aplicacion no
-#    produce errores —lo comprobe— pero es el tipo equivocado para dinero: basta
+#    produce errores (lo comprobe) pero es el tipo equivocado para dinero: basta
 #    con acumular o comparar para que aparezca la diferencia. `Numeric` es exacto
 #    por construccion.
 #

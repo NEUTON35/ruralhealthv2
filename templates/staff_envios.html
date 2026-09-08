@@ -94,7 +94,7 @@
           {% endif %}
         </td>
         <td class="{{ TABLA_TD }} text-slate-600">
-          {% if shipment.supplier_name %}{{ shipment.supplier_name }}{% else %}—{% endif %}
+          {% if shipment.supplier_name %}{{ shipment.supplier_name }}{% else %}-{% endif %}
           {% if shipment.note %}<span class="block text-xs text-slate-500">{{ shipment.note }}</span>{% endif %}
         </td>
         <td class="{{ TABLA_TD }}">

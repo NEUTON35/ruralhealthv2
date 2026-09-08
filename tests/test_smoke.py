@@ -208,7 +208,7 @@ def test_internal_error_shows_incident_code_not_trace(app, client, populated):
     """Ante un fallo inesperado, al usuario le llega un código, no la traza.
 
     El código permite a soporte localizar la traza en el registro sin que la
-    estructura interna —ni los datos que hubiera en memoria— salgan a pantalla.
+    estructura interna (ni los datos que hubiera en memoria) salgan a pantalla.
     """
     @app.route('/_fallo_deliberado')
     def deliberate_failure():
@@ -233,7 +233,7 @@ class TestFormsWorkWithoutJavaScript:
 
     La aplicacion lo inyectaba con un script al cargar la pagina. Eso deja toda
     operacion de escritura supeditada a que ese script se ejecute: si el JS no
-    carga —conexion intermitente, navegador antiguo—, cada envio devuelve un 400
+    carga (conexion intermitente, navegador antiguo), cada envio devuelve un 400
     de CSRF y el usuario ve un formulario que aparentemente no hace nada.
     """
 
@@ -268,7 +268,7 @@ class TestAccessibleMarkup:
         """Un campo sin nombre se anuncia como "campo de texto, en blanco".
 
         Se admiten las tres formas válidas de nombrarlo: `<label for>` explícita,
-        `aria-label`, y la etiqueta implícita —el campo dentro de un `<label>`—,
+        `aria-label`, y la etiqueta implícita (el campo dentro de un `<label>`),
         que es igual de válida para un lector de pantalla.
         """
         import glob
@@ -379,7 +379,7 @@ class TestThirdPartyResources:
     """Ningún recurso de la interfaz debe depender de un servidor externo.
 
     La aplicación cargaba Tailwind desde `cdn.tailwindcss.com`. Cuando ese CDN
-    no era alcanzable —red rural, cortafuegos, bloqueo regional— la interfaz
+    no era alcanzable (red rural, cortafuegos, bloqueo regional) la interfaz
     aparecía **sin ningún estilo**: no se degradaba, se rompía. En una aplicación
     para zonas de baja conectividad eso no es un caso raro, es el esperado.
 
@@ -417,7 +417,7 @@ class TestThirdPartyResources:
     def test_built_stylesheet_is_versioned(self):
         """El CSS generado debe estar en el repositorio.
 
-        Sin él, ejecutar la aplicación exigiría Node y conexión — justo lo que
+        Sin él, ejecutar la aplicación exigiría Node y conexión, justo lo que
         se quería evitar.
         """
         import os

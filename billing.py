@@ -9,7 +9,7 @@ del emisor, ni constancia de por qué no se cobra IVA, ni forma de anularse.
 
 Dos emisores, no uno
 --------------------
-Una consulta puede facturarla la clínica —persona jurídica, con su NIT— o el
+Una consulta puede facturarla la clínica (persona jurídica, con su NIT) o el
 médico independiente, que factura a su propio nombre con su propia resolución de
 numeración. Son emisores distintos ante la DIAN y sus consecutivos **no pueden
 mezclarse**: cada resolución autoriza un rango a un emisor concreto, y usar un
@@ -78,7 +78,7 @@ def money(value):
     """Convierte a decimal exacto con dos cifras.
 
     Todo importe pasa por aquí. El modelo anterior usaba `float`; a las
-    magnitudes de esta aplicación no producía errores —lo comprobé— pero es el
+    magnitudes de esta aplicación no producía errores (lo comprobé) pero es el
     tipo equivocado para dinero y basta con acumular para que aparezcan.
     """
     if value is None:

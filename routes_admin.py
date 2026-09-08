@@ -356,7 +356,7 @@ def dashboard():
     ]
     # Lo que necesita atencion va arriba: primero agotados, luego los que
     # cruzaron su punto de reposicion, y al final los que ni siquiera lo
-    # tienen definido — que son los que el administrador debe configurar.
+    # tienen definido, que son los que el administrador debe configurar.
     ORDEN = {'agotado': 0, 'bajo': 1, 'sin_umbral': 2, 'normal': 3}
     puntos_de_reposicion.sort(key=lambda f: (ORDEN[f['estado']],
                                              f['stock'].nombre_med.lower()))

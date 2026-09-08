@@ -29,7 +29,7 @@ def upgrade():
     # se puede crear sobre ellos.
     #
     # Los duplicados no se borran: son historia clinica. Se conserva la cita mas
-    # antigua de cada horario —la que se reservo primero— y las posteriores pasan
+    # antigua de cada horario (la que se reservo primero) y las posteriores pasan
     # a 'cancelada', que es un estado que el indice parcial excluye. Asi el
     # registro sobrevive y el conflicto queda visible para quien tenga que
     # reprogramar al paciente.

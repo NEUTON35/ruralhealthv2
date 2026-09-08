@@ -705,8 +705,7 @@ def audit(event, user_id=None, details=None, clinic_id=None):
     """Escribe una entrada de auditoría encadenada por hash.
 
     Cada entrada incluye el hash de la anterior, de modo que borrar o alterar una
-    rompe la verificación de todas las siguientes. No impide la manipulación —
-    nada lo hace desde dentro de la misma base de datos— pero la vuelve detectable,
+    rompe la verificación de todas las siguientes. No impide la manipulación (nada lo hace desde dentro de la misma base de datos) pero la vuelve detectable,
     que es el requisito real de un registro de auditoría clínico.
     """
     from models import AuditLog, db
@@ -1383,9 +1382,9 @@ def encrypted_columns():
     """Descubre en el modelo qué columnas están cifradas.
 
     Antes esta lista estaba escrita a mano dentro de `reencrypt_all`, y se había
-    quedado corta: cubría 10 campos de 30. Los otros 20 —entre ellos las
+    quedado corta: cubría 10 campos de 30. Los otros 20 -entre ellos las
     alergias del paciente, los datos de la orden médica, el registro de
-    dispensación y los nombres y apellidos— **no se recifraban**. Rotar la llave
+    dispensación y los nombres y apellidos- **no se recifraban**. Rotar la llave
     los habría dejado ilegibles en silencio, que es la peor forma de perder
     historia clínica: sin error, sin aviso, y descubierta meses después.
 

@@ -7,7 +7,7 @@ from models import APPOINTMENT_FREEING_STATUSES, db, User, Chat, Message, Appoin
 import json
 import calendar
 from datetime import datetime, timedelta
-from time_utils import colombia_now
+from time_utils import colombia_now, colombia_strftime
 from security import audit, role_required, save_secure_upload, limiter
 from pharmacy_utils import available_quantity, distance_km, doctor_distance, doctor_visible_on_map, pharmacy_distance
 import hashlib
@@ -305,6 +305,20 @@ def notify_arriving(ticket_id):
         flash('Ticket no disponible o ya entregado.')
         return redirect(url_for('patient.dashboard'))
 
+    # Un aviso cada media hora es suficiente.
+    #
+    # Media hora es el orden de magnitud de un desplazamiento en vereda: si el
+    # paciente vuelve a pulsar antes, es que no vio que ya habia avisado, no
+    # que este avisando de otra cosa. Se le confirma cuando aviso, en lugar de
+    # volver a notificar a toda la farmacia.
+    if ticket.arrival_notified_at:
+        desde = colombia_now() - ticket.arrival_notified_at
+        if desde.total_seconds() < 30 * 60:
+            hora = colombia_strftime(ticket.arrival_notified_at, '%H:%M')
+            flash(f'Ya avisaste a las {hora}. La farmacia esta enterada; '
+                  f'no hace falta volver a avisar.')
+            return redirect(url_for('patient.dashboard'))
+
     # Notify the expendedores assigned to that pharmacy
     notified_count = 0
     from models import User, ROLE_EXPENDOR
@@ -337,6 +351,9 @@ def notify_arriving(ticket_id):
         notified_count += 1
 
     if notified_count > 0:
+        # La marca es lo que permite ensenarle al paciente que ya aviso, y lo
+        # que impide que el siguiente clic vuelva a notificar a todos.
+        ticket.arrival_notified_at = colombia_now()
         audit('patient_notified_arriving', details=f'ticket_id={ticket.id}; notified={notified_count}')
         db.session.commit()
         flash('Notificacion enviada. El personal de la farmacia fue avisado de su llegada.')
@@ -771,8 +788,8 @@ def rate_chat(chat_id):
     # Acotada al rango real, y tolerante a lo que no sea un numero.
     #
     # Antes era `int(request.form.get('stars', 5))` a secas: un valor absurdo
-    # entraba tal cual y desplazaba el promedio del profesional —que es lo que
-    # el paciente mira para elegir a quien consultar— y un valor no numerico
+    # entraba tal cual y desplazaba el promedio del profesional -que es lo que
+    # el paciente mira para elegir a quien consultar- y un valor no numerico
     # reventaba con un 500 en la cara de quien acababa de ser atendido.
     try:
         stars = int(request.form.get('stars', 5))

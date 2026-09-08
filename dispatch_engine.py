@@ -1,5 +1,5 @@
 """
-dispatch_engine.py — Motor central de despacho de medicamentos.
+dispatch_engine.py, Motor central de despacho de medicamentos.
 
 Funciones:
   evaluate_dispatch_status   → Determina si se puede despachar total/parcial/nada.
@@ -95,7 +95,7 @@ def evaluate_dispatch_status(ticket, pharmacy_id: int, ignore_commitments: bool 
 
     # Lo ya entregado se lee del libro mayor, no de `delivered_json`. Ese campo
     # se sobrescribia en cada entrega parcial, de modo que una lectura tardia
-    # podia mostrar como pendiente algo ya entregado —y volver a entregarlo.
+    # podia mostrar como pendiente algo ya entregado -y volver a entregarlo.
     delivered_map = dispensed_totals(ticket.id)
     if not delivered_map and ticket.delivered_json:
         # Tickets anteriores a la introduccion del libro mayor.
@@ -136,7 +136,7 @@ def evaluate_dispatch_status(ticket, pharmacy_id: int, ignore_commitments: bool 
             # estante y un ticket por diez, disponible daba cero. El paciente
             # se iba sin nada con el frasco delante, el ticket caia a "sin
             # stock" y no habia forma de reactivarlo. En un puesto con
-            # existencias justas — el caso normal — pasaba siempre.
+            # existencias justas (el caso normal) pasaba siempre.
             avail = disponible_para_ticket(stock, ticket.id)
         
         can_give = min(still_needed, avail)
@@ -224,8 +224,8 @@ def confirm_delivery(
     #
     # a) La fila del ticket se bloquea y se revalida su estado DENTRO de la
     #    transaccion. Antes la comprobacion vivia en la ruta, fuera de toda
-    #    transaccion: dos peticiones simultaneas — un doble clic, un reenvio
-    #    del formulario, dos expendedores con el mismo codigo — leian
+    #    transaccion: dos peticiones simultaneas, un doble clic, un reenvio
+    #    del formulario, dos expendedores con el mismo codigo, leian
     #    "autorizado" a la vez y ambas dispensaban. Reproducido: 20 unidades
     #    entregadas contra una prescripcion de 10, y el libro de dispensacion
     #    registrando una entrega que excede la orden medica.
@@ -236,8 +236,8 @@ def confirm_delivery(
 
     # b) La orden que respalda el ticket tiene que seguir vigente. Se validaba
     #    al EMITIR el ticket y nunca mas. Entre la emision y el mostrador, el
-    #    profesional puede haber anulado la orden — por una dosis equivocada,
-    #    una alergia o una interaccion — y el ticket seguia entregando lo que
+    #    profesional puede haber anulado la orden, por una dosis equivocada,
+    #    una alergia o una interaccion, y el ticket seguia entregando lo que
     #    el medico acababa de retirar.
     if ticket.order_id and ticket.order is not None and not ticket.order.is_dispensable:
         audit('dispense_blocked_order_not_dispensable',
@@ -415,8 +415,8 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
             #
             # Sin este filtro, la llegada de mercancia a la sede B reasignaba
             # (mas abajo, `ticket.pharmacy_id = pharmacy_id`) tickets de la
-            # sede A, dejando `pickup_location` diciendo "Sede A" — que es lo
-            # impreso en el papel que el paciente lleva en la mano — mientras
+            # sede A, dejando `pickup_location` diciendo "Sede A", que es lo
+            # impreso en el papel que el paciente lleva en la mano, mientras
             # la notificacion le decia que fuera a B. El paciente se presenta
             # donde dice su ticket, el expendedor de A lo rechaza por
             # pertenecer a otra farmacia, y en una vereda "la otra sede" puede
@@ -438,7 +438,7 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
     # Llego mercancia: si con ella el medicamento vuelve por encima del punto
     # de reposicion, la alerta que lo avisaba ya no describe nada. Cerrarla
     # aqui es lo que evita que la bandeja del administrador se llene de avisos
-    # de cosas ya resueltas — el dia que eso pasa, deja de leerlos todos.
+    # de cosas ya resueltas, el dia que eso pasa, deja de leerlos todos.
     resolver_alerta_de_punto_de_reposicion(stock)
 
     for ticket in sin_stock_tickets:

@@ -3,294 +3,557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orden Médica #{{ order.order_number or order.id }} | RuralHealth Connect</title>
+    <title>Orden médica {{ order.order_number or order.id }} · RuralHealth Connect</title>
     <style>
         /*
-          Esto no es una pantalla: es un documento legal que termina en papel,
-          se archiva y se lee en una farmacia veredal, muchas veces impreso en
-          blanco y negro sobre una impresora de tóner gastado.
+          Esto no es una pantalla: es un documento legal que se imprime, se
+          archiva y se lee en el mostrador de una farmacia veredal, muchas
+          veces en blanco y negro sobre una impresora de tóner gastado.
 
-          De ahí las decisiones: sin color, sin esquinas redondeadas, sin
-          rellenos oscuros que se coman el tóner, y tipografía con serifa —
-          la que se usa en un documento que se firma. La jerarquía la dan las
-          reglas horizontales y el grosor del trazo, que sobreviven a
-          cualquier impresora.
+          Lo que exige el Decreto 2200 de 2005, artículo 17, y que la versión
+          anterior no imprimía:
+
+            · número de historia clínica del paciente
+            · concentración y forma farmacéutica, separadas del nombre
+            · dosis, frecuencia y duración del tratamiento
+            · cantidad total en números Y EN LETRAS
+            · indicaciones al paciente
+            · vigencia de la prescripción, visible
+            · dirección y contacto del prestador
+
+          Y lo que exige el artículo 16: letra clara y legible, sin siglas ni
+          abreviaturas, y correspondencia verificable entre lo prescrito y lo
+          dispensado. De ahí que cada medicamento sea un bloque numerado y no
+          una fila de tabla con seis columnas estrechas: en una fila estrecha
+          la dosis se parte en dos renglones y se lee mal, y leer mal una
+          dosis es el error que este documento existe para evitar.
+
+          Decisiones de impresión: tamaño carta con márgenes reales, serifa
+          para el cuerpo (es lo que se usa en un documento que se firma), sin
+          color, sin esquinas redondeadas y sin rellenos oscuros que se coman
+          el tóner. La jerarquía la dan las reglas horizontales y el grosor
+          del trazo, que sobreviven a cualquier impresora.
         */
+
+        @page { size: letter; margin: 14mm 12mm; }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: Georgia, 'Times New Roman', Times, serif;
             color: #000;
-            background: #fff;
-            padding: 16px;
-            line-height: 1.4;
+            background: #f4f4f4;
+            padding: 20px;
+            line-height: 1.45;
+            font-size: 12px;
         }
 
-        .page { max-width: 800px; margin: 0 auto; background: #fff; border: 1px solid #000; }
+        .hoja {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #000;
+            padding: 0;
+        }
 
-        /* CABECERA */
-        .header { display: flex; align-items: flex-start; border-bottom: 3px double #000; padding: 14px 16px; }
-        .header-logo { width: 72px; flex-shrink: 0; margin-right: 16px; }
-        .header-logo img { width: 100%; height: auto; }
-        .header-center { flex: 1; }
-        .header-center h1 { font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4px; }
-        .header-center p { font-size: 12px; margin-top: 2px; }
-        .header-right { text-align: right; border: 1px solid #000; padding: 8px 12px; min-width: 190px; }
-        .header-right .order-caption { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .header-right .order-num { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
-        .header-right .order-date { font-size: 11px; margin-top: 6px; }
-
-        /* SECCIONES */
-        .section { border-top: 1px solid #000; }
-        .section-header {
-            padding: 5px 12px;
-            font-family: Georgia, 'Times New Roman', Times, serif;
-            font-weight: bold;
-            font-size: 11px;
+        /* --- Cabecera del prestador --- */
+        .encabezado {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 14px 18px;
+            border-bottom: 3px double #000;
+        }
+        .marca { width: 64px; flex-shrink: 0; }
+        .marca img { width: 100%; height: auto; }
+        .prestador { flex: 1; }
+        .prestador h1 {
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            line-height: 1.25;
+        }
+        .prestador .linea { font-size: 11px; margin-top: 2px; }
+        .prestador .tipo {
+            font-size: 10.5px;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            border-bottom: 1px solid #000;
+            margin-top: 6px;
+            font-weight: bold;
         }
+        .folio {
+            border: 1.5px solid #000;
+            padding: 8px 14px;
+            text-align: right;
+            min-width: 180px;
+        }
+        .folio .rotulo {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+        .folio .numero {
+            font-size: 19px;
+            font-weight: bold;
+            letter-spacing: .5px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .folio .fecha { font-size: 10.5px; margin-top: 6px; }
 
-        /* REJILLA DE DATOS */
-        .data-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
-        .data-grid .cell { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 6px 10px; }
-        .data-grid .cell:last-child { border-right: none; }
-        .cell-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; }
-        .cell-value { font-size: 13px; font-weight: bold; margin-top: 1px; }
-        .cell-span-2 { grid-column: span 2; }
-        .cell-span-3 { grid-column: span 3; }
-        .cell-span-4 { grid-column: span 4; }
-
-        /* DIAGNÓSTICOS */
-        .dx-row { display: grid; grid-template-columns: 92px 1fr; }
-        .dx-code { font-weight: bold; font-size: 13px; padding: 5px 10px; border-right: 1px solid #000; border-bottom: 1px solid #000; }
-        .dx-desc { font-size: 12px; padding: 5px 10px; border-bottom: 1px solid #000; text-transform: uppercase; }
-        .vacio { padding: 8px 12px; font-size: 12px; font-style: italic; }
-
-        /* TABLA DE MEDICAMENTOS */
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #000; padding: 6px 8px; font-size: 12px; text-align: left; vertical-align: top; }
-        .meds-table th {
+        /* --- Secciones --- */
+        .seccion { border-top: 1px solid #000; }
+        .titulo-seccion {
+            padding: 4px 18px;
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            border-bottom: 2px solid #000;
+            letter-spacing: 1.4px;
+            border-bottom: 1px solid #000;
+            background: #f0f0f0;
         }
-        .meds-table td.num { text-align: center; font-weight: bold; }
-        .meds-table td.med { font-weight: bold; }
-        .meds-table td.centro { text-align: center; }
-        .meds-instructions { font-size: 11px; }
+        .cuerpo { padding: 10px 18px; }
 
-        /* FIRMA Y PIE */
-        .footer { padding: 16px; border-top: 3px double #000; }
-        .signature-area { display: flex; gap: 20px; align-items: flex-end; }
-        .signature-block { flex: 1; max-width: 380px; }
-        .signature-img { max-height: 60px; margin-bottom: 4px; }
-        .signature-line { border-top: 1px solid #000; padding-top: 4px; }
-        .signature-name { font-weight: bold; font-size: 14px; }
-        .signature-detail { font-size: 11px; margin-top: 1px; }
-
-        .validity { font-size: 11px; margin-top: 16px; padding-top: 8px; border-top: 1px solid #000; }
-        .validity strong { font-weight: bold; }
-        .hash-block {
-            font-size: 10px;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid #000;
-            font-family: 'Courier New', Courier, monospace;
-            word-break: break-all;
+        /* --- Rejilla de datos --- */
+        .datos {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-left: 1px solid #999;
         }
-
-        /* OBSERVACIONES */
-        .observations { padding: 8px 12px; font-size: 12px; min-height: 30px; }
-
-        /* IMPRESIÓN */
-        @media print {
-            body { padding: 0; }
-            .page { border: none; max-width: none; }
-            .no-print { display: none !important; }
-            @page { margin: 12mm; size: letter; }
+        .dato {
+            border-right: 1px solid #999;
+            border-bottom: 1px solid #999;
+            padding: 5px 10px;
+            min-width: 0;
         }
-
-        /* CONTROLES SOLO DE PANTALLA
-           No forman parte del documento: por eso son sobrios y desaparecen al
-           imprimir. */
-        .print-controls { max-width: 800px; margin: 0 auto 16px; display: flex; gap: 10px; }
-        .btn {
-            font-family: Georgia, 'Times New Roman', Times, serif;
-            padding: 10px 18px;
-            min-height: 44px;
+        .dato .r {
+            display: block;
+            font-size: 8.5px;
+            text-transform: uppercase;
+            letter-spacing: .9px;
+            color: #333;
+        }
+        .dato .v {
+            display: block;
+            font-size: 12px;
             font-weight: bold;
-            font-size: 13px;
-            border: 1px solid #000;
-            background: #fff;
-            color: #000;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
+            word-wrap: break-word;
         }
-        .btn-primary { background: #000; color: #fff; }
+        .dato.ancho { grid-column: span 2; }
+        .dato .vacio { font-weight: normal; font-style: italic; color: #555; }
+
+        /* --- Diagnósticos --- */
+        .dx { padding: 8px 18px; }
+        .dx-fila {
+            display: flex;
+            gap: 10px;
+            padding: 3px 0;
+            border-bottom: 1px dotted #bbb;
+        }
+        .dx-fila:last-child { border-bottom: 0; }
+        .dx-codigo {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            min-width: 62px;
+        }
+
+        /* --- Medicamentos --- */
+        .med {
+            border-bottom: 1px solid #000;
+            padding: 10px 18px;
+            page-break-inside: avoid;
+        }
+        .med:last-of-type { border-bottom: 0; }
+        .med-cabeza { display: flex; gap: 10px; align-items: baseline; }
+        .med-orden {
+            font-weight: bold;
+            font-size: 14px;
+            min-width: 22px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .med-nombre { font-size: 14px; font-weight: bold; flex: 1; }
+        .med-marca { font-size: 10.5px; font-style: italic; color: #444; }
+        .med-detalle {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px 14px;
+            margin: 7px 0 0 32px;
+        }
+        .med-detalle .r {
+            display: block;
+            font-size: 8.5px;
+            text-transform: uppercase;
+            letter-spacing: .9px;
+            color: #333;
+        }
+        .med-detalle .v { font-size: 11.5px; font-weight: bold; }
+        .med-cantidad {
+            margin: 7px 0 0 32px;
+            padding: 5px 10px;
+            border: 1px solid #000;
+            font-size: 11.5px;
+        }
+        .med-indicaciones {
+            margin: 7px 0 0 32px;
+            font-size: 11.5px;
+            padding-left: 10px;
+            border-left: 3px solid #000;
+        }
+
+        /* --- Vigencia --- */
+        .vigencia {
+            padding: 9px 18px;
+            border-top: 1px solid #000;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* --- Firma --- */
+        .firma { padding: 26px 18px 14px; page-break-inside: avoid; }
+        .firma-caja { max-width: 380px; }
+        .firma-imagen { height: 54px; margin-bottom: 2px; }
+        .firma-imagen img { max-height: 54px; }
+        .firma-linea { border-top: 1px solid #000; padding-top: 4px; }
+        .firma-nombre { font-size: 13px; font-weight: bold; }
+        .firma-rotulo {
+            font-size: 8.5px;
+            text-transform: uppercase;
+            letter-spacing: .9px;
+            color: #333;
+        }
+        .firma-datos { font-size: 11px; margin-top: 3px; }
+
+        /* --- Pie --- */
+        .pie {
+            border-top: 1px solid #000;
+            padding: 9px 18px;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        .pie .verificacion {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+        }
+        .pie .norma { margin-top: 5px; color: #333; font-size: 9.5px; }
+
+        /* --- Sello de anulada --- */
+        .anulada {
+            border: 2px solid #000;
+            padding: 8px 18px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        /* --- Controles, solo en pantalla --- */
+        .controles {
+            max-width: 800px;
+            margin: 0 auto 14px;
+            display: flex;
+            gap: 10px;
+        }
+        .boton {
+            font-family: Georgia, serif;
+            font-size: 13px;
+            padding: 9px 20px;
+            border: 1px solid #000;
+            background: #000;
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .boton.secundario { background: #fff; color: #000; }
+
+        @media print {
+            body { background: #fff; padding: 0; font-size: 11px; }
+            .controles { display: none; }
+            .hoja { max-width: none; border: 0; }
+            .titulo-seccion { background: transparent; border-bottom: 1px solid #000; }
+        }
     </style>
 </head>
 <body>
-    <!-- Controles de pantalla (no se imprimen) -->
-    <div class="print-controls no-print">
-        <button class="btn btn-primary" onclick="window.print()">Imprimir</button>
-        <a href="{{ url_for('doctor.dashboard') }}" class="btn">← Volver al panel</a>
+
+<div class="controles">
+    <button class="boton" onclick="window.print()">Imprimir</button>
+    <a class="boton secundario" href="{{ url_for('doctor.dashboard') }}">Volver al panel</a>
+</div>
+
+<div class="hoja">
+
+    <div class="encabezado">
+        {#
+          El logo de la clinica manda: es el prestador quien expide la orden.
+          Si no ha subido ninguno, va la marca de la plataforma en negro, que
+          es lo que imprime bien. Un documento sin ninguna marca en la esquina
+          se lee como un borrador.
+        #}
+        <div class="marca">
+            {% if clinic and clinic.logo_path %}
+            <img src="/uploads/{{ clinic.logo_path }}" alt="">
+            {% else %}
+            <svg viewBox="0 0 32 32" width="56" height="56" fill="none"
+                 stroke="#000" stroke-width="2.9" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 24 H8.5 L10.5 16 L13 29 L15.5 21 L21 5 L29 24"/>
+            </svg>
+            {% endif %}
+        </div>
+        <div class="prestador">
+            <h1>{{ clinic.legal_name or clinic.name if clinic else 'Prestador de servicios de salud' }}</h1>
+            {% if clinic and clinic.nit %}<p class="linea">NIT {{ clinic.nit }}</p>{% endif %}
+            {% if clinic and clinic.habilitacion_code %}
+            <p class="linea">Código de habilitación {{ clinic.habilitacion_code }}</p>
+            {% endif %}
+            {% if clinic and clinic.location %}<p class="linea">{{ clinic.location }}</p>{% endif %}
+            {# El articulo 17 pide direccion y telefono O correo del prestador. #}
+            {% if clinic and clinic.contact_email %}
+            <p class="linea">{{ clinic.contact_email }}</p>
+            {% endif %}
+            <p class="tipo">Orden médica &middot; prescripción con validez legal</p>
+        </div>
+        <div class="folio">
+            <p class="rotulo">Orden número</p>
+            <p class="numero">{{ order.order_number or order.id }}</p>
+            <p class="fecha">Expedida el<br><b>{{ order.created_at | colombia_date }}</b></p>
+        </div>
     </div>
 
-    <div class="page">
-        <!-- CABECERA: logo, institución y número de orden -->
-        <div class="header">
-            {% if order.doctor.clinic and order.doctor.clinic.logo_path %}
-            <div class="header-logo">
-                <img src="/uploads/{{ order.doctor.clinic.logo_path }}" alt="Logo">
+    {% if order.annulled_at %}
+    <div class="anulada">
+        Orden anulada el {{ order.annulled_at | colombia_date }} &mdash; no dispensar
+    </div>
+    {% endif %}
+
+    {#
+      Datos del paciente. El número de historia clínica es requisito del
+      artículo 17 y no se imprimía; sin él la farmacia no puede correlacionar
+      la orden con el episodio asistencial.
+    #}
+    <div class="seccion">
+        <p class="titulo-seccion">Paciente</p>
+        <div class="datos">
+            <div class="dato ancho">
+                <span class="r">Nombre completo</span>
+                <span class="v">{{ order.patient.name }}</span>
             </div>
-            {% endif %}
-            <div class="header-center">
-                <h1>{{ clinic.legal_name or clinic.name }}</h1>
-                <p>NIT: {{ clinic.nit or 'No registrado' }}</p>
-                <p>Dirección: {{ clinic.location or 'No registrada' }}</p>
-                <p>Orden médica — prescripción con validez legal</p>
+            <div class="dato">
+                <span class="r">Documento</span>
+                <span class="v">
+                    {{ order.patient_document_type or 'CC' }}
+                    {{ order.patient_document or order.patient.cedula }}
+                </span>
             </div>
-            <div class="header-right">
-                <p class="order-caption">Orden Nro.</p>
-                <p class="order-num">{{ order.order_number or order.id }}</p>
-                <p class="order-date">Fecha de expedición<br><strong>{{ order.created_at|colombia_date }} {{ order.created_at|colombia_time }}</strong></p>
+            <div class="dato">
+                <span class="r">Historia clínica</span>
+                <span class="v">
+                    {% if order.clinical_record_number %}{{ order.clinical_record_number }}
+                    {% else %}<span class="vacio">Sin asignar</span>{% endif %}
+                </span>
+            </div>
+            <div class="dato">
+                <span class="r">Edad</span>
+                <span class="v">
+                    {% if order.patient_age %}{{ order.patient_age }}
+                    {% else %}<span class="vacio">No registrada</span>{% endif %}
+                </span>
+            </div>
+            <div class="dato">
+                <span class="r">Tipo de usuario</span>
+                <span class="v">
+                    {% if order.insurance_regime %}{{ order.insurance_regime | capitalize }}
+                    {% else %}<span class="vacio">No registrado</span>{% endif %}
+                </span>
+            </div>
+            <div class="dato ancho">
+                <span class="r">Entidad responsable del pago</span>
+                <span class="v">
+                    {% if order.insurance_name %}{{ order.insurance_name }}
+                    {% else %}<span class="vacio">No registrada</span>{% endif %}
+                </span>
+            </div>
+            <div class="dato ancho">
+                <span class="r">Dirección</span>
+                <span class="v">
+                    {% if order.patient_address %}{{ order.patient_address }}
+                    {% else %}<span class="vacio">No registrada</span>{% endif %}
+                </span>
+            </div>
+            <div class="dato">
+                <span class="r">Teléfono</span>
+                <span class="v">
+                    {% if order.patient_phone %}{{ order.patient_phone }}
+                    {% else %}<span class="vacio">No registrado</span>{% endif %}
+                </span>
+            </div>
+            <div class="dato">
+                <span class="r">Modalidad de atención</span>
+                <span class="v">{{ order.care_modality | capitalize if order.care_modality else 'Presencial' }}</span>
             </div>
         </div>
+    </div>
 
-        <!-- DATOS BÁSICOS DEL PACIENTE -->
-        <div class="section">
-            <div class="section-header">Datos básicos del aseguramiento</div>
-            <div class="data-grid">
-                <div class="cell cell-span-2">
-                    <div class="cell-label">Paciente</div>
-                    <div class="cell-value">{{ order.patient.name }}</div>
-                </div>
-                <div class="cell">
-                    <div class="cell-label">Documento</div>
-                    <div class="cell-value">{{ order.patient.cedula }}</div>
-                </div>
-                <div class="cell">
-                    <div class="cell-label">Edad (años, meses, días)</div>
-                    <div class="cell-value">{{ order.patient_age or 'N/R' }}</div>
-                </div>
-                <div class="cell cell-span-2">
-                    <div class="cell-label">Dirección del paciente</div>
-                    <div class="cell-value">{{ order.patient.address or 'No registrada' }}</div>
-                </div>
-                <div class="cell">
-                    <div class="cell-label">Nivel</div>
-                    <div class="cell-value">{{ order.patient_level or '1' }}</div>
-                </div>
-                <div class="cell">
-                    <div class="cell-label">Cliente (EPS)</div>
-                    <div class="cell-value">{{ order.insurance_name or 'Particular' }}</div>
-                </div>
-                <div class="cell cell-span-2">
-                    <div class="cell-label">Plan</div>
-                    <div class="cell-value">{{ order.insurance_plan or 'N/A' }}</div>
-                </div>
-                <div class="cell cell-span-2">
-                    <div class="cell-label">Régimen</div>
-                    <div class="cell-value">{{ order.insurance_regime or 'N/A' }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DIAGNÓSTICOS -->
-        <div class="section">
-            <div class="section-header">Diagnósticos</div>
+    {#
+      El artículo 16 exige poder correlacionar el medicamento con el
+      diagnóstico. Sin diagnóstico impreso, la farmacia no puede hacerlo.
+    #}
+    <div class="seccion">
+        <p class="titulo-seccion">Diagnóstico</p>
+        <div class="dx">
             {% for dx in diagnoses %}
-            <div class="dx-row">
-                <div class="dx-code">{{ dx.code }}</div>
-                <div class="dx-desc">{{ dx.description }}</div>
+            <div class="dx-fila">
+                <span class="dx-codigo">{{ dx.code }}</span>
+                <span>{{ dx.description or 'Sin descripción' }}</span>
             </div>
             {% else %}
-            <div class="vacio">Sin diagnósticos registrados</div>
+            <p style="font-style:italic">
+                Esta orden no registra diagnóstico. El artículo 16 del Decreto
+                2200 de 2005 exige poder correlacionar cada medicamento con su
+                diagnóstico.
+            </p>
             {% endfor %}
         </div>
+    </div>
 
-        <!-- OBSERVACIONES -->
-        {% if order.observations %}
-        <div class="section">
-            <div class="section-header">Observaciones</div>
-            <div class="observations">{{ order.observations }}</div>
-        </div>
-        {% endif %}
-
-        <!-- TABLA DE MEDICAMENTOS -->
-        <div class="section">
-            <div class="section-header">Medicamentos prescritos</div>
-            <table class="meds-table">
-                <thead>
-                    <tr>
-                        <th scope="col" style="width:32px">It</th>
-                        <th scope="col">Descripción</th>
-                        <th scope="col" style="width:60px">Cantidad</th>
-                        <th scope="col" style="width:70px">Dosis</th>
-                        <th scope="col" style="width:50px">Und</th>
-                        <th scope="col">Frecuencia / duración</th>
-                        <th scope="col" style="width:60px">Vía</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for med in meds %}
-                    <tr>
-                        <td class="num">{{ loop.index }}</td>
-                        <td class="med">{{ med.medicamento or med.nombre_med }}</td>
-                        <td class="centro">{{ med.cantidad }}</td>
-                        <td>{{ med.dosis or '' }}</td>
-                        <td>{{ med.unidad }}</td>
-                        <td>{{ med.frecuencia or '' }}</td>
-                        <td class="centro">{{ med.via or 'ORAL' }}</td>
-                    </tr>
-                    {% endfor %}
-                    {% if med_instructions %}
-                    <tr>
-                        <td colspan="7" class="meds-instructions">
-                            {% for inst in med_instructions %}
-                                {% if inst %}<strong>{{ loop.index }}.</strong> {{ inst }}<br>{% endif %}
-                            {% endfor %}
-                        </td>
-                    </tr>
+    {#
+      Un bloque por medicamento, no una fila de seis columnas estrechas: ahí
+      la dosis se parte en dos renglones y se lee mal, y leer mal una dosis es
+      el error que este documento existe para evitar.
+    #}
+    <div class="seccion">
+        <p class="titulo-seccion">Medicamentos prescritos</p>
+        {% for med in meds %}
+        <div class="med">
+            <div class="med-cabeza">
+                <span class="med-orden">{{ loop.index }}.</span>
+                <span class="med-nombre">
+                    {{ med.nombre_med or med.denominacion_comun or med.medicamento }}
+                    {% if med.concentracion %} {{ med.concentracion }}{% endif %}
+                    {% if med.nombre_comercial %}
+                    <span class="med-marca">(marca prescrita: {{ med.nombre_comercial }})</span>
                     {% endif %}
-                </tbody>
-            </table>
-        </div>
+                </span>
+            </div>
 
-        <!-- FIRMA -->
-        <div class="footer">
-            <div class="signature-area">
-                <div class="signature-block">
-                    {% if order.doctor.signature_path %}
-                    <img src="/uploads/{{ order.doctor.signature_path }}" class="signature-img" alt="Firma">
-                    {% else %}
-                    <div style="height:50px;"></div>
-                    {% endif %}
-                    <div class="signature-line">
-                        <div class="signature-name">{{ order.doctor.name }}</div>
-                        <div class="signature-detail">Nombre y firma del profesional</div>
-                        <div class="signature-detail">Reg. Méd.: {{ order.doctor.medical_registration or 'No registrado' }} &nbsp;&nbsp; Especialidad: {{ order.doctor.specialty or 'Medicina General' }}</div>
-                    </div>
+            <div class="med-detalle">
+                <div>
+                    <span class="r">Forma farmacéutica</span>
+                    <span class="v">
+                        {% if med.forma_farmaceutica %}{{ med.forma_farmaceutica | capitalize }}
+                        {% else %}<span class="vacio">No registrada</span>{% endif %}
+                    </span>
+                </div>
+                <div>
+                    <span class="r">Vía de administración</span>
+                    <span class="v">{{ (med.via or 'oral') | capitalize }}</span>
+                </div>
+                <div>
+                    <span class="r">Dosis</span>
+                    <span class="v">
+                        {% if med.dosis %}{{ med.dosis }}
+                        {% else %}<span class="vacio">No registrada</span>{% endif %}
+                    </span>
+                </div>
+                <div>
+                    <span class="r">Frecuencia</span>
+                    <span class="v">
+                        {% if med.frecuencia %}{{ med.frecuencia }}
+                        {% else %}<span class="vacio">No registrada</span>{% endif %}
+                    </span>
+                </div>
+                <div>
+                    <span class="r">Duración del tratamiento</span>
+                    <span class="v">
+                        {% if med.duracion_dias %}{{ med.duracion_dias }} días
+                        {% else %}<span class="vacio">No registrada</span>{% endif %}
+                    </span>
                 </div>
             </div>
 
-            <div class="validity">
-                Esta prescripción médica es válida por <strong>{{ validity_days }} días</strong> a partir de la fecha de expedición.<br>
-                Fecha de impresión: <strong>{{ print_date }}</strong> &nbsp; Impreso por: <strong>{{ order.doctor.name }}</strong>
-            </div>
+            {# En números y en letras: una cifra en números se altera con un
+               trazo, y por eso el artículo 17 pide las dos formas. #}
+            <p class="med-cantidad">
+                <b>Cantidad total a dispensar:</b>
+                {{ med.cantidad }} {{ med.unidad or 'unidad' }}{% if med.cantidad_en_letras %}
+                &mdash; <b>{{ med.cantidad_en_letras | upper }}</b>{% endif %}
+            </p>
 
-            <div class="hash-block">
-                Hash de seguridad: {{ order.verification_hash[:64] }}...<br>
-                Verificar autenticidad en la plataforma RuralHealth Connect.
+            {% if med.instrucciones %}
+            <p class="med-indicaciones">
+                <b>Indicaciones:</b> {{ med.instrucciones }}
+            </p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="cuerpo"><p style="font-style:italic">Sin medicamentos prescritos.</p></div>
+        {% endfor %}
+    </div>
+
+    {% if order.observations %}
+    <div class="seccion">
+        <p class="titulo-seccion">Observaciones del profesional</p>
+        <div class="cuerpo"><p>{{ order.observations }}</p></div>
+    </div>
+    {% endif %}
+
+    <div class="vigencia">
+        <span>
+            <b>Vigencia de esta prescripción:</b> {{ validity_days }} días desde su
+            expedición{% if order.expires_at %}, hasta el
+            {{ order.expires_at | colombia_date }}{% endif %}.
+        </span>
+        <span>Lugar y fecha: {{ clinic.location if clinic and clinic.location else 'Colombia' }},
+            {{ order.created_at | colombia_date }}</span>
+    </div>
+
+    <div class="firma">
+        <div class="firma-caja">
+            {% if order.doctor.signature_path %}
+            <div class="firma-imagen">
+                <img src="/uploads/{{ order.doctor.signature_path }}" alt="">
+            </div>
+            {% endif %}
+            <div class="firma-linea">
+                <p class="firma-nombre">{{ order.doctor.name }}</p>
+                <p class="firma-rotulo">Nombre y firma del profesional prescriptor</p>
+                <p class="firma-datos">
+                    Registro médico profesional: <b>{{ order.doctor_registration or order.doctor.medical_registration or 'No registrado' }}</b>
+                    {% if order.doctor.specialty %}<br>{{ order.doctor.specialty }}{% endif %}
+                </p>
             </div>
         </div>
     </div>
+
+    <div class="pie">
+        {#
+          Antes se imprimía el sello criptográfico completo, truncado con
+          puntos suspensivos. Media línea de caracteres ilegibles no le sirve
+          a nadie: quien verifica es la farmacia, contra la base de datos, y
+          para eso basta el número de orden. Se deja un código corto que
+          permite cotejar a simple vista que se está mirando el mismo
+          documento.
+        #}
+        <p>
+            <b>Código de verificación:</b>
+            <span class="verificacion">{{ (order.hash_seguridad or order.verification_hash or '')[:8] | upper }}</span>
+            &nbsp;·&nbsp; Verifique la autenticidad de esta orden en la plataforma
+            RuralHealth Connect con el número {{ order.order_number or order.id }}.
+        </p>
+        <p style="margin-top:4px">Impresa el {{ print_date }}.</p>
+        <p class="norma">
+            Prescripción expedida conforme al Decreto 2200 de 2005, artículos 16 y 17,
+            y a la Resolución 1403 de 2007. Prescrita en Denominación Común
+            Internacional. Documento sin enmendaduras ni tachaduras.
+        </p>
+    </div>
+
+</div>
 </body>
 </html>

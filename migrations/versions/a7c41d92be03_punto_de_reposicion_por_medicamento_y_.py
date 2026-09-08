@@ -13,7 +13,7 @@ Se anaden dos columnas:
                                    porque el stock bajo del punto de
                                    reposicion ('punto_reposicion').
 
-Las filas que ya existen quedan con `cantidad_minima = 0` — sin umbral, que es
+Las filas que ya existen quedan con `cantidad_minima = 0`, sin umbral, que es
 lo unico honesto: nadie ha dicho todavia cuanto es suficiente en cada sede. Y
 las alertas historicas se marcan como 'demanda', que es lo unico que el
 sistema sabia generar hasta ahora.

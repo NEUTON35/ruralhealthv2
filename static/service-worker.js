@@ -9,8 +9,8 @@
  * ignoraba deliberadamente.
  *
  * En un puesto de salud rural el dispositivo es compartido. Eso significaba que
- * la siguiente persona que abriera el navegador podía recuperar sin conexión —y
- * sin haber iniciado sesión— las páginas del paciente anterior, porque
+ * la siguiente persona que abriera el navegador podía recuperar sin conexión -y
+ * sin haber iniciado sesión- las páginas del paciente anterior, porque
  * CacheStorage sobrevive al cierre de sesión y al cierre del navegador.
  *
  * Qué se conserva del modo sin conexión: la aplicación sigue instalable y sigue
@@ -27,7 +27,7 @@ const SHELL_CACHE = `ruralhealth-shell-${CACHE_VERSION}`;
  *
  * Desde v7 se precachean también la hoja de estilos y las librerías, que antes
  * venían de CDN externos. Ese era el motivo de que la aplicación apareciera sin
- * ningún estilo cuando el CDN no era alcanzable — que en zona rural no es un
+ * ningún estilo cuando el CDN no era alcanzable, que en zona rural no es un
  * caso raro. Ahora todo se sirve desde este servidor y queda disponible sin
  * conexión.
  */

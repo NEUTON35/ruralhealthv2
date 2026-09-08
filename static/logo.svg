@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Marca de RuralHealth Connect.
+
+  Un solo trazo continuo que empieza como latido y termina como cordillera.
+  Es lo que hace el producto (llevar atención clínica a donde hay montaña)
+  dicho en una línea, sin pegar dos símbolos.
+
+  Las restricciones vienen del sitio donde tiene que funcionar, no del gusto:
+
+    · 16 píxeles. Es el tamaño de un favicon y el límite real del diseño. La
+      primera versión tenía dos cumbres y tres quiebres en el latido: a ese
+      tamaño se empastaba en un garabato. Quedan cuatro vértices y una sola
+      cumbre, que es lo que sobrevive.
+    · Un solo trazo, sin relleno. Se imprime en la orden médica, en blanco y
+      negro, sobre una impresora de tóner gastado: cualquier área rellena sale
+      como una mancha gris.
+    · currentColor. Hereda el color de donde se ponga, así que la misma pieza
+      sirve en la barra lateral, en negro sobre papel y en blanco sobre fondo
+      oscuro. Ojo: solo hereda si el SVG va en línea en el HTML; dentro de un
+      img se pinta negro, que es justo lo correcto para el documento impreso.
+    · El dibujo llena su caja. La version anterior ocupaba dos tercios del
+      alto y dejaba aire arriba: a 16 pixeles eso se traduce en una marca que
+      se ve mas pequeña que el resto de iconos de la barra del navegador.
+    · Formato casi cuadrado. Un logotipo apaisado no cabe en un favicon ni en
+      un icono de aplicación sin recortarse.
+    · Sin texto dentro. El nombre va al lado, en la tipografía del sistema:
+      así no se deforma ni obliga a incrustar una fuente.
+
+  Nota para quien lo edite: dos guiones seguidos son ilegales dentro de un
+  comentario XML. El archivo entero deja de parsearse y el navegador no pinta
+  nada, sin decir por qué.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+     fill="none" stroke="currentColor" stroke-width="2.9"
+     stroke-linecap="round" stroke-linejoin="round"
+     role="img" aria-label="RuralHealth Connect">
+  <title>RuralHealth Connect</title>
+  <!--
+    Reposo, espiga del latido, y de ahí la cumbre. El pico del latido queda
+    más bajo que la cumbre a propósito: si igualan altura, el ojo los lee como
+    dos dientes y se pierde la idea.
+  -->
+  <path d="M3 24 H8.5 L10.5 16 L13 29 L15.5 21 L21 5 L29 24" />
+</svg>

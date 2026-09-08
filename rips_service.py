@@ -1,4 +1,4 @@
-"""RIPS en formato plano. **FORMATO DEROGADO — no sirve para radicar.**
+"""RIPS en formato plano. **FORMATO DEROGADO, no sirve para radicar.**
 
 Lea esto antes de usarlo
 ------------------------
@@ -395,7 +395,7 @@ def generate_rips(clinic_id, start_date, end_date, invoice_number=None, strict=T
             archive.writestr(f'{name}000001.txt', output.getvalue())
 
         notes = [
-            'PAQUETE RIPS — RuralHealth Connect',
+            'PAQUETE RIPS, RuralHealth Connect',
             f'Prestador: {clinic.name} (habilitacion {provider_code})',
             f'Periodo: {start_date.strftime("%d/%m/%Y")} a {end_date.strftime("%d/%m/%Y")}',
             f'Generado: {submission_date}',

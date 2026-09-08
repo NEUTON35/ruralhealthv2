@@ -1,4 +1,4 @@
-# RuralHealth Connect — Auditoría Técnica, Clínica y Legal
+# RuralHealth Connect, Auditoría Técnica, Clínica y Legal
 
 **Fecha:** 2026-09-05
 **Alcance:** revisión completa del código (7.191 líneas Python + 7.472 líneas de plantillas), modelo de datos,
@@ -18,7 +18,7 @@ daño que puede causar a un paciente o la exposición legal que genera para el p
 
 ---
 
-## P0 — Bloqueantes
+## P0, Bloqueantes
 
 ### P0-1 · Credenciales de producción en el repositorio
 
@@ -42,7 +42,7 @@ clínicos, órdenes médicas e historias de pacientes. La aplicación envía `Ca
 respuestas autenticadas y el Service Worker lo ignoraba deliberadamente.
 
 En un puesto de salud rural el dispositivo es compartido. El siguiente usuario del navegador podía
-recuperar sin conexión —y sin sesión— las páginas del paciente anterior. No había purga al cerrar sesión.
+recuperar sin conexión (y sin sesión) las páginas del paciente anterior. No había purga al cerrar sesión.
 
 **Impacto:** fuga de datos sensibles de salud a terceros no autorizados.
 **Acción:** el Service Worker ya no cachea nada autenticado; solo el *shell* público. Purga total en `logout`.
@@ -82,7 +82,7 @@ Para medicamentos esto incumple la trazabilidad exigida al servicio farmacéutic
 
 La emisión de recetas (`routes_doctor.prescription`) no validaba nada:
 
-- Los códigos CIE-10 se guardaban sin pasar por `validate_medical_code()` — la función existe y **nunca se llamaba** en este flujo.
+- Los códigos CIE-10 se guardaban sin pasar por `validate_medical_code()`, la función existe y **nunca se llamaba** en este flujo.
 - No se exigía registro médico profesional. Una cuenta de médico creada sin `medical_registration`
   podía firmar órdenes con validez legal.
 - No se exigía firma. `signature_hash` es columna del modelo y **nunca se poblaba**.
@@ -125,7 +125,7 @@ misma base, y el `ALTER TABLE` construido con `f-string` reemplaza a un sistema 
 
 ---
 
-## P1 — Requisitos ausentes
+## P1, Requisitos ausentes
 
 | # | Hallazgo | Acción |
 | :--- | :--- | :--- |
@@ -146,7 +146,7 @@ misma base, y el `ALTER TABLE` construido con `f-string` reemplaza a un sistema 
 
 ---
 
-## P2 — Operación y fiabilidad
+## P2, Operación y fiabilidad
 
 | # | Hallazgo | Acción |
 | :--- | :--- | :--- |
@@ -160,7 +160,7 @@ misma base, y el `ALTER TABLE` construido con `f-string` reemplaza a un sistema 
 | P2-8 | **Sin límite de tamaño ni rotación de `uploads/`.** Crecimiento sin control en el disco de un puesto rural. | Cuota por clínica y verificación de espacio. |
 | P2-9 | **Excepciones silenciadas.** `except Exception: pass` en el guardado de firma; `print()` para errores. | Registro estructurado. |
 | P2-10 | **`db.create_all()` en producción.** Crea esquema sin control de versión. | Solo en desarrollo y pruebas. |
-| P2-11 | **Derivación de clave en cada acceso a un campo cifrado.** `_fernet()` ejecutaba 600.000 iteraciones de PBKDF2 en **cada** cifrado y descifrado. Como `EncryptedText` interviene en toda lectura y escritura de PII, listar cien pacientes disparaba cientos de derivaciones — décimas de segundo por campo sobre el hardware de un puesto rural. Es la causa real de la lentitud que reportaron los usuarios encuestados. | Instancia Fernet cacheada por proceso. Medido en la suite de pruebas: 4 min 21 s → 58 s. |
+| P2-11 | **Derivación de clave en cada acceso a un campo cifrado.** `_fernet()` ejecutaba 600.000 iteraciones de PBKDF2 en **cada** cifrado y descifrado. Como `EncryptedText` interviene en toda lectura y escritura de PII, listar cien pacientes disparaba cientos de derivaciones, décimas de segundo por campo sobre el hardware de un puesto rural. Es la causa real de la lentitud que reportaron los usuarios encuestados. | Instancia Fernet cacheada por proceso. Medido en la suite de pruebas: 4 min 21 s → 58 s. |
 
 > **Sobre el hallazgo P2-11.** La encuesta de campo recogida en el README registra
 > dos comentarios sobre velocidad («falta velocidad pero cumple con sus funciones»,
@@ -173,13 +173,13 @@ misma base, y el `ALTER TABLE` construido con `f-string` reemplaza a un sistema 
 
 ---
 
-# Segunda pasada — 2026-09-06
+# Segunda pasada, 2026-09-06
 
 Revisión adicional tras una pregunta sobre convenciones de interfaz. La pregunta
 era de estilo; la revisión encontró **10 defectos**, dos de ellos de corrección de
 datos y uno de incumplimiento legal en curso.
 
-## P0 — Bloqueantes
+## P0, Bloqueantes
 
 ### P0-10 · El sistema borraba historias clínicas de forma permanente
 
@@ -189,7 +189,7 @@ Tres caminos distintos eliminaban registros clínicos con `DELETE`:
 | :--- | :--- |
 | `routes_superadmin._delete_patient` | `MedicalHistory`, `MedicalOrder`, `MedicationPickupTicket`, `Chat`, `Message` del paciente |
 | `routes_superadmin._delete_clinic` | Lo mismo, para **todos** los pacientes de la clínica |
-| `routes_admin` acción `delete_user` | Los chats y citas del profesional — que son consultas **de sus pacientes** |
+| `routes_admin` acción `delete_user` | Los chats y citas del profesional, que son consultas **de sus pacientes** |
 | `routes_settings` acción `delete_account` | Chats y citas propios, y la fila del usuario |
 
 Esto incumplía el deber de conservar la historia clínica un mínimo de 15 años
@@ -202,8 +202,8 @@ Dar de baja a un médico destruía además la historia de terceros que no tenía
 relación alguna con esa baja.
 
 **Acción:** los cuatro caminos pasan a archivar: la cuenta se desactiva, las
-consultas abiertas se cierran, las citas futuras se cancelan —liberando el
-horario— y el registro clínico permanece. Los textos de la interfaz dicen ahora lo
+consultas abiertas se cierran, las citas futuras se cancelan -liberando el
+horario- y el registro clínico permanece. Los textos de la interfaz dicen ahora lo
 que realmente ocurre. Una prueba analiza el árbol de sintaxis de todas las rutas
 para impedir que vuelva a aparecer un borrado masivo de tablas clínicas.
 
@@ -218,10 +218,10 @@ las fijaba todas a las 09:00, de modo que el choque era sistemático.
 **Acción:** índice único parcial en base de datos sobre `(doctor_id, date, time)`,
 excluyendo las canceladas y no asistidas. Es parcial para que un horario liberado
 vuelva a ofrecerse. La migración sanea los duplicados que ya existan marcando como
-canceladas las posteriores —sin borrarlas— y avisa de cuáles son, para reprogramar
+canceladas las posteriores (sin borrarlas) y avisa de cuáles son, para reprogramar
 a esos pacientes.
 
-## P1 — Correcciones de datos y acceso
+## P1, Correcciones de datos y acceso
 
 | # | Hallazgo | Acción |
 | :--- | :--- | :--- |
@@ -229,9 +229,9 @@ a esos pacientes.
 | P1-16 | **Las citas canceladas bloqueaban el horario para siempre.** Un paciente que no se presentaba inutilizaba ese cupo de forma permanente, en agendas donde cada consulta cuenta. El contador de cupos disponibles las incluía, así que además mostraba menos disponibilidad de la real. | Solo cuentan las citas que ocupan de verdad. |
 | P1-17 | **243 de 256 campos de formulario sin nombre accesible.** Un lector de pantalla los anunciaba como «campo de texto, en blanco»: quien tiene baja visión no podía saber si escribía la dosis o la cantidad. | `aria-label` en los 243, tomado del texto descriptivo real y no del ejemplo del marcador. |
 | P1-18 | **Emojis dentro de datos que se guardan en la base.** 21 literales con emoji iban a `Notification.title`, `Notification.message` y `Message.content`, que se cifran, salen en la exportación de historia clínica que reciben los auditores y se imprimen en la orden. En Android antiguo muchos renderizan como un cuadro vacío dentro de un dato clínico. | Retirados de todo literal de Python; prueba que impide su reintroducción. |
-| P1-19 | **Toda escritura dependía de JavaScript.** 61 formularios no llevaban el token CSRF en el HTML; lo inyectaba un script al cargar la página. Si ese script no se ejecuta —conexión intermitente, navegador antiguo—, cada envío devuelve un 400 y el usuario ve un formulario que aparentemente no hace nada. | Token en el HTML de los 61. La inyección queda como red de seguridad. |
+| P1-19 | **Toda escritura dependía de JavaScript.** 61 formularios no llevaban el token CSRF en el HTML; lo inyectaba un script al cargar la página. Si ese script no se ejecuta (conexión intermitente, navegador antiguo), cada envío devuelve un 400 y el usuario ve un formulario que aparentemente no hace nada. | Token en el HTML de los 61. La inyección queda como red de seguridad. |
 
-## P2 — Interfaz y cadena de suministro
+## P2, Interfaz y cadena de suministro
 
 | # | Hallazgo | Acción |
 | :--- | :--- | :--- |
@@ -240,18 +240,18 @@ a esos pacientes.
 | P2-14 | **Recurso externo sin versión fijada ni verificación.** `lucide@latest` cargaba desde un CDN sin `integrity`: cualquier contenido que sirviera ese CDN se ejecutaba sobre páginas con historia clínica abierta. | Primero se fijó versión y SRI. Tras comprobar en campo que el fallo era peor de lo previsto (ver P0-15), **se eliminó toda dependencia de CDN**. |
 | P2-15 | **Glassmorphism y `transition-all`** (13 y 64 usos) sobre el hardware de gama baja que el propio README declara como objetivo. `transition-all` anima también las propiedades que fuerzan recálculo de maquetación. | Retirado el desenfoque; transiciones acotadas a color. |
 | P2-16 | **`target="_blank"` sin `rel`** (8) e **imágenes sin `alt`** (4). Lo primero entrega `window.opener` al destino, que puede redirigir la pestaña original a una copia falsa del login. | Corregidos, con pruebas. |
-| P2-17 | **Petición rechazada en cada carga de página.** `pwa.js` pedía la agenda sin conexión —que es solo de pacientes— desde todos los roles, generando un 403 por página y llenando la consola de errores que ocultaban los reales. | La petición se hace solo cuando corresponde. |
+| P2-17 | **Petición rechazada en cada carga de página.** `pwa.js` pedía la agenda sin conexión (que es solo de pacientes) desde todos los roles, generando un 403 por página y llenando la consola de errores que ocultaban los reales. | La petición se hace solo cuando corresponde. |
 
 ---
 
 ---
 
-# Tercera pasada — 2026-09-06
+# Tercera pasada, 2026-09-06
 
 Revisión de conformidad normativa: recetas, documentos legales, facturación e
 interfaz.
 
-## P0 — Bloqueantes
+## P0, Bloqueantes
 
 ### P0-12 · La prescripción no cumplía la Resolución 1403 de 2007
 
@@ -293,10 +293,10 @@ medicamento cambiado o el paciente confundido **seguía siendo dispensable hasta
 su fecha de vencimiento**, que puede ser meses después.
 
 **Acción:** anulación con motivo escrito, solo por quien firmó. La orden no se
-borra ni se edita —es historia clínica— pero deja de poder dispensarse, tanto en
+borra ni se edita (es historia clínica) pero deja de poder dispensarse, tanto en
 la autorización como en la verificación por hash del mostrador.
 
-## P1 — Documentos legales y facturación
+## P1, Documentos legales y facturación
 
 | # | Hallazgo | Acción |
 | :--- | :--- | :--- |
@@ -306,11 +306,11 @@ la autorización como en la verificación por hash del mostrador.
 | P1-23 | **Sin facturación.** El cobro era una foto de transferencia aprobada a mano: sin numeración autorizada, sin identificación fiscal del emisor, sin constancia de por qué no se cobra IVA y sin forma de anularse. | Estructura completa, con numeración atómica e interfaz para el proveedor DIAN. |
 | P1-24 | **El médico independiente no tenía dónde facturar.** Factura a su propio nombre, con su cédula y su propia resolución de numeración. Mezclar su consecutivo con el de la clínica invalidaría ambos: cada resolución autoriza un rango a un emisor concreto. | Perfil de facturación propio, con su identificación y su rango. |
 
-## P2 — Interfaz
+## P2, Interfaz
 
 | # | Hallazgo | Acción |
 | :--- | :--- | :--- |
-| P2-18 | **El color no significaba nada.** 66 iconos con color propio repartidos en 14 familias, 458 usos del peso de fuente más grueso, 32 gradientes. Cuando todo tiene color, la alerta roja de alergia deja de destacar: compite con la decoración. | Sistema de tres colores semánticos —crítico, advertencia, confirmación— más neutro. Quedan 20 iconos con color, todos de estado clínico. |
+| P2-18 | **El color no significaba nada.** 66 iconos con color propio repartidos en 14 familias, 458 usos del peso de fuente más grueso, 32 gradientes. Cuando todo tiene color, la alerta roja de alergia deja de destacar: compite con la decoración. | Sistema de tres colores semánticos (crítico, advertencia, confirmación) más neutro. Quedan 20 iconos con color, todos de estado clínico. |
 | P2-19 | **`pharmacy_utils` calculaba la distancia dos veces por farmacia** al ordenar, y las farmacias sin coordenadas quedaban primero en la lista de «más cercanas». | Una evaluación por elemento; las que no tienen coordenadas van al final. |
 | P2-20 | **`print()` para errores** en dos rutas. En un worker de Gunicorn esa salida no la lee nadie. | Registro estructurado. |
 
@@ -366,14 +366,14 @@ Puntos que no dependen del código y que ningún cambio mío puede sustituir:
 
 ---
 
-# Cuarta pasada — 2026-09-06
+# Cuarta pasada, 2026-09-06
 
 ### P0-15 · La interfaz se rompía por completo sin acceso al CDN de Tailwind
 
 Detectado en uso real: la aplicación aparecía como HTML sin ningún estilo.
 
 La causa era `cdn.tailwindcss.com`, que compila el CSS **en el navegador**. Si
-ese servidor no es alcanzable —red rural, cortafuegos, bloqueo regional— no hay
+ese servidor no es alcanzable (red rural, cortafuegos, bloqueo regional) no hay
 degradación elegante: no hay estilos en absoluto. Las demás librerías cargaban
 bien desde otro CDN, así que no era falta de conexión sino ese origen concreto.
 
@@ -405,12 +405,12 @@ Quedan dos recursos externos, ambos por naturaleza: Jitsi para videollamada y
 las teselas de OpenStreetMap. Una prueba impide que se cuele cualquier otro.
 
 
-# Quinta pasada — 2026-09-07
+# Quinta pasada, 2026-09-07
 
 Revisión de los documentos legales contra la norma citada, verificando cada
 referencia en la fuente y no de memoria.
 
-## P0 — Bloqueante
+## P0, Bloqueante
 
 ### P0-16 · El sistema incumple la Resolución 1888 de 2025 (plazo vencido)
 
@@ -437,7 +437,7 @@ de qué se remitió y cuándo.
 
 **Estado: implementado** en la sexta pasada. Ver más abajo.
 
-## P1 — Errores en los documentos legales
+## P1, Errores en los documentos legales
 
 ### P1-9 · Se citaba la Ley 1266 de 2008 como fundamento
 
@@ -519,7 +519,7 @@ Se mencionaba el artículo 47 de la Ley 1480 de 2011 sin indicar el término. So
 **cinco días hábiles**. Añadido, junto con la excepción de los servicios que ya
 comenzaron a ejecutarse con anuencia del consumidor.
 
-## P2 — Precisión de las citas
+## P2, Precisión de las citas
 
 - **Ley 1712 de 2014** se citaba como fundamento del documento de transparencia.
   Esa ley obliga a los sujetos obligados: entidades públicas y particulares que
@@ -572,7 +572,7 @@ con tarjeta profesional, que sigue siendo necesario para:
    procedimientos concretos, conforme a la Ley 23 de 1981.
 
 
-# Sexta pasada — 2026-09-07
+# Sexta pasada, 2026-09-07
 
 Implementación de la interoperabilidad IHCE, que la quinta pasada había
 identificado como P0-16 y dejado sin resolver.
@@ -690,14 +690,14 @@ es). Se deja señalado en lugar de inventar valores por defecto: un dato étnico
 inventado en un registro nacional de salud es peor que un dato ausente.
 
 
-# Séptima pasada — 2026-09-07
+# Séptima pasada, 2026-09-07
 
 Barrida de cumplimiento por dominios normativos, en lugar de seguir hilos
 sueltos. Se revisó cada norma contra el código y se verificó cada cita en la
 fuente. Lo que sigue es el inventario, no las correcciones: salvo el cifrado,
 nada de esto está arreglado todavía.
 
-## P0 — Bloqueantes
+## P0, Bloqueantes
 
 ### P0-17 · El RIPS se genera en un formato derogado hace tres años
 
@@ -732,7 +732,7 @@ En una plataforma de salud rural esto no es hipotético: dengue, malaria,
 tuberculosis, mortalidad materna, desnutrición aguda y los eventos de violencia
 son precisamente lo que aparece en ese territorio y lo que hay que notificar.
 
-## P1 — Correcciones necesarias
+## P1, Correcciones necesarias
 
 ### P1-16 · El RIPS fabrica la causa externa y la finalidad de la consulta
 
@@ -798,7 +798,7 @@ asignada y la IPS con su código del registro especial de prestadores. La norma 
 dirige a las EPS, pero el dato lo genera el prestador y sin él no se puede
 producir.
 
-## P2 — Menor
+## P2, Menor
 
 ### P2-15 · No hay forma de corregir una historia clínica
 
@@ -836,7 +836,7 @@ siendo pública, la historia clínica es descifrable hoy por quien tuviera ese
 archivo, sin necesidad de ninguna de estas normas.
 
 
-# Octava pasada — 2026-09-07
+# Octava pasada, 2026-09-07
 
 Corrección del inventario levantado en la séptima pasada. Se cierra todo lo que
 puede cerrarse desde el código; lo que depende de credenciales o contratos queda
@@ -989,7 +989,7 @@ nuevas y no hay nada que migrar.
 Salió de mirar las capturas del recorrido, no de leer código: en la pantalla del
 expendedor, **Amoxicilina 500 mg con 8 unidades aparecía en verde**.
 
-`Stock` —las existencias de una farmacia concreta— no tenía umbral de
+`Stock` (las existencias de una farmacia concreta) no tenía umbral de
 reposición. El único mínimo del sistema estaba en `InventoryItem.min_stock`,
 que es de la clínica entera. Así que la pantalla avisaba con un cinco
 codificado a mano, igual para un antibiótico que para un analgésico, y las
@@ -1018,8 +1018,8 @@ entre reponer y mandarlo de vuelta.
 - Las alertas ahora distinguen su origen. No piden lo mismo del administrador:
   `demanda` significa que ya hubo daño; `punto_reposicion`, que todavía hay
   tiempo.
-- Lo fijan el expendedor para su sede —que es quien sabe cuánto se consume en
-  ese mostrador—, el personal desde el inventario, y el administrador para
+- Lo fijan el expendedor para su sede -que es quien sabe cuánto se consume en
+  ese mostrador-, el personal desde el inventario, y el administrador para
   cualquier farmacia de su clínica.
 
 Migración `a7c41d92be03`. Las filas existentes quedan sin umbral, que es lo

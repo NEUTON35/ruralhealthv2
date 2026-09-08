@@ -533,7 +533,7 @@ def index():
             # tratamiento en la politica de datos de TODAS las clinicas y en
             # la pagina publica `/privacidad`. Es a la vez una fuga del
             # aislamiento entre clinicas y un documento legal falso operando
-            # para terceros responsables — lo que la Ley 1581 de 2012 obliga a
+            # para terceros responsables, lo que la Ley 1581 de 2012 obliga a
             # declarar con exactitud.
             #
             # Lo correcto de fondo es darle `clinic_id` a la tabla y resolver

@@ -1,8 +1,8 @@
-# Rediseño de la interfaz — instrucciones de trabajo
+# Rediseño de la interfaz, instrucciones de trabajo
 
 Sistema visual generado con Google Stitch para RuralHealth Connect y adaptado
-al código existente. Este documento es la referencia para cualquiera —persona o
-agente— que rediseñe una pantalla.
+al código existente. Este documento es la referencia para cualquiera -persona o
+agente- que rediseñe una pantalla.
 
 ## El criterio: sobriedad clínica
 
@@ -115,8 +115,8 @@ Antes de dar por terminada una plantilla:
 python scripts/contrato_plantillas.py comparar
 ```
 
-Compara contra la foto de lo que cada plantilla prometía —campos, `url_for`,
-tokens CSRF, bloques, ids, variables— y falla si se perdió algo. Nada de eso
+Compara contra la foto de lo que cada plantilla prometía -campos, `url_for`,
+tokens CSRF, bloques, ids, variables- y falla si se perdió algo. Nada de eso
 da error por sí solo: el formulario se envía, el servidor recibe un campo
 menos, y el dato del paciente se pierde en silencio.
 

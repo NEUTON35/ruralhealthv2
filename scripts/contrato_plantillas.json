@@ -86,8 +86,19 @@
    "static"
   ],
   "variables": [
+   "boton_2",
+   "cabecera",
    "content",
-   "filename"
+   "endcall",
+   "filename",
+   "panel",
+   "rotulo_dato",
+   "seccion",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta"
   ]
  },
  "templates/admin_audit_log.html": {
@@ -122,9 +133,17 @@
   "variables": [
    "actor_names",
    "alerts",
+   "aviso",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "campo",
    "chain_breaks",
+   "chip",
    "content",
+   "dato",
    "days",
+   "endcall",
    "entries",
    "entry",
    "event",
@@ -132,7 +151,18 @@
    "issue",
    "page",
    "pages",
-   "total"
+   "panel",
+   "rotulo",
+   "seccion",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta",
+   "tira",
+   "titulo_seccion",
+   "total",
+   "vacio"
   ]
  },
  "templates/admin_dashboard.html": {
@@ -386,6 +416,12 @@
    "access_codes",
    "alert",
    "attended_count",
+   "boton",
+   "boton_mini",
+   "boton_mini_2",
+   "boton_mini_peligro",
+   "boton_peligro",
+   "campo",
    "clinic_access_rows",
    "code",
    "content",
@@ -429,10 +465,20 @@
    "admin.dashboard"
   ],
   "variables": [
+   "aviso",
+   "banda",
+   "boton_2",
+   "cabecera",
+   "campo",
    "content",
+   "endcall",
+   "panel",
    "raw_token",
    "reset_url",
+   "rotulo",
+   "seccion",
    "target",
+   "tarjeta",
    "ttl_minutes"
   ]
  },
@@ -450,12 +496,26 @@
    "admin.dashboard"
   ],
   "variables": [
+   "aviso",
+   "banda",
+   "boton_2",
+   "cabecera",
+   "chip",
    "content",
    "data",
+   "dato",
    "days",
+   "endcall",
    "name",
+   "panel",
    "rate",
-   "stats"
+   "seccion",
+   "stats",
+   "tabla",
+   "tabla_td",
+   "tarjeta",
+   "tira",
+   "vacio"
   ]
  },
  "templates/admin_rips_validation.html": {
@@ -491,15 +551,36 @@
   ],
   "variables": [
    "_",
+   "aviso",
+   "banda",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
    "end_date",
+   "endcall",
    "grouped",
    "issue",
    "issues",
+   "panel",
+   "pista",
+   "rotulo",
    "scope",
    "scope_issues",
+   "seccion",
    "start_date",
-   "summary"
+   "summary",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta",
+   "tira",
+   "titulo_seccion",
+   "vacio"
   ]
  },
  "templates/base.html": {
@@ -539,7 +620,7 @@
    "/manual",
    "/privacidad",
    "/settings",
-   "/static/icon.svg",
+   "/static/logo.svg",
    "/terminos",
    "/transparencia"
   ],
@@ -558,12 +639,19 @@
    "static"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "campo",
    "content",
    "current_user",
+   "endcall",
+   "enlace",
+   "enlace_activo",
    "filename",
    "message",
    "messages",
-   "request"
+   "request",
+   "rotulo"
   ]
  },
  "templates/calendar_component.html": {
@@ -576,12 +664,16 @@
   "rutas": [],
   "url_for": [],
   "variables": [
+   "boton_mini_2",
    "current_view_date",
    "day",
    "month_days",
    "next_month",
+   "pista",
    "prev_month",
-   "selected_date"
+   "selected_date",
+   "tarjeta",
+   "titulo_seccion"
   ]
  },
  "templates/doctor_appointment.html": {
@@ -608,7 +700,9 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "campo-description"
+  ],
   "incluye": [
    "calendar_component.html"
   ],
@@ -618,12 +712,26 @@
   "url_for": [],
   "variables": [
    "afternoon_slots",
+   "aviso",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
+   "endcall",
    "morning_slots",
+   "panel",
    "patient",
+   "pista",
+   "rotulo",
+   "seccion",
    "selected_date",
    "slot",
-   "slots"
+   "slots",
+   "tira",
+   "vacio"
   ]
  },
  "templates/doctor_card.html": {
@@ -658,10 +766,18 @@
    "settings.index"
   ],
   "variables": [
+   "boton",
+   "boton_2",
+   "boton_mini_2",
+   "chip",
    "data",
    "day",
    "doctor_id",
-   "price"
+   "pesos",
+   "price",
+   "rotulo_dato",
+   "tarjeta",
+   "titulo_seccion"
   ]
  },
  "templates/doctor_chat.html": {
@@ -805,9 +921,19 @@
   ],
   "ids": [
    "appointment-countdown",
+   "campo-content",
+   "campo-diagnosis",
+   "campo-file",
+   "campo-flow_id",
+   "campo-reason",
+   "campo-refer-reason",
+   "campo-target_doctor_id",
+   "campo-treatment",
    "care_modality",
+   "cie10_code",
    "consultation_purpose",
    "countdown-timer",
+   "cups_code",
    "external_cause",
    "video-call-modal"
   ],
@@ -820,12 +946,23 @@
    "doctor.refer_patient"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "boton_peligro",
+   "cabecera",
+   "campo",
    "causas_externas",
    "chat",
    "chat_id",
+   "chip",
    "codigo",
    "content",
    "current_user",
+   "dato",
+   "endcall",
    "etiqueta",
    "file",
    "file_history",
@@ -840,7 +977,16 @@
    "modalidades",
    "msg",
    "nearby_doctors",
+   "panel",
    "patient_id",
+   "pista",
+   "rotulo",
+   "seccion",
+   "tarjeta",
+   "tarjeta_fuerte",
+   "tira",
+   "titulo_seccion",
+   "vacio",
    "val"
   ]
  },
@@ -960,21 +1106,6 @@
     "metodo": "post"
    },
    {
-    "accion": "",
-    "campos": [
-     "_csrf_token",
-     "action",
-     "avg_consultation_time_unit",
-     "avg_consultation_time_val",
-     "avg_response_time_unit",
-     "avg_response_time_val",
-     "peak_hours",
-     "schedule"
-    ],
-    "csrf": true,
-    "metodo": "post"
-   },
-   {
     "accion": "/doctor/save_schedule",
     "campos": [
      "_csrf_token",
@@ -1012,6 +1143,21 @@
     "campos": [
      "_csrf_token",
      "action",
+     "avg_consultation_time_unit",
+     "avg_consultation_time_val",
+     "avg_response_time_unit",
+     "avg_response_time_val",
+     "peak_hours",
+     "schedule"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
      "flow_data",
      "title"
     ],
@@ -1020,6 +1166,25 @@
    }
   ],
   "ids": [
+   "campo-affiliation_name",
+   "campo-avg_consultation_time_val",
+   "campo-avg_response_time_val",
+   "campo-block_end",
+   "campo-block_start",
+   "campo-consent_prefix",
+   "campo-default_policy_discount_percent",
+   "campo-flow_data",
+   "campo-office_address",
+   "campo-payment_instructions",
+   "campo-payment_methods_image",
+   "campo-peak_hours",
+   "campo-price_annual",
+   "campo-price_monthly",
+   "campo-price_per_consultation",
+   "campo-price_quarterly",
+   "campo-schedule",
+   "campo-specific_date",
+   "campo-title",
    "doctor-live-clock",
    "doctor-office-lat",
    "doctor-office-lng",
@@ -1040,27 +1205,52 @@
    "actual_blockouts",
    "appointments",
    "appt",
+   "area",
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "boton_mini_peligro",
    "c",
+   "cabecera",
+   "campo",
+   "chip",
    "client_subscription_rows",
    "content",
    "current_user",
+   "dato",
    "days",
+   "endcall",
    "i",
    "item",
    "open_chats",
    "p",
+   "panel",
    "patient_id",
    "patients",
    "payment_tickets",
    "pending_appts",
    "pending_payments",
+   "pesos",
+   "pista",
    "plan_labels",
+   "rotulo",
+   "rotulo_dato",
    "row",
    "sched",
    "schedules",
+   "seccion",
+   "seleccion",
    "sub",
+   "tabla",
+   "tabla_td",
    "tariff",
-   "ticket"
+   "tarjeta",
+   "ticket",
+   "tira",
+   "titulo_seccion",
+   "vacio"
   ]
  },
  "templates/doctor_patient_history.html": {
@@ -1149,8 +1339,15 @@
    "allergy_id",
    "appointments",
    "appt",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "boton_mini_peligro",
+   "campo",
    "chat",
    "chats",
+   "chip",
    "condition",
    "conditions",
    "content",
@@ -1160,7 +1357,9 @@
    "medication",
    "patient",
    "patient_age_years",
-   "patient_id"
+   "patient_id",
+   "rotulo_dato",
+   "valor_dato"
   ]
  },
  "templates/doctor_prescription.html": {
@@ -1230,6 +1429,14 @@
    }
   ],
   "ids": [
+   "campo-expires_date",
+   "campo-expires_time",
+   "campo-insurance_name",
+   "campo-insurance_plan",
+   "campo-insurance_regime",
+   "campo-observations",
+   "campo-patient_age",
+   "campo-patient_level",
    "diagnosis-rows",
    "lista-medicamentos",
    "live-safety",
@@ -1252,19 +1459,38 @@
    "administration_routes",
    "allergies",
    "allergy",
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini_2",
+   "cabecera",
+   "campo",
    "chat_id",
+   "chip",
    "common_medications",
    "content",
    "current_user",
+   "dato",
    "default_expiration",
    "dosage_forms",
+   "endcall",
    "finding",
    "forma",
    "nombre",
+   "panel",
    "patient",
    "patient_id",
+   "pista",
    "request",
+   "rotulo",
+   "rotulo_dato",
    "safety",
+   "seccion",
+   "tarjeta",
+   "tira",
+   "titulo_seccion",
+   "vacio",
+   "valor_dato",
    "via"
   ]
  },
@@ -1392,7 +1618,12 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "buscar-ticket",
+   "cantidad-transferencia",
+   "med-transferencia",
+   "origen-transferencia"
+  ],
   "incluye": [],
   "rutas": [],
   "url_for": [
@@ -1401,25 +1632,49 @@
    "expendedor.toggle_priority"
   ],
   "variables": [
+   "area",
+   "aviso",
+   "banda",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "boton_peligro",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
    "dispatch_status",
+   "endcall",
    "fila",
    "item",
    "med",
    "meds_list",
+   "panel",
    "pharmacy",
+   "pista",
    "query",
    "recent",
+   "rotulo",
+   "rotulo_dato",
+   "seccion",
+   "seleccion",
    "sin_stock_tickets",
    "source_stock_items",
    "stock",
    "stock_items",
    "t",
+   "tabla",
+   "tabla_td",
+   "tarjeta_fuerte",
    "ticket",
    "ticket_id",
+   "tira",
    "today_tickets",
    "transfer",
    "transfer_requests",
+   "vacio",
    "view_filter"
   ]
  },
@@ -1479,13 +1734,33 @@
    "staff.dashboard"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini_2",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
    "default_pharmacy",
+   "endcall",
    "fila",
    "item",
+   "panel",
    "pharmacies",
    "pharmacy",
-   "stock_items"
+   "pista",
+   "rotulo",
+   "seccion",
+   "stock_items",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta",
+   "tira",
+   "vacio"
   ]
  },
  "templates/legal.html": {
@@ -1518,20 +1793,35 @@
   ],
   "variables": [
    "active_tab",
+   "aviso",
+   "banda",
    "body",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "chip",
    "consent_required",
    "content",
    "current_user",
+   "dato",
    "doc",
    "doc_key",
    "documents",
+   "endcall",
    "href",
    "key",
    "label",
    "missing",
    "norma",
+   "panel",
    "pending_config",
-   "tabs"
+   "rotulo_dato",
+   "seccion",
+   "subtitulo",
+   "tabs",
+   "tarjeta",
+   "tira",
+   "titulo_seccion"
   ]
  },
  "templates/login.html": {
@@ -1569,7 +1859,14 @@
    "auth.request_password_reset"
   ],
   "variables": [
-   "content"
+   "banda",
+   "boton",
+   "campo",
+   "content",
+   "rotulo",
+   "subtitulo",
+   "tarjeta",
+   "titulo_pagina"
   ]
  },
  "templates/manual.html": {
@@ -1599,8 +1896,20 @@
   ],
   "url_for": [],
   "variables": [
+   "aviso",
+   "banda",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "chip",
    "content",
-   "current_user"
+   "current_user",
+   "dato",
+   "endcall",
+   "panel",
+   "rotulo_dato",
+   "seccion",
+   "tira"
   ]
  },
  "templates/medical_order_print.html": {
@@ -1618,9 +1927,7 @@
    "clinic",
    "diagnoses",
    "dx",
-   "inst",
    "med",
-   "med_instructions",
    "meds",
    "order",
    "print_date",
@@ -1639,7 +1946,12 @@
   "rutas": [],
   "url_for": [],
   "variables": [
-   "content"
+   "boton",
+   "content",
+   "endcall",
+   "panel",
+   "pista",
+   "titulo_pagina"
   ]
  },
  "templates/password_reset_complete.html": {
@@ -1672,7 +1984,14 @@
   "rutas": [],
   "url_for": [],
   "variables": [
-   "content"
+   "banda",
+   "boton",
+   "campo",
+   "content",
+   "rotulo",
+   "subtitulo",
+   "tarjeta",
+   "titulo_pagina"
   ]
  },
  "templates/password_reset_request.html": {
@@ -1704,7 +2023,16 @@
    "auth.login"
   ],
   "variables": [
-   "content"
+   "aviso",
+   "boton",
+   "campo",
+   "content",
+   "endcall",
+   "pista",
+   "rotulo",
+   "subtitulo",
+   "tarjeta",
+   "titulo_pagina"
   ]
  },
  "templates/patient_appointment.html": {
@@ -1731,7 +2059,9 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "campo-description"
+  ],
   "incluye": [
    "calendar_component.html"
   ],
@@ -1741,12 +2071,26 @@
   "url_for": [],
   "variables": [
    "afternoon_slots",
+   "aviso",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
    "doctor",
+   "endcall",
    "morning_slots",
+   "panel",
+   "pista",
+   "rotulo",
+   "seccion",
    "selected_date",
    "slot",
-   "slots"
+   "slots",
+   "tira",
+   "vacio"
   ]
  },
  "templates/patient_chat.html": {
@@ -1835,6 +2179,10 @@
   ],
   "ids": [
    "appointment-countdown",
+   "campo-comment",
+   "campo-content",
+   "campo-reason",
+   "campo-stars",
    "countdown-timer",
    "video-call-modal"
   ],
@@ -1844,12 +2192,22 @@
   ],
   "url_for": [],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini_2",
+   "boton_peligro",
+   "cabecera",
+   "campo",
    "can_rate",
    "can_send",
    "chat",
+   "chip",
    "content",
    "current_user",
+   "dato",
    "doctor",
+   "endcall",
    "is_doctor_busy_elsewhere",
    "is_on_duty",
    "is_read_only",
@@ -1857,7 +2215,15 @@
    "message",
    "messages",
    "msg",
+   "panel",
+   "rotulo",
+   "seccion",
    "tag",
+   "tarjeta",
+   "tarjeta_fuerte",
+   "tira",
+   "titulo_seccion",
+   "vacio",
    "val"
   ]
  },
@@ -1948,7 +2314,13 @@
    "appointments",
    "appt",
    "avail_data",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
    "c",
+   "campo",
+   "chip",
    "clinic_rows",
    "closed_doctor_chats",
    "closed_staff_chats",
@@ -1970,6 +2342,7 @@
    "needs_sensitive_consent",
    "order",
    "payment_tickets",
+   "pesos",
    "pickup_tickets",
    "row",
    "search_query",
@@ -2008,22 +2381,43 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "campo-patient_note",
+   "campo-proof"
+  ],
   "incluye": [],
   "rutas": [],
   "url_for": [
    "patient.dashboard"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
    "discount_percent",
    "doctor",
+   "endcall",
+   "panel",
+   "pesos",
+   "pista",
    "plan_labels",
    "price",
    "prices",
+   "rotulo",
+   "rotulo_dato",
+   "seccion",
+   "tabla",
+   "tabla_td",
    "tariff",
    "ticket",
-   "tickets"
+   "tickets",
+   "tira",
+   "vacio"
   ]
  },
  "templates/patient_map.html": {
@@ -2054,6 +2448,7 @@
   ],
   "ids": [
    "cache-map-points",
+   "campo-address",
    "care-map",
    "clinic-list",
    "doctor-list",
@@ -2069,10 +2464,26 @@
    "static"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini_2",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
    "current_user",
+   "dato",
+   "endcall",
    "filename",
-   "near"
+   "near",
+   "panel",
+   "rotulo",
+   "seccion",
+   "tarjeta",
+   "tira",
+   "titulo_seccion",
+   "vacio"
   ]
  },
  "templates/pickup_ticket.html": {
@@ -2089,13 +2500,29 @@
    "staff.dashboard"
   ],
   "variables": [
+   "aviso",
+   "banda",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "chip",
    "content",
    "current_user",
+   "dato",
+   "endcall",
    "med",
    "meds",
+   "panel",
    "related",
    "related_tickets",
-   "ticket"
+   "rotulo_dato",
+   "seccion",
+   "tabla",
+   "tabla_td",
+   "tarjeta",
+   "ticket",
+   "tira",
+   "vacio"
   ]
  },
  "templates/pqrs.html": {
@@ -2134,12 +2561,25 @@
    "privacy.index"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "endcall",
    "etiquetas",
+   "panel",
+   "pista",
    "r",
    "radicados",
+   "rotulo",
+   "seccion",
+   "tabla",
+   "tabla_td",
    "tipo",
-   "tipos"
+   "tipos",
+   "vacio"
   ]
  },
  "templates/pqrs_manage.html": {
@@ -2170,11 +2610,24 @@
   ],
   "variables": [
    "abiertas",
+   "aviso",
+   "boton",
+   "cabecera",
+   "campo",
+   "chip",
    "complaint_id",
    "content",
+   "endcall",
    "etiquetas",
+   "panel",
+   "pista",
    "r",
    "resueltas",
+   "rotulo",
+   "seccion",
+   "tabla",
+   "tabla_td",
+   "vacio",
    "vencidas"
   ]
  },
@@ -2230,15 +2683,32 @@
    "privacy.revoke_consent"
   ],
   "variables": [
+   "aviso",
+   "banda",
+   "boton",
+   "boton_peligro",
+   "cabecera",
+   "campo",
+   "chip",
    "consent",
    "consents",
    "content",
    "count",
+   "dato",
+   "endcall",
    "inventory",
    "item",
    "label",
+   "panel",
+   "pista",
    "request_labels",
-   "requests_made"
+   "requests_made",
+   "rotulo",
+   "seccion",
+   "tabla",
+   "tabla_td",
+   "tira",
+   "vacio"
   ]
  },
  "templates/privacy_requests.html": {
@@ -2279,13 +2749,31 @@
    "privacy.resolve_request"
   ],
   "variables": [
+   "aviso",
+   "banda",
+   "boton",
+   "boton_2",
+   "boton_peligro",
+   "cabecera",
+   "campo",
+   "chip",
    "content",
+   "dato",
+   "endcall",
    "item",
    "overdue_count",
+   "panel",
    "pending",
+   "pista",
    "request_id",
    "request_labels",
-   "resolved"
+   "resolved",
+   "rotulo",
+   "seccion",
+   "tabla",
+   "tabla_td",
+   "tira",
+   "vacio"
   ]
  },
  "templates/register.html": {
@@ -2337,6 +2825,14 @@
   "ids": [
    "lat",
    "lng",
+   "reg-address",
+   "reg-cedula",
+   "reg-clinic-code",
+   "reg-email",
+   "reg-name",
+   "reg-password",
+   "reg-phone",
+   "reg-username",
    "register-form",
    "registration-map"
   ],
@@ -2350,7 +2846,18 @@
   ],
   "url_for": [],
   "variables": [
-   "content"
+   "aviso",
+   "boton",
+   "cabecera",
+   "campo",
+   "chip",
+   "content",
+   "endcall",
+   "panel",
+   "pista",
+   "rotulo",
+   "seccion",
+   "tarjeta"
   ]
  },
  "templates/settings.html": {
@@ -2555,16 +3062,45 @@
    }
   ],
   "ids": [
+   "billing-document-number",
+   "billing-document-type",
+   "billing-dv",
+   "billing-email",
+   "billing-fiscal-address",
+   "billing-legal-name",
+   "billing-phone",
+   "billing-prefix",
+   "billing-range-from",
+   "billing-range-to",
+   "billing-resolution-date",
+   "billing-resolution-number",
+   "billing-resolution-until",
+   "clinic-access-type",
+   "clinic-code",
+   "clinic-email",
+   "clinic-hours",
+   "clinic-location",
+   "clinic-logo",
+   "clinic-nit",
    "clinic-settings-lat",
    "clinic-settings-lng",
+   "confirm-password",
    "confirm_text",
+   "consent-prefix",
+   "current-password",
    "disability",
    "ethnic_group",
    "facturacion",
    "legal",
+   "medical-registration",
    "nationality_code",
+   "new-password",
+   "policy-code",
+   "policy-file",
    "settings-user-lat",
    "settings-user-lng",
+   "specialty",
+   "user-address",
    "zone"
   ],
   "incluye": [],
@@ -2577,13 +3113,25 @@
    "privacy.index"
   ],
   "variables": [
+   "aviso",
+   "banda",
    "billing_gaps",
    "billing_profile",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "boton_peligro",
+   "cabecera",
+   "campo",
+   "chip",
    "clinic_rows",
    "codigo",
    "content",
    "current_user",
+   "dato",
    "discapacidades",
+   "endcall",
    "enrollment",
    "etiqueta",
    "gap",
@@ -2594,8 +3142,19 @@
    "legal_labels",
    "legal_pending",
    "legal_values",
+   "panel",
+   "pista",
    "policy_enrollments",
-   "row"
+   "rotulo",
+   "rotulo_dato",
+   "row",
+   "seccion",
+   "tabla",
+   "tabla_td",
+   "tarjeta",
+   "tira",
+   "titulo_seccion",
+   "vacio"
   ]
  },
  "templates/socio.html": {
@@ -2628,12 +3187,25 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "socio-ciudad",
+   "socio-email",
+   "socio-institucion",
+   "socio-mensaje",
+   "socio-nombre",
+   "socio-telefono"
+  ],
   "incluye": [],
   "rutas": [],
   "url_for": [],
   "variables": [
-   "content"
+   "boton",
+   "cabecera",
+   "campo",
+   "content",
+   "panel",
+   "rotulo",
+   "tarjeta"
   ]
  },
  "templates/staff_chat.html": {
@@ -2683,23 +3255,47 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "mensaje-chat",
+   "pickup-date-chat",
+   "pickup-time-chat"
+  ],
   "incluye": [],
   "rutas": [],
   "url_for": [
    "staff.dashboard"
   ],
   "variables": [
+   "aviso",
+   "banda",
+   "boton",
+   "boton_2",
+   "boton_peligro",
+   "cabecera",
+   "campo",
    "chat",
+   "chip",
    "content",
    "current_user",
+   "dato",
    "disponible",
+   "endcall",
    "item",
    "messages",
    "msg",
    "order",
+   "panel",
    "patient_orders",
-   "stock_items"
+   "rotulo",
+   "seccion",
+   "stock_items",
+   "subtitulo",
+   "tabla",
+   "tabla_td",
+   "tarjeta_fuerte",
+   "tira",
+   "titulo_seccion",
+   "vacio"
   ]
  },
  "templates/staff_dashboard.html": {
@@ -2720,6 +3316,14 @@
   "extiende": "base.html",
   "formularios": [
    {
+    "accion": "{{ url_for('staff.verify_order', verification_hash='TOKEN') }}",
+    "campos": [
+     "verification_hash"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   },
+   {
     "accion": "",
     "campos": [
      "_csrf_token",
@@ -2729,14 +3333,6 @@
     ],
     "csrf": true,
     "metodo": "post"
-   },
-   {
-    "accion": "{{ url_for('staff.verify_order', verification_hash='TOKEN') }}",
-    "campos": [
-     "verification_hash"
-    ],
-    "csrf": false,
-    "metodo": "get"
    },
    {
     "accion": "{{ url_for('staff.dispense', order_id=order.id) }}",
@@ -2751,7 +3347,11 @@
     "metodo": "post"
    }
   ],
-  "ids": [],
+  "ids": [
+   "atencion-fin",
+   "atencion-inicio",
+   "verification-hash"
+  ],
   "incluye": [],
   "rutas": [],
   "url_for": [
@@ -2762,19 +3362,39 @@
    "staff.verify_order"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "campo",
    "chat",
    "chat_id",
+   "chip",
    "content",
    "current_user",
+   "dato",
+   "endcall",
    "item",
    "med",
    "med_row",
    "order",
    "order_id",
    "orders",
+   "panel",
    "pharmacy_row",
+   "rotulo",
+   "rotulo_dato",
    "row",
+   "seccion",
    "staff_chats",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta",
+   "tarjeta_fuerte",
+   "tira",
+   "vacio",
    "verification_hash",
    "verified_order"
   ]
@@ -2833,6 +3453,10 @@
    }
   ],
   "ids": [
+   "envio-farmacia",
+   "envio-fecha",
+   "envio-nota",
+   "envio-proveedor",
    "med-rows",
    "shipment-form"
   ],
@@ -2843,15 +3467,33 @@
    "staff.pendientes"
   ],
   "variables": [
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "cabecera",
+   "campo",
    "cfg",
+   "chip",
    "content",
+   "dato",
+   "endcall",
    "item",
+   "panel",
    "pharmacies",
    "pharmacy",
+   "pista",
+   "rotulo",
+   "seccion",
    "shipment",
    "shipments",
    "status_cfg",
-   "today_str"
+   "tabla",
+   "tabla_td",
+   "tira",
+   "today_str",
+   "vacio"
   ]
  },
  "templates/staff_order_map.html": {
@@ -2872,14 +3514,29 @@
    "static"
   ],
   "variables": [
+   "aviso",
+   "boton_2",
+   "cabecera",
+   "chip",
    "content",
+   "dato",
+   "endcall",
    "filename",
    "med",
    "med_row",
    "meds",
    "order",
+   "panel",
    "pharmacy_rows",
-   "row"
+   "row",
+   "seccion",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta",
+   "tira",
+   "vacio"
   ]
  },
  "templates/staff_pendientes.html": {
@@ -2927,17 +3584,36 @@
    "alert",
    "alerts",
    "altos",
+   "aviso",
+   "boton_2",
+   "boton_mini",
+   "boton_mini_2",
+   "cabecera",
+   "chip",
    "content",
    "criticos",
+   "dato",
+   "endcall",
    "incoming",
    "item",
    "med",
    "normales",
+   "panel",
    "row",
    "rows",
+   "seccion",
    "shipment",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_td",
+   "tabla_th",
+   "tarjeta",
+   "tarjeta_fuerte",
    "ticket",
-   "urgency_classes"
+   "tira",
+   "titulo_seccion",
+   "urgency_classes",
+   "vacio"
   ]
  },
  "templates/superadmin_dashboard.html": {
@@ -3069,6 +3745,31 @@
    }
   ],
   "ids": [
+   "admin-cedula",
+   "admin-email",
+   "admin-name",
+   "admin-password",
+   "admin-username",
+   "clinic-acceso",
+   "clinic-name",
+   "clinic-plan",
+   "clinic-ubicacion",
+   "doctor-cedula",
+   "doctor-email",
+   "doctor-name",
+   "doctor-office",
+   "doctor-password",
+   "doctor-phone",
+   "doctor-specialty",
+   "doctor-username",
+   "policy-code",
+   "policy-consents",
+   "policy-discount",
+   "policy-duration",
+   "policy-insurer",
+   "policy-name",
+   "policy-prefix",
+   "policy-quantity",
    "super-clinic-lat",
    "super-clinic-lng",
    "super-doctor-lat",
@@ -3079,21 +3780,39 @@
   "url_for": [],
   "variables": [
    "autonomous_doctors",
+   "aviso",
+   "boton",
+   "boton_2",
+   "boton_mini_2",
+   "boton_mini_peligro",
+   "cabecera",
+   "campo",
+   "chip",
    "clinic_rows",
    "content",
+   "dato",
    "doctor",
+   "endcall",
    "invite",
    "label",
    "lead",
    "leads",
    "metrics",
+   "panel",
    "patient",
    "patients",
+   "pista",
    "policies",
    "policy",
    "policy_batches",
    "recent_policy_codes",
+   "rotulo",
    "row",
+   "seccion",
+   "tabla",
+   "tabla_td",
+   "tira",
+   "vacio",
    "value"
   ]
  },
@@ -3126,11 +3845,27 @@
    "privacy.index"
   ],
   "variables": [
+   "aviso",
+   "banda",
    "body",
+   "boton",
+   "boton_2",
+   "cabecera",
+   "chip",
    "content",
    "current_consent",
+   "dato",
    "document",
-   "norma"
+   "endcall",
+   "norma",
+   "panel",
+   "pista",
+   "rotulo_dato",
+   "seccion",
+   "tarjeta",
+   "tarjeta_fuerte",
+   "tira",
+   "titulo_seccion"
   ]
  }
 }

@@ -1,5 +1,5 @@
 # =============================================================================
-# RuralHealth Connect — dependencias de ejecución
+# RuralHealth Connect, dependencias de ejecución
 #
 # Las versiones van fijadas con límite superior: una actualización mayor no
 # anunciada de una dependencia de seguridad puede cambiar su comportamiento

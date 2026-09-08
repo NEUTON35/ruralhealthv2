@@ -37,7 +37,7 @@
       <tr>
         <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ shipment.pharmacy.name }}</td>
         <td class="{{ TABLA_TD }} tabular-nums">{{ shipment.expected_date }}</td>
-        <td class="{{ TABLA_TD }} text-slate-600">{% if shipment.supplier_name %}{{ shipment.supplier_name }}{% else %}—{% endif %}</td>
+        <td class="{{ TABLA_TD }} text-slate-600">{% if shipment.supplier_name %}{{ shipment.supplier_name }}{% else %}-{% endif %}</td>
         <td class="{{ TABLA_TD }}">
           <div class="flex flex-wrap gap-1">
             {% for item in shipment.items[:3] %}
@@ -174,7 +174,7 @@
         <td class="{{ TABLA_TD }}">{{ alert.pharmacy.name }}</td>
         <td class="{{ TABLA_TD }} tabular-nums">{{ alert.available_quantity }}</td>
         <td class="{{ TABLA_TD }} tabular-nums">{{ alert.required_quantity }}</td>
-        <td class="{{ TABLA_TD }} text-slate-600">{% if alert.note %}{{ alert.note }}{% else %}—{% endif %}</td>
+        <td class="{{ TABLA_TD }} text-slate-600">{% if alert.note %}{{ alert.note }}{% else %}-{% endif %}</td>
       </tr>
       {% endfor %}
     {% endcall %}

@@ -1,4 +1,4 @@
-"""RuralHealth Connect — punto de entrada de la aplicacion.
+"""RuralHealth Connect, punto de entrada de la aplicacion.
 
 Se construye con patron de fabrica (`create_app`) para que las pruebas puedan
 levantar instancias aisladas con su propia base de datos, en lugar de compartir
@@ -84,7 +84,7 @@ def configure_logging(app):
 def build_csp():
     """Politica de seguridad de contenido.
 
-    Todos los recursos —CSS, iconos, mapas, graficas, tipografia— se sirven
+    Todos los recursos (CSS, iconos, mapas, graficas, tipografia) se sirven
     desde este mismo servidor, asi que la politica ya no admite ningun origen
     externo para scripts ni estilos. Antes habia cuatro CDN autorizados; cada uno
     era un tercero que podia ejecutar JavaScript sobre paginas con historia
@@ -913,7 +913,7 @@ try:
     app = create_app()
 except ConfigurationError as error:
     print('\n' + '=' * 72)
-    print(' RURALHEALTH CONNECT — ARRANQUE DETENIDO')
+    print(' RURALHEALTH CONNECT, ARRANQUE DETENIDO')
     print('=' * 72)
     print(f'\n{error}\n')
     raise SystemExit(1)
