@@ -738,18 +738,48 @@ def simular():
 
     with Paso('paciente', 'Una calificacion fuera de rango no pasa') as p:
         # `stars` llegaba del formulario sin acotar: un valor absurdo movia el
-        # promedio del profesional.
+        # promedio del profesional, que es lo que el paciente mira para elegir
+        # a quien consultar.
+        #
+        # Hace falta una consulta SIN calificar: la ruta rechaza la segunda
+        # sobre el mismo chat, y esa guarda hacia que la comprobacion pasara
+        # sin llegar nunca al limite. Una prueba que pasa por el motivo
+        # equivocado es peor que no tenerla.
+        from models import Rating
         with app.app_context():
-            profesional = db.session.get(User, ids['doctor'])
-            antes = profesional.rating or 0
-        if chat_cal:
-            pac.post('/patient/rate_chat/%d' % chat_cal,
+            otro_chat = Chat(clinic_id=ids['clinica'],
+                             patient_id=ids['paciente'],
+                             doctor_id=ids['doctor'], status='closed',
+                             reason='Consulta para calificar', mode='read-only')
+            db.session.add(otro_chat)
+            db.session.commit()
+            chat_sin_calificar = otro_chat.id
+
+        r = pac.post('/patient/rate_chat/%d' % chat_sin_calificar,
                      data={'stars': '100000'}, follow_redirects=True)
-            with app.app_context():
-                ahora = db.session.get(User, ids['doctor']).rating or 0
-            assert ahora <= 5, (
-                'una calificacion de 100000 movio el promedio a %s' % ahora)
-        p.estado = 200
+        p.estado = r.status_code
+        with app.app_context():
+            guardada = Rating.query.filter_by(
+                chat_id=chat_sin_calificar).first()
+            promedio = db.session.get(User, ids['doctor']).rating or 0
+        assert guardada is None or guardada.stars <= 5, (
+            'se guardo una calificacion de %s estrellas' % guardada.stars)
+        assert promedio <= 5, (
+            'el promedio del profesional quedo en %s' % promedio)
+
+    with Paso('paciente', 'Una calificacion no numerica no revienta') as p:
+        with app.app_context():
+            tercero = Chat(clinic_id=ids['clinica'],
+                           patient_id=ids['paciente'], doctor_id=ids['doctor'],
+                           status='closed', reason='Otra', mode='read-only')
+            db.session.add(tercero)
+            db.session.commit()
+            tercero_id = tercero.id
+        r = pac.post('/patient/rate_chat/%d' % tercero_id,
+                     data={'stars': 'muchas'}, follow_redirects=True)
+        p.estado = r.status_code
+        assert r.status_code < 500, (
+            'una calificacion no numerica devolvio %s' % r.status_code)
 
     with Paso('paciente', 'No alcanza la historia de otro paciente') as p:
         with app.app_context():

@@ -768,7 +768,17 @@ def rate_chat(chat_id):
         flash('Ya calificaste esta consulta.')
         return redirect(url_for('patient.chat', chat_id=chat_obj.id))
 
-    stars = int(request.form.get('stars', 5))
+    # Acotada al rango real, y tolerante a lo que no sea un numero.
+    #
+    # Antes era `int(request.form.get('stars', 5))` a secas: un valor absurdo
+    # entraba tal cual y desplazaba el promedio del profesional —que es lo que
+    # el paciente mira para elegir a quien consultar— y un valor no numerico
+    # reventaba con un 500 en la cara de quien acababa de ser atendido.
+    try:
+        stars = int(request.form.get('stars', 5))
+    except (TypeError, ValueError):
+        stars = 5
+    stars = min(max(stars, 1), 5)
     comment = bleach.clean(request.form.get('comment', '').strip()[:1000])
     tags_list = [bleach.clean(t) for t in request.form.getlist('tags')]
     tags_str = ",".join(tags_list)
