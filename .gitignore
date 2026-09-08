@@ -47,3 +47,9 @@ package-lock.json
 # PNG que cambian con cada retoque de estilo: versionarlas engorda el
 # historial sin aportar nada que no se pueda reconstruir en un minuto.
 capturas/
+
+# --- Entregables en PDF ---
+# El Markdown es la fuente; el PDF se regenera con
+# `python entregables/generar_pdf.py` en segundos. Versionar binarios que
+# cambian con cada retoque de texto ensucia el historial sin aportar nada.
+entregables/**/*.pdf

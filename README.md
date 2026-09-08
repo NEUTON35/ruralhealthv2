@@ -23,8 +23,14 @@
 ├── SECURITY.md        rotación de credenciales y modelo de amenazas
 ├── DEPLOYMENT.md      puesta en producción
 ├── PITCH.md           el producto, para quien no lo conoce
+├── entregables/       lo que hay que darle a cada especialista
 └── ruralhealth/       la aplicación
 ```
+
+En [`entregables/`](entregables/) está separado por destinatario lo que le toca
+a cada quien: el abogado, el químico farmacéutico y el representante legal de
+la IPS. Y en [`entregables/pendientes/`](entregables/pendientes/), la lista
+completa de lo que falta, para ir tachando.
 
 Los documentos viven en la raíz porque es donde GitHub los renderiza: quien
 entra al repositorio ve primero qué es esto y qué hay que leer antes de
