@@ -768,7 +768,7 @@ def role_required(*roles):
             if not current_user.is_authenticated or current_user.role not in roles:
                 abort(403)
             if not user_clinic_is_active():
-                flash('La clínica está suspendida. Contacta al administrador de la suscripción.')
+                flash('La clínica está suspendida. Comuníquese con el administrador de la suscripción.')
                 return redirect(url_for('auth.login'))
             return func(*args, **kwargs)
 
@@ -869,7 +869,7 @@ def save_secure_upload(file_storage, folder, clinic_id=None, quota_mb=None):
         if used + size > int(quota_mb) * 1024 * 1024:
             raise ValueError(
                 f"La clinica alcanzo su cuota de almacenamiento de {quota_mb} MB. "
-                "Contacta al administrador para liberar espacio."
+                "Comuniquese con el administrador para liberar espacio."
             )
 
     stored_name = f"{secrets.token_urlsafe(16)}.{ext}"

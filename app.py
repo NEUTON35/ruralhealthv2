@@ -379,7 +379,7 @@ def register_error_handlers(app):
         if wants_json():
             return jsonify({'error': 'too_many_requests'}), 429
         return render_template('error.html', code=429, title='Demasiadas solicitudes',
-                               message='Has hecho demasiadas solicitudes. Espera un momento.'), 429
+                               message='Ha realizado demasiadas solicitudes. Espere un momento.'), 429
 
     @app.errorhandler(Exception)
     def handle_exception(error):

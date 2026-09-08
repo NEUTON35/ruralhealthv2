@@ -699,7 +699,7 @@ def prescription(patient_id):
                 # Antes esto era `except Exception: pass`: la orden salia sin firma
                 # y nadie se enteraba.
                 current_app.logger.exception('Fallo al guardar la firma del medico %s', current_user.id)
-                flash('No fue posible guardar la firma. Intenta de nuevo.')
+                flash('No fue posible guardar la firma. Intente de nuevo.')
                 return back_to_form()
 
         created_at = colombia_now()

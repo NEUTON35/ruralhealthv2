@@ -131,7 +131,7 @@ def login():
         remaining = max(1, lock_remaining_seconds(username) // 60)
         audit('login_blocked_by_lockout', details=f'minutos_restantes={remaining}')
         db.session.commit()
-        flash(f'Demasiados intentos fallidos. Intenta de nuevo en {remaining} minuto(s).')
+        flash(f'Demasiados intentos fallidos. Intente de nuevo en {remaining} minuto(s).')
         return render_template('login.html'), 429
 
     user = User.query.filter_by(username=username).first()
@@ -167,7 +167,7 @@ def login():
     if user and password_ok and not user.is_active_account:
         audit('login_rejected_inactive_account', user_id=user.id)
         db.session.commit()
-        flash('Esta cuenta esta desactivada. Contacta al administrador.')
+        flash('Esta cuenta esta desactivada. Comuniquese con el administrador.')
         return render_template('login.html'), 403
 
     record_login_failure(username)
