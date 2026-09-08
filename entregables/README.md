@@ -9,6 +9,7 @@ un encargo cerrado: quien lo recibe no necesita leer nada más ni tocar código.
 | [`2-quimico-farmaceutico/`](2-quimico-farmaceutico/) | Químico farmacéutico | Validar la base de conocimiento clínico |
 | [`3-tramites-del-prestador/`](3-tramites-del-prestador/) | Representante legal de la IPS | Cinco trámites ante el Ministerio, la DIAN y la SIC |
 | [`pendientes/`](pendientes/) | Tú | La lista completa, para ir tachando |
+| [`mensajes-de-envio.md`](mensajes-de-envio.md) | Tú | Qué escribir al mandar cada documento |
 
 ---
 
