@@ -197,6 +197,17 @@ class User(UserMixin, ClinicScoped, db.Model):
     # --- Ciclo de vida de la cuenta ---
     created_at = db.Column(db.DateTime, default=colombia_now, nullable=True, index=True)
     must_change_password = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Momento del ultimo cambio de contrasena. Es la linea de corte: toda
+    # sesion abierta y todo JWT emitido antes de esta marca dejan de valer.
+    #
+    # Sin esto, restablecer la contrasena no expulsaba a nadie. Le roban la
+    # cookie a una medica en el equipo compartido del puesto de salud, la
+    # administradora emite un codigo, la medica fija una clave nueva... y la
+    # sesion del atacante sigue abriendo la historia clinica de todos sus
+    # pacientes. Con el token de refresco era peor: se renovaba solo, siete
+    # dias cada vez, indefinidamente.
+    password_changed_at = db.Column(db.DateTime, nullable=True)
     password_changed_at = db.Column(db.DateTime, nullable=True)
     is_active_account = db.Column(db.Boolean, default=True, nullable=False)
     deactivated_at = db.Column(db.DateTime, nullable=True)

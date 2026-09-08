@@ -109,6 +109,10 @@ def index():
                 # Levanta el bloqueo de navegacion impuesto a las cuentas que
                 # todavia usaban su contrasena inicial.
                 current_user.must_change_password = False
+                # Esta sesion se queda; las demas del mismo usuario caen, que
+                # es el objetivo. Sin refrescar la marca, quien cambia su
+                # propia contrasena se expulsaria a si mismo.
+                session['pwd_epoch'] = int(current_user.password_changed_at.timestamp())
                 audit('password_changed')
                 db.session.commit()
                 flash('Contrasena actualizada correctamente.')
@@ -514,13 +518,30 @@ def index():
             else:
                 flash('Perfil de facturacion completo.')
 
-        elif action == 'legal_configuration' and current_user.role in ('admin', 'super'):
+        elif action == 'legal_configuration' and current_user.role == 'super':
             # Datos del prestador que completan los textos legales.
             #
             # Un documento con `[[NIT_OPERADOR]]` sin reemplazar no es un
             # documento legal, asi que estos valores son los que lo vuelven
             # publicable.
+            #
+            # Solo el superadministrador. `LegalConfiguration` es una tabla
+            # GLOBAL: `key` es unica, no tiene `clinic_id` y no hereda de
+            # `ClinicScoped`. Estaba abierta a cualquier administrador de
+            # clinica, de modo que el admin de la clinica A podia escribir su
+            # propio NIT y razon social y quedaban como responsable del
+            # tratamiento en la politica de datos de TODAS las clinicas y en
+            # la pagina publica `/privacidad`. Es a la vez una fuga del
+            # aislamiento entre clinicas y un documento legal falso operando
+            # para terceros responsables — lo que la Ley 1581 de 2012 obliga a
+            # declarar con exactitud.
+            #
+            # Lo correcto de fondo es darle `clinic_id` a la tabla y resolver
+            # los valores por la clinica del contexto. Mientras eso no exista,
+            # el permiso se cierra al unico rol que legitimamente habla por
+            # todo el despliegue.
             guardados = 0
+            cambiadas = []
             for clave in PLACEHOLDER_LABELS:
                 valor = bleach.clean((request.form.get(f'legal_{clave}') or '').strip())[:500]
                 fila = LegalConfiguration.query.filter_by(key=clave).first()
@@ -530,9 +551,11 @@ def index():
                 if (fila.value or '') != valor:
                     fila.value = valor or None
                     fila.updated_by_id = current_user.id
+                    cambiadas.append(clave)
                     guardados += 1
 
-            audit('legal_configuration_updated', details=f'campos={guardados}')
+            audit('legal_configuration_updated',
+                  details=f'campos={guardados}; claves={",".join(sorted(cambiadas))}')
             db.session.commit()
 
             valores = {row.key: row.value

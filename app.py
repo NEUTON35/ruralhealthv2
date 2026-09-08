@@ -275,6 +275,16 @@ def register_login(app):
         if user and not user.is_active_account:
             # Una cuenta desactivada no debe poder seguir usando una sesion abierta.
             return None
+
+        # Toda sesion abierta antes del ultimo cambio de contrasena queda
+        # invalidada. Sin esto, restablecer la clave de una cuenta comprometida
+        # no echaba a quien la habia tomado: su cookie seguia funcionando.
+        if user and has_request_context() and user.password_changed_at:
+            emitida = session.get('pwd_epoch')
+            if emitida is None or int(emitida) < int(user.password_changed_at.timestamp()):
+                session.clear()
+                return None
+
         if user and has_request_context():
             session['clinic_id'] = user.clinic_id
             session['role'] = user.role

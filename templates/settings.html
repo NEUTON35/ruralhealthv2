@@ -438,7 +438,7 @@
            DOCUMENTOS LEGALES
            Un documento con marcadores sin reemplazar no es un documento legal.
            ================================================================== #}
-        {% if current_user.role in ('admin', 'super') %}
+        {% if current_user.role == 'super' %}
         <div id="legal" class="bg-white p-6 rounded-lg border border-linea">
             <h2 class="text-lg font-semibold mb-1 flex items-center gap-2 text-slate-900">
                 <i data-lucide="scale" class="w-5 h-5 text-slate-500"></i>

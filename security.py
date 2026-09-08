@@ -233,6 +233,12 @@ class EncryptedText(TypeDecorator):
             return value
 
 
+def _password_epoch(user):
+    """Segundos del ultimo cambio de contrasena, o 0 si nunca se cambio."""
+    marca = getattr(user, 'password_changed_at', None)
+    return int(marca.timestamp()) if marca else 0
+
+
 def generate_jwt(user, token_type="access", expires_minutes=15):
     now = int(time.time())
     jti = secrets.token_urlsafe(24)
@@ -241,6 +247,10 @@ def generate_jwt(user, token_type="access", expires_minutes=15):
         "role": user.role,
         "type": token_type,
         "jti": jti,
+        # Sello del ultimo cambio de contrasena. Un token emitido antes del
+        # cambio se rechaza sin necesidad de mantener una lista de revocados
+        # por usuario.
+        "pwd": _password_epoch(user),
         "iat": now,
         "nbf": now,
         "exp": now + int(timedelta(minutes=expires_minutes).total_seconds()),
@@ -262,6 +272,17 @@ def decode_jwt(token, required_type="access"):
     )
     if payload.get("type") != required_type:
         raise jwt.InvalidTokenError("Invalid token type")
+
+    # Un token emitido antes del ultimo cambio de contrasena ya no vale. Es lo
+    # que hace que restablecer la clave expulse de verdad a quien tuviera la
+    # cuenta, en lugar de dejarle un canal de refresco vivo siete dias mas.
+    from models import User, db
+    usuario = db.session.get(User, int(payload.get("sub") or 0))
+    if usuario is None or not usuario.is_active_account:
+        raise jwt.InvalidTokenError("Cuenta no disponible")
+    if int(payload.get("pwd") or 0) < _password_epoch(usuario):
+        raise jwt.InvalidTokenError("Token anterior al cambio de contrasena")
+
     return payload
 
 

@@ -150,6 +150,10 @@ def login():
         session.permanent = True
         session['clinic_id'] = user.clinic_id
         session['role'] = user.role
+        # Con que contrasena se abrio esta sesion. Si despues se cambia, el
+        # cargador de usuario la cierra: es lo que hace que restablecer la
+        # clave de una cuenta comprometida eche de verdad a quien la tomo.
+        session['pwd_epoch'] = int(user.password_changed_at.timestamp())             if user.password_changed_at else 0
         session['_last_seen'] = colombia_now().timestamp()
         rotate_csrf_token()
 
@@ -420,9 +424,14 @@ def complete_password_reset(token):
             if other.id != reset.id:
                 other.used_at = colombia_now()
 
-        # Las sesiones y tokens anteriores dejan de valer: si la contrasena se
-        # restablece porque la cuenta estaba comprometida, mantenerlos vivos
-        # dejaria dentro a quien la tomo.
+        # `password_changed_at` es la linea de corte. Toda sesion abierta y todo
+        # JWT emitido antes de este momento dejan de valer: el cargador de
+        # usuario compara la epoca guardada en la sesion, y `decode_jwt` la que
+        # viaja dentro del token. Si la contrasena se restablece porque la
+        # cuenta estaba comprometida, quien la tomo queda fuera.
+        #
+        # Antes este comentario decia lo mismo y lo unico que se ejecutaba
+        # debajo era borrar el contador de intentos fallidos.
         clear_login_failures(user.username)
         audit('password_reset_completed', user_id=user.id)
         db.session.commit()
