@@ -903,8 +903,29 @@ if __name__ == '__main__' and '--local' in sys.argv:
     os.makedirs(_instancia, exist_ok=True)
     _ruta_local = os.path.join(_instancia, 'ruralhealth.db')
     os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + _ruta_local.replace(os.sep, '/')
-    os.environ.setdefault('FLASK_ENV', 'development')
+    # Se IMPONE el entorno de desarrollo; no se deja por defecto.
+    #
+    # Esto era `setdefault` y no servia de nada: `load_dotenv()` corre al
+    # importar el modulo, asi que para cuando se llega aqui el `.env` ya ha
+    # puesto `FLASK_ENV=production` y el valor por defecto no se aplica. El
+    # resultado era que `--local` arrancaba en modo produccion contra un
+    # SQLite, y el guardian lo detenia: 'SQLite no es apto para
+    # produccion'. El guardian tiene razon; el mensaje le llegaba a quien
+    # solo queria probar en su portatil.
+    #
+    # Pedir `--local` es declarar que esto no es produccion: se crea una
+    # base SQLite en `instance/`, en el equipo de quien lo ejecuta. La
+    # bandera es la intencion, y manda sobre el archivo de configuracion.
+    _entorno_previo = os.environ.get('FLASK_ENV')
+    os.environ['FLASK_ENV'] = 'development'
     print(f'\nModo local: base de datos en {_ruta_local}')
+    if _entorno_previo and _entorno_previo != 'development':
+        # Quien mira la consola tiene que saber que la configuracion
+        # activa no es la que dice su `.env`.
+        print('Entorno: development (tu .env dice %s; manda --local)'
+              % _entorno_previo)
+    print('Base de pruebas. SQLite no soporta el bloqueo de filas que')
+    print('impide la doble dispensacion: no la uses con pacientes.')
 
 
 # Instancia de modulo, para compatibilidad con `flask` y con los scripts que
