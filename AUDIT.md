@@ -331,9 +331,17 @@ la autorización como en la verificación por hash del mostrador.
 
 Puntos que no dependen del código y que ningún cambio mío puede sustituir:
 
-1. **Rotar las credenciales** expuestas en el `.env` versionado (`SECURITY.md`).
-   Hasta entonces, la historia clínica cifrada es descifrable por cualquiera que
-   haya tenido ese archivo.
+1. ~~**Rotar las credenciales** expuestas en el `.env` versionado.~~ **HECHO**
+   (2026-09-08). Se creó una instancia PostgreSQL nueva y se generaron las
+   cuatro llaves desde cero: `SECRET_KEY`, `JWT_SECRET_KEY`, `HASH_PEPPER` (que
+   además faltaba por completo) y `FIELD_KEY_SEED`. No tienen relación con las
+   que estuvieron expuestas.
+
+   Se hizo con la base vacía a propósito: es el único momento en que rotar la
+   semilla de cifrado y la pimienta no cuesta nada, porque no hay historia
+   clínica que recifrar ni índice ciego que reconstruir. Conectar la base nueva
+   conservando las llaves antiguas habría trasladado el compromiso intacto a la
+   instalación nueva.
 2. **Cargar los catálogos CIE-10 y CUPS oficiales.** Los incluidos son un arranque
    mínimo; un catálogo incompleto rechaza códigos válidos al prescribir.
 3. **Revisión de `clinical_safety.py` por un químico farmacéutico.** El contenido
