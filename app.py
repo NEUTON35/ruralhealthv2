@@ -214,6 +214,7 @@ def create_app(environment=None, config_override=None):
 def register_jinja(app):
     import ui
     from estados import traducir as traducir_estado
+    from monetization import pesos
     from legal_markup import render as render_legal_markup
 
     # El vocabulario visual, disponible en todas las plantillas sin importar.
@@ -225,6 +226,7 @@ def register_jinja(app):
     app.jinja_env.filters['from_json'] = lambda s: json.loads(s) if s else []
     app.jinja_env.filters['legal_markup'] = render_legal_markup
     app.jinja_env.filters['estado'] = traducir_estado
+    app.jinja_env.filters['pesos'] = pesos
     app.jinja_env.globals['csrf_token'] = generate_csrf_token
     app.jinja_env.globals['app_env'] = app.config['ENV_NAME']
 

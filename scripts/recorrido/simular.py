@@ -107,7 +107,7 @@ def entrar(cliente, usuario, clave=CLAVE):
 def preparar():
     """Base desechable con los siete roles y contenido en cada pantalla."""
     import datos as sembrador
-    app, clave = sembrador.preparar()
+    app, clave, _ = sembrador.preparar()
     app.test_client_class = ClienteConCSRF
     return app, clave
 

@@ -17,16 +17,17 @@ ROLES = {
     'doc': ('Profesional', 'Carlos Rodríguez Mesa · usuario doc'),
     'adm': ('Administración', 'Ana Torres Gil · usuario adm'),
     'sta': ('Personal', 'Sofía Ruiz León · usuario sta'),
+    'aut': ('Profesional autónomo', 'Sandra Milena Ochoa · usuario aut'),
     'exp': ('Farmacia', 'Luis Mora Díaz · usuario exp'),
     'sup': ('Superadministración', 'usuario sup'),
 }
 
 # Los codigos que no son 200 y aun asi son correctos: se explican en la ficha
 # para que nadie los persiga como si fueran un fallo.
+# El unico codigo que no es 200 y aun asi es correcto: la pagina de error solo
+# se puede fotografiar pidiendo una ruta que no existe.
 ESPERADOS = {
     ('publico', '/ruta-que-no-existe'): 'página de error, a propósito',
-    ('adm', '/staff/inventory'): 'el inventario es del personal',
-    ('pac', '/patient/doctor_payment/2'): 'este profesional no cobra aparte',
 }
 
 PLANTILLA = u'''<!doctype html>

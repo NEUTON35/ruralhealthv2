@@ -88,6 +88,19 @@ def preparar():
                       is_available=True, atencion_inicio='07:00', atencion_fin='17:00',
                       office_address='Consultorio 3', office_latitude=6.08,
                       office_longitude=-75.33, show_office_on_map=True)
+        # Medico autonomo: no pertenece a la nomina de la clinica, cobra por su
+        # cuenta y por eso tiene pantalla de pago propia. Sin el, la ruta
+        # `/patient/doctor_payment/<id>` devuelve 404 y el recorrido enseñaba
+        # una pagina de error donde tenia que enseñar una pantalla.
+        aut = usuario('doctor', 'Sandra Milena Ochoa', 'aut',
+                      medical_registration='RM-77001',
+                      specialty='Nutrición y dietética',
+                      document_type='CC', first_name='Sandra',
+                      second_name='Milena', first_surname='Ochoa',
+                      is_available=True, is_autonomous=True,
+                      atencion_inicio='07:00', atencion_fin='19:00',
+                      office_address='Carrera 30 #12-05', office_latitude=6.09,
+                      office_longitude=-75.34, show_office_on_map=True)
         adm = usuario('admin', 'Ana Torres Gil', 'adm')
         exp = usuario('expendedor', 'Luis Mora Díaz', 'exp', pharmacy_id=ph.id)
         sta = usuario('staff', 'Sofía Ruiz León', 'sta')
@@ -97,6 +110,21 @@ def preparar():
         db.session.add(DoctorTariff(clinic_id=cl.id, doctor_id=doc.id,
                                     price_per_consultation=35000,
                                     price_monthly=90000, price_annual=850000))
+        # La tarifa del autonomo, con instrucciones de pago: es lo que hace que
+        # su pantalla de pago tenga algo que mostrar.
+        db.session.add(DoctorTariff(
+            clinic_id=cl.id, doctor_id=aut.id,
+            price_per_consultation=60000, price_monthly=180000,
+            price_quarterly=480000, price_annual=1700000,
+            default_policy_discount_percent=15.0,
+            accepts_manual_payment=True,
+            payment_instructions=('Consigne a la cuenta de ahorros 123-456789-0 '
+                                  'de Bancolombia a nombre de Sandra Milena '
+                                  'Ochoa, y adjunte el comprobante.')))
+        for dia in range(6):
+            db.session.add(DoctorSchedule(clinic_id=cl.id, doctor_id=aut.id,
+                                          day_of_week=dia, start_time='07:00',
+                                          end_time='19:00', is_available=True))
         for dia in range(5):
             db.session.add(DoctorSchedule(clinic_id=cl.id, doctor_id=doc.id,
                                           day_of_week=dia, start_time='07:00',
@@ -134,6 +162,7 @@ def preparar():
                        status='open', reason='Disponibilidad de medicamentos',
                        mode='triage')
         db.session.add(soporte)
+        db.session.flush()
 
         for dias, estado in ((1, 'pending'), (-3, 'attended')):
             db.session.add(Appointment(
@@ -190,4 +219,15 @@ def preparar():
                                  reportado_por_id=doc.id, clinic_id=cl.id)
         db.session.commit()
 
-    return app, clave
+        # El recorrido necesita identificadores reales: fijarlos a mano en las
+        # rutas es lo que hacia que una captura apuntara a un paciente que no
+        # existia y saliera un 404 en lugar de la pantalla.
+        identificadores = {
+            'paciente': pac.id, 'doctor': doc.id, 'autonomo': aut.id,
+            'admin': adm.id, 'staff': sta.id, 'expendedor': exp.id,
+            'chat': chat.id, 'chat_soporte': soporte.id,
+            'orden': orden.id, 'ticket': ticket.id, 'farmacia': ph.id,
+            'clinica': cl.id,
+        }
+
+    return app, clave, identificadores

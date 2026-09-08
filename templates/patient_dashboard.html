@@ -283,7 +283,7 @@
             {% for ticket in payment_tickets %}
             <div class="border border-linea rounded-lg p-3">
                 <p class="font-semibold text-sm text-slate-900">Dr. {{ ticket.doctor.name }}</p>
-                <p class="text-xs text-slate-500">{{ ticket.plan_type }} | ${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
+                <p class="text-xs text-slate-500">{{ ticket.plan_type }} | {{ ticket.final_amount or ticket.amount or 0|pesos }}</p>
                 <span class="inline-flex mt-2 px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">
                     {{ ticket.status|estado }}
                 </span>

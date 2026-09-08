@@ -334,3 +334,24 @@ def tariff_prices(tariff, discount_percent=0):
             'final_amount': discounted_amount(amount, discount_percent),
         })
     return precios
+
+def pesos(valor):
+    """Formatea un importe en pesos colombianos: $1.700.000.
+
+    Se escribia con `'%.0f'|format(...)`, que produce `$1700000`. Siete cifras
+    seguidas sin separador no se leen: quien esta a punto de pagar tiene que
+    contar los ceros para saber si son ciento setenta mil o un millon
+    setecientos mil, y esa es exactamente la cuenta que no debe tener que
+    hacer en una pantalla de pago.
+
+    En Colombia el separador de miles es el punto. Sin decimales: el peso no
+    tiene subdivision en uso.
+    """
+    if valor is None:
+        return '$0'
+    try:
+        entero = int(round(float(valor)))
+    except (TypeError, ValueError):
+        return '$0'
+    signo = '-' if entero < 0 else ''
+    return '%s$%s' % (signo, '{:,}'.format(abs(entero)).replace(',', '.'))

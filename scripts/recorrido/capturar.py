@@ -50,8 +50,8 @@ PANTALLAS = {
     ],
     'pac': [
         ('20-panel-paciente', 'Panel del paciente', '/patient/dashboard'),
-        ('21-consulta', 'Consulta con el profesional', '/patient/chat/1'),
-        ('22-agendar', 'Agendar cita', '/patient/book_appointment/2'),
+        ('21-consulta', 'Consulta con el profesional', '/patient/chat/{chat}'),
+        ('22-agendar', 'Agendar cita', '/patient/book_appointment/{doctor}'),
         ('23-mapa', 'Mapa de atención', '/patient/map'),
         ('24-mis-datos', 'Mis datos (habeas data)', '/privacidad-datos/'),
         ('25-pqrs', 'Peticiones, quejas y reclamos', '/pqrs/'),
@@ -62,23 +62,26 @@ PANTALLAS = {
         ('29-consentimiento-telemedicina', 'Consentimiento de telemedicina',
          '/privacidad-datos/consentimiento-telemedicina'),
         # Da 404 cuando el profesional no cobra por su cuenta. Es correcto.
-        ('2a-pago-medico', 'Pago al profesional', '/patient/doctor_payment/2'),
+        # Contra el medico AUTONOMO: es el unico que cobra por su cuenta y
+        # por tanto el unico que tiene pantalla de pago. Apuntando al medico de
+        # nomina esto devolvia 404 y el recorrido enseñaba una pagina de error
+        # en lugar de una pantalla.
+        ('2a-pago-medico', 'Pago a un profesional autónomo',
+         '/patient/doctor_payment/{autonomo}'),
     ],
     'doc': [
         ('30-panel-medico', 'Panel del profesional', '/doctor/dashboard'),
-        ('31-consulta-medico', 'Consulta clínica', '/doctor/chat/1'),
-        ('32-historia', 'Historia clínica del paciente', '/doctor/patient_history/1'),
-        ('33-prescripcion', 'Prescripción', '/doctor/prescription/1'),
-        ('36-orden-impresa', 'Orden médica para imprimir', '/doctor/order/1'),
-        ('34-agendar-medico', 'Agendar para un paciente', '/doctor/book_appointment/1'),
+        ('31-consulta-medico', 'Consulta clínica', '/doctor/chat/{chat}'),
+        ('32-historia', 'Historia clínica del paciente', '/doctor/patient_history/{paciente}'),
+        ('33-prescripcion', 'Prescripción', '/doctor/prescription/{paciente}'),
+        ('36-orden-impresa', 'Orden médica para imprimir', '/doctor/order/{orden}'),
+        ('34-agendar-medico', 'Agendar para un paciente', '/doctor/book_appointment/{paciente}'),
         ('35-ajustes-medico', 'Ajustes del profesional', '/settings/'),
     ],
     'adm': [
         ('40-panel-admin', 'Panel de administración', '/admin/dashboard'),
         ('41-analitica', 'Analítica', '/admin/analytics'),
         ('42-reporte-stock', 'Reporte de quiebre de stock', '/admin/reporte_stock'),
-        # Da 403: el inventario es del personal, no de la administracion.
-        ('43-inventario', 'Inventario', '/staff/inventory'),
         ('44-gestion-pqrs', 'Gestión de PQRS', '/pqrs/gestion'),
         ('45-solicitudes-datos', 'Solicitudes de habeas data',
          '/privacidad-datos/solicitudes'),
@@ -89,9 +92,13 @@ PANTALLAS = {
         ('51-pendientes', 'Pendientes de stock', '/staff/pendientes'),
         ('52-cargamentos', 'Cargamentos', '/staff/envios'),
         ('53-inventario-staff', 'Inventario', '/staff/inventory'),
-        ('54-ticket', 'Ticket de recogida', '/staff/ticket/1'),
-        ('55-mapa-orden', 'Mapa de la orden', '/staff/order/1/map'),
-        ('56-consulta-staff', 'Chat de soporte', '/staff/chat/2'),
+        ('54-ticket', 'Ticket de recogida', '/staff/ticket/{ticket}'),
+        ('55-mapa-orden', 'Mapa de la orden', '/staff/order/{orden}/map'),
+        ('56-consulta-staff', 'Chat de soporte', '/staff/chat/{chat_soporte}'),
+    ],
+    'aut': [
+        ('58-panel-autonomo', 'Panel del profesional autónomo', '/doctor/dashboard'),
+        ('59-tarifas-autonomo', 'Tarifas y cobro propio', '/settings/'),
     ],
     'exp': [
         ('60-despacho', 'Despacho de medicamentos', '/expendedor/dashboard'),
@@ -124,7 +131,7 @@ def util(mensaje, url_pagina):
 def arrancar_servidor():
     """Levanta la aplicacion sobre una base sembrada, en un hilo aparte."""
     import datos
-    app, clave = datos.preparar()
+    app, clave, identificadores = datos.preparar()
 
     hilo = threading.Thread(
         target=lambda: app.run(host='127.0.0.1', port=PUERTO, debug=False,
@@ -132,14 +139,14 @@ def arrancar_servidor():
         daemon=True)
     hilo.start()
     time.sleep(4)
-    return app, clave
+    return app, clave, identificadores
 
 
 def main():
     for sub in ('escritorio', 'movil'):
         os.makedirs(os.path.join(DESTINO, sub), exist_ok=True)
 
-    _, clave = arrancar_servidor()
+    _, clave, identificadores = arrancar_servidor()
 
     from playwright.sync_api import sync_playwright
 
@@ -172,7 +179,11 @@ def main():
                     pagina.click('button[type=submit]')
                     pagina.wait_for_load_state('networkidle')
 
-                for archivo, titulo, ruta in pantallas:
+                for archivo, titulo, plantilla_ruta in pantallas:
+                    # Los identificadores salen de la propia semilla. Fijarlos
+                    # a mano era lo que hacia que una captura apuntara a algo
+                    # que no existia y saliera un 404.
+                    ruta = plantilla_ruta.format(**identificadores)
                     consola.clear()
                     try:
                         r = pagina.goto(BASE + ruta, wait_until='networkidle',
@@ -209,8 +220,9 @@ def main():
         json.dumps(informe, ensure_ascii=False, indent=2))
 
     # Los 404 y 403 esperados no cuentan como rotura: estan documentados arriba.
-    esperados = {('publico', '/ruta-que-no-existe'), ('adm', '/staff/inventory'),
-                 ('pac', '/patient/doctor_payment/2')}
+    # Solo queda uno, y es deliberado: la unica forma de fotografiar la pagina
+    # de error es pedir una ruta que no existe.
+    esperados = {('publico', '/ruta-que-no-existe')}
     malos = [i for i in informe
              if (i['estado'] != 200 and (i['rol'], i['ruta']) not in esperados)
              or i.get('traza') or i.get('jinja_sin_render') or i.get('consola')]

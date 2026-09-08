@@ -80,10 +80,10 @@
                 <span class="{{ ROTULO_DATO }}">{{ price.label }}</span>
                 <p class="text-sm font-bold text-slate-900 mt-0.5">
                     {% if data.discount_percent and price.final_amount != price.amount %}
-                        <span class="line-through text-slate-500 text-xs font-normal mr-1">${{ '%.0f'|format(price.amount) }}</span>
-                        ${{ '%.0f'|format(price.final_amount) }}
+                        <span class="line-through text-slate-500 text-xs font-normal mr-1">{{ price.amount|pesos }}</span>
+                        {{ price.final_amount|pesos }}
                     {% else %}
-                        ${{ '%.0f'|format(price.amount) }}
+                        {{ price.amount|pesos }}
                     {% endif %}
                 </p>
             </div>

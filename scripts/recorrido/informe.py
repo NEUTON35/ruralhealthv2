@@ -26,14 +26,13 @@ ROLES = {
     'doc': ('Profesional', 'Carlos Rodríguez Mesa'),
     'adm': ('Administración', 'Ana Torres Gil'),
     'sta': ('Personal', 'Sofía Ruiz León'),
+    'aut': ('Profesional autónomo', 'Sandra Milena Ochoa'),
     'exp': ('Farmacia', 'Luis Mora Díaz'),
     'sup': ('Superadministración', 'usuario sup'),
 }
 
 ESPERADOS = {
     ('publico', '/ruta-que-no-existe'): 'página de error, a propósito',
-    ('adm', '/staff/inventory'): 'el inventario es del personal',
-    ('pac', '/patient/doctor_payment/2'): 'este profesional no cobra aparte',
 }
 
 # Los hallazgos que se corrigieron en esta ronda. El texto es el que importa:
