@@ -16,7 +16,7 @@
     <!-- Integridad de la cadena -->
     {% if chain_breaks %}
     <div class="bg-critical-subtle border-2 border-critical-border rounded-lg p-5">
-        <h2 class="font-semibold text-rose-800 flex items-center gap-2 mb-2">
+        <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-2">
             <i data-lucide="shield-alert" class="w-5 h-5"></i>
             Cadena de auditoría rota en {{ chain_breaks | length }} punto(s)
         </h2>
@@ -45,7 +45,7 @@
     {% if alerts %}
     <section class="bg-white rounded-lg border-2 border-caution-border overflow-hidden">
         <div class="px-6 py-4 bg-caution-subtle border-b border-caution-border">
-            <h2 class="font-semibold text-amber-900 flex items-center gap-2">
+            <h2 class="font-semibold text-slate-900 flex items-center gap-2">
                 <i data-lucide="alert-triangle" class="w-5 h-5"></i>
                 Eventos que requieren atención ({{ alerts | length }})
             </h2>
@@ -82,7 +82,7 @@
                 class="w-full mt-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-primary outline-none">
         </div>
         <button type="submit"
-            class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-primary-dark transition-colors inline-flex items-center gap-2">
+            class="bg-accent text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
             <i data-lucide="filter" class="w-4 h-4"></i> Filtrar
         </button>
         {% if event_filter %}

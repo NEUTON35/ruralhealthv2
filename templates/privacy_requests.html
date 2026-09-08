@@ -73,7 +73,7 @@
                         class="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:border-primary outline-none resize-y" aria-label="Respuesta entregada al titular…"></textarea>
                     <div class="flex flex-wrap gap-2">
                         <button type="submit" name="outcome" value="atendida"
-                            class="bg-positive text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-positive transition-colors inline-flex items-center gap-2">
+                            class="bg-accent text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
                             <i data-lucide="check" class="w-4 h-4"></i> Marcar atendida
                         </button>
                         <button type="submit" name="outcome" value="rechazada"
@@ -133,7 +133,7 @@
                         <td class="px-6 py-3 text-slate-600">{{ request_labels.get(item.request_type, item.request_type) }}</td>
                         <td class="px-6 py-3">
                             <span class="px-2 py-0.5 rounded-full text-xs font-bold {% if item.status == 'atendida' %}bg-positive-subtle text-emerald-800 {% else %}bg-slate-100 text-slate-600{% endif %}">
-                                {{ item.status }}
+                                {{ item.status|estado }}
                             </span>
                         </td>
                         <td class="px-6 py-3 text-slate-500">{{ item.resolved_at | colombia_date }}</td>

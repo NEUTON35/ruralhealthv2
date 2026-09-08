@@ -2,10 +2,10 @@
 {% block content %}
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
     <div>
-        <h1 class="text-3xl font-bold">Recepcion</h1>
+        <h1 class="text-3xl font-bold">Recepción</h1>
         <p class="text-sm text-slate-500">Ordenes pendientes de medicamentos</p>
     </div>
-    <a href="{{ url_for('staff.inventory') }}" class="inline-flex items-center justify-center gap-2 bg-positive text-white px-4 py-3 rounded-lg font-bold">
+    <a href="{{ url_for('staff.inventory') }}" class="inline-flex items-center justify-center gap-2 bg-accent text-white px-4 py-3 rounded-lg font-bold">
         <i data-lucide="boxes" class="w-5 h-5"></i>
         Inventario
     </a>
@@ -16,12 +16,12 @@
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_hours">
         <div>
-            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atencion inicio</label>
-            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de inicio de atencion">
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atención inicio</label>
+            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de inicio de atención">
         </div>
         <div>
-            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atencion fin</label>
-            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de fin de atencion">
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atención fin</label>
+            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de fin de atención">
         </div>
         <button class="bg-slate-900 text-white px-4 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 sm:col-span-2">
             <i data-lucide="clock" class="w-5 h-5"></i>
@@ -56,7 +56,7 @@
             <div class="flex justify-between gap-2">
                 <span class="font-semibold text-slate-900">{{ chat.patient.name }}</span>
                 {% if item.unread > 0 %}
-                <span class="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full">{{ item.unread }}</span>
+                <span class="bg-accent text-white text-xs font-semibold px-2 py-1 rounded-full">{{ item.unread }}</span>
                 {% endif %}
             </div>
             <p class="text-xs text-slate-500 truncate">{{ item.last_msg.content if item.last_msg else chat.reason }}</p>
@@ -82,7 +82,7 @@
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Orden #{{ order.id }}</span>
-                    <span class="text-xs bg-caution-subtle text-amber-800 px-2 py-1 rounded-full font-bold">{{ order.status }}</span>
+                    <span class="text-xs bg-caution-subtle text-amber-800 px-2 py-1 rounded-full font-bold">{{ order.status|estado }}</span>
                 </div>
                 <h2 class="text-xl font-semibold text-slate-900">{{ order.patient.name }}</h2>
                 <p class="text-sm text-slate-500">Medico: {{ order.doctor.name }} | Expedida: {{ order.created_at|colombia_date }} {{ order.created_at|colombia_time }} | Vence: {{ order.expires_at|colombia_date }} {{ order.expires_at|colombia_time }}</p>
@@ -109,11 +109,11 @@
                         {% endfor %}
                     </select>
                     <div class="grid grid-cols-1 gap-2">
-                        <button name="fulfillment_strategy" value="nearest" class="w-full inline-flex items-center justify-center gap-2 bg-positive text-white px-3 py-2 rounded-lg font-bold">
+                        <button name="fulfillment_strategy" value="nearest" class="w-full inline-flex items-center justify-center gap-2 bg-accent text-white px-3 py-2 rounded-lg font-bold">
                             <i data-lucide="map-pin" class="w-4 h-4"></i>
                             Mas cercana
                         </button>
-                        <button name="fulfillment_strategy" value="split" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg font-bold">
+                        <button name="fulfillment_strategy" value="split" class="w-full inline-flex items-center justify-center gap-2 bg-accent text-white px-3 py-2 rounded-lg font-bold">
                             <i data-lucide="split" class="w-4 h-4"></i>
                             Dividir tickets
                         </button>
@@ -184,7 +184,7 @@
     </section>
     {% else %}
     <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-8 text-center text-slate-500">
-        No hay ordenes pendientes para esta clinica.
+        No hay ordenes pendientes para esta clínica.
     </div>
     {% endfor %}
 </div>

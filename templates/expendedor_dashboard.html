@@ -16,7 +16,7 @@
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Validar ticket</h2>
             <form method="GET" class="flex flex-col sm:flex-row gap-3">
                 <input name="q" value="{{ query or '' }}" required placeholder="Código o hash del ticket..." class="flex-1 border border-slate-200 p-3 rounded-lg font-mono text-sm focus:border-primary focus:outline-none bg-slate-50 focus:bg-white transition" aria-label="Código o hash del ticket...">
-                <button type="submit" class="bg-primary text-white px-5 py-3 rounded-lg font-semibold inline-flex items-center justify-center gap-2 hover:bg-primary-dark transition shadow-sm">
+                <button type="submit" class="bg-accent text-white px-5 py-3 rounded-lg font-semibold inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-sm">
                     <i data-lucide="scan-search" class="w-5 h-5"></i> Validar
                 </button>
             </form>
@@ -67,7 +67,7 @@
                 </form>
                 <div class="text-center p-3 rounded-lg bg-slate-50 border border-slate-200">
                     <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Estado Actual</p>
-                    <span class="font-semibold text-slate-900 uppercase">{{ ticket.status }}</span>
+                    <span class="font-semibold text-slate-900 uppercase">{{ ticket.status|estado }}</span>
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
                             <td class="py-4 px-4 text-center font-bold text-slate-600">{{ med.cantidad_pendiente }}</td>
                             <td class="py-4 px-4 text-center font-semibold text-emerald-600">{{ med.available }}</td>
                             <td class="py-4 px-4 text-center">
-                                <span class="bg-positive text-white px-3 py-1 rounded-lg font-semibold text-xs">
+                                <span class="bg-accent text-white px-3 py-1 rounded-lg font-semibold text-xs">
                                     {{ med.deliver_qty }} {{ med.unidad }}
                                 </span>
                             </td>
@@ -163,7 +163,7 @@
                 {% if dispatch_status.status == 'full' %}
                 <form method="POST" action="{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-positive text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-positive transition shadow-sm group">
+                    <button type="submit" class="w-full bg-accent text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-accent-hover transition shadow-sm group">
                         <i data-lucide="package-check" class="w-6 h-6 group-hover:scale-110 transition"></i>
                         Confirmar Entrega Total
                     </button>
@@ -180,7 +180,7 @@
                 {% else %}
                 <form method="POST" action="{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-critical text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-critical transition shadow-sm group">
+                    <button type="submit" class="w-full bg-critical text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-critical-hover transition shadow-sm group">
                         <i data-lucide="alert-circle" class="w-6 h-6 group-hover:scale-110 transition"></i>
                         Generar Ticket de Espera
                     </button>
@@ -198,7 +198,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('expendedor.reactivate', ticket_id=ticket.id) }}">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="bg-positive text-white px-8 py-3 rounded-lg font-semibold text-sm hover:bg-positive transition shadow-sm">
+                        <button type="submit" class="bg-accent text-white px-8 py-3 rounded-lg font-semibold text-sm hover:bg-accent-hover transition shadow-sm">
                             Intentar Reactivación Ahora
                         </button>
                     </form>
@@ -211,7 +211,7 @@
     <!-- Llegadas esperadas hoy -->
     {% if today_tickets %}
     <section class="bg-white border border-blue-100 rounded-lg shadow-sm p-5">
-        <h2 class="text-sm font-semibold uppercase tracking-widest text-blue-600 mb-3 flex items-center gap-2">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
             <i data-lucide="calendar-clock" class="w-4 h-4"></i> Llegadas Esperadas Hoy
         </h2>
         <div class="grid sm:grid-cols-2 gap-3">
@@ -221,7 +221,7 @@
                 <p class="text-xs text-blue-700">{{ t.patient.name }} · {{ t.pickup_time }}</p>
                 <form method="GET" class="mt-2">
                     <input type="hidden" name="q" value="{{ t.pickup_code }}">
-                    <button type="submit" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-blue-700 transition">Ver ticket</button>
+                    <button type="submit" class="text-xs bg-accent text-white px-3 py-1.5 rounded-lg font-bold hover:bg-accent-hover transition">Ver ticket</button>
                 </form>
             </div>
             {% endfor %}
@@ -232,7 +232,7 @@
     <!-- Tickets sin stock -->
     {% if sin_stock_tickets %}
     <section class="bg-white border border-caution-border rounded-lg shadow-sm p-5">
-        <h2 class="text-sm font-semibold uppercase tracking-widest text-amber-700 mb-3 flex items-center gap-2">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
             <i data-lucide="alert-triangle" class="w-4 h-4"></i> Pendientes de Reposición (Sin Stock)
         </h2>
         <div class="space-y-3">
@@ -251,7 +251,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('expendedor.reactivate', ticket_id=t.id) }}">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="bg-positive text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-positive transition whitespace-nowrap">
+                        <button type="submit" class="bg-accent text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-accent-hover transition whitespace-nowrap">
                             <i data-lucide="refresh-cw" class="w-4 h-4 inline-block mr-1"></i> Reactivar
                         </button>
                     </form>
@@ -274,7 +274,7 @@
                 {% set disponible = item.cantidad - (item.cantidad_comprometida or 0) %}
                 <div class="border border-slate-200 rounded-lg p-3 flex justify-between gap-3">
                     <span class="font-bold text-sm text-slate-800">{{ item.nombre_med }}</span>
-                    <span class="text-sm font-mono {% if disponible <= 0 %}text-red-600 font-semibold{% elif disponible < 5 %}text-amber-600 font-bold{% else %}text-emerald-600{% endif %}">
+                    <span class="text-sm font-mono {% if disponible <= 0 %}text-critical font-semibold{% elif disponible < 5 %}text-caution font-semibold{% else %}text-slate-700{% endif %}">
                         {{ disponible }} {{ item.unidad }}
                     </span>
                 </div>
@@ -300,7 +300,7 @@
                 </select>
                 <input name="med_name" placeholder="Medicamento" class="border border-slate-200 p-2.5 rounded-lg focus:border-primary focus:outline-none text-sm" aria-label="Medicamento">
                 <input type="number" name="quantity" min="1" value="1" class="border border-slate-200 p-2.5 rounded-lg focus:border-primary focus:outline-none text-sm" aria-label="Cantidad">
-                <button type="submit" class="bg-primary text-white rounded-lg font-semibold inline-flex items-center justify-center gap-2 px-4 hover:bg-primary-dark transition">
+                <button type="submit" class="bg-accent text-white rounded-lg font-semibold inline-flex items-center justify-center gap-2 px-4 hover:bg-accent-hover transition">
                     <i data-lucide="repeat-2" class="w-4 h-4"></i> Solicitar
                 </button>
             </form>
@@ -309,7 +309,7 @@
                 {% for transfer in transfer_requests %}
                 <div class="border border-slate-200 bg-slate-50 rounded-lg p-3">
                     <p class="font-semibold text-slate-800 text-sm">{{ transfer.med_name }} × {{ transfer.quantity }}</p>
-                    <p class="text-xs text-slate-500">{{ transfer.source_pharmacy.name }} · <span class="font-bold">{{ transfer.status }}</span></p>
+                    <p class="text-xs text-slate-500">{{ transfer.source_pharmacy.name }} · <span class="font-bold">{{ transfer.status|estado }}</span></p>
                 </div>
                 {% endfor %}
             </div>
@@ -332,8 +332,8 @@
                     <p class="font-semibold text-slate-900 font-mono">{{ item.pickup_code }}</p>
                     <p class="text-xs text-slate-500">{{ item.patient.name }}</p>
                     <div class="mt-2 flex items-center justify-between">
-                        <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded {{ 'bg-positive-subtle text-emerald-700' if item.status == 'entregado' else 'bg-blue-100 text-blue-700' }}">
-                            {{ item.status }}
+                        <span class="text-xs font-semibold uppercase px-2 py-0.5 rounded {{ 'bg-positive-subtle text-emerald-700' if item.status == 'entregado' else 'bg-slate-100 text-slate-700' }}">
+                            {{ item.status|estado }}
                         </span>
                         <span class="text-xs text-slate-600">{{ item.created_at.strftime('%H:%M') }}</span>
                     </div>

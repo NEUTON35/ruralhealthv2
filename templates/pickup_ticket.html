@@ -11,7 +11,7 @@
             <p class="text-sm font-bold text-slate-700">{{ ticket.pickup_date }} {{ ticket.pickup_time }}</p>
             <p class="text-sm font-bold text-slate-700">{{ ticket.pharmacy.name if ticket.pharmacy else 'Farmacia' }}</p>
             <p class="text-xs text-slate-500">{{ ticket.pickup_location or current_user.clinic.name }}</p>
-            <span class="inline-block mt-2 bg-positive-subtle text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold">{{ ticket.status }}</span>
+            <span class="inline-block mt-2 bg-positive-subtle text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold">{{ ticket.status|estado }}</span>
         </div>
     </div>
 

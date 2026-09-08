@@ -18,7 +18,7 @@
                 <span id="doctor-live-clock" class="font-bold text-slate-700 text-sm tracking-tighter">--:--:--</span>
             </div>
         </div>
-        <a href="/doctor/export_rips" class="bg-positive text-white px-4 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-positive transition shadow-sm hover:shadow">
+        <a href="/doctor/export_rips" class="bg-accent text-white px-4 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-accent-hover transition shadow-sm hover:shadow">
             <i data-lucide="file-json" class="w-4 h-4"></i> Generar RIPS
         </a>
     </div>
@@ -26,33 +26,33 @@
 
 <!-- SIGNOS VITALES (Métricas Rápidas) -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-primary/50 transition-colors group">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-accent/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-blue-50 p-2 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <div class="bg-slate-100 p-2 rounded-lg text-slate-600 group-hover:bg-accent group-hover:text-white transition-colors">
                 <i data-lucide="calendar-clock" class="w-5 h-5"></i>
             </div>
             {% set pending_appts = appointments|selectattr('status', 'equalto', 'pending')|list|length %}
-            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_appts }}</span>
+            <span class="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_appts }}</span>
         </div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Citas Hoy</p>
         <p class="text-xl font-semibold text-slate-800">{{ appointments|length }}</p>
     </div>
     
-    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-slate-700/50 transition-colors group">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-accent/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-slate-50 p-2 rounded-lg text-purple-600 group-hover:bg-slate-700 group-hover:text-white transition-colors">
+            <div class="bg-slate-100 p-2 rounded-lg text-slate-600 group-hover:bg-accent group-hover:text-white transition-colors">
                 <i data-lucide="receipt" class="w-5 h-5"></i>
             </div>
             {% set pending_payments = payment_tickets|selectattr('status', 'equalto', 'pending')|list|length %}
-            <span class="bg-slate-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_payments }}</span>
+            <span class="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_payments }}</span>
         </div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Pagos por Aprobar</p>
         <p class="text-xl font-semibold text-slate-800">{{ pending_payments }}</p>
     </div>
 
-    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-positive/50 transition-colors group">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-accent/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-positive-subtle p-2 rounded-lg text-emerald-600 group-hover:bg-positive group-hover:text-white transition-colors">
+            <div class="bg-slate-100 p-2 rounded-lg text-slate-600 group-hover:bg-accent group-hover:text-white transition-colors">
                 <i data-lucide="message-square-more" class="w-5 h-5"></i>
             </div>
         </div>
@@ -60,9 +60,9 @@
         <p class="text-xl font-semibold text-slate-800">{{ open_chats|length }}</p>
     </div>
 
-    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-caution/50 transition-colors group">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 hover:border-accent/50 transition-colors group">
         <div class="flex justify-between items-start mb-2">
-            <div class="bg-caution-subtle p-2 rounded-lg text-orange-600 group-hover:bg-caution group-hover:text-white transition-colors">
+            <div class="bg-slate-100 p-2 rounded-lg text-slate-600 group-hover:bg-accent group-hover:text-white transition-colors">
                 <i data-lucide="users" class="w-5 h-5"></i>
             </div>
         </div>
@@ -102,7 +102,7 @@
                     </div>
                 {% endif %}
             </div>
-            <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full cursor-pointer hover:bg-blue-700 shadow-sm">
+            <label class="absolute bottom-0 right-0 bg-accent text-white p-1.5 rounded-full cursor-pointer hover:bg-accent-hover shadow-sm">
                 <i data-lucide="camera" class="w-3 h-3"></i>
                 <input type="file" name="pfp" accept="image/*" hidden onchange="this.form.submit()" aria-label="Pfp">
             </label>
@@ -114,11 +114,11 @@
     </form>
 </div>
 
-<section class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-slate-700 mb-8">
+<section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 mb-8">
     <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
         <div>
-            <h2 class="text-xl font-bold text-cyan-700 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5"></i> Consultorio presencial</h2>
-            <p class="text-xs text-slate-500">Puede publicar u ocultar su ubicacion en el mapa de pacientes.</p>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i data-lucide="map-pin" class="w-5 h-5"></i> Consultorio presencial</h2>
+            <p class="text-xs text-slate-500">Puede publicar u ocultar su ubicación en el mapa de pacientes.</p>
         </div>
         <span class="text-xs font-semibold px-3 py-1 rounded-full {% if current_user.show_office_on_map %}bg-positive-subtle text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
             {% if current_user.show_office_on_map %}Visible en mapa{% else %}Oculto{% endif %}
@@ -128,12 +128,12 @@
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_office_location">
         <div class="lg:col-span-2">
-            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Afiliacion</label>
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Afiliación</label>
             <input name="affiliation_name" value="{{ current_user.affiliation_name or (current_user.clinic.name if current_user.clinic else '') }}" class="w-full border p-3 rounded-lg" aria-label="Affiliation name">
         </div>
         <div class="lg:col-span-3">
-            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Direccion consultorio</label>
-            <input name="office_address" value="{{ current_user.office_address or '' }}" placeholder="Direccion fisica" class="w-full border p-3 rounded-lg" aria-label="Direccion fisica">
+            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Dirección consultorio</label>
+            <input name="office_address" value="{{ current_user.office_address or '' }}" placeholder="Dirección fisica" class="w-full border p-3 rounded-lg" aria-label="Dirección fisica">
         </div>
         <div>
             <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Latitud</label>
@@ -144,38 +144,38 @@
             <input id="doctor-office-lng" type="number" step="any" name="office_longitude" value="{{ current_user.office_longitude if current_user.office_longitude is not none else '' }}" class="w-full border p-3 rounded-lg" aria-label="Office longitude">
         </div>
         <label class="flex items-center gap-2 border border-slate-200 p-3 rounded-lg text-sm font-bold text-slate-700">
-            <input type="checkbox" name="show_office_on_map" class="accent-cyan-600" {% if current_user.show_office_on_map %}checked{% endif %} aria-label="Show office on map">
+            <input type="checkbox" name="show_office_on_map" class="accent-slate-700" {% if current_user.show_office_on_map %}checked{% endif %} aria-label="Show office on map">
             Mostrar
         </label>
         <div class="lg:col-span-8 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#doctor-office-lat" data-lng-input="#doctor-office-lng"></div>
         <div class="lg:col-span-8 flex gap-2">
             <button type="button" data-use-browser-location class="border border-slate-200 px-4 py-3 rounded-lg font-semibold text-slate-700 flex items-center gap-2"><i data-lucide="crosshair" class="w-5 h-5"></i> Usar GPS</button>
-            <button class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold flex-1">Guardar consultorio</button>
+            <button class="bg-accent hover:bg-accent-hover text-white px-4 py-3 rounded-lg font-semibold flex-1">Guardar consultorio</button>
         </div>
     </form>
 </section>
 
 {% if current_user.is_autonomous %}
-<section class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-slate-700 mb-8">
+<section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 mb-8">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
         <div>
-            <h2 class="text-xl font-bold text-purple-700 flex items-center gap-2"><i data-lucide="wallet-cards" class="w-5 h-5"></i> Tarifas y pagos</h2>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i data-lucide="wallet-cards" class="w-5 h-5"></i> Tarifas y pagos</h2>
             <p class="text-xs text-slate-500">Publique precios y una imagen con sus metodos de pago. El paciente sube el comprobante y usted aprueba el acceso.</p>
         </div>
         <form method="POST">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="generate_doctor_consent">
-            <input name="consent_prefix" placeholder="Prefijo codigo" class="border border-slate-200 px-3 py-2 rounded-lg text-xs font-bold mr-2" aria-label="Prefijo codigo">
+            <input name="consent_prefix" placeholder="Prefijo código" class="border border-slate-200 px-3 py-2 rounded-lg text-xs font-bold mr-2" aria-label="Prefijo código">
             <button class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
                 <i data-lucide="shield-plus" class="w-4 h-4"></i>
-                Codigo poliza
+                Código póliza
             </button>
         </form>
     </div>
 
     {% if current_user.policy_consent_code %}
     <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4">
-        <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Codigo de consentimiento para aseguradoras</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Código de consentimiento para aseguradoras</p>
         <p class="font-mono font-semibold text-slate-900 break-all">{{ current_user.policy_consent_code }}</p>
     </div>
     {% endif %}
@@ -188,9 +188,9 @@
             <input type="number" step="100" min="0" name="price_monthly" value="{{ tariff.price_monthly if tariff and tariff.price_monthly is not none else '' }}" placeholder="Mensual" class="border p-3 rounded-lg" aria-label="Mensual">
             <input type="number" step="100" min="0" name="price_quarterly" value="{{ tariff.price_quarterly if tariff and tariff.price_quarterly is not none else '' }}" placeholder="Trimestral" class="border p-3 rounded-lg" aria-label="Trimestral">
             <input type="number" step="100" min="0" name="price_annual" value="{{ tariff.price_annual if tariff and tariff.price_annual is not none else '' }}" placeholder="Anual" class="border p-3 rounded-lg" aria-label="Anual">
-            <input type="number" step="1" min="0" max="100" name="default_policy_discount_percent" value="{{ tariff.default_policy_discount_percent if tariff else 0 }}" placeholder="Descuento poliza %" class="border p-3 rounded-lg" aria-label="Descuento poliza %">
+            <input type="number" step="1" min="0" max="100" name="default_policy_discount_percent" value="{{ tariff.default_policy_discount_percent if tariff else 0 }}" placeholder="Descuento póliza %" class="border p-3 rounded-lg" aria-label="Descuento póliza %">
             <label class="flex items-center gap-2 border p-3 rounded-lg text-sm font-bold text-slate-700">
-                <input type="checkbox" name="accepts_manual_payment" class="accent-purple-700" {% if not tariff or tariff.accepts_manual_payment %}checked{% endif %} aria-label="Accepts manual payment">
+                <input type="checkbox" name="accepts_manual_payment" class="accent-slate-700" {% if not tariff or tariff.accepts_manual_payment %}checked{% endif %} aria-label="Accepts manual payment">
                 Aceptar pago manual
             </label>
             <textarea name="payment_instructions" rows="3" placeholder="Instrucciones visibles para pacientes" class="border p-3 rounded-lg sm:col-span-2" aria-label="Instrucciones visibles para pacientes">{{ tariff.payment_instructions if tariff else '' }}</textarea>
@@ -207,9 +207,9 @@
                         <div>
                             <p class="font-semibold text-sm text-slate-900">{{ ticket.patient.name }}</p>
                             <p class="text-xs text-slate-500">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }} | ${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
-                            {% if ticket.proof_image %}<a href="/uploads/{{ ticket.proof_image }}" target="_blank" class="text-xs font-semibold text-purple-700" rel="noopener noreferrer">Ver comprobante</a>{% endif %}
+                            {% if ticket.proof_image %}<a href="/uploads/{{ ticket.proof_image }}" target="_blank" class="text-xs font-semibold text-slate-700" rel="noopener noreferrer">Ver comprobante</a>{% endif %}
                         </div>
-                        <span class="px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">{{ ticket.status }}</span>
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">{{ ticket.status|estado }}</span>
                     </div>
                     {% if ticket.status == 'pending' %}
                     <form method="POST" class="mt-3 grid gap-2">
@@ -218,7 +218,7 @@
                         <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
                         <textarea name="doctor_note" rows="2" placeholder="Nota opcional" class="border p-2 rounded-lg text-xs" aria-label="Nota opcional"></textarea>
                         <div class="grid grid-cols-2 gap-2">
-                            <button name="decision" value="approve" class="bg-positive text-white py-2 rounded-lg text-xs font-semibold">Aprobar</button>
+                            <button name="decision" value="approve" class="bg-accent text-white py-2 rounded-lg text-xs font-semibold">Aprobar</button>
                             <button name="decision" value="reject" class="bg-critical text-white py-2 rounded-lg text-xs font-semibold">Rechazar</button>
                         </div>
                     </form>
@@ -232,7 +232,7 @@
     </div>
 
     <div class="mt-5 border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-slate-500"></i> Clientes con membresia o poliza</h3>
+        <h3 class="font-semibold text-slate-900 mb-3 flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-slate-500"></i> Clientes con membresia o póliza</h3>
         <div class="grid md:grid-cols-2 gap-3">
             {% for row in client_subscription_rows %}
             {% set sub = row.subscription %}
@@ -242,13 +242,13 @@
                         <p class="font-semibold text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
                         <p class="text-xs text-slate-500">{{ plan_labels.get(sub.plan_type, sub.plan_type) }} | Queda {{ row.remaining }}</p>
                     </div>
-                    <span class="text-xs font-semibold px-2 py-1 rounded-full {% if row.has_policy %}bg-slate-100 text-cyan-700{% else %}bg-slate-100 text-purple-700{% endif %}">
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full {% if row.has_policy %}bg-slate-100 text-slate-700{% else %}bg-slate-100 text-slate-700{% endif %}">
                         {{ 'Poliza' if row.has_policy else 'Pago' }}
                     </span>
                 </div>
             </div>
             {% else %}
-            <p class="text-sm text-slate-600 md:col-span-2">Sin clientes activos por mensualidad, trimestral, anual o poliza.</p>
+            <p class="text-sm text-slate-600 md:col-span-2">Sin clientes activos por mensualidad, trimestral, anual o póliza.</p>
             {% endfor %}
         </div>
     </div>
@@ -257,8 +257,8 @@
 
 <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
     <!-- 4. CHATS ABIERTOS -->
-    <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-positive">
-        <h2 class="text-xl font-bold mb-4 text-emerald-600 flex items-center gap-2">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+        <h2 class="text-xl font-bold mb-4 text-slate-900 flex items-center gap-2">
             <i data-lucide="message-circle" class="w-5 h-5"></i> Abiertos
         </h2>
         <ul class="space-y-3">
@@ -267,10 +267,10 @@
                 <li class="border border-slate-200 bg-slate-50 p-3 rounded-lg hover:bg-positive-subtle transition-colors group {% if item.unread > 0 %}border-l-4 border-l-blue-500 shadow-sm bg-blue-50/30{% endif %}">
                     <a href="/doctor/chat/{{ c.id }}" class="block">
                         <div class="flex justify-between items-center mb-1">
-                            <h3 class="font-bold text-slate-800 group-hover:text-emerald-700">{{ c.patient.name }}</h3>
+                            <h3 class="font-bold text-slate-800 group-hover:text-slate-900">{{ c.patient.name }}</h3>
                             <div class="flex items-center gap-2">
                                 {% if item.unread > 0 %}
-                                    <span class="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full animate-pulse">{{ item.unread }}</span>
+                                    <span class="bg-accent text-white text-xs font-semibold px-2 py-0.5 rounded-full animate-pulse">{{ item.unread }}</span>
                                 {% endif %}
                                 <span class="text-xs font-bold text-slate-600">
                                     {{ item.last_msg.timestamp|colombia_time if item.last_msg else '' }}
@@ -287,8 +287,8 @@
     </div>
 
     <!-- 5. CITAS Y MÉTRICAS (UNIFICADO) -->
-    <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-blue-500 overflow-y-auto max-h-[700px] custom-scrollbar">
-        <h2 class="text-xl font-bold mb-4 text-blue-600 flex items-center gap-2">
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 overflow-y-auto max-h-[700px] custom-scrollbar">
+        <h2 class="text-xl font-bold mb-4 text-slate-900 flex items-center gap-2">
             <i data-lucide="calendar" class="w-5 h-5"></i> Citas y Tiempos
         </h2>
         <ul class="space-y-2 mb-6">
@@ -306,7 +306,7 @@
                     
                     <div class="mt-2">
                         {% if appt.status == 'pending' %}
-                            <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-positive text-white py-2 rounded-lg font-bold text-sm hover:bg-positive transition shadow-sm">
+                            <a href="{% if current_user.role == 'patient' %}/patient/join_appointment/{{ appt.id }}{% else %}/doctor/join_appointment/{{ appt.id }}{% endif %}" class="block text-center bg-accent text-white py-2 rounded-lg font-bold text-sm hover:bg-accent-hover transition shadow-sm">
                                 <i data-lucide="video" class="w-4 h-4"></i> Unirse a la consulta
                             </a>
                         {% elif appt.status == 'in_progress' %}
@@ -367,24 +367,24 @@
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold text-xs shadow-sm hover:bg-blue-700 transition-colors">Guardar Métricas</button>
+                <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg font-bold text-xs shadow-sm hover:bg-accent-hover transition-colors">Guardar Métricas</button>
             </form>
         </div>
     </div>
 
     <!-- 6. HORARIO Y BLOQUEOS -->
-    <div class="bg-white p-5 rounded-lg shadow-sm border-t-4 border-positive overflow-y-auto max-h-[760px] custom-scrollbar lg:col-span-2">
-        <h2 class="text-xl font-bold mb-2 text-teal-600 flex items-center gap-2">
+    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 overflow-y-auto max-h-[760px] custom-scrollbar lg:col-span-2">
+        <h2 class="text-xl font-bold mb-2 text-slate-900 flex items-center gap-2">
             <i data-lucide="calendar-clock" class="w-5 h-5"></i> Mi Horario
         </h2>
         <div class="bg-positive-subtle border border-positive-subtle rounded-lg p-3 mb-3">
-            <p class="text-xs font-semibold uppercase tracking-widest text-teal-700">Resumen publicado</p>
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-700">Resumen publicado</p>
             <p class="text-sm font-bold text-slate-700 mt-1">{{ current_user.schedule or 'Configura al menos un día para aparecer disponible.' }}</p>
         </div>
         <div class="grid grid-cols-3 gap-2 mb-4 text-xs font-semibold">
-            <button type="button" onclick="applySchedulePreset('office')" class="bg-positive-subtle text-teal-700 p-2 rounded-lg hover:bg-positive-subtle">L-V oficina</button>
-            <button type="button" onclick="applySchedulePreset('morning')" class="bg-blue-50 text-blue-700 p-2 rounded-lg hover:bg-blue-100">Mañanas</button>
-            <button type="button" onclick="clearSchedule()" class="bg-slate-100 text-slate-600 p-2 rounded-lg hover:bg-slate-200">Limpiar</button>
+            <button type="button" onclick="applySchedulePreset('office')" class="bg-slate-100 text-slate-700 p-2 rounded-lg hover:bg-slate-200">L-V oficina</button>
+            <button type="button" onclick="applySchedulePreset('morning')" class="bg-slate-100 text-slate-700 p-2 rounded-lg hover:bg-slate-200">Mañanas</button>
+            <button type="button" onclick="clearSchedule()" class="bg-slate-100 text-slate-700 p-2 rounded-lg hover:bg-slate-200">Limpiar</button>
         </div>
         
         <form method="POST" action="/doctor/save_schedule" class="space-y-3 mb-6">
@@ -394,7 +394,7 @@
             {% for i in range(7) %}
                 {% set sched = schedules|selectattr('day_of_week', 'equalto', i)|selectattr('specific_date', 'none')|first %}
                 <div class="grid grid-cols-[auto_1fr] gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 schedule-row" data-day="{{ i }}">
-                    <input type="checkbox" name="active_{{ i }}" {% if sched %}checked{% endif %} class="schedule-active w-5 h-5 accent-teal-600 mt-6" aria-label="Active {{ i }}">
+                    <input type="checkbox" name="active_{{ i }}" {% if sched %}checked{% endif %} class="schedule-active w-5 h-5 accent-slate-700 mt-6" aria-label="Active {{ i }}">
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <label class="text-xs font-semibold text-slate-700">{{ days[i] }}</label>
@@ -407,7 +407,7 @@
                     </div>
                 </div>
             {% endfor %}
-            <button type="submit" class="w-full bg-positive text-white py-2 rounded-lg font-bold text-xs mt-2 hover:bg-positive transition-colors">Guardar Semana</button>
+            <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg font-bold text-xs mt-2 hover:bg-accent-hover transition-colors">Guardar Semana</button>
         </form>
 
         <div class="border-t pt-4">
@@ -420,7 +420,7 @@
                     <input type="time" name="block_start" value="08:00" class="w-1/2 border p-2 rounded-lg text-xs focus:outline-none" aria-label="Block start">
                     <input type="time" name="block_end" value="17:00" class="w-1/2 border p-2 rounded-lg text-xs focus:outline-none" aria-label="Block end">
                 </div>
-                <button type="submit" class="w-full bg-slate-800 text-white py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors">Bloquear Fecha</button>
+                <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-black transition-colors">Bloquear Fecha</button>
             </form>
 
             <div class="mt-4">
@@ -447,8 +447,8 @@
 
     <!-- 7. FLUJOS Y PACIENTES -->
     <div class="space-y-6">
-        <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-slate-700">
-            <h2 class="text-xl font-bold mb-4 text-purple-600 flex items-center gap-2">
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold mb-4 text-slate-900 flex items-center gap-2">
                 <i data-lucide="git-branch" class="w-5 h-5"></i> Flujos
             </h2>
             <form method="POST" class="space-y-2">
@@ -456,12 +456,12 @@
                 <input type="hidden" name="action" value="create_flow">
                 <input type="text" name="title" required placeholder="Título del Flujo" class="w-full border p-2 rounded-lg text-xs focus:outline-none focus:border-slate-200" aria-label="Título del Flujo">
                 <textarea name="flow_data" required placeholder='JSON aquí...' class="w-full border p-2 rounded-lg text-xs font-mono h-12 focus:outline-none focus:border-slate-200" aria-label="Flow data"></textarea>
-                <button type="submit" class="w-full bg-slate-700 text-white py-2 rounded-lg font-bold text-xs hover:bg-slate-700 transition-colors">Crear Flujo</button>
+                <button type="submit" class="w-full bg-accent text-white py-2 rounded-lg font-bold text-xs hover:bg-accent transition-colors">Crear Flujo</button>
             </form>
         </div>
 
-        <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-caution">
-            <h2 class="text-xl font-bold mb-4 text-orange-600 flex items-center gap-2">
+        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold mb-4 text-slate-900 flex items-center gap-2">
                 <i data-lucide="users" class="w-5 h-5"></i> Pacientes
             </h2>
             <div class="relative mb-3">

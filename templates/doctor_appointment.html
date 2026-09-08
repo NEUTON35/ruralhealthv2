@@ -14,7 +14,7 @@
 
     <!-- Selección de Hora -->
     {% if selected_date %}
-        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500 mt-6">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mt-6">
             <h3 class="font-bold text-gray-800 mb-4 text-lg">Sus horas para el {{ selected_date }}</h3>
             
             {% if slots %}
@@ -33,7 +33,7 @@
                                 {% if slot.status == 'available' %}
                                 <label class="cursor-pointer">
                                     <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required aria-label="Hora">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-positive-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-positive-subtle transition">
+                                    <div class="peer-checked:bg-accent peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-accent-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-accent-border transition">
                                         {{ slot.time }}
                                     </div>
                                 </label>
@@ -49,13 +49,13 @@
 
                     {% if afternoon_slots %}
                     <div>
-                        <h4 class="font-bold text-sm text-orange-700 mb-2 flex items-center gap-2"><i data-lucide="sunset" class="w-4 h-4"></i> Tarde</h4>
+                        <h4 class="font-bold text-sm text-slate-900 mb-2 flex items-center gap-2"><i data-lucide="sunset" class="w-4 h-4"></i> Tarde</h4>
                         <div class="grid grid-cols-4 md:grid-cols-6 gap-3">
                             {% for slot in afternoon_slots %}
                                 {% if slot.status == 'available' %}
                                 <label class="cursor-pointer">
                                     <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required aria-label="Hora">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-positive-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-positive-subtle transition">
+                                    <div class="peer-checked:bg-accent peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-accent-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-accent-border transition">
                                         {{ slot.time }}
                                     </div>
                                 </label>
@@ -72,7 +72,7 @@
                     <div class="border-t pt-4 mt-4">
                         <input type="text" name="description" placeholder="Motivo de la cita..." class="w-full border p-3 rounded-lg text-lg focus:border-blue-500 focus:outline-none" aria-label="Motivo de la cita...">
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700 flex items-center justify-center gap-2 transition shadow-sm">
+                    <button type="submit" class="w-full bg-accent text-white p-4 rounded-lg font-bold text-xl hover:bg-accent-hover flex items-center justify-center gap-2 transition shadow-sm">
                         <i data-lucide="check-circle" class="w-6 h-6"></i> Confirmar Cita para {{ patient.name }}
                     </button>
                 </form>

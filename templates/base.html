@@ -135,7 +135,7 @@
                 </div>
             {% else %}
                 {% if request.path != '/login' and request.path != '/register' %}
-                <a href="/login" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors font-medium justify-center mt-4">
+                <a href="/login" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-accent text-white hover:bg-accent-hover transition-colors font-medium justify-center mt-4">
                     Iniciar Sesión
                 </a>
                 {% endif %}
@@ -148,7 +148,7 @@
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full md:mt-8">
             {% if current_user.is_authenticated and current_user.must_change_password %}
             <div class="bg-caution-subtle border-2 border-caution rounded-lg p-5 mb-5">
-                <h2 class="font-semibold text-amber-900 flex items-center gap-2 mb-2">
+                <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-2">
                     <i data-lucide="key-round" class="w-5 h-5"></i>
                     Debe cambiar la contraseña inicial
                 </h2>
@@ -182,7 +182,7 @@
         </footer>
     </div>
 
-    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-medical text-white px-4 py-3 rounded-lg font-semibold shadow-sm items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
+    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-accent text-white px-4 py-3 rounded-lg font-semibold shadow-sm items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
         <i data-lucide="download" class="w-5 h-5"></i>
         Instalar en pantalla de inicio
     </button>
@@ -311,7 +311,7 @@
                         if (data.results && data.results.length > 0) {
                             searchResults.innerHTML = data.results.map(item => `
                                 <a href="${item.url}" class="flex items-center gap-3 p-3 hover:bg-white rounded-lg group transition-colors border border-transparent hover:border-slate-200 hover:shadow-sm">
-                                    <div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <div class="bg-accent/10 p-2 rounded-lg text-primary group-hover:bg-accent group-hover:text-white transition-colors">
                                         <i data-lucide="${item.icon || 'file'}" class="w-5 h-5"></i>
                                     </div>
                                     <div>

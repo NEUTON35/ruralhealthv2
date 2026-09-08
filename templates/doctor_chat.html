@@ -8,7 +8,7 @@
                 <h2 class="text-xl font-semibold tracking-tight">{{ chat.patient.name }}</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="border border-slate-300 text-slate-700 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider">
-                        {{ chat.status }}
+                        {{ chat.status|estado }}
                     </span>
                     <span class="text-sm text-slate-600 flex items-center gap-1 font-medium bg-slate-100 px-2 py-1 rounded-lg">
                         <i data-lucide="clock" class="w-3.5 h-3.5"></i> Mi horario: {{ current_user.schedule or 'No definido' }}
@@ -45,7 +45,7 @@
             
             <form method="POST" action="/doctor/mark_no_show/{{ chat.appointment.id }}" class="mt-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="bg-critical text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-critical transition">
+                <button type="submit" class="bg-critical text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-critical-hover transition">
                     Marcar como "No Asistió"
                 </button>
             </form>
@@ -148,7 +148,7 @@
                     <span class="text-xs">{{ msg.timestamp|colombia_time }}</span>
                     {% if msg.sender_id == current_user.id %}
                         {% if msg.is_read %}
-                        <i data-lucide="check-check" class="w-3.5 h-3.5 text-blue-200" aria-label="Leido"></i>
+                        <i data-lucide="check-check" class="w-3.5 h-3.5 text-slate-500" aria-label="Leido"></i>
                         {% else %}
                         <i data-lucide="check" class="w-3.5 h-3.5" aria-label="Enviado"></i>
                         {% endif %}
@@ -165,7 +165,7 @@
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="send_message">
         <input type="text" name="content" placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
-        <button type="submit" class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shrink-0">
+        <button type="submit" class="bg-accent text-white p-4 rounded-full hover:bg-accent-hover transition shadow-sm shrink-0">
             <i data-lucide="send" class="w-5 h-5 ml-1"></i>
         </button>
     </form>
@@ -180,7 +180,7 @@
 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
     <!-- 0. Registro de Historia Clinica (NUEVO) -->
     <div class="md:col-span-2 bg-white p-4 rounded-lg border-2 border-caution-border shadow-sm">
-        <h3 class="font-bold text-orange-800 text-xs mb-3 uppercase tracking-wider flex items-center gap-1">
+        <h3 class="font-bold text-slate-900 text-xs mb-3 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="clipboard-list" class="w-4 h-4"></i> Registro de Historia Clínica
         </h3>
         <form method="POST" class="space-y-3">
@@ -189,11 +189,11 @@
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="text-xs font-bold text-slate-600 uppercase">Código CIE-10 (Diag.)</label>
-                    <input type="text" name="cie10_code" placeholder="Ej: Z000" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Codigo CIE-10">
+                    <input type="text" name="cie10_code" placeholder="Ej: Z000" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Código CIE-10">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-600 uppercase">Código CUPS (Proc.)</label>
-                    <input type="text" name="cups_code" placeholder="Ej: 890201" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Codigo CUPS">
+                    <input type="text" name="cups_code" placeholder="Ej: 890201" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Código CUPS">
                 </div>
             </div>
             {# Causa externa y finalidad. Antes el reporte los inventaba: toda
@@ -251,14 +251,14 @@
             </div>
             <form method="POST" action="/doctor/end_consultation/{{ chat.id }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-critical text-white p-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 hover:bg-critical transition">
+                <button type="submit" class="w-full bg-critical text-white p-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 hover:bg-critical-hover transition">
                     <i data-lucide="phone-off" class="w-4 h-4"></i> Salir de atención
                 </button>
             </form>
         {% else %}
             <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/consultation" class="mb-2">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-positive text-white p-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 hover:bg-positive transition">
+                <button type="submit" class="w-full bg-accent text-white p-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 hover:bg-accent-hover transition">
                     <i data-lucide="stethoscope" class="w-4 h-4"></i> Atender
                 </button>
             </form>
@@ -282,22 +282,22 @@
 
     <!-- 2. Agendar Cita -->
     <a href="/doctor/book_appointment/{{ chat.patient.id }}" class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col justify-between hover:border-blue-400 transition group shadow-sm">
-        <h3 class="font-bold text-blue-800 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
+        <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="calendar" class="w-4 h-4"></i> Agendar Cita
         </h3>
         <p class="text-xs text-blue-600 mb-2 leading-tight">Registrar cita formal en el calendario del hospital.</p>
-        <div class="bg-blue-600 text-white p-2 rounded-lg font-bold text-sm text-center flex items-center justify-center gap-2 group-hover:bg-blue-700">
+        <div class="bg-accent text-white p-2 rounded-lg font-bold text-sm text-center flex items-center justify-center gap-2 group-hover:bg-accent">
              Calendario <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </div>
     </a>
 
     <!-- 3. Herramientas Rápidas -->
     <a href="{{ url_for('doctor.prescription', patient_id=chat.patient.id, chat_id=chat.id) }}" class="bg-positive-subtle p-3 rounded-lg border-2 border-positive-border flex flex-col justify-between hover:border-positive transition group shadow-sm">
-        <h3 class="font-bold text-emerald-800 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="pill" class="w-4 h-4"></i> Orden medica
+        <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="pill" class="w-4 h-4"></i> Orden médica
         </h3>
         <p class="text-xs text-emerald-700 mb-2 leading-tight">Firmar receta digital con hash de seguridad.</p>
-        <div class="bg-positive text-white p-2 rounded-lg font-bold text-sm text-center flex items-center justify-center gap-2 group-hover:bg-positive">
+        <div class="bg-accent text-white p-2 rounded-lg font-bold text-sm text-center flex items-center justify-center gap-2 group-hover:bg-accent">
              Crear orden <i data-lucide="chevron-right" class="w-4 h-4"></i>
         </div>
     </a>
@@ -309,7 +309,7 @@
             <select name="flow_id" class="w-full border p-1 rounded text-xs mb-1 bg-white focus:outline-none" aria-label="Flow id">
                 {% for flow in flows %}<option value="{{ flow.id }}">{{ flow.title }}</option>{% endfor %}
             </select>
-            <button type="submit" class="w-full bg-slate-700 text-white p-1 rounded-lg font-bold text-xs hover:bg-slate-700 transition">Enviar Formulario</button>
+            <button type="submit" class="w-full bg-accent text-white p-1 rounded-lg font-bold text-xs hover:bg-accent transition">Enviar Formulario</button>
         </form>
         <form method="POST" enctype="multipart/form-data" class="bg-caution-subtle p-2 rounded-lg border-2 border-caution-border shadow-sm">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -322,7 +322,7 @@
     {% if nearby_doctors %}
     <form method="POST" action="{{ url_for('doctor.refer_patient', chat_id=chat.id) }}" class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col justify-between shadow-sm">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <h3 class="font-bold text-cyan-800 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
+        <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="route" class="w-4 h-4"></i> Remitir cerca
         </h3>
         <select name="target_doctor_id" class="w-full border p-2 rounded-lg text-xs bg-white mb-2" aria-label="Target doctor id">
@@ -333,7 +333,7 @@
             {% endfor %}
         </select>
         <input name="reason" value="{{ chat.reason or '' }}" class="w-full border p-2 rounded-lg text-xs mb-2" placeholder="Motivo" aria-label="Motivo">
-        <button class="w-full bg-slate-700 text-white p-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition">Remitir</button>
+        <button class="w-full bg-accent text-white p-2 rounded-lg font-bold text-sm hover:bg-accent transition">Remitir</button>
     </form>
     {% endif %}
 
@@ -341,9 +341,9 @@
     <form method="POST" class="bg-critical-subtle p-3 rounded-lg border-2 border-critical-border flex flex-col justify-between shadow-sm">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="close_chat">
-        <h3 class="font-bold text-red-700 text-xs uppercase tracking-wider mb-1"><i data-lucide="power" class="w-3 h-3 inline"></i> Finalizar Caso</h3>
+        <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1"><i data-lucide="power" class="w-3 h-3 inline"></i> Finalizar Caso</h3>
         <p class="text-xs text-red-600/70 mb-2">Cierra la consulta y habilita la calificación del paciente.</p>
-        <button type="submit" class="w-full bg-critical text-white p-2 rounded-lg font-bold text-sm hover:bg-critical transition">Cerrar Sesión</button>
+        <button type="submit" class="w-full bg-critical text-white p-2 rounded-lg font-bold text-sm hover:bg-critical-hover transition">Cerrar Sesión</button>
     </form>
 </div>
 {% endif %}
@@ -369,7 +369,7 @@
 <!-- Modal Video Llamada -->
 <div id="video-call-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg overflow-hidden w-full max-w-3xl h-[600px] relative shadow-sm">
-        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-4 right-4 bg-critical text-white p-2 rounded-full z-10 hover:bg-critical transition shadow-sm">
+        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-4 right-4 bg-critical text-white p-2 rounded-full z-10 hover:bg-critical-hover transition shadow-sm">
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
         <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone; display-capture" width="100%" height="100%"></iframe>

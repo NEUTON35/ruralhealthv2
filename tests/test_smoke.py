@@ -320,9 +320,22 @@ class TestAccessibleMarkup:
         assert not diminutos, f'texto por debajo del minimo legible: {diminutos}'
 
     def test_no_insufficient_contrast_on_text(self):
-        """text-slate-400 sobre blanco da 2.56:1; AA exige 4.5:1."""
+        """text-slate-400 sobre blanco da 2.56:1; AA exige 4.5:1.
+
+        Vale para cualquier familia: el tono 300 o 400 de cualquier color de
+        Tailwind se queda por debajo de AA sobre fondo claro. Antes solo se
+        miraba slate y gray, y por ahi se colo un `text-indigo-300` en la
+        pista del pad de firma que no se leia.
+        """
         import glob
         import re
+
+        FAMILIAS = ('slate|gray|zinc|neutral|stone|red|orange|amber|yellow|'
+                    'lime|green|emerald|teal|cyan|sky|blue|indigo|violet|'
+                    'purple|fuchsia|pink|rose')
+        # Sobre fondo oscuro un tono claro es lo correcto, no un fallo.
+        OSCURO = re.compile(r'bg-(?:accent|critical|caution|positive|primary|'
+                            r'medical|black|slate-[6-9]00|[a-z]+-[6-9]00)')
 
         malos = []
         for path in glob.glob('templates/*.html'):
@@ -330,7 +343,10 @@ class TestAccessibleMarkup:
             for etiqueta in re.findall(r'<[a-zA-Z][^>]*>', src):
                 if etiqueta.startswith('<i ') or 'data-lucide' in etiqueta:
                     continue   # los iconos no transmiten texto
-                if re.search(r'(?<!placeholder:)text-(slate|gray)-[34]00', etiqueta):
+                if OSCURO.search(etiqueta):
+                    continue
+                if re.search(r'(?<!placeholder:)text-(?:%s)-[34]00' % FAMILIAS,
+                             etiqueta):
                     malos.append(f'{path}: {etiqueta[:70]}')
         assert not malos, f'contraste por debajo de AA: {malos[:10]}'
 
@@ -437,3 +453,46 @@ class TestThirdPartyResources:
         sw = open('static/service-worker.js', encoding='utf-8').read()
         for recurso in ('/static/css/app.css', '/static/vendor/lucide.min.js'):
             assert recurso in sw, f'{recurso} no se precachea'
+
+
+class TestEstadosEnEspanol:
+    """La base guarda los estados en inglés; la pantalla no debe mostrarlos así.
+
+    El profesional veía «OPEN» sobre una consulta abierta y «no_show» cuando el
+    paciente no llegó. Se traduce al mostrar, sin tocar el valor almacenado:
+    los estados también viajan al RIPS y al IHCE, y cambiarlos en la base
+    obligaría a migrar datos.
+    """
+
+    def test_traduce_los_estados_conocidos(self):
+        from estados import traducir
+
+        assert traducir('open') == 'Abierta'
+        assert traducir('no_show') == 'No asistió'
+        assert traducir('sin_stock') == 'Sin existencias'
+        assert traducir('in_progress') == 'En curso'
+
+    def test_no_distingue_mayusculas_ni_espacios(self):
+        from estados import traducir
+
+        assert traducir(' Attended ') == 'Atendida'
+
+    def test_un_estado_desconocido_se_muestra_tal_cual(self):
+        """Un estado invisible es peor que uno sin traducir."""
+        from estados import traducir
+
+        assert traducir('estado_nuevo_sin_traducir') == 'estado_nuevo_sin_traducir'
+        assert traducir(None) == ''
+
+    def test_ninguna_plantilla_imprime_un_estado_crudo(self):
+        import glob
+        import re
+
+        crudos = []
+        for path in glob.glob('templates/**/*.html', recursive=True):
+            src = open(path, encoding='utf-8').read()
+            for hallazgo in re.findall(r'\{\{\s*[a-z_]+(?:\.[a-z_]+)*\.status\s*'
+                                       r'(?:\|[^}]*)?\}\}', src):
+                if '|estado' not in hallazgo:
+                    crudos.append(f'{path}: {hallazgo}')
+        assert not crudos, f'estados sin traducir en pantalla: {crudos}'

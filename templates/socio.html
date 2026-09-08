@@ -5,18 +5,18 @@
         <div class="mb-6">
             <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600">RuralHealth para instituciones</p>
             <h1 class="text-2xl font-semibold text-slate-900 mt-1">Sea socio</h1>
-            <p class="text-slate-500 mt-2">Dejenos sus datos y nos comunicaremos con usted para activar su clinica en el sistema.</p>
+            <p class="text-slate-500 mt-2">Dejenos sus datos y nos comunicaremos con usted para activar su clínica en el sistema.</p>
         </div>
 
         <form method="POST" class="grid sm:grid-cols-2 gap-3">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input name="nombre" required placeholder="Nombre completo" class="border p-3 rounded-lg" aria-label="Nombre completo">
-            <input name="institucion" placeholder="Institucion" class="border p-3 rounded-lg" aria-label="Institucion">
-            <input name="telefono" placeholder="Telefono" class="border p-3 rounded-lg" aria-label="Telefono">
+            <input name="institucion" placeholder="Institución" class="border p-3 rounded-lg" aria-label="Institución">
+            <input name="telefono" placeholder="Teléfono" class="border p-3 rounded-lg" aria-label="Teléfono">
             <input name="email" type="email" placeholder="Email" class="border p-3 rounded-lg" aria-label="Email">
             <input name="ciudad" placeholder="Ciudad" class="border p-3 rounded-lg sm:col-span-2" aria-label="Ciudad">
-            <textarea name="mensaje" rows="5" placeholder="Mensaje o necesidades de la institucion" class="border p-3 rounded-lg sm:col-span-2" aria-label="Mensaje o necesidades de la institucion"></textarea>
-            <button class="bg-positive text-white px-4 py-3 rounded-lg font-semibold sm:col-span-2 inline-flex items-center justify-center gap-2">
+            <textarea name="mensaje" rows="5" placeholder="Mensaje o necesidades de la institución" class="border p-3 rounded-lg sm:col-span-2" aria-label="Mensaje o necesidades de la institución"></textarea>
+            <button class="bg-accent text-white px-4 py-3 rounded-lg font-semibold sm:col-span-2 inline-flex items-center justify-center gap-2">
                 <i data-lucide="send" class="w-5 h-5"></i>
                 Enviar solicitud
             </button>

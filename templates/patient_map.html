@@ -5,10 +5,10 @@
 <div class="max-w-6xl mx-auto space-y-4">
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Mapa de atencion</h1>
-            <p class="text-sm text-slate-500">Farmacias y consultorios cercanos a su ubicacion registrada.</p>
+            <h1 class="text-2xl font-semibold text-slate-900">Mapa de atención</h1>
+            <p class="text-sm text-slate-500">Farmacias y consultorios cercanos a su ubicación registrada.</p>
         </div>
-        <a href="{{ url_for('patient.dashboard', near=1) }}" class="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold">
+        <a href="{{ url_for('patient.dashboard', near=1) }}" class="inline-flex items-center justify-center gap-2 bg-accent text-white px-4 py-3 rounded-lg font-semibold">
             <i data-lucide="stethoscope" class="w-5 h-5"></i>
             Doctores cerca de mi
         </a>
@@ -18,8 +18,8 @@
         <form method="POST" action="{{ url_for('patient.update_location') }}" class="grid lg:grid-cols-8 gap-2 items-end">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="lg:col-span-3">
-                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Direccion</label>
-                <input name="address" value="{{ current_user.address or '' }}" placeholder="Direccion o vereda" class="w-full border p-3 rounded-lg" aria-label="Direccion o vereda">
+                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Dirección</label>
+                <input name="address" value="{{ current_user.address or '' }}" placeholder="Dirección o vereda" class="w-full border p-3 rounded-lg" aria-label="Dirección o vereda">
             </div>
             <div>
                 <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Latitud</label>
@@ -31,13 +31,13 @@
             </div>
             <label class="lg:col-span-2 flex items-start gap-2 text-xs text-slate-600 border border-slate-200 rounded-lg p-3">
                 <input type="checkbox" name="accept_location" required class="mt-1 accent-emerald-600" aria-label="Accept location">
-                <span>Autorizo usar mi ubicacion para calcular cercania y orientar mi atencion.</span>
+                <span>Autorizo usar mi ubicación para calcular cercania y orientar mi atención.</span>
             </label>
             <div class="flex gap-2 lg:col-span-1">
                 <button type="button" data-use-browser-location class="border border-slate-200 px-3 py-3 rounded-lg font-bold text-slate-700" title="Usar GPS del navegador">
                     <i data-lucide="crosshair" class="w-5 h-5"></i>
                 </button>
-                <button class="bg-positive text-white px-4 py-3 rounded-lg font-semibold">Guardar</button>
+                <button class="bg-accent text-white px-4 py-3 rounded-lg font-semibold">Guardar</button>
             </div>
             <div class="lg:col-span-8 h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#patient-lat" data-lng-input="#patient-lng"></div>
         </form>
@@ -49,7 +49,7 @@
 
     <div class="grid lg:grid-cols-3 gap-4">
         <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
-            <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="building-2" class="w-5 h-5 text-slate-500"></i> Clinicas</h2>
+            <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="building-2" class="w-5 h-5 text-slate-500"></i> Clínicas</h2>
             <div id="clinic-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
         </section>
         <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-4">

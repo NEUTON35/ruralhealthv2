@@ -17,7 +17,7 @@
                 <i data-lucide="fingerprint" class="w-4 h-4 text-slate-500"></i> CC: {{ patient.cedula }}
             </span>
             {% if patient.phone %}
-            <a href="tel:{{ patient.phone }}" class="flex items-center gap-1.5 font-bold bg-positive-subtle border border-positive-subtle px-3 py-1.5 rounded-lg text-xs text-emerald-700 shadow-sm hover:bg-positive-subtle transition-colors">
+            <a href="tel:{{ patient.phone }}" class="flex items-center gap-1.5 font-bold bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs text-slate-700 hover:bg-slate-100 transition-colors">
                 <i data-lucide="phone" class="w-4 h-4 text-slate-500"></i> {{ patient.phone }}
             </a>
             {% endif %}
@@ -30,12 +30,12 @@
     </div>
 
     <div class="flex gap-3">
-        <a href="/doctor/book_appointment/{{ patient.id }}" class="group flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm">
+        <a href="/doctor/book_appointment/{{ patient.id }}" class="group flex items-center gap-2 bg-accent text-white px-5 py-3 rounded-lg font-bold text-sm hover:bg-accent-hover transition-colors shadow-sm">
             <i data-lucide="calendar-plus" class="w-4 h-4"></i> 
             Agendar Cita
         </a>
 
-        <a href="/doctor/dashboard" class="group flex items-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-lg font-bold text-sm hover:bg-black transition-colors shadow-sm">
+        <a href="/doctor/dashboard" class="group flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-3 rounded-lg font-bold text-sm hover:bg-slate-100 transition-colors">
             <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
             Volver al Panel
         </a>
@@ -80,7 +80,7 @@
                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold {% if allergy.severity in ('anafilaxia', 'grave') %}bg-critical text-white {% else %}bg-caution-border text-amber-900{% endif %}">
                                 {{ allergy.severity | upper }}
                             </span>
-                            <span class="text-xs font-bold text-slate-600 uppercase">{{ allergy.status }}</span>
+                            <span class="text-xs font-bold text-slate-600 uppercase">{{ allergy.status|estado }}</span>
                         </div>
                     </div>
 
@@ -172,7 +172,7 @@
                     </div>
 
                     <button type="submit"
-                        class="bg-critical text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-critical transition-colors">
+                        class="bg-critical text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-critical-hover transition-colors">
                         Registrar alergia
                     </button>
                 </form>
@@ -200,7 +200,7 @@
                 </div>
                 <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
                     <dt class="text-xs font-semibold uppercase tracking-widest text-slate-600">Gestación</dt>
-                    <dd class="font-semibold text-lg {% if patient.is_pregnant %}text-violet-700{% else %}text-slate-900{% endif %}">
+                    <dd class="font-semibold text-lg {% if patient.is_pregnant %}text-slate-700{% else %}text-slate-900{% endif %}">
                         {{ 'Sí' if patient.is_pregnant else 'No registrada' }}
                     </dd>
                 </div>
@@ -265,7 +265,7 @@
                             placeholder="Código CIE-10 (opcional)"
                             class="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm font-mono focus:border-primary outline-none" aria-label="Código CIE-10 (opcional)">
                         <button type="submit"
-                            class="bg-slate-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-700 transition-colors">
+                            class="bg-slate-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors">
                             Registrar condición
                         </button>
                     </form>
@@ -345,7 +345,7 @@
                         <div class="grid sm:grid-cols-2 gap-2">
                             <input type="text" name="cie10_code" maxlength="10"
                                    placeholder="CIE-10 corregido (opcional)"
-                                   aria-label="Codigo CIE-10 corregido"
+                                   aria-label="Código CIE-10 corregido"
                                    class="border border-slate-200 p-2.5 rounded-lg text-xs focus:border-sky-400 focus:outline-none">
                             <input type="text" name="diagnosis" maxlength="400"
                                    placeholder="Diagnóstico corregido (opcional)"
@@ -357,7 +357,7 @@
                                   aria-label="Resumen corregido"
                                   class="w-full border border-slate-200 p-2.5 rounded-lg text-xs focus:border-sky-400 focus:outline-none resize-y"></textarea>
                         <button type="submit"
-                            class="bg-sky-700 text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-sky-800 transition-colors">
+                            class="bg-accent text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-accent-hover transition-colors">
                             Registrar adenda
                         </button>
                     </form>
@@ -374,12 +374,12 @@
     <div class="bg-slate-50 border-b border-slate-200 p-6 flex justify-between items-center">
         <div>
             <h2 class="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                <i data-lucide="history" class="w-6 h-6 text-caution"></i> 
+                <i data-lucide="history" class="w-6 h-6 text-slate-500"></i> 
                 Línea de Tiempo de Consultas
             </h2>
             <p class="text-sm text-slate-500 font-medium">Se han registrado {{ chats|length }} encuentros médicos.</p>
         </div>
-        <div class="bg-caution-subtle text-orange-700 px-4 py-2 rounded-lg font-semibold text-sm">
+        <div class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm">
             Total: {{ chats|length }}
         </div>
     </div>
@@ -388,13 +388,13 @@
         {% if chats %}
             <div class="grid gap-4">
                 {% for chat in chats %}
-                <div class="group border-2 border-slate-200 rounded-lg p-5 hover:border-caution-border hover:bg-caution-subtle/30 transition-colors flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="group border-2 border-slate-200 rounded-lg p-5 hover:border-accent-border hover:bg-accent-subtle/30 transition-colors flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-3">
-                            <span class="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm {% if chat.status == 'open' %} bg-positive text-white animate-pulse {% else %} bg-slate-200 text-slate-600 {% endif %}">
-                                {{ chat.status }}
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-tighter shadow-sm {% if chat.status == 'open' %} bg-accent text-white animate-pulse {% else %} bg-slate-200 text-slate-600 {% endif %}">
+                                {{ chat.status|estado }}
                             </span>
-                            <h3 class="font-bold text-lg text-slate-800 group-hover:text-orange-700 transition-colors">
+                            <h3 class="font-bold text-lg text-slate-800 group-hover:text-slate-900 transition-colors">
                                 {{ chat.reason or 'Consulta General' }}
                             </h3>
                         </div>
@@ -422,7 +422,7 @@
                     </div>
 
                     <div class="flex gap-2 w-full md:w-auto">
-                        <a href="/doctor/chat/{{ chat.id }}" class="flex-1 md:flex-none text-center bg-white border-2 border-caution text-orange-600 px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-caution hover:text-white transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <a href="/doctor/chat/{{ chat.id }}" class="flex-1 md:flex-none text-center bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-slate-100 transition-colors flex items-center justify-center gap-2">
                             <i data-lucide="eye" class="w-4 h-4"></i> Revisar Detalles
                         </a>
                     </div>
@@ -458,7 +458,7 @@
         {% endif %}
 
         <div class="mt-8">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-blue-600 border-b pb-2">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-slate-900 border-b pb-2">
                 <i data-lucide="calendar-days" class="w-5 h-5"></i> Historial de Citas
             </h2>
             <ul class="space-y-2">
@@ -469,7 +469,7 @@
                         <p class="text-sm text-gray-500">{{ appt.description or 'General' }}</p>
                     </div>
                     <span class="text-xs font-bold px-3 py-1 rounded-full {% if appt.status == 'attended' %}bg-positive-subtle text-green-700 {% elif appt.status == 'no_show' %}bg-critical-subtle text-red-700 {% elif appt.status == 'in_progress' %}bg-caution-subtle text-yellow-700 {% else %}bg-gray-100 text-gray-600{% endif %}">
-                        {{ appt.status }}
+                        {{ appt.status|estado }}
                     </span>
                 </li>
                 {% else %}

@@ -33,7 +33,7 @@
         <form method="POST" class="p-4 sm:p-5 bg-white border-t border-slate-200 flex gap-3 items-center relative">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input name="content" required placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
-            <button class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shrink-0">
+            <button class="bg-accent text-white p-4 rounded-full hover:bg-accent-hover transition shadow-sm shrink-0">
                 <i data-lucide="send" class="w-5 h-5 ml-1"></i>
             </button>
         </form>
@@ -59,7 +59,7 @@
         <!-- Orden Rápida -->
         {% if chat.status == 'open' %}
         <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
-            <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Orden de recoleccion rapida</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Orden de recolección rapida</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="create_pickup_ticket">
@@ -80,7 +80,7 @@
                     </label>
                     {% endfor %}
                 </div>
-                <button class="w-full bg-positive text-white px-3 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-positive transition shadow-sm">
+                <button class="w-full bg-accent text-white px-3 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-sm">
                     <i data-lucide="ticket-check" class="w-5 h-5"></i>
                     Generar ticket
                 </button>
@@ -90,7 +90,7 @@
         <!-- Órdenes Médicas -->
         {% if patient_orders %}
         <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
-            <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Ordenes medicas pendientes</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Ordenes médicas pendientes</h2>
             <div class="space-y-2">
                 {% for order in patient_orders %}
                 <div class="border border-slate-200 rounded-lg p-2">
@@ -105,7 +105,7 @@
         {% if chat.status == 'open' %}
         <form method="POST">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button name="action" value="close" class="w-full bg-critical-subtle text-red-600 px-4 py-3.5 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-critical-subtle border border-critical-border transition">
+            <button name="action" value="close" class="w-full bg-critical-subtle text-red-600 px-4 py-3.5 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-critical-border border border-critical-border transition">
                 <i data-lucide="power" class="w-5 h-5"></i>
                 Finalizar Chat
             </button>

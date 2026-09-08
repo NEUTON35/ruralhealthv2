@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      <button type="submit" class="w-full bg-blue-600 text-white py-3.5 rounded-lg font-semibold text-base inline-flex items-center justify-center gap-2 hover:bg-blue-700 transition shadow-sm">
+      <button type="submit" class="w-full bg-accent text-white py-3.5 rounded-lg font-semibold text-base inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-sm">
         <i data-lucide="truck" class="w-5 h-5"></i>
         Registrar Cargamento
       </button>
@@ -128,7 +128,7 @@
               <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="receive_shipment">
               <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
-              <button type="submit" class="w-full bg-positive text-white px-4 py-2.5 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-1.5 hover:bg-positive transition shadow-sm">
+              <button type="submit" class="w-full bg-accent text-white px-4 py-2.5 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-1.5 hover:bg-accent-hover transition shadow-sm">
                 <i data-lucide="package-check" class="w-4 h-4"></i>
                 Confirmar Recepción
               </button>
@@ -165,7 +165,7 @@ function addMedRow() {
     <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Nombre del medicamento">
     <div class="flex gap-1">
       <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="flex-1 border border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Cant.">
-      <button type="button" onclick="this.closest('.med-row').remove()" class="px-2 text-red-400 hover:text-red-600 transition" aria-label="Quitar medicamento">Quitar</button>
+      <button type="button" onclick="this.closest('.med-row').remove()" class="px-2 text-critical hover:text-critical-hover transition" aria-label="Quitar medicamento">Quitar</button>
     </div>
   `;
   container.appendChild(div);

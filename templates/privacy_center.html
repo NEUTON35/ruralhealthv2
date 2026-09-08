@@ -54,7 +54,7 @@
         <form method="POST" action="{{ url_for('privacy.export_my_data') }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
-                class="bg-positive text-white px-6 py-3 rounded-lg font-bold hover:bg-positive transition-colors inline-flex items-center gap-2">
+                class="bg-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
                 <i data-lucide="file-down" class="w-5 h-5"></i>
                 Descargar mis datos
             </button>
@@ -161,7 +161,7 @@
             </div>
 
             <button type="submit"
-                class="bg-primary text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-dark transition-colors inline-flex items-center gap-2">
+                class="bg-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
                 <i data-lucide="send" class="w-4 h-4"></i>
                 Enviar solicitud
             </button>
@@ -189,7 +189,7 @@
                     </div>
                     {% if item.resolved_at %}
                     <span class="text-emerald-700 bg-positive-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
-                        {{ item.status }}
+                        {{ item.status|estado }}
                     </span>
                     {% elif item.is_overdue %}
                     <span class="text-rose-700 bg-critical-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">

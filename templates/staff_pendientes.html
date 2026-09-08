@@ -52,12 +52,12 @@
     {% set altos = rows | selectattr('urgency', 'equalto', 'alto') | list %}
     {% set normales = rows | selectattr('urgency', 'equalto', 'normal') | list %}
     <div class="bg-critical-subtle border border-critical-subtle rounded-lg p-4 text-center">
-      <p class="text-3xl font-semibold text-red-600">{{ criticos|length }}</p>
-      <p class="text-xs font-semibold uppercase tracking-widest text-red-400 mt-1">Críticos ≥7d</p>
+      <p class="text-3xl font-semibold text-critical">{{ criticos|length }}</p>
+      <p class="text-xs font-semibold uppercase tracking-widest text-critical-text mt-1">Críticos ≥7d</p>
     </div>
     <div class="bg-caution-subtle border border-caution-subtle rounded-lg p-4 text-center">
-      <p class="text-3xl font-semibold text-amber-600">{{ altos|length }}</p>
-      <p class="text-xs font-semibold uppercase tracking-widest text-amber-400 mt-1">Altos 3-6d</p>
+      <p class="text-3xl font-semibold text-caution">{{ altos|length }}</p>
+      <p class="text-xs font-semibold uppercase tracking-widest text-caution-text mt-1">Altos 3-6d</p>
     </div>
     <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
       <p class="text-3xl font-semibold text-slate-600">{{ normales|length }}</p>
@@ -100,7 +100,7 @@
               <p class="font-semibold text-slate-900">{{ ticket.patient.name }}</p>
               <p class="font-mono text-xs text-slate-600">{{ ticket.pickup_code }}</p>
               {% if ticket.is_partial %}
-              <span class="text-xs bg-slate-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Sub-ticket</span>
+              <span class="text-xs bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-bold">Sub-ticket</span>
               {% endif %}
             </td>
             <td class="px-4 py-3">
@@ -170,7 +170,7 @@
                   <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                   <input type="hidden" name="action" value="reactivate">
                   <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
-                  <button type="submit" class="text-xs border border-positive-border px-2.5 py-1.5 rounded-lg font-bold text-emerald-700 bg-positive-subtle hover:bg-positive hover:text-white transition whitespace-nowrap" title="Notificar paciente si hay stock físico">
+                  <button type="submit" class="text-xs border border-positive-border px-2.5 py-1.5 rounded-lg font-bold text-emerald-700 bg-accent-subtle hover:bg-accent hover:text-white transition whitespace-nowrap" title="Notificar paciente si hay stock físico">
                     <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i> Reactivar
                   </button>
                 </form>
@@ -194,7 +194,7 @@
   <!-- Replenishment Alerts -->
   {% if alerts %}
   <section class="bg-white border border-caution-subtle rounded-lg shadow-sm p-5">
-    <h2 class="font-semibold text-amber-800 flex items-center gap-2 mb-4">
+    <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-4">
       <i data-lucide="bell" class="w-5 h-5"></i> Alertas de Reposición Activas
     </h2>
     <div class="grid sm:grid-cols-2 gap-3">

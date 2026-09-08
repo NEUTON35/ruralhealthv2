@@ -8,7 +8,7 @@
     <section class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-purple-600">Pago independiente</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-700">Pago independiente</p>
                 <h1 class="text-2xl font-semibold text-slate-900">Dr. {{ doctor.name }}</h1>
                 <p class="text-slate-500">{{ doctor.specialty or 'Medicina General' }}</p>
             </div>
@@ -20,7 +20,7 @@
         <div class="grid lg:grid-cols-2 gap-5">
             <div class="space-y-4">
                 <div class="border border-slate-200 bg-slate-50 rounded-lg p-4">
-                    <h2 class="font-semibold text-purple-900 flex items-center gap-2 mb-3">
+                    <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3">
                         <i data-lucide="wallet-cards" class="w-5 h-5"></i>
                         Metodos de pago
                     </h2>
@@ -29,7 +29,7 @@
                         <img src="/uploads/{{ tariff.payment_methods_image }}" class="w-full max-h-80 object-contain bg-white" alt="Metodos de pago">
                     </a>
                     {% else %}
-                    <p class="text-sm text-slate-500">El medico aun no subio imagen de metodos de pago.</p>
+                    <p class="text-sm text-slate-500">El médico aun no subio imagen de metodos de pago.</p>
                     {% endif %}
                     {% if tariff.payment_instructions %}
                     <p class="text-sm text-slate-700 mt-3 whitespace-pre-line">{{ tariff.payment_instructions }}</p>
@@ -46,7 +46,7 @@
                                 <p class="font-semibold text-sm text-slate-800">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }}</p>
                                 <p class="text-xs text-slate-500">${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
                             </div>
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">{{ ticket.status }}</span>
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">{{ ticket.status|estado }}</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -70,10 +70,10 @@
                                     {% if discount_percent and price.final_amount != price.amount %}
                                     <span class="line-through">${{ '%.0f'|format(price.amount) }}</span>
                                     {% endif %}
-                                    <span class="font-semibold text-purple-700">${{ '%.0f'|format(price.final_amount) }}</span>
+                                    <span class="font-semibold text-slate-700">${{ '%.0f'|format(price.final_amount) }}</span>
                                 </p>
                             </div>
-                            <input type="radio" name="plan_type" value="{{ price.plan_type }}" required class="accent-purple-700" aria-label="Plan type">
+                            <input type="radio" name="plan_type" value="{{ price.plan_type }}" required class="accent-slate-700" aria-label="Plan type">
                         </div>
                     </label>
                     {% endfor %}
@@ -82,8 +82,8 @@
                     <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Comprobante</label>
                     <input type="file" name="proof" accept="image/*,.pdf" required class="w-full border p-3 rounded-lg text-sm" aria-label="Proof">
                 </div>
-                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el medico" class="w-full border p-3 rounded-lg text-sm" aria-label="Nota opcional para el medico"></textarea>
-                <button class="w-full bg-slate-700 text-white py-3 rounded-lg font-semibold hover:bg-slate-700">Enviar para revision</button>
+                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el médico" class="w-full border p-3 rounded-lg text-sm" aria-label="Nota opcional para el médico"></textarea>
+                <button class="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent">Enviar para revisión</button>
             </form>
         </div>
     </section>

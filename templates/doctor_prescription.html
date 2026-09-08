@@ -26,7 +26,7 @@
         <!-- Alergias -->
         {% if allergies %}
         <div class="bg-critical-subtle border-2 border-critical-border rounded-lg p-5">
-            <h2 class="font-semibold text-rose-900 flex items-center gap-2 mb-3">
+            <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3">
                 <i data-lucide="triangle-alert" class="w-5 h-5"></i>
                 Alergias registradas ({{ allergies | length }})
             </h2>
@@ -62,7 +62,7 @@
         <!-- Tratamiento activo -->
         {% if active_meds %}
         <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
-            <h2 class="font-semibold text-sky-900 text-sm flex items-center gap-2 mb-2">
+            <h2 class="font-semibold text-slate-900 text-sm flex items-center gap-2 mb-2">
                 <i data-lucide="pill" class="w-4 h-4"></i>
                 Tratamiento activo (últimos 90 días)
             </h2>
@@ -74,7 +74,7 @@
         {% if patient.is_pregnant %}
         <div class="bg-slate-50 border border-slate-700 rounded-lg p-4 flex items-center gap-3">
             <i data-lucide="baby" class="w-5 h-5 text-slate-500 shrink-0"></i>
-            <p class="text-sm text-violet-900 font-bold">
+            <p class="text-sm text-slate-900 font-bold">
                 Paciente registrada como gestante. Se verificarán las contraindicaciones en el embarazo.
             </p>
         </div>
@@ -165,7 +165,7 @@
 
         <!-- SECCIÓN 2: Datos del Paciente -->
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            <div class="bg-positive px-5 py-3 text-white">
+            <div class="bg-accent px-5 py-3 text-white">
                 <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="user" class="w-4 h-4"></i> Datos Básicos del Paciente
                 </h2>
@@ -245,7 +245,7 @@
 
         <!-- SECCIÓN 5: Medicamentos (tabla legal completa) -->
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            <div class="bg-positive px-5 py-3 text-white flex items-center justify-between">
+            <div class="bg-accent px-5 py-3 text-white flex items-center justify-between">
                 <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="pill" class="w-4 h-4"></i> Medicamentos
                 </h2>
@@ -442,7 +442,7 @@
                 </div>
                 <div class="border border-dashed border-slate-200 rounded-lg bg-slate-50/30 relative" style="touch-action: none;">
                     <canvas id="signature-canvas" width="700" height="160" class="w-full rounded-lg cursor-crosshair" style="height:160px;"></canvas>
-                    <p class="absolute bottom-2 right-3 text-xs text-indigo-300 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
+                    <p class="absolute bottom-2 right-3 text-xs text-slate-500 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
                 </div>
                 <input type="hidden" name="signature_data" id="signature-data">
                 {% if not current_user.medical_registration %}
@@ -458,7 +458,7 @@
         <div id="live-safety" class="hidden"></div>
 
         <!-- BOTÓN DE ENVÍO -->
-        <button type="submit" class="w-full bg-positive text-white px-6 py-4 rounded-lg font-semibold text-lg inline-flex items-center justify-center gap-3 shadow-sm hover:shadow-emerald-300/50 transition-colors">
+        <button type="submit" class="w-full bg-accent text-white px-6 py-4 rounded-lg font-semibold text-lg inline-flex items-center justify-center gap-3 shadow-sm hover:shadow-emerald-300/50 transition-colors">
             <i data-lucide="shield-check" class="w-6 h-6"></i>
             Firmar y Emitir Orden Médica
         </button>
@@ -620,7 +620,7 @@ function addDiagnosisRow() {
         <div class="sm:col-span-2 flex gap-2">
             <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg text-sm focus:border-caution outline-none" aria-label="Descripción del diagnóstico">
         </div>
-        <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="text-red-400 hover:text-red-600 transition text-sm font-bold">Eliminar</button>
+        <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="text-critical hover:text-critical-hover transition text-sm font-bold">Eliminar</button>
     `;
     container.appendChild(row);
     if (window.lucide) lucide.createIcons();

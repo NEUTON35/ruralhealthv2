@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1 class="text-3xl font-bold mb-6">Panel de Administracion</h1>
+<h1 class="text-3xl font-bold mb-6">Panel de Administración</h1>
 
 <div class="grid sm:grid-cols-3 gap-3 mb-6">
     <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
         <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Citas atendidas</p>
-        <p class="text-2xl font-semibold text-emerald-700">{{ attended_count }}</p>
+        <p class="text-2xl font-semibold text-slate-900">{{ attended_count }}</p>
     </div>
     <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
         <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Doctores</p>
-        <p class="text-2xl font-semibold text-indigo-700">{{ doctors|length }}</p>
+        <p class="text-2xl font-semibold text-slate-900">{{ doctors|length }}</p>
     </div>
     <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-        <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Recepcion</p>
-        <p class="text-2xl font-semibold text-blue-700">{{ receptionists|length }}</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Recepción</p>
+        <p class="text-2xl font-semibold text-slate-900">{{ receptionists|length }}</p>
     </div>
 </div>
 
@@ -25,35 +25,35 @@
             </div>
             <div>
                 <h2 class="text-xl font-semibold">Dashboard de Analítica</h2>
-                <p class="text-violet-200 text-sm">Consultas, medicamentos top, diagnósticos, productividad por doctor</p>
+                <p class="text-slate-200 text-sm">Consultas, medicamentos top, diagnósticos, productividad por doctor</p>
             </div>
         </div>
         <i data-lucide="arrow-right" class="w-6 h-6 group-hover:translate-x-1 transition-transform"></i>
     </div>
 </a>
 
-<section class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-positive mb-6 flex justify-between items-center">
+<section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6 flex justify-between items-center">
     <div>
-        <h2 class="text-2xl font-bold text-emerald-700 flex items-center gap-2"><i data-lucide="file-text" class="w-6 h-6"></i> Exportar RIPS (Minsalud)</h2>
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2"><i data-lucide="file-text" class="w-6 h-6"></i> Exportar RIPS (Minsalud)</h2>
         <p class="text-sm text-slate-500 mt-1">Generar estructura de archivos planos (CT, AF, US, AC, AP) para enviar al Ministerio de Salud.</p>
     </div>
-    <form action="/admin/export_rips" method="GET" class="flex flex-col sm:flex-row gap-3 items-center bg-positive-subtle p-3 rounded-lg border border-positive-subtle">
+    <form action="/admin/export_rips" method="GET" class="flex flex-col sm:flex-row gap-3 items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
         <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-emerald-800">Desde:</span>
-            <input type="date" name="start_date" class="border border-positive-border p-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required aria-label="Fecha de inicio">
+            <span class="text-xs font-bold text-slate-600">Desde:</span>
+            <input type="date" name="start_date" class="border border-slate-200 p-2 rounded-lg text-sm focus:ring-2 focus:ring-accent outline-none" required aria-label="Fecha de inicio">
         </div>
         <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-emerald-800">Hasta:</span>
-            <input type="date" name="end_date" class="border border-positive-border p-2 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none" required aria-label="Fecha de fin">
+            <span class="text-xs font-bold text-slate-600">Hasta:</span>
+            <input type="date" name="end_date" class="border border-slate-200 p-2 rounded-lg text-sm focus:ring-2 focus:ring-accent outline-none" required aria-label="Fecha de fin">
         </div>
-        <button type="submit" class="w-full sm:w-auto bg-positive hover:bg-positive text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors">
+        <button type="submit" class="w-full sm:w-auto bg-accent hover:bg-accent-hover text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors">
             <i data-lucide="download" class="w-5 h-5"></i> Generar ZIP
         </button>
     </form>
 </section>
 
-<section class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700 mb-6">
-    <h2 class="text-2xl font-bold mb-4 text-purple-700 flex items-center gap-2"><i data-lucide="key-round" class="w-6 h-6"></i> Acceso privado de pacientes</h2>
+<section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6">
+    <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="key-round" class="w-6 h-6"></i> Acceso privado de pacientes</h2>
     <div class="grid lg:grid-cols-2 gap-5">
         <div>
             <form method="POST" class="space-y-4 mb-6">
@@ -66,7 +66,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-slate-500 ml-1">Máx Usos</label>
-                        <input type="number" min="1" max="500" name="max_uses" value="1" class="w-full border border-slate-200 p-3 rounded-lg focus:border-slate-700 outline-none transition-colors" aria-label="Numero maximo de usos">
+                        <input type="number" min="1" max="500" name="max_uses" value="1" class="w-full border border-slate-200 p-3 rounded-lg focus:border-slate-700 outline-none transition-colors" aria-label="Número maximo de usos">
                     </div>
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-slate-500 ml-1">Días Vigencia</label>
@@ -77,18 +77,18 @@
                     <label class="text-xs font-bold text-slate-500 ml-1">Descripción</label>
                     <input name="description" placeholder="Referencia para administración" class="w-full border border-slate-200 p-3 rounded-lg focus:border-slate-700 outline-none transition-colors" aria-label="Referencia para administración">
                 </div>
-                <button class="w-full bg-slate-700 hover:bg-slate-700 text-white py-4 rounded-lg font-semibold shadow-sm transition-colors">
+                <button class="w-full bg-accent hover:bg-accent text-white py-4 rounded-lg font-semibold shadow-sm transition-colors">
                     Crear Código de Acceso
                 </button>
             </form>
             <div class="space-y-2 max-h-72 overflow-y-auto">
                 {% for code in access_codes %}
                 <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    <p class="font-mono font-semibold text-purple-950">{{ code.code }}</p>
-                    <p class="text-xs text-purple-700">{{ code.uses }}/{{ code.max_uses }} usos{% if code.duration_days %} | {{ code.duration_days }} dias{% endif %}</p>
+                    <p class="font-mono font-semibold text-slate-900">{{ code.code }}</p>
+                    <p class="text-xs text-slate-700">{{ code.uses }}/{{ code.max_uses }} usos{% if code.duration_days %} | {{ code.duration_days }} dias{% endif %}</p>
                 </div>
                 {% else %}
-                <p class="text-sm text-slate-600">Sin codigos creados.</p>
+                <p class="text-sm text-slate-600">Sin códigos creados.</p>
                 {% endfor %}
             </div>
         </div>
@@ -101,7 +101,7 @@
                     <div>
                         <p class="font-semibold text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
                         <p class="text-xs text-slate-500">{{ access.source }} | Queda {{ row.remaining }}{% if access.expires_at %} | vence {{ access.expires_at|colombia_date }}{% endif %}</p>
-                        {% if row.has_policy %}<span class="inline-flex mt-1 bg-slate-100 text-cyan-700 px-2 py-1 rounded-full text-xs font-semibold">Poliza</span>{% endif %}
+                        {% if row.has_policy %}<span class="inline-flex mt-1 bg-slate-100 text-slate-700 px-2 py-1 rounded-full text-xs font-semibold">Póliza</span>{% endif %}
                     </div>
                     <form method="POST">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -111,15 +111,15 @@
                     </form>
                 </div>
                 {% else %}
-                <p class="text-sm text-slate-600">No hay accesos activos por codigo o poliza.</p>
+                <p class="text-sm text-slate-600">No hay accesos activos por código o póliza.</p>
                 {% endfor %}
             </div>
         </div>
     </div>
 </section>
 
-<section class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700 mb-6">
-    <h2 class="text-2xl font-bold mb-4 text-cyan-700 flex items-center gap-2"><i data-lucide="users" class="w-6 h-6"></i> Membresias y polizas de doctores</h2>
+<section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6">
+    <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="users" class="w-6 h-6"></i> Membresías y pólizas de doctores</h2>
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
         {% for row in subscription_rows %}
         {% set sub = row.subscription %}
@@ -129,29 +129,29 @@
                     <p class="font-semibold text-slate-900">{{ row.patient.name if row.patient else 'Paciente' }}</p>
                     <p class="text-xs text-slate-500">Dr. {{ row.doctor.name if row.doctor else 'Doctor' }} | {{ sub.plan_type }} | Queda {{ row.remaining }}</p>
                 </div>
-                <span class="text-xs font-semibold px-2 py-1 rounded-full {% if row.has_policy %}bg-slate-100 text-cyan-700{% else %}bg-slate-100 text-purple-700{% endif %}">{{ 'Poliza' if row.has_policy else 'Pago' }}</span>
+                <span class="text-xs font-semibold px-2 py-1 rounded-full {% if row.has_policy %}bg-slate-100 text-slate-700{% else %}bg-slate-100 text-slate-700{% endif %}">{{ 'Poliza' if row.has_policy else 'Pago' }}</span>
             </div>
         </div>
         {% else %}
-        <p class="text-sm text-slate-600 md:col-span-2">Sin membresias activas asociadas a doctores de la clinica.</p>
+        <p class="text-sm text-slate-600 md:col-span-2">Sin membresías activas asociadas a doctores de la clínica.</p>
         {% endfor %}
     </div>
 </section>
 
 <div class="grid md:grid-cols-2 gap-6">
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700">
-        <h2 class="text-2xl font-bold mb-4 text-indigo-600 flex items-center gap-2"><i data-lucide="user-plus" class="w-6 h-6"></i> Agregar Doctor</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+        <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="user-plus" class="w-6 h-6"></i> Agregar Doctor</h2>
         <form method="POST" class="space-y-3">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="add_doctor">
             <div class="grid grid-cols-2 gap-3">
                 <input type="text" name="name" required placeholder="Nombre Completo" class="border p-3 rounded-lg text-lg col-span-2" aria-label="Nombre Completo">
-                <input type="text" name="cedula" required placeholder="Cedula *" class="border p-3 rounded-lg text-lg" aria-label="Cedula *">
+                <input type="text" name="cedula" required placeholder="Cédula *" class="border p-3 rounded-lg text-lg" aria-label="Cédula *">
                 <input type="text" name="specialty" placeholder="Especialidad" class="border p-3 rounded-lg text-lg" aria-label="Especialidad">
             </div>
-            <input type="email" name="email" placeholder="Correo electronico" class="w-full border p-3 rounded-lg text-lg" aria-label="Correo electronico">
-            <input type="tel" name="phone" placeholder="Telefono" class="w-full border p-3 rounded-lg text-lg" aria-label="Telefono">
-            <input type="text" name="office_address" placeholder="Direccion del consultorio presencial" class="w-full border p-3 rounded-lg text-lg" aria-label="Direccion del consultorio presencial">
+            <input type="email" name="email" placeholder="Correo electrónico" class="w-full border p-3 rounded-lg text-lg" aria-label="Correo electrónico">
+            <input type="tel" name="phone" placeholder="Teléfono" class="w-full border p-3 rounded-lg text-lg" aria-label="Teléfono">
+            <input type="text" name="office_address" placeholder="Dirección del consultorio presencial" class="w-full border p-3 rounded-lg text-lg" aria-label="Dirección del consultorio presencial">
             <div class="grid grid-cols-2 gap-3">
                 <input id="admin-doctor-lat" type="number" step="any" name="office_latitude" placeholder="Latitud consultorio" class="border p-3 rounded-lg text-lg" aria-label="Latitud consultorio">
                 <input id="admin-doctor-lng" type="number" step="any" name="office_longitude" placeholder="Longitud consultorio" class="border p-3 rounded-lg text-lg" aria-label="Longitud consultorio">
@@ -170,19 +170,19 @@
                     <input type="password" name="password" required placeholder="Contraseña" class="w-full border border-slate-200 p-3 rounded-lg outline-none focus:border-slate-700" aria-label="Contraseña">
                 </div>
             </div>
-            <button type="submit" class="w-full bg-slate-700 hover:bg-slate-700 text-white p-4 rounded-lg font-semibold text-xl shadow-sm transition-colors mt-4 flex items-center justify-center gap-2">
+            <button type="submit" class="w-full bg-accent hover:bg-accent text-white p-4 rounded-lg font-semibold text-xl shadow-sm transition-colors mt-4 flex items-center justify-center gap-2">
                 <i data-lucide="plus-circle" class="w-6 h-6"></i> Registrar Doctor
             </button>
         </form>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500">
-        <h2 class="text-2xl font-bold mb-4 text-blue-600 flex items-center gap-2"><i data-lucide="users" class="w-6 h-6"></i> Agregar Staff</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+        <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="users" class="w-6 h-6"></i> Agregar Staff</h2>
         <form method="POST" class="space-y-3">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="add_staff">
             <input type="text" name="name" required placeholder="Nombre Completo" class="w-full border p-3 rounded-lg text-lg" aria-label="Nombre Completo">
-            <input type="text" name="cedula" required placeholder="Cedula" class="w-full border p-3 rounded-lg text-lg" aria-label="Cedula">
+            <input type="text" name="cedula" required placeholder="Cédula" class="w-full border p-3 rounded-lg text-lg" aria-label="Cédula">
             <select name="role" class="w-full border p-3 rounded-lg text-lg bg-white" aria-label="Rol">
                 <option value="doctor">Doctor</option>
                 <option value="staff">Recepcionista</option>
@@ -195,26 +195,26 @@
                 {% endfor %}
             </select>
             <div class="grid grid-cols-2 gap-3">
-                <input type="time" name="atencion_inicio" value="08:00" class="border p-3 rounded-lg text-lg" aria-label="Hora de inicio de atencion">
-                <input type="time" name="atencion_fin" value="17:00" class="border p-3 rounded-lg text-lg" aria-label="Hora de fin de atencion">
+                <input type="time" name="atencion_inicio" value="08:00" class="border p-3 rounded-lg text-lg" aria-label="Hora de inicio de atención">
+                <input type="time" name="atencion_fin" value="17:00" class="border p-3 rounded-lg text-lg" aria-label="Hora de fin de atención">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <input type="text" name="username" required placeholder="Usuario" class="border p-3 rounded-lg text-lg" aria-label="Usuario">
-                <input type="password" name="password" required placeholder="Contrasena" class="border p-3 rounded-lg text-lg" aria-label="Contrasena">
+                <input type="password" name="password" required placeholder="Contraseña" class="border p-3 rounded-lg text-lg" aria-label="Contraseña">
             </div>
-            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-bold text-xl hover:bg-blue-700 transition">Crear Staff</button>
+            <button type="submit" class="w-full bg-accent text-white p-3 rounded-lg font-bold text-xl hover:bg-accent-hover transition">Crear Staff</button>
         </form>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-positive md:col-span-2">
-        <h2 class="text-2xl font-bold mb-4 text-emerald-700 flex items-center gap-2"><i data-lucide="map-pin" class="w-6 h-6"></i> Farmacias de la clinica</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 md:col-span-2">
+        <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="map-pin" class="w-6 h-6"></i> Farmacias de la clínica</h2>
         <form method="POST" class="grid md:grid-cols-6 gap-2 mb-4">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="add_pharmacy">
             <input name="name" required placeholder="Nombre de farmacia" class="border p-2 rounded-lg md:col-span-2" aria-label="Nombre de farmacia">
-            <input name="address" placeholder="Direccion" class="border p-2 rounded-lg md:col-span-2" aria-label="Direccion">
-            <input name="phone" placeholder="Telefono" class="border p-2 rounded-lg" aria-label="Telefono">
-            <button class="bg-positive text-white rounded-lg font-bold">Agregar</button>
+            <input name="address" placeholder="Dirección" class="border p-2 rounded-lg md:col-span-2" aria-label="Dirección">
+            <input name="phone" placeholder="Teléfono" class="border p-2 rounded-lg" aria-label="Teléfono">
+            <button class="bg-accent text-white rounded-lg font-bold">Agregar</button>
             <input id="admin-pharmacy-lat" type="number" step="any" name="latitude" placeholder="Latitud" class="border p-2 rounded-lg md:col-span-3" aria-label="Latitud">
             <input id="admin-pharmacy-lng" type="number" step="any" name="longitude" placeholder="Longitud" class="border p-2 rounded-lg md:col-span-3" aria-label="Longitud">
             <div class="md:col-span-6 h-64 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#admin-pharmacy-lat" data-lng-input="#admin-pharmacy-lng"></div>
@@ -227,15 +227,15 @@
                 <input type="hidden" name="action" value="update_pharmacy">
                 <input type="hidden" name="pharmacy_id" value="{{ pharmacy.id }}">
                 <input name="name" value="{{ pharmacy.name }}" class="border p-2 rounded-lg font-bold md:col-span-2" aria-label="Nombre">
-                <input name="address" value="{{ pharmacy.address or '' }}" placeholder="Direccion" class="border p-2 rounded-lg md:col-span-3" aria-label="Direccion">
-                <input name="phone" value="{{ pharmacy.phone or '' }}" placeholder="Telefono" class="border p-2 rounded-lg md:col-span-2" aria-label="Telefono">
+                <input name="address" value="{{ pharmacy.address or '' }}" placeholder="Dirección" class="border p-2 rounded-lg md:col-span-3" aria-label="Dirección">
+                <input name="phone" value="{{ pharmacy.phone or '' }}" placeholder="Teléfono" class="border p-2 rounded-lg md:col-span-2" aria-label="Teléfono">
                 <input id="pharmacy-lat-{{ pharmacy.id }}" type="number" step="any" name="latitude" value="{{ pharmacy.latitude if pharmacy.latitude is not none else '' }}" placeholder="Lat" class="border p-2 rounded-lg" aria-label="Lat">
                 <input id="pharmacy-lng-{{ pharmacy.id }}" type="number" step="any" name="longitude" value="{{ pharmacy.longitude if pharmacy.longitude is not none else '' }}" placeholder="Lng" class="border p-2 rounded-lg" aria-label="Lng">
                 <label class="flex items-center gap-2 text-sm font-bold text-slate-600">
                     <input type="checkbox" name="is_active" class="accent-emerald-600" {% if pharmacy.is_active %}checked{% endif %} aria-label="Is active">
                     Activa
                 </label>
-                <button class="bg-slate-900 text-white rounded-lg font-bold p-2">Guardar</button>
+                <button class="bg-accent hover:bg-accent-hover text-white rounded-lg font-bold p-2">Guardar</button>
                 <div class="md:col-span-12 h-56 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#pharmacy-lat-{{ pharmacy.id }}" data-lng-input="#pharmacy-lng-{{ pharmacy.id }}"></div>
                 <button type="button" data-use-browser-location class="md:col-span-12 border border-slate-200 text-slate-700 rounded-lg py-2 font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
             </form>
@@ -246,58 +246,58 @@
     </div>
 
     <div class="space-y-6">
-        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-critical">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
             <h2 class="text-2xl font-bold mb-4">Doctores ({{ doctors|length }})</h2>
             <ul class="space-y-2 max-h-64 overflow-y-auto">
                 {% for doc in doctors %}
-                <li class="bg-critical-subtle p-3 rounded-lg flex justify-between items-center">
+                <li class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex justify-between items-center">
                     <div>
-                        <span class="font-bold text-lg text-red-900">{{ doc.name }}</span> - <span class="text-sm text-red-700">{{ doc.specialty }}</span>
+                        <span class="font-bold text-lg text-slate-900">{{ doc.name }}</span> - <span class="text-sm text-slate-600">{{ doc.specialty }}</span>
                         <p class="text-xs text-gray-600 mt-1">CC: {{ doc.cedula }}{% if doc.email %} | {{ doc.email }}{% endif %}{% if doc.phone %} | {{ doc.phone }}{% endif %}</p>
                     </div>
                     <form method="POST">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="action" value="delete_user">
                         <input type="hidden" name="user_id" value="{{ doc.id }}">
-                        <button type="submit" class="bg-critical text-white px-3 py-1 rounded text-sm font-bold hover:bg-critical transition">Eliminar</button>
+                        <button type="submit" class="bg-critical text-white px-3 py-1 rounded text-sm font-bold hover:bg-critical-hover transition">Eliminar</button>
                     </form>
                 </li>
                 {% endfor %}
             </ul>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
             <h2 class="text-2xl font-bold mb-4">Recepcionistas ({{ receptionists|length }})</h2>
             <ul class="space-y-2 max-h-64 overflow-y-auto">
                 {% for rec in receptionists %}
-                <li class="bg-blue-50 p-3 rounded-lg flex justify-between items-center">
-                    <span class="font-bold text-lg text-blue-900">{{ rec.name }}</span>
+                <li class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex justify-between items-center">
+                    <span class="font-bold text-lg text-slate-900">{{ rec.name }}</span>
                     <form method="POST">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="action" value="delete_user">
                         <input type="hidden" name="user_id" value="{{ rec.id }}">
-                        <button type="submit" class="bg-critical text-white px-3 py-1 rounded text-sm font-bold hover:bg-critical transition">Eliminar</button>
+                        <button type="submit" class="bg-critical text-white px-3 py-1 rounded text-sm font-bold hover:bg-critical-hover transition">Eliminar</button>
                     </form>
                 </li>
                 {% endfor %}
             </ul>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-positive">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
             <h2 class="text-2xl font-bold mb-4">Expendedores ({{ expendedores|length }})</h2>
             <ul class="space-y-2 max-h-64 overflow-y-auto">
                 {% for exp in expendedores %}
-                <li class="bg-positive-subtle p-3 rounded-lg space-y-2">
+                <li class="bg-slate-50 border border-slate-200 p-3 rounded-lg space-y-2">
                     <div class="flex justify-between items-center gap-3">
                         <div>
-                            <span class="font-bold text-lg text-emerald-900">{{ exp.name }}</span>
-                            <p class="text-xs text-emerald-700">Asignado a: {{ exp.pharmacy.name if exp.pharmacy else 'Sin farmacia' }}</p>
+                            <span class="font-bold text-lg text-slate-900">{{ exp.name }}</span>
+                            <p class="text-xs text-slate-600">Asignado a: {{ exp.pharmacy.name if exp.pharmacy else 'Sin farmacia' }}</p>
                         </div>
                         <form method="POST">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="action" value="delete_user">
                             <input type="hidden" name="user_id" value="{{ exp.id }}">
-                            <button type="submit" class="bg-critical text-white px-3 py-1 rounded text-sm font-bold hover:bg-critical transition">Eliminar</button>
+                            <button type="submit" class="bg-critical text-white px-3 py-1 rounded text-sm font-bold hover:bg-critical-hover transition">Eliminar</button>
                         </form>
                     </div>
                     <form method="POST" class="flex gap-2">
@@ -309,7 +309,7 @@
                             <option value="{{ pharmacy.id }}" {% if exp.pharmacy_id == pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
                             {% endfor %}
                         </select>
-                        <button class="bg-positive text-white px-3 py-2 rounded-lg text-sm font-bold">Asignar</button>
+                        <button class="bg-accent text-white px-3 py-2 rounded-lg text-sm font-bold">Asignar</button>
                     </form>
                 </li>
                 {% else %}
@@ -319,13 +319,13 @@
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-caution">
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
         <h2 class="text-2xl font-bold mb-4">Pacientes ({{ patients|length }})</h2>
         <ul class="space-y-2 max-h-[32rem] overflow-y-auto">
             {% for pat in patients %}
-            <li class="bg-caution-subtle p-3 rounded-lg flex justify-between items-center">
+            <li class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex justify-between items-center">
                 <div>
-                    <span class="font-bold text-lg text-orange-900">{{ pat.name }}</span>
+                    <span class="font-bold text-lg text-slate-900">{{ pat.name }}</span>
                     <p class="text-xs text-gray-600 mt-1">CC: {{ pat.cedula }}{% if pat.phone %} | {{ pat.phone }}{% endif %}{% if pat.email %} | {{ pat.email }}{% endif %}</p>
                 </div>
                 <span class="text-xs font-bold text-slate-600">Solo SuperAdmin puede eliminar</span>
@@ -334,8 +334,8 @@
         </ul>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-caution">
-        <h2 class="text-2xl font-bold mb-4 text-amber-700 flex items-center gap-2"><i data-lucide="truck" class="w-6 h-6"></i> Alertas de reposicion</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+        <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="truck" class="w-6 h-6"></i> Alertas de reposición</h2>
         <div class="space-y-2 max-h-80 overflow-y-auto">
             {% for alert in replenishment_alerts %}
             <div class="border border-caution-subtle bg-caution-subtle rounded-lg p-3">
@@ -359,20 +359,20 @@
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700">
-        <h2 class="text-2xl font-bold mb-4 text-cyan-700 flex items-center gap-2"><i data-lucide="repeat-2" class="w-6 h-6"></i> Transferencias</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+        <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="repeat-2" class="w-6 h-6"></i> Transferencias</h2>
         <div class="space-y-2 max-h-80 overflow-y-auto">
             {% for transfer in transfer_requests %}
             <div class="border border-slate-200 bg-slate-50 rounded-lg p-3">
-                <p class="font-semibold text-cyan-900">{{ transfer.med_name }} x {{ transfer.quantity }}</p>
-                <p class="text-xs text-cyan-800">{{ transfer.source_pharmacy.name }} -> {{ transfer.target_pharmacy.name }} | {{ transfer.status }}</p>
+                <p class="font-semibold text-slate-900">{{ transfer.med_name }} x {{ transfer.quantity }}</p>
+                <p class="text-xs text-slate-900">{{ transfer.source_pharmacy.name }} -> {{ transfer.target_pharmacy.name }} | {{ transfer.status|estado }}</p>
                 <form method="POST" class="flex gap-2 mt-2">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="resolve_transfer">
                     <input type="hidden" name="transfer_id" value="{{ transfer.id }}">
-                    <button name="status" value="aprobada" class="bg-slate-700 text-white px-3 py-2 rounded-lg text-xs font-bold">Aprobar</button>
-                    <button name="status" value="completada" class="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold">Completar</button>
-                    <button name="status" value="rechazada" class="bg-white border border-slate-200 text-cyan-900 px-3 py-2 rounded-lg text-xs font-bold">Rechazar</button>
+                    <button name="status" value="aprobada" class="bg-accent hover:bg-accent-hover text-white px-3 py-2 rounded-lg text-xs font-bold">Aprobar</button>
+                    <button name="status" value="completada" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold">Completar</button>
+                    <button name="status" value="rechazada" class="bg-white border border-critical-border hover:bg-critical-subtle text-critical px-3 py-2 rounded-lg text-xs font-bold">Rechazar</button>
                 </form>
             </div>
             {% else %}
@@ -381,8 +381,8 @@
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-positive md:col-span-2">
-        <h2 class="text-2xl font-bold mb-4 text-emerald-700 flex items-center gap-2"><i data-lucide="pill" class="w-6 h-6"></i> Inventario Farmaceutico</h2>
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 md:col-span-2">
+        <h2 class="text-2xl font-bold mb-4 text-slate-900 flex items-center gap-2"><i data-lucide="pill" class="w-6 h-6"></i> Inventario Farmacéutico</h2>
         <form method="POST" class="grid md:grid-cols-6 gap-2 mb-4">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="add_inventory">
@@ -392,13 +392,13 @@
             <input type="number" name="stock" min="0" placeholder="Stock" class="border p-2 rounded-lg" aria-label="Stock">
             <input type="number" name="min_stock" min="0" placeholder="Min" class="border p-2 rounded-lg" aria-label="Min">
             <input type="date" name="expires_on" class="border p-2 rounded-lg md:col-span-2" aria-label="Expires on">
-            <button class="bg-positive text-white rounded-lg font-bold md:col-span-4">Agregar</button>
+            <button class="bg-accent text-white rounded-lg font-bold md:col-span-4">Agregar</button>
         </form>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {% for item in inventory_items %}
             <div class="border border-slate-200 bg-slate-50 rounded-lg p-4 flex flex-col justify-between">
                 <div>
-                    <h3 class="font-bold text-emerald-900">{{ item.name }}</h3>
+                    <h3 class="font-bold text-slate-900">{{ item.name }}</h3>
                     <p class="text-xs text-slate-500 font-mono mt-1">SKU: {{ item.sku or 'N/A' }}</p>
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
