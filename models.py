@@ -201,6 +201,13 @@ class User(UserMixin, ClinicScoped, db.Model):
     # Momento del ultimo cambio de contrasena. Es la linea de corte: toda
     # sesion abierta y todo JWT emitido antes de esta marca dejan de valer.
     #
+    # La columna ya existia en el esquema base; lo que faltaba era declararla
+    # aqui. Esa es la parte insidiosa del fallo: `user.password_changed_at =
+    # colombia_now()` en el restablecimiento y en el cambio de contrasena
+    # parecia funcionar — no daba error, no avisaba de nada — y lo unico que
+    # hacia era poner un atributo de Python que se descartaba al confirmar la
+    # transaccion. El dato nunca llegaba a la base.
+    #
     # Sin esto, restablecer la contrasena no expulsaba a nadie. Le roban la
     # cookie a una medica en el equipo compartido del puesto de salud, la
     # administradora emite un codigo, la medica fija una clave nueva... y la
