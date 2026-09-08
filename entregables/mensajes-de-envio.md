@@ -39,13 +39,14 @@ IPS, el régimen del profesional independiente como responsable autónomo, el
 procedimiento de acreditación de la patria potestad para menores, y el
 consentimiento informado asistencial de la Ley 23 de 1981.
 
-Adjunto un documento de cuatro páginas donde está cada punto con su motivo, más
-una sección de lo que ya quedó verificado para que no lo revise dos veces. No
-necesita leer código.
+Adjunto un documento con cada punto y su motivo, una sección de lo que ya
+quedó verificado para que no lo revise dos veces, y **los cinco textos
+completos en el anexo**. No necesita acceder a ningún sistema ni leer código.
 
-Calculo que son entre dos y cuatro horas de trabajo. [Dime tus honorarios y
-cómo prefieres que lo formalicemos. / Es un proyecto académico sin ánimo de
-lucro y estoy consultando si el consultorio jurídico puede tomarlo.]
+Son 24 páginas, de las cuales 20 son los textos a revisar. Calculo entre
+cuatro y seis horas. [Dime tus honorarios y cómo prefieres que lo
+formalicemos. / Es un proyecto académico sin ánimo de lucro y estoy
+consultando si el consultorio jurídico puede tomarlo.]
 
 Quedo atento.
 
@@ -82,16 +83,17 @@ avisa, y no avisar se ve exactamente igual que «todo en orden». Sobre todo en
 lo que es frecuente en zona rural: antihipertensivos, antidiabéticos,
 antibióticos ambulatorios, dengue y malaria.
 
-Adjunto un documento de cinco páginas con las siete preguntas concretas.
-**No necesita leer código**: puedo pasarle las nueve tablas en Excel o en CSV,
-como le sea más cómodo de anotar.
+Adjunto un documento con las siete preguntas concretas y **las nueve tablas
+completas en el anexo**. No necesita acceder a ningún sistema ni leer código.
+Si prefiere anotarlas en una hoja de cálculo, se las paso en Excel o en CSV.
 
 Si acepta, su nombre y su tarjeta profesional quedarían asociados a la versión
 validada, que es lo que le da valor frente a una auditoría. El sistema guarda
 con qué versión de la base se evaluó cada orden médica.
 
-Calculo entre tres y seis horas. [Dime tus honorarios. / Es un proyecto
-académico y estoy consultando si puede plantearse como trabajo conjunto.]
+Son 20 páginas, de las cuales 15 son las tablas. Calculo entre cinco y ocho
+horas. [Dime tus honorarios. / Es un proyecto académico y estoy consultando
+si puede plantearse como trabajo conjunto.]
 
 Quedo atento.
 
