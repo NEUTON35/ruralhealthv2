@@ -20,7 +20,7 @@ Tres cosas que valen para los tres mensajes:
 
 Buenos días, [nombre].
 
-Soy Juan David Cuevas, estudiante de [programa] en la Universidad Autónoma de
+Soy Juan David Gómez Aragón, estudiante de [programa] en la Universidad Autónoma de
 Occidente. Desarrollé una plataforma de atención en salud para zonas rurales
 que gestiona historia clínica, teleconsulta y dispensación de medicamentos, y
 que remite la información obligatoria al Ministerio de Salud.
@@ -48,8 +48,9 @@ lucro y estoy consultando si el consultorio jurídico puede tomarlo.]
 
 Quedo atento.
 
-Juan David Cuevas
-[correo] · [teléfono]
+Juan David Gómez Aragón
+juan.gomezaragon@uao.edu.co · +57 305 460 9909
+juan.david.gomez.aragon@gmail.com
 
 ---
 
@@ -59,7 +60,7 @@ Juan David Cuevas
 
 Buenos días, [nombre].
 
-Soy Juan David Cuevas, estudiante de [programa] en la Universidad Autónoma de
+Soy Juan David Gómez Aragón, estudiante de [programa] en la Universidad Autónoma de
 Occidente. Desarrollé una plataforma de atención en salud para zonas rurales.
 Cuando un médico va a firmar una orden, el sistema contrasta lo prescrito
 contra la historia del paciente y **puede bloquear la firma**: alergias,
@@ -91,8 +92,9 @@ académico y estoy consultando si puede plantearse como trabajo conjunto.]
 
 Quedo atento.
 
-Juan David Cuevas
-[correo] · [teléfono]
+Juan David Gómez Aragón
+juan.gomezaragon@uao.edu.co · +57 305 460 9909
+juan.david.gomez.aragon@gmail.com
 
 ---
 
@@ -126,8 +128,9 @@ En el documento está cada uno con qué se pide, dónde, y qué pasa si falta.
 
 Quedo atento a lo que necesite de mi parte.
 
-Juan David Cuevas
-[correo] · [teléfono]
+Juan David Gómez Aragón
+juan.gomezaragon@uao.edu.co · +57 305 460 9909
+juan.david.gomez.aragon@gmail.com
 
 ---
 
@@ -138,7 +141,7 @@ idea es que responda «cuéntame», no que decida ahí mismo.
 
 **Al abogado:**
 
-> Buenos días, [nombre]. Soy Juan David Cuevas, estudiante de la Autónoma.
+> Buenos días, [nombre]. Soy Juan David Gómez Aragón, estudiante de la Autónoma.
 > Desarrollé una plataforma de salud para zonas rurales y tengo cinco
 > documentos legales redactados (política de datos, términos, aviso de
 > privacidad, consentimiento de telemedicina y transparencia) que necesitan
@@ -147,7 +150,7 @@ idea es que responda «cuéntame», no que decida ahí mismo.
 
 **Al químico farmacéutico:**
 
-> Buenos días, [nombre]. Soy Juan David Cuevas, estudiante de la Autónoma.
+> Buenos días, [nombre]. Soy Juan David Gómez Aragón, estudiante de la Autónoma.
 > Desarrollé una plataforma de salud rural que verifica alergias e
 > interacciones antes de que el médico firme una orden. Las tablas las armé yo
 > con fuentes públicas y necesitan validación de un químico farmacéutico.
@@ -155,7 +158,7 @@ idea es que responda «cuéntame», no que decida ahí mismo.
 
 **A una IPS, para proponer un piloto:**
 
-> Buenos días, [nombre]. Soy Juan David Cuevas, estudiante de la Autónoma.
+> Buenos días, [nombre]. Soy Juan David Gómez Aragón, estudiante de la Autónoma.
 > Desarrollé una plataforma que implementa el Registro Digital de Atención de
 > la Resolución 1888 de 2025, que ya está vigente y que muchas IPS pequeñas aún
 > no tienen resuelto. Estoy buscando una institución para un piloto.

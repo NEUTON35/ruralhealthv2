@@ -2,7 +2,8 @@
 
 **Para:** representante legal de la IPS, o quien lleve los trámites ante el
 Ministerio, la DIAN y la SIC
-**De:** Juan D. Cuevas — RuralHealth Connect
+**De:** Juan David Gómez Aragón — RuralHealth Connect
+**Contacto:** juan.gomezaragon@uao.edu.co · +57 305 460 9909
 **Fecha del documento:** septiembre de 2026
 
 ---

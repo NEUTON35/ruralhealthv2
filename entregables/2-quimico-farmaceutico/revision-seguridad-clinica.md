@@ -1,7 +1,8 @@
 # Revisión de la base de conocimiento clínico · RuralHealth Connect
 
 **Para:** químico farmacéutico
-**De:** Juan D. Cuevas — RuralHealth Connect
+**De:** Juan David Gómez Aragón — RuralHealth Connect
+**Contacto:** juan.gomezaragon@uao.edu.co · +57 305 460 9909
 **Versión de la base de conocimiento:** 2026.09.1
 **Fecha del documento:** septiembre de 2026
 

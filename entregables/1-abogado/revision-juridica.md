@@ -1,7 +1,8 @@
 # Revisión jurídica · RuralHealth Connect
 
 **Para:** abogado con tarjeta profesional
-**De:** Juan D. Cuevas — RuralHealth Connect
+**De:** Juan David Gómez Aragón — RuralHealth Connect
+**Contacto:** juan.gomezaragon@uao.edu.co · +57 305 460 9909
 **Fecha del documento:** septiembre de 2026
 
 ---
