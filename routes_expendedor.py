@@ -222,6 +222,20 @@ def confirm(ticket_id):
         flash('Este ticket pertenece a otra farmacia. Verifique la sede asignada.')
         return redirect(url_for('expendedor.dashboard'))
 
+    # Un ticket sin sede asignada lo podia entregar cualquier expendedor de la
+    # clinica. Se ata a la sede donde efectivamente se presenta, para que la
+    # trazabilidad diga donde ocurrio la entrega.
+    if not ticket.pharmacy_id:
+        ticket.pharmacy_id = pharmacy.id
+
+    # La orden que respalda el ticket tiene que seguir vigente. El motor lo
+    # vuelve a comprobar bajo bloqueo; aqui se comprueba antes para poder dar
+    # un mensaje util sin haber empezado nada.
+    if ticket.order_id and ticket.order is not None and not ticket.order.is_dispensable:
+        flash('La orden que respalda este ticket fue anulada o venció. '
+              'No se puede entregar; consulte con el profesional que la emitió.')
+        return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
+
     if ticket.status not in ('autorizado', 'parcial'):
         if ticket.status == 'sin_stock':
             flash('Sin existencias. Usa "Reactivar" cuando se reponga el inventario.')
@@ -300,6 +314,13 @@ def confirm(ticket_id):
             'No fue posible registrar la entrega. No se descontaron existencias. '
             'Vuelve a intentarlo.'
         )
+        return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
+
+    # El motor revalida bajo bloqueo y puede negarse por algo que cambio entre
+    # la pantalla y el envio. Ese motivo tiene que llegar al expendedor: si no,
+    # ve que "no paso nada" y lo intenta otra vez.
+    if result.get('motivo'):
+        flash(result['motivo'])
         return redirect(url_for('expendedor.dashboard', q=ticket.pickup_code))
 
     if result.get('shortfalls'):

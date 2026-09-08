@@ -1,0 +1,191 @@
+{#
+  Piezas estructurales del sistema visual.
+
+  Las cadenas de clases están en `ui.py` y llegan como variables globales.
+  Aquí viven las piezas que además tienen estructura — un rótulo encima de su
+  campo, una cabecera con su línea, una celda de dato — porque repetir esa
+  estructura a mano en cuarenta y cuatro plantillas es exactamente como se
+  llegó a tener nueve colores de título en una sola pantalla.
+
+  Se usa así:
+
+      {% from '_ui.html' import cabecera, panel, campo, chip, aviso, vacio %}
+
+  Nota sobre `caller`: las piezas que envuelven contenido se invocan con
+  `{% call %}`, no con `{{ }}`.
+#}
+
+{# --- Cabecera de página ---------------------------------------------------
+   Título, subtítulo opcional y, a la derecha, las acciones de la pantalla.
+   La línea inferior es lo que la separa del contenido: no hace falta caja. #}
+{% macro cabecera(titulo, subtitulo=None) %}
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3
+            border-b border-linea pb-4 mb-6">
+  <div>
+    <h1 class="{{ TITULO_PAGINA }}">{{ titulo }}</h1>
+    {% if subtitulo %}<p class="{{ SUBTITULO }} mt-1">{{ subtitulo }}</p>{% endif %}
+  </div>
+  {% if caller %}<div class="flex flex-wrap items-center gap-2">{{ caller() }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# --- Encabezado de sección ------------------------------------------------
+   Para dividir dentro de una página sin meter otra caja dentro de la caja. #}
+{% macro seccion(titulo, icono=None) %}
+<div class="flex items-end justify-between gap-3 border-b border-linea pb-2 mb-4">
+  <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+    {% if icono %}<i data-lucide="{{ icono }}" class="w-4 h-4 text-slate-500"></i>{% endif %}
+    {{ titulo }}
+  </h2>
+  {% if caller %}<div class="flex items-center gap-2">{{ caller() }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# --- Panel ----------------------------------------------------------------
+   Contenedor con contorno. El título va separado por una línea, no por aire:
+   así se distingue de un párrafo suelto sin necesidad de más peso. #}
+{% macro panel(titulo=None, icono=None, clase='') %}
+<section class="{{ TARJETA }} {{ clase }}">
+  {% if titulo %}
+  <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-linea-suave">
+    <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+      {% if icono %}<i data-lucide="{{ icono }}" class="w-4 h-4 text-slate-500"></i>{% endif %}
+      {{ titulo }}
+    </h2>
+  </div>
+  {% endif %}
+  <div class="p-4">{{ caller() }}</div>
+</section>
+{% endmacro %}
+
+{# --- Tira de datos --------------------------------------------------------
+   Varias cifras o hechos en una sola fila con contorno, separados por líneas
+   verticales. Ocupa la cuarta parte que cuatro tarjetas y se lee de un
+   vistazo, que es lo que se pide de un contexto clínico. #}
+{#
+  Ojo con `columnas`: Tailwind solo genera las clases que encuentra escritas,
+  así que `lg:grid-cols-{{ n }}` saldría del build como una clase que no
+  existe y la tira se vería en una sola columna. Se listan literales.
+#}
+{% macro tira(columnas=4) %}
+{% set rejilla = {2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4',
+                  5: 'lg:grid-cols-5', 6: 'lg:grid-cols-6'} %}
+<div class="{{ TARJETA }} grid grid-cols-1 sm:grid-cols-2 {{ rejilla.get(columnas, 'lg:grid-cols-4') }} divide-y divide-linea-suave lg:divide-y-0 lg:divide-x lg:divide-linea-suave">
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro dato(rotulo, valor, pie=None) %}
+<div class="px-4 py-3">
+  <span class="{{ ROTULO_DATO }}">{{ rotulo }}</span>
+  <span class="{{ VALOR_DATO }} mt-1">{{ valor }}</span>
+  {% if pie %}<span class="block text-xs text-slate-500 mt-0.5">{{ pie }}</span>{% endif %}
+</div>
+{% endmacro %}
+
+{# --- Cifra ----------------------------------------------------------------
+   Un número que se viene a mirar. El número manda; el rótulo lo acompaña. #}
+{% macro cifra(rotulo, valor, pie=None) %}
+<div class="{{ TARJETA }} px-4 py-3">
+  <span class="{{ ROTULO_DATO }}">{{ rotulo }}</span>
+  <p class="text-2xl font-semibold text-slate-900 mt-1">{{ valor }}</p>
+  {% if pie %}<p class="text-xs text-slate-500 mt-0.5">{{ pie }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{# --- Campo ----------------------------------------------------------------
+   El rótulo va siempre encima y siempre visible. Un `placeholder` desaparece
+   al escribir, y quien vuelve a un formulario a medio llenar deja de saber
+   qué era cada casilla; en una prescripción eso es peligroso. #}
+{% macro campo(rotulo, nombre, tipo='text', valor='', requerido=False,
+                pista=None, marcador='', extra='', ident=None) %}
+{% set id_campo = ident or ('campo-' ~ nombre) %}
+<div>
+  <label class="{{ ROTULO }}" for="{{ id_campo }}">
+    {{ rotulo }}{% if requerido %} <span class="text-critical" aria-hidden="true">*</span>{% endif %}
+  </label>
+  <input id="{{ id_campo }}" name="{{ nombre }}" type="{{ tipo }}"
+         value="{{ valor if valor is not none else '' }}"
+         {% if marcador %}placeholder="{{ marcador }}"{% endif %}
+         {% if requerido %}required{% endif %}
+         class="{{ CAMPO }}" {{ extra|safe }}>
+  {% if pista %}<p class="{{ PISTA }}">{{ pista }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro area(rotulo, nombre, valor='', requerido=False, filas=4, pista=None,
+              marcador='', extra='', ident=None) %}
+{% set id_campo = ident or ('campo-' ~ nombre) %}
+<div>
+  <label class="{{ ROTULO }}" for="{{ id_campo }}">
+    {{ rotulo }}{% if requerido %} <span class="text-critical" aria-hidden="true">*</span>{% endif %}
+  </label>
+  <textarea id="{{ id_campo }}" name="{{ nombre }}" rows="{{ filas }}"
+            {% if marcador %}placeholder="{{ marcador }}"{% endif %}
+            {% if requerido %}required{% endif %}
+            class="{{ CAMPO }}" {{ extra|safe }}>{{ valor if valor is not none else '' }}</textarea>
+  {% if pista %}<p class="{{ PISTA }}">{{ pista }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{# El contenido son las `<option>`, que solo sabe construirlas quien llama. #}
+{% macro seleccion(rotulo, nombre, requerido=False, pista=None, extra='', ident=None) %}
+{% set id_campo = ident or ('campo-' ~ nombre) %}
+<div>
+  <label class="{{ ROTULO }}" for="{{ id_campo }}">
+    {{ rotulo }}{% if requerido %} <span class="text-critical" aria-hidden="true">*</span>{% endif %}
+  </label>
+  <select id="{{ id_campo }}" name="{{ nombre }}" {% if requerido %}required{% endif %}
+          class="{{ CAMPO }}" {{ extra|safe }}>{{ caller() }}</select>
+  {% if pista %}<p class="{{ PISTA }}">{{ pista }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{# --- Chip de estado -------------------------------------------------------
+   Contorno del color funcional, texto del mismo color. Nunca relleno sólido:
+   un chip relleno pesa como un botón, y no se pulsa. #}
+{% macro chip(texto, tono='neutro', icono=None) %}
+<span class="{{ CHIP[tono] }}">
+  {% if icono %}<i data-lucide="{{ icono }}" class="w-3 h-3"></i>{% endif %}{{ texto }}
+</span>
+{% endmacro %}
+
+{# --- Aviso ----------------------------------------------------------------
+   Contorno de 2px: el único sitio del sistema donde el grosor significa algo,
+   y significa gravedad. Se tiene que ver de reojo, antes de leerlo. #}
+{% macro aviso(tono='info', titulo=None, icono=None) %}
+<div class="{{ AVISO[tono] }}" {% if tono == 'riesgo' %}role="alert"{% endif %}>
+  {% if titulo %}
+  <p class="font-bold text-sm flex items-center gap-2 mb-1">
+    {% if icono %}<i data-lucide="{{ icono }}" class="w-4 h-4"></i>{% endif %}{{ titulo }}
+  </p>
+  {% endif %}
+  <div class="text-sm">{{ caller() }}</div>
+</div>
+{% endmacro %}
+
+{# --- Vacío ----------------------------------------------------------------
+   Decir "no hay nada" es información. Dejarlo en blanco parece un fallo de
+   carga, y quien lo ve recarga la página en vez de seguir trabajando. #}
+{% macro vacio(mensaje, pista=None) %}
+<div class="text-center py-8 px-4">
+  <p class="text-sm text-slate-600">{{ mensaje }}</p>
+  {% if pista %}<p class="text-xs text-slate-500 mt-1">{{ pista }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{# --- Tabla ----------------------------------------------------------------
+   `cabeceras` es una lista de textos. El contenido son las `<tr>`.
+   El scroll horizontal va dentro de la tabla, nunca en el cuerpo de la
+   página: en un móvil, una tabla ancha que empuja toda la página deja los
+   botones fuera de alcance. #}
+{% macro tabla(cabeceras) %}
+<div class="overflow-x-auto -mx-4 sm:mx-0">
+  <table class="{{ TABLA }}">
+    <thead class="{{ TABLA_CABECERA }}">
+      <tr>{% for c in cabeceras %}<th scope="col" class="{{ TABLA_TH }}">{{ c }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>{{ caller() }}</tbody>
+  </table>
+</div>
+{% endmacro %}

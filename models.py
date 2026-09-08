@@ -747,6 +747,52 @@ class ReplenishmentAlert(ClinicScoped, db.Model):
     order = db.relationship('MedicalOrder')
     ticket = db.relationship('MedicationPickupTicket')
 
+# Estados de una reserva de existencias.
+RESERVA_ACTIVA = 'activa'
+RESERVA_LIBERADA = 'liberada'
+RESERVA_CONSUMIDA = 'consumida'
+
+
+class StockReservation(ClinicScoped, db.Model):
+    """Existencias apartadas para un ticket concreto.
+
+    Antes esto era un solo numero, `Stock.cantidad_comprometida`, sin dueno. Un
+    escalar no puede decir de quien son las unidades, y de ahi salian dos danos
+    distintos, los dos reproducidos:
+
+    1. **El paciente no podia recoger lo que tenia apartado.** Al emitir el
+       ticket se sumaban sus unidades a `cantidad_comprometida`; en el
+       mostrador, la evaluacion calculaba disponible = cantidad - comprometida,
+       o sea le restaba al paciente su propia reserva. Con diez unidades en
+       estante y un ticket por diez, disponible daba cero: el ticket caia a
+       "sin stock" con el frasco delante, y no habia forma de reactivarlo. En
+       un puesto con existencias justas —el caso normal— eso pasa siempre.
+
+    2. **La reserva de un paciente se la llevaba otro.** Al dispensar se
+       restaba de `cantidad_comprometida` sin mirar de quien era, asi que una
+       entrega sin reserva propia consumia la de un paciente cronico que
+       todavia no habia llegado.
+
+    Con dueno, "cuanto puede llevarse este ticket" es una pregunta que se
+    puede responder: lo que hay, menos lo apartado por otros.
+    """
+    __tablename__ = 'stock_reservation'
+
+    id = db.Column(db.Integer, primary_key=True)
+    stock_id = db.Column(db.Integer, db.ForeignKey('stock.id'), nullable=False, index=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey('medication_pickup_ticket.id'),
+                          nullable=False, index=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default=RESERVA_ACTIVA, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)
+    released_at = db.Column(db.DateTime, nullable=True)
+    # Por que se solto: caducidad, cancelacion, o consumida al entregar.
+    release_reason = db.Column(db.String(120), nullable=True)
+
+    stock = db.relationship('Stock')
+    ticket = db.relationship('MedicationPickupTicket', backref='reservations')
+
+
 class StockTransferRequest(ClinicScoped, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     source_pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=False, index=True)

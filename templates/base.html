@@ -36,107 +36,140 @@
     <script src="{{ url_for('static', filename='vendor/lucide.min.js') }}"></script>
 
 </head>
-<body class="bg-background text-slate-800 min-h-screen font-sans flex flex-col {% if request.path != '/login' and request.path != '/register' %}md:flex-row{% endif %}">
-    <div class="bg-caution-subtle text-yellow-800 text-center py-1 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 md:w-full md:absolute md:top-0 md:z-50" id="low-bandwidth-banner">
-        <i data-lucide="wifi-off" class="w-4 h-4"></i> Modo Bajo Ancho de Banda
+{% from '_ui.html' import aviso %}
+{#
+  Estructura de la página, de fuera adentro:
+
+      body  ▸ franja de estado (ancho completo)
+            ▸ fila  ▸ nav lateral (16rem en escritorio, barra superior en móvil)
+                    ▸ columna de contenido  ▸ main  ▸ pie
+
+  Antes la franja iba en posición absoluta y el resto compensaba con relleno
+  superior (`pt-10`, `md:mt-8`) para no quedar debajo. Cualquier cambio de
+  altura de la franja descuadraba las 44 pantallas a la vez. Ahora ocupa su
+  sitio en el flujo y nadie tiene que compensar nada.
+#}
+<body class="bg-background text-slate-800 min-h-screen font-sans flex flex-col">
+
+    {# Franja de estado de conexión. En gris: está siempre presente, así que
+       no puede gastar el ámbar, que en este sistema significa "requiere
+       revisión" y tiene que seguir destacando cuando aparezca de verdad. #}
+    <div id="low-bandwidth-banner"
+         class="bg-lienzo-seccion border-b border-linea text-slate-600 text-xs font-semibold
+                flex items-center justify-center gap-2 py-1.5 px-4">
+        <i data-lucide="wifi-off" class="w-3.5 h-3.5 text-slate-500"></i> Modo bajo ancho de banda
     </div>
+
+    <div class="flex-1 flex flex-col {% if request.path != '/login' and request.path != '/register' %}md:flex-row{% endif %}">
 
     <!-- Sidebar / Topnav -->
     {% if request.path != '/login' and request.path != '/register' %}
-    <nav class="bg-white border-r border-slate-200 w-full md:w-64 flex-shrink-0 md:min-h-screen md:flex md:flex-col sticky top-0 z-40 transition-transform pt-6 md:pt-10">
-        <div class="p-4 flex justify-between items-center md:block">
-            <a href="/" class="text-xl font-bold text-primary flex items-center gap-2">
+    {#
+      Un solo criterio para todos los enlaces del menú: mismo alto de fila,
+      mismo icono gris, mismo peso. El enlace de la pantalla en la que se está
+      se marca con fondo y contorno, no con color: el azul es de las acciones.
+    #}
+    {% set ENLACE = 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium min-h-control text-slate-700 hover:bg-lienzo-seccion transition-colors' %}
+    {% set ENLACE_ACTIVO = 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold min-h-control text-slate-900 bg-lienzo-seccion border border-linea transition-colors' %}
+    <nav class="bg-white border-b md:border-b-0 md:border-r border-linea w-full md:w-64 flex-shrink-0
+                md:min-h-screen md:flex md:flex-col sticky top-0 z-40">
+        <div class="h-16 px-4 flex justify-between items-center md:h-auto md:py-4 md:block">
+            <a href="/" class="text-base font-bold text-slate-900 flex items-center gap-2 tracking-tight">
                 {% if current_user.is_authenticated and current_user.clinic and current_user.clinic.logo_path %}
-                    <img src="/uploads/{{ current_user.clinic.logo_path }}" class="w-8 h-8 rounded object-cover" alt="">
+                    <img src="/uploads/{{ current_user.clinic.logo_path }}" class="w-7 h-7 rounded object-cover border border-linea" alt="">
                 {% else %}
-                    <i data-lucide="activity" class="w-7 h-7 text-primary"></i>
+                    <i data-lucide="activity" class="w-6 h-6 text-slate-500"></i>
                 {% endif %}
-                <span class="hidden sm:inline md:inline">RuralHealth</span>
+                <span>RuralHealth</span>
             </a>
-            
+
             <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" class="md:hidden text-slate-500 hover:text-primary">
+            <button id="mobile-menu-btn" class="md:hidden inline-flex items-center justify-center min-h-control min-w-control -mr-2 rounded-lg text-slate-600 hover:bg-lienzo-seccion" aria-label="Abrir menú">
                 <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
         </div>
 
-        <div id="sidebar-content" class="hidden md:flex flex-col flex-1 px-3 py-4 space-y-1">
+        <div id="sidebar-content" class="hidden md:flex flex-col flex-1 px-3 pb-4 space-y-0.5 md:overflow-y-auto">
             {% if current_user.is_authenticated %}
-                <div class="mb-4 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
-                    <p class="font-semibold text-sm text-slate-800 truncate">{{ current_user.name }}</p>
+                <div class="mb-3 px-3 py-2 border-b border-linea-suave">
+                    <p class="font-semibold text-sm text-slate-900 truncate">{{ current_user.name }}</p>
                     <p class="text-xs text-slate-500 capitalize">{{ current_user.role }}</p>
                 </div>
 
-                <a href="/" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+                <a href="/" class="{{ ENLACE_ACTIVO if request.path == '/' else ENLACE }}">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-slate-500"></i> Panel
                 </a>
 
                 {% if current_user.role == 'admin' %}
-                <a href="{{ url_for('analytics.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                <a href="{{ url_for('analytics.dashboard') }}" class="{{ ENLACE_ACTIVO if request.path.startswith('/analytics') else ENLACE }}">
                     <i data-lucide="pie-chart" class="w-5 h-5 text-slate-500"></i> Analítica
                 </a>
-                <a href="{{ url_for('admin.reporte_stock') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-slate-500"></i> Reporte Stock
+                <a href="{{ url_for('admin.reporte_stock') }}" class="{{ ENLACE }}">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-slate-500"></i> Reporte de stock
                 </a>
-                <a href="{{ url_for('admin.audit_log') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                <a href="{{ url_for('admin.audit_log') }}" class="{{ ENLACE }}">
                     <i data-lucide="scroll-text" class="w-5 h-5 text-slate-500"></i> Auditoría
                 </a>
-                <a href="{{ url_for('privacy.manage_requests') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="inbox" class="w-5 h-5 text-caution"></i> Solicitudes de datos
+                <a href="{{ url_for('privacy.manage_requests') }}" class="{{ ENLACE }}">
+                    <i data-lucide="inbox" class="w-5 h-5 text-slate-500"></i> Solicitudes de datos
                 </a>
                 {% endif %}
 
                 {% if current_user.role in ('staff', 'receptionist') %}
-                <a href="{{ url_for('staff.pendientes') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-caution"></i> Panel Faltantes
+                <a href="{{ url_for('staff.pendientes') }}" class="{{ ENLACE }}">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-slate-500"></i> Panel de faltantes
                 </a>
-                <a href="{{ url_for('staff.envios') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                <a href="{{ url_for('staff.envios') }}" class="{{ ENLACE }}">
                     <i data-lucide="truck" class="w-5 h-5 text-slate-500"></i> Cargamentos
                 </a>
                 {% endif %}
 
                 {% if current_user.role == 'expendedor' %}
-                <a href="{{ url_for('expendedor.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
+                <a href="{{ url_for('expendedor.dashboard') }}" class="{{ ENLACE }}">
                     <i data-lucide="package" class="w-5 h-5 text-slate-500"></i> Despacho
                 </a>
                 {% endif %}
 
                 {% if current_user.role == 'patient' %}
-                <a href="{{ url_for('patient.map_view') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors">
-                    <i data-lucide="map" class="w-5 h-5"></i> Mapa de Médicos
+                <a href="{{ url_for('patient.map_view') }}" class="{{ ENLACE }}">
+                    <i data-lucide="map" class="w-5 h-5 text-slate-500"></i> Mapa de médicos
                 </a>
                 {% endif %}
-                
-                <button class="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-600 hover:bg-primary/10 hover:text-primary transition-colors" onclick="toggleCommandPalette()">
-                    <i data-lucide="search" class="w-5 h-5"></i> <span class="flex-1 text-left">Buscar</span> <kbd class="hidden md:inline-block text-xs bg-slate-100 px-1.5 py-0.5 rounded border">Ctrl+K</kbd>
+
+                <button class="{{ ENLACE }} w-full" onclick="toggleCommandPalette()">
+                    <i data-lucide="search" class="w-5 h-5 text-slate-500"></i> <span class="flex-1 text-left">Buscar</span> <kbd class="hidden md:inline-block text-xs font-normal text-slate-500 bg-lienzo-seccion px-1.5 py-0.5 rounded border border-linea">Ctrl+K</kbd>
                 </button>
 
-                <div class="mt-auto space-y-2 pt-6">
-                    <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                {# Lo de abajo es lo de siempre disponible, no lo del rol: se
+                   separa con una línea en vez de con más peso tipográfico. #}
+                <div class="mt-auto pt-4 space-y-0.5 border-t border-linea-suave">
+                    <a href="{{ url_for('privacy.index') }}" class="{{ ENLACE }}">
                         <i data-lucide="shield" class="w-5 h-5 text-slate-500"></i> Mis datos
                     </a>
-                    <a href="{{ url_for('pqrs.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="{{ url_for('pqrs.index') }}" class="{{ ENLACE }}">
                         <i data-lucide="message-square-warning" class="w-5 h-5 text-slate-500"></i> Quejas y reclamos
                     </a>
                     {% if current_user.role in ('admin', 'super') %}
-                    <a href="{{ url_for('pqrs.manage') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="{{ url_for('pqrs.manage') }}" class="{{ ENLACE }}">
                         <i data-lucide="inbox" class="w-5 h-5 text-slate-500"></i> Gestión de PQRS
                     </a>
                     {% endif %}
-                    <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="/settings" class="{{ ENLACE_ACTIVO if request.path == '/settings' else ENLACE }}">
                         <i data-lucide="settings" class="w-5 h-5 text-slate-500"></i> Ajustes
                     </a>
+                    {# Cerrar sesión no destruye nada: no lleva rojo, que aquí
+                       está reservado al riesgo para el paciente. #}
                     <form method="POST" action="/logout">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-rose-500 hover:bg-critical-subtle transition-colors font-semibold">
-                            <i data-lucide="log-out" class="w-5 h-5"></i> Cerrar Sesión
+                        <button type="submit" class="{{ ENLACE }} w-full">
+                            <i data-lucide="log-out" class="w-5 h-5 text-slate-500"></i> Cerrar sesión
                         </button>
                     </form>
                 </div>
             {% else %}
                 {% if request.path != '/login' and request.path != '/register' %}
-                <a href="/login" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-accent text-white hover:bg-accent-hover transition-colors font-medium justify-center mt-4">
-                    Iniciar Sesión
+                <a href="/login" class="{{ BOTON }}">
+                    Iniciar sesión
                 </a>
                 {% endif %}
             {% endif %}
@@ -144,45 +177,56 @@
     </nav>
     {% endif %}
 
-    <div class="flex-1 flex flex-col min-h-screen">
-        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full md:mt-8">
+    {# `min-w-0` es lo que impide que una tabla ancha estire toda la columna y
+       saque los botones de la pantalla en un móvil: el scroll se queda dentro
+       de la tabla, que es donde tiene que estar. #}
+    <div class="flex-1 flex flex-col min-w-0">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
             {% if current_user.is_authenticated and current_user.must_change_password %}
-            <div class="bg-caution-subtle border-2 border-caution rounded-lg p-5 mb-5">
-                <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-2">
-                    <i data-lucide="key-round" class="w-5 h-5"></i>
-                    Debe cambiar la contraseña inicial
-                </h2>
-                <p class="text-sm text-amber-900 leading-relaxed">
+            {% call aviso('revisar', 'Debe cambiar la contraseña inicial', 'key-round') %}
+                <p class="leading-relaxed">
                     Esta cuenta todavía usa la contraseña con la que fue creada, que
                     conoce quien la generó. Hasta que la cambies, el acceso al resto
                     del sistema queda bloqueado.
                 </p>
-            </div>
+            {% endcall %}
+            <div class="mb-5"></div>
             {% endif %}
 
+            {# Los avisos llegan sin categoría desde el servidor, así que no se
+               puede saber si son confirmación o error: se muestran en neutro.
+               Pintarlos todos de azul hacía que un "usuario o contraseña
+               incorrectos" tuviera el mismo aspecto que un "farmacia
+               agregada". #}
             {% with messages = get_flashed_messages() %}
               {% if messages %}
+                <div class="space-y-2 mb-5">
                 {% for message in messages %}
-                  <div class="bg-blue-100 text-blue-800 p-3 rounded-lg mb-4 text-center font-semibold">{{ message }}</div>
+                  {% call aviso('neutro', None, None) %}{{ message }}{% endcall %}
                 {% endfor %}
+                </div>
               {% endif %}
             {% endwith %}
 
             {% block content %}{% endblock %}
         </main>
 
-        <footer class="max-w-4xl mx-auto px-3 sm:px-4 pb-8 mt-auto text-xs text-slate-600 flex flex-wrap gap-3 justify-center">
-            <a href="/terminos" class="hover:text-primary">Términos</a>
-            <span>·</span>
-            <a href="/privacidad" class="hover:text-primary">Privacidad y Datos</a>
-            <span>·</span>
-            <a href="/transparencia" class="hover:text-primary">Transparencia</a>
-            <span>·</span>
-            <a href="/manual" class="hover:text-primary">Manual</a>
+        <footer class="border-t border-linea mt-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                <a href="/terminos" class="hover:text-slate-900">Términos</a>
+                <a href="/privacidad" class="hover:text-slate-900">Privacidad y datos</a>
+                <a href="/transparencia" class="hover:text-slate-900">Transparencia</a>
+                <a href="/manual" class="hover:text-slate-900">Manual</a>
+            </div>
         </footer>
     </div>
 
-    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-accent text-white px-4 py-3 rounded-lg font-semibold shadow-sm items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
+    </div>
+
+    {# `pwa.js` lo muestra quitándole `hidden` cuando el navegador ofrece la
+       instalación. Sin esa clase de partida, el botón salía en mitad de la
+       página en escritorio, donde nunca hace nada. #}
+    <button id="install-home-screen" type="button" class="{{ BOTON }} hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
         <i data-lucide="download" class="w-5 h-5"></i>
         Instalar en pantalla de inicio
     </button>
@@ -193,16 +237,19 @@
     <!-- Command Palette Modal -->
     <div id="command-palette" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-900/40" onclick="toggleCommandPalette()"></div>
-        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
-            <div class="p-4 border-b flex items-center gap-3">
-                <i data-lucide="search" class="w-5 h-5 text-slate-500"></i>
-                <input type="text" id="omnisearch-input" placeholder="Buscar médicos, pacientes, clínicas..." class="w-full outline-none text-lg bg-transparent" aria-label="Buscar médicos, pacientes, clínicas...">
-                <button onclick="toggleCommandPalette()" class="text-slate-600 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg bg-white rounded-lg border border-linea-fuerte overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-linea-suave">
+                <label class="{{ ROTULO }}" for="omnisearch-input">Buscar médicos, pacientes o clínicas</label>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="search" class="w-5 h-5 text-slate-500 flex-shrink-0"></i>
+                    <input type="text" id="omnisearch-input" placeholder="Nombre, cédula o código" class="{{ CAMPO }}" aria-label="Buscar médicos, pacientes, clínicas...">
+                    <button onclick="toggleCommandPalette()" class="text-slate-500 hover:text-slate-900 min-h-control min-w-control inline-flex items-center justify-center flex-shrink-0" aria-label="Cerrar"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
             </div>
-            <div id="omnisearch-results" class="max-h-80 overflow-y-auto p-2 bg-slate-50 empty:hidden">
+            <div id="omnisearch-results" class="max-h-80 overflow-y-auto p-2 bg-lienzo-seccion empty:hidden">
                 <!-- Resultados renderizados aquí -->
             </div>
-            <div class="p-2 text-xs text-center text-slate-600 border-t bg-slate-50">
+            <div class="p-2 text-xs text-center text-slate-500 border-t border-linea-suave bg-lienzo-seccion">
                 Presiona ESC para cerrar
             </div>
         </div>
@@ -213,23 +260,25 @@
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
+            // El color dice qué pasó: verde completado, rojo problema, gris
+            // informativo. El azul es de las acciones, no de los avisos.
             const colors = {
-                'success': 'bg-accent text-white',
+                'success': 'bg-positive text-white',
                 'error': 'bg-critical text-white',
-                'info': 'bg-primary text-white'
+                'info': 'bg-slate-800 text-white'
             };
             const icons = {
                 'success': 'check-circle',
                 'error': 'alert-circle',
                 'info': 'info'
             };
-            
-            toast.className = `${colors[type] || colors['info']} px-4 py-3 rounded-lg shadow-sm flex items-center gap-3 text-sm font-medium toast-enter max-w-sm`;
+
+            toast.className = `${colors[type] || colors['info']} px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium toast-enter max-w-sm`;
             toast.innerHTML = `<i data-lucide="${icons[type] || icons['info']}" class="w-5 h-5 flex-shrink-0"></i> <span>${message}</span>`;
-            
+
             container.appendChild(toast);
             lucide.createIcons();
-            
+
             // Trigger animation
             requestAnimationFrame(() => {
                 toast.classList.remove('toast-enter');
@@ -257,7 +306,8 @@
                     content.classList.toggle('right-0');
                     content.classList.toggle('bg-white');
                     content.classList.toggle('border-b');
-                    content.classList.toggle('shadow-sm');
+                    content.classList.toggle('border-linea');
+                    content.classList.toggle('pt-3');
                     content.classList.toggle('z-50');
                 }
             });
@@ -298,24 +348,22 @@
                     searchResults.innerHTML = '';
                     return;
                 }
-                
+
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(async () => {
                     searchResults.innerHTML = '<div class="p-4 text-center text-slate-600"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i></div>';
                     lucide.createIcons();
-                    
+
                     try {
                         const response = await fetch(`/api/omnisearch?q=${encodeURIComponent(query)}`);
                         const data = await response.json();
-                        
+
                         if (data.results && data.results.length > 0) {
                             searchResults.innerHTML = data.results.map(item => `
-                                <a href="${item.url}" class="flex items-center gap-3 p-3 hover:bg-white rounded-lg group transition-colors border border-transparent hover:border-slate-200 hover:shadow-sm">
-                                    <div class="bg-accent/10 p-2 rounded-lg text-primary group-hover:bg-accent group-hover:text-white transition-colors">
-                                        <i data-lucide="${item.icon || 'file'}" class="w-5 h-5"></i>
-                                    </div>
+                                <a href="${item.url}" class="flex items-center gap-3 p-3 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-linea">
+                                    <i data-lucide="${item.icon || 'file'}" class="w-5 h-5 text-slate-500 flex-shrink-0"></i>
                                     <div>
-                                        <p class="text-sm font-bold text-slate-800">${item.title}</p>
+                                        <p class="text-sm font-bold text-slate-900">${item.title}</p>
                                         <p class="text-xs text-slate-500">${item.subtitle}</p>
                                     </div>
                                 </a>
@@ -325,7 +373,7 @@
                             searchResults.innerHTML = '<div class="p-4 text-center text-sm text-slate-500">No se encontraron resultados</div>';
                         }
                     } catch (error) {
-                        searchResults.innerHTML = '<div class="p-4 text-center text-sm text-red-500">Error en la búsqueda</div>';
+                        searchResults.innerHTML = '<div class="p-4 text-center text-sm text-critical">Error en la búsqueda</div>';
                     }
                 }, 300);
             });

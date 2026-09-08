@@ -5,43 +5,43 @@
         <h1 class="text-3xl font-bold">Recepción</h1>
         <p class="text-sm text-slate-500">Ordenes pendientes de medicamentos</p>
     </div>
-    <a href="{{ url_for('staff.inventory') }}" class="inline-flex items-center justify-center gap-2 bg-accent text-white px-4 py-3 rounded-lg font-bold">
+    <a href="{{ url_for('staff.inventory') }}" class="{{ BOTON }}">
         <i data-lucide="boxes" class="w-5 h-5"></i>
         Inventario
     </a>
 </div>
 
-<section class="bg-white border border-slate-200 shadow-sm rounded-lg p-4 mb-5">
+<section class="bg-white border border-linea rounded-lg p-4 mb-5">
     <form method="POST" class="grid sm:grid-cols-4 gap-3 items-end">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_hours">
         <div>
             <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atención inicio</label>
-            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de inicio de atención">
+            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="{{ CAMPO }} w-full" aria-label="Hora de inicio de atención">
         </div>
         <div>
             <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atención fin</label>
-            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="w-full border p-3 rounded-lg" aria-label="Hora de fin de atención">
+            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="{{ CAMPO }} w-full" aria-label="Hora de fin de atención">
         </div>
-        <button class="bg-slate-900 text-white px-4 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 sm:col-span-2">
+        <button class="{{ BOTON }}">
             <i data-lucide="clock" class="w-5 h-5"></i>
             Guardar horario
         </button>
     </form>
 </section>
 
-<form method="GET" action="{{ url_for('staff.verify_order', verification_hash='TOKEN') }}" class="bg-white border border-slate-200 shadow-sm rounded-lg p-4 mb-5" onsubmit="this.action=this.action.replace('TOKEN', encodeURIComponent(this.elements.verification_hash.value));">
+<form method="GET" action="{{ url_for('staff.verify_order', verification_hash='TOKEN') }}" class="bg-white border border-linea rounded-lg p-4 mb-5" onsubmit="this.action=this.action.replace('TOKEN', encodeURIComponent(this.elements.verification_hash.value));">
     <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Hash de seguridad</label>
     <div class="flex flex-col sm:flex-row gap-2">
-        <input name="verification_hash" required placeholder="Pega el token de la orden" class="flex-1 border p-3 rounded-lg font-mono text-sm" aria-label="Pega el token de la orden">
-        <button class="bg-slate-900 text-white px-4 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2">
+        <input name="verification_hash" required placeholder="Pega el token de la orden" class="{{ CAMPO }} flex-1" aria-label="Pega el token de la orden">
+        <button class="{{ BOTON }}">
             <i data-lucide="shield-check" class="w-5 h-5"></i>
             Validar
         </button>
     </div>
 </form>
 
-<section class="bg-white border border-slate-200 shadow-sm rounded-lg p-4 mb-5">
+<section class="bg-white border border-linea rounded-lg p-4 mb-5">
     <div class="flex items-center justify-between gap-3 mb-3">
         <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
             <i data-lucide="messages-square" class="w-5 h-5 text-slate-500"></i>
@@ -52,7 +52,7 @@
     <div class="grid sm:grid-cols-2 gap-3">
         {% for item in staff_chats %}
         {% set chat = item.chat %}
-        <a href="{{ url_for('staff.chat', chat_id=chat.id) }}" class="block border border-slate-200 rounded-lg p-3 hover:border-positive-border hover:bg-positive-subtle transition">
+        <a href="{{ url_for('staff.chat', chat_id=chat.id) }}" class="block border border-linea rounded-lg p-3 hover:border-positive-border hover:bg-positive-subtle transition">
             <div class="flex justify-between gap-2">
                 <span class="font-semibold text-slate-900">{{ chat.patient.name }}</span>
                 {% if item.unread > 0 %}
@@ -77,7 +77,7 @@
 <div class="space-y-4">
     {% for row in orders %}
     {% set order = row.order %}
-    <section class="bg-white border border-slate-200 shadow-sm rounded-lg p-4">
+    <section class="bg-white border border-linea rounded-lg p-4">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-1">
@@ -89,7 +89,7 @@
                 <p class="text-xs font-mono text-slate-600 mt-2 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
             </div>
             <div class="flex flex-col gap-2 min-w-[220px]">
-                <a href="{{ url_for('staff.verify_order', verification_hash=order.hash_seguridad or order.verification_hash) }}" class="inline-flex items-center justify-center gap-2 border border-slate-200 px-3 py-2 rounded-lg font-bold text-slate-700">
+                <a href="{{ url_for('staff.verify_order', verification_hash=order.hash_seguridad or order.verification_hash) }}" class="inline-flex items-center justify-center gap-2 border border-linea px-3 py-2 rounded-lg font-bold text-slate-700">
                     <i data-lucide="scan-line" class="w-4 h-4"></i>
                     Verificar
                 </a>
@@ -100,24 +100,24 @@
                 <form method="POST" action="{{ url_for('staff.dispense', order_id=order.id) }}" class="space-y-2">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="date" name="pickup_date" value="{{ order.created_at.strftime('%Y-%m-%d') }}" class="border p-2 rounded-lg text-xs" aria-label="Fecha de recogida">
-                        <input type="time" name="pickup_time" value="09:00" class="border p-2 rounded-lg text-xs" aria-label="Hora de recogida">
+                        <input type="date" name="pickup_date" value="{{ order.created_at.strftime('%Y-%m-%d') }}" class="{{ CAMPO }}" aria-label="Fecha de recogida">
+                        <input type="time" name="pickup_time" value="09:00" class="{{ CAMPO }}" aria-label="Hora de recogida">
                     </div>
-                    <select name="pharmacy_id" class="w-full border p-2 rounded-lg text-xs bg-white" aria-label="Farmacia">
+                    <select name="pharmacy_id" class="{{ CAMPO }} w-full" aria-label="Farmacia">
                         {% for pharmacy_row in row.pharmacy_rows %}
                         <option value="{{ pharmacy_row.pharmacy.id }}">{{ pharmacy_row.pharmacy.name }}{% if pharmacy_row.distance_km is not none %} - {{ pharmacy_row.distance_km }} km{% endif %}</option>
                         {% endfor %}
                     </select>
                     <div class="grid grid-cols-1 gap-2">
-                        <button name="fulfillment_strategy" value="nearest" class="w-full inline-flex items-center justify-center gap-2 bg-accent text-white px-3 py-2 rounded-lg font-bold">
+                        <button name="fulfillment_strategy" value="nearest" class="{{ BOTON }}">
                             <i data-lucide="map-pin" class="w-4 h-4"></i>
                             Mas cercana
                         </button>
-                        <button name="fulfillment_strategy" value="split" class="w-full inline-flex items-center justify-center gap-2 bg-accent text-white px-3 py-2 rounded-lg font-bold">
+                        <button name="fulfillment_strategy" value="split" class="{{ BOTON }}">
                             <i data-lucide="split" class="w-4 h-4"></i>
                             Dividir tickets
                         </button>
-                        <button name="fulfillment_strategy" value="selected" class="w-full inline-flex items-center justify-center gap-2 border border-slate-200 text-slate-700 px-3 py-2 rounded-lg font-bold">
+                        <button name="fulfillment_strategy" value="selected" class="w-full inline-flex items-center justify-center gap-2 border border-linea text-slate-700 px-3 py-2 rounded-lg font-bold">
                             <i data-lucide="ticket-check" class="w-4 h-4"></i>
                             Usar seleccionada
                         </button>
@@ -143,9 +143,9 @@
                 </tbody>
             </table>
         </div>
-        <div class="mt-4 overflow-x-auto border border-slate-200 rounded-lg">
+        <div class="mt-4 overflow-x-auto border border-linea rounded-lg">
             <table class="w-full text-xs">
-                <thead class="text-left text-xs uppercase tracking-widest text-slate-600 bg-slate-50">
+                <thead class="text-left text-xs uppercase tracking-widest text-slate-600 bg-lienzo-seccion">
                     <tr>
                         <th class="p-2">Farmacia</th>
                         <th class="p-2">Distancia</th>
@@ -183,7 +183,7 @@
         </div>
     </section>
     {% else %}
-    <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-8 text-center text-slate-500">
+    <div class="bg-white border border-linea rounded-lg p-8 text-center text-slate-500">
         No hay ordenes pendientes para esta clínica.
     </div>
     {% endfor %}

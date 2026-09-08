@@ -1,0 +1,3136 @@
+{
+ "templates/_ui.html": {
+  "bloques": [],
+  "campos": [],
+  "extiende": null,
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [],
+  "variables": [
+   "area",
+   "aviso",
+   "c",
+   "cabecera",
+   "cabeceras",
+   "caller",
+   "campo",
+   "chip",
+   "cifra",
+   "clase",
+   "columnas",
+   "dato",
+   "extra",
+   "filas",
+   "icono",
+   "id_campo",
+   "ident",
+   "marcador",
+   "mensaje",
+   "n",
+   "nombre",
+   "panel",
+   "pie",
+   "pista",
+   "rejilla",
+   "requerido",
+   "rotulo",
+   "rotulo_dato",
+   "seccion",
+   "seleccion",
+   "subtitulo",
+   "tabla",
+   "tabla_cabecera",
+   "tabla_th",
+   "tarjeta",
+   "texto",
+   "tipo",
+   "tira",
+   "titulo",
+   "titulo_pagina",
+   "titulo_seccion",
+   "tono",
+   "vacio",
+   "valor",
+   "valor_dato"
+  ]
+ },
+ "templates/admin_analytics.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [
+   "analytics-date",
+   "chart-diagnostics",
+   "chart-meds",
+   "chart-trend",
+   "doctor-table-body",
+   "kpi-alerts",
+   "kpi-chats",
+   "kpi-consultations",
+   "kpi-consultations-trend",
+   "kpi-grid",
+   "kpi-patients",
+   "kpi-rating",
+   "kpi-rating-count"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/admin/dashboard"
+  ],
+  "url_for": [
+   "static"
+  ],
+  "variables": [
+   "content",
+   "filename"
+  ]
+ },
+ "templates/admin_audit_log.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "days",
+   "event"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "days",
+     "event"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   }
+  ],
+  "ids": [
+   "days",
+   "event"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "admin.audit_log"
+  ],
+  "variables": [
+   "actor_names",
+   "alerts",
+   "chain_breaks",
+   "content",
+   "days",
+   "entries",
+   "entry",
+   "event",
+   "event_filter",
+   "issue",
+   "page",
+   "pages",
+   "total"
+  ]
+ },
+ "templates/admin_dashboard.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "access_id",
+   "action",
+   "address",
+   "alert_id",
+   "atencion_fin",
+   "atencion_inicio",
+   "cantidad_minima",
+   "cedula",
+   "code",
+   "description",
+   "duration_days",
+   "email",
+   "end_date",
+   "expires_on",
+   "is_active",
+   "latitude",
+   "longitude",
+   "max_uses",
+   "min_stock",
+   "name",
+   "office_address",
+   "office_latitude",
+   "office_longitude",
+   "password",
+   "pharmacy_id",
+   "phone",
+   "role",
+   "sku",
+   "specialty",
+   "start_date",
+   "status",
+   "stock",
+   "stock_id",
+   "transfer_id",
+   "unit",
+   "user_id",
+   "username"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "/admin/export_rips",
+    "campos": [
+     "end_date",
+     "start_date"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "code",
+     "description",
+     "duration_days",
+     "max_uses"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "access_id",
+     "action"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "cedula",
+     "email",
+     "name",
+     "office_address",
+     "office_latitude",
+     "office_longitude",
+     "password",
+     "phone",
+     "specialty",
+     "username"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "atencion_fin",
+     "atencion_inicio",
+     "cedula",
+     "name",
+     "password",
+     "pharmacy_id",
+     "role",
+     "username"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "address",
+     "latitude",
+     "longitude",
+     "name",
+     "phone"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "address",
+     "is_active",
+     "latitude",
+     "longitude",
+     "name",
+     "pharmacy_id",
+     "phone"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "user_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "user_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "user_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "pharmacy_id",
+     "user_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "alert_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "status",
+     "transfer_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "cantidad_minima",
+     "stock_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "expires_on",
+     "min_stock",
+     "name",
+     "sku",
+     "stock",
+     "unit"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "admin-doctor-lat",
+   "admin-doctor-lng",
+   "admin-pharmacy-lat",
+   "admin-pharmacy-lng",
+   "analytics-dashboard-link"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/admin/analytics",
+   "/admin/export_rips"
+  ],
+  "url_for": [],
+  "variables": [
+   "access",
+   "access_codes",
+   "alert",
+   "attended_count",
+   "clinic_access_rows",
+   "code",
+   "content",
+   "doc",
+   "doctors",
+   "exp",
+   "expendedores",
+   "fila",
+   "inventory_items",
+   "item",
+   "pat",
+   "patients",
+   "pharmacies",
+   "pharmacy",
+   "por_demanda",
+   "puntos_de_reposicion",
+   "rec",
+   "receptionists",
+   "replenishment_alerts",
+   "row",
+   "sub",
+   "subscription_rows",
+   "transfer",
+   "transfer_requests"
+  ]
+ },
+ "templates/admin_password_reset_issued.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [
+   "reset-token",
+   "reset-url"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "admin.dashboard"
+  ],
+  "variables": [
+   "content",
+   "raw_token",
+   "reset_url",
+   "target",
+   "ttl_minutes"
+  ]
+ },
+ "templates/admin_reporte_stock.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "admin.dashboard"
+  ],
+  "variables": [
+   "content",
+   "data",
+   "days",
+   "name",
+   "rate",
+   "stats"
+  ]
+ },
+ "templates/admin_rips_validation.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "end_date",
+   "invoice",
+   "start_date"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('admin.export_rips') }}",
+    "campos": [
+     "end_date",
+     "invoice",
+     "start_date"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   }
+  ],
+  "ids": [
+   "invoice"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "admin.dashboard",
+   "admin.export_rips"
+  ],
+  "variables": [
+   "_",
+   "content",
+   "end_date",
+   "grouped",
+   "issue",
+   "issues",
+   "scope",
+   "scope_issues",
+   "start_date",
+   "summary"
+  ]
+ },
+ "templates/base.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token"
+  ],
+  "extiende": null,
+  "formularios": [
+   {
+    "accion": "/logout",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "command-palette",
+   "install-home-screen",
+   "low-bandwidth-banner",
+   "mobile-menu-btn",
+   "omnisearch-input",
+   "omnisearch-results",
+   "sidebar-content",
+   "toast-container"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/",
+   "/login",
+   "/logout",
+   "/manifest.json",
+   "/manual",
+   "/privacidad",
+   "/settings",
+   "/static/icon.svg",
+   "/terminos",
+   "/transparencia"
+  ],
+  "url_for": [
+   "admin.audit_log",
+   "admin.reporte_stock",
+   "analytics.dashboard",
+   "expendedor.dashboard",
+   "patient.map_view",
+   "pqrs.index",
+   "pqrs.manage",
+   "privacy.index",
+   "privacy.manage_requests",
+   "staff.envios",
+   "staff.pendientes",
+   "static"
+  ],
+  "variables": [
+   "content",
+   "current_user",
+   "filename",
+   "message",
+   "messages",
+   "request"
+  ]
+ },
+ "templates/calendar_component.html": {
+  "bloques": [],
+  "campos": [],
+  "extiende": null,
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [],
+  "variables": [
+   "current_view_date",
+   "day",
+   "month_days",
+   "next_month",
+   "prev_month",
+   "selected_date"
+  ]
+ },
+ "templates/doctor_appointment.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "date",
+   "description",
+   "time"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "/doctor/book_appointment/{{ patient.id }}",
+    "campos": [
+     "_csrf_token",
+     "date",
+     "description",
+     "time"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [
+   "calendar_component.html"
+  ],
+  "rutas": [
+   "/doctor/dashboard"
+  ],
+  "url_for": [],
+  "variables": [
+   "afternoon_slots",
+   "content",
+   "morning_slots",
+   "patient",
+   "selected_date",
+   "slot",
+   "slots"
+  ]
+ },
+ "templates/doctor_card.html": {
+  "bloques": [],
+  "campos": [
+   "_csrf_token"
+  ],
+  "extiende": null,
+  "formularios": [
+   {
+    "accion": "/patient/toggle_favorite/{{ data.doc.id }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/patient/start_chat/{{ data.doc.id }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "patient.doctor_payment",
+   "settings.index"
+  ],
+  "variables": [
+   "data",
+   "day",
+   "doctor_id",
+   "price"
+  ]
+ },
+ "templates/doctor_chat.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "care_modality",
+   "cie10_code",
+   "consultation_purpose",
+   "content",
+   "cups_code",
+   "diagnosis",
+   "external_cause",
+   "file",
+   "flow_id",
+   "reason",
+   "target_doctor_id",
+   "treatment",
+   "update_reason"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "reason",
+     "update_reason"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/mark_no_show/{{ chat.appointment.id }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "content"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "care_modality",
+     "cie10_code",
+     "consultation_purpose",
+     "cups_code",
+     "diagnosis",
+     "external_cause",
+     "treatment"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/end_consultation/{{ chat.id }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/set_chat_mode/{{ chat.id }}/consultation",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/set_chat_mode/{{ chat.id }}/triage",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/set_chat_mode/{{ chat.id }}/read-only",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "flow_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "file"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('doctor.refer_patient', chat_id=chat.id) }}",
+    "campos": [
+     "_csrf_token",
+     "reason",
+     "target_doctor_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "appointment-countdown",
+   "care_modality",
+   "consultation_purpose",
+   "countdown-timer",
+   "external_cause",
+   "video-call-modal"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/doctor/dashboard"
+  ],
+  "url_for": [
+   "doctor.prescription",
+   "doctor.refer_patient"
+  ],
+  "variables": [
+   "causas_externas",
+   "chat",
+   "chat_id",
+   "codigo",
+   "content",
+   "current_user",
+   "etiqueta",
+   "file",
+   "file_history",
+   "finalidades",
+   "flow",
+   "flows",
+   "item",
+   "key",
+   "message",
+   "messages",
+   "modalidad_sugerida",
+   "modalidades",
+   "msg",
+   "nearby_doctors",
+   "patient_id",
+   "val"
+  ]
+ },
+ "templates/doctor_dashboard.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "accepts_manual_payment",
+   "action",
+   "active_{{ i }}",
+   "affiliation_name",
+   "avg_consultation_time_unit",
+   "avg_consultation_time_val",
+   "avg_response_time_unit",
+   "avg_response_time_val",
+   "block_end",
+   "block_id",
+   "block_start",
+   "consent_prefix",
+   "decision",
+   "default_policy_discount_percent",
+   "doctor_note",
+   "end_{{ i }}",
+   "flow_data",
+   "office_address",
+   "office_latitude",
+   "office_longitude",
+   "payment_instructions",
+   "payment_methods_image",
+   "peak_hours",
+   "pfp",
+   "price_annual",
+   "price_monthly",
+   "price_per_consultation",
+   "price_quarterly",
+   "schedule",
+   "schedule_action",
+   "show_office_on_map",
+   "specific_date",
+   "start_{{ i }}",
+   "ticket_id",
+   "title"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/upload_pfp",
+    "campos": [
+     "_csrf_token",
+     "pfp"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "affiliation_name",
+     "office_address",
+     "office_latitude",
+     "office_longitude",
+     "show_office_on_map"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "consent_prefix"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "accepts_manual_payment",
+     "action",
+     "default_policy_discount_percent",
+     "payment_instructions",
+     "payment_methods_image",
+     "price_annual",
+     "price_monthly",
+     "price_per_consultation",
+     "price_quarterly"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "decision",
+     "doctor_note",
+     "ticket_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "avg_consultation_time_unit",
+     "avg_consultation_time_val",
+     "avg_response_time_unit",
+     "avg_response_time_val",
+     "peak_hours",
+     "schedule"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/save_schedule",
+    "campos": [
+     "_csrf_token",
+     "active_{{ i }}",
+     "end_{{ i }}",
+     "schedule_action",
+     "start_{{ i }}"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/save_schedule",
+    "campos": [
+     "_csrf_token",
+     "block_end",
+     "block_start",
+     "schedule_action",
+     "specific_date"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/delete_blockout",
+    "campos": [
+     "_csrf_token",
+     "block_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "flow_data",
+     "title"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "doctor-live-clock",
+   "doctor-office-lat",
+   "doctor-office-lng",
+   "patient_list",
+   "search_patient"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/doctor/delete_blockout",
+   "/doctor/export_rips",
+   "/doctor/save_schedule",
+   "/doctor/upload_pfp"
+  ],
+  "url_for": [
+   "doctor.prescription"
+  ],
+  "variables": [
+   "actual_blockouts",
+   "appointments",
+   "appt",
+   "c",
+   "client_subscription_rows",
+   "content",
+   "current_user",
+   "days",
+   "i",
+   "item",
+   "open_chats",
+   "p",
+   "patient_id",
+   "patients",
+   "payment_tickets",
+   "pending_appts",
+   "pending_payments",
+   "plan_labels",
+   "row",
+   "sched",
+   "schedules",
+   "sub",
+   "tariff",
+   "ticket"
+  ]
+ },
+ "templates/doctor_patient_history.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "amendment_reason",
+   "cie10_code",
+   "condition",
+   "diagnosis",
+   "reaction",
+   "reason",
+   "severity",
+   "status",
+   "substance",
+   "summary"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('doctor.discard_allergy', allergy_id=allergy.id) }}",
+    "campos": [
+     "_csrf_token",
+     "reason"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('doctor.add_allergy', patient_id=patient.id) }}",
+    "campos": [
+     "_csrf_token",
+     "reaction",
+     "severity",
+     "status",
+     "substance"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('doctor.add_condition', patient_id=patient.id) }}",
+    "campos": [
+     "_csrf_token",
+     "cie10_code",
+     "condition"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('doctor.amend_history', history_id=h.id) }}",
+    "campos": [
+     "_csrf_token",
+     "amendment_reason",
+     "cie10_code",
+     "diagnosis",
+     "summary"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "reaction",
+   "severity",
+   "status",
+   "substance"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/doctor/dashboard"
+  ],
+  "url_for": [
+   "doctor.add_allergy",
+   "doctor.add_condition",
+   "doctor.amend_history",
+   "doctor.discard_allergy"
+  ],
+  "variables": [
+   "active_meds",
+   "allergies",
+   "allergy",
+   "allergy_id",
+   "appointments",
+   "appt",
+   "chat",
+   "chats",
+   "condition",
+   "conditions",
+   "content",
+   "h",
+   "histories",
+   "history_id",
+   "medication",
+   "patient",
+   "patient_age_years",
+   "patient_id"
+  ]
+ },
+ "templates/doctor_prescription.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "chat_id",
+   "concentration",
+   "dosage",
+   "dosage_form",
+   "duration_days",
+   "dx_code",
+   "dx_description",
+   "expires_date",
+   "expires_time",
+   "frequency",
+   "generic_name",
+   "instructions",
+   "insurance_name",
+   "insurance_plan",
+   "insurance_regime",
+   "med_name",
+   "observations",
+   "patient_age",
+   "patient_level",
+   "quantity",
+   "route",
+   "safety_override_reason",
+   "signature_data",
+   "unit"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "chat_id",
+     "concentration",
+     "dosage",
+     "dosage_form",
+     "duration_days",
+     "dx_code",
+     "dx_description",
+     "expires_date",
+     "expires_time",
+     "frequency",
+     "generic_name",
+     "instructions",
+     "insurance_name",
+     "insurance_plan",
+     "insurance_regime",
+     "med_name",
+     "observations",
+     "patient_age",
+     "patient_level",
+     "quantity",
+     "route",
+     "safety_override_reason",
+     "signature_data",
+     "unit"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "diagnosis-rows",
+   "lista-medicamentos",
+   "live-safety",
+   "medication-rows",
+   "prescription-form",
+   "safety_override_reason",
+   "signature-canvas",
+   "signature-data"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "doctor.chat",
+   "doctor.dashboard",
+   "doctor.patient_history"
+  ],
+  "variables": [
+   "_",
+   "active_meds",
+   "administration_routes",
+   "allergies",
+   "allergy",
+   "chat_id",
+   "common_medications",
+   "content",
+   "current_user",
+   "default_expiration",
+   "dosage_forms",
+   "finding",
+   "forma",
+   "nombre",
+   "patient",
+   "patient_id",
+   "request",
+   "safety",
+   "via"
+  ]
+ },
+ "templates/error.html": {
+  "bloques": [],
+  "campos": [],
+  "extiende": null,
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [
+   "/",
+   "/login"
+  ],
+  "url_for": [],
+  "variables": [
+   "code",
+   "incident",
+   "message",
+   "paso",
+   "pasos"
+  ]
+ },
+ "templates/expendedor_dashboard.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "cantidad_minima",
+   "med_name",
+   "q",
+   "quantity",
+   "source_pharmacy_id",
+   "stock_id"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "q"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   },
+   {
+    "accion": "{{ url_for('expendedor.toggle_priority', ticket_id=ticket.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('expendedor.reactivate', ticket_id=ticket.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "q"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   },
+   {
+    "accion": "{{ url_for('expendedor.reactivate', ticket_id=t.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "cantidad_minima",
+     "stock_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "med_name",
+     "quantity",
+     "source_pharmacy_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "expendedor.confirm",
+   "expendedor.reactivate",
+   "expendedor.toggle_priority"
+  ],
+  "variables": [
+   "content",
+   "dispatch_status",
+   "fila",
+   "item",
+   "med",
+   "meds_list",
+   "pharmacy",
+   "query",
+   "recent",
+   "sin_stock_tickets",
+   "source_stock_items",
+   "stock",
+   "stock_items",
+   "t",
+   "ticket",
+   "ticket_id",
+   "today_tickets",
+   "transfer",
+   "transfer_requests",
+   "view_filter"
+  ]
+ },
+ "templates/inventory.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "cantidad",
+   "cantidad_minima",
+   "nombre_med",
+   "pharmacy_id",
+   "stock_id",
+   "unidad"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "cantidad",
+     "cantidad_minima",
+     "nombre_med",
+     "pharmacy_id",
+     "unidad"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "cantidad",
+     "cantidad_minima",
+     "nombre_med",
+     "pharmacy_id",
+     "stock_id",
+     "unidad"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "alta-cantidad",
+   "alta-farmacia",
+   "alta-medicamento",
+   "alta-minimo",
+   "alta-unidad"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.dashboard"
+  ],
+  "variables": [
+   "content",
+   "default_pharmacy",
+   "fila",
+   "item",
+   "pharmacies",
+   "pharmacy",
+   "stock_items"
+  ]
+ },
+ "templates/legal.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "accept_sensitive_data"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('patient.consent') }}",
+    "campos": [
+     "_csrf_token",
+     "accept_sensitive_data"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "patient.consent",
+   "privacy.index",
+   "settings.index"
+  ],
+  "variables": [
+   "active_tab",
+   "body",
+   "consent_required",
+   "content",
+   "current_user",
+   "doc",
+   "doc_key",
+   "documents",
+   "href",
+   "key",
+   "label",
+   "missing",
+   "norma",
+   "pending_config",
+   "tabs"
+  ]
+ },
+ "templates/login.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "password",
+   "username"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "password",
+     "username"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "password",
+   "username"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/register",
+   "/socio"
+  ],
+  "url_for": [
+   "auth.request_password_reset"
+  ],
+  "variables": [
+   "content"
+  ]
+ },
+ "templates/manual.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [
+   "section-admin",
+   "section-doctor",
+   "section-expendedor",
+   "section-general",
+   "section-patient",
+   "section-staff",
+   "tab-admin",
+   "tab-doctor",
+   "tab-expendedor",
+   "tab-general",
+   "tab-patient",
+   "tab-staff"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/transparencia"
+  ],
+  "url_for": [],
+  "variables": [
+   "content",
+   "current_user"
+  ]
+ },
+ "templates/medical_order_print.html": {
+  "bloques": [],
+  "campos": [],
+  "extiende": null,
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "doctor.dashboard"
+  ],
+  "variables": [
+   "clinic",
+   "diagnoses",
+   "dx",
+   "inst",
+   "med",
+   "med_instructions",
+   "meds",
+   "order",
+   "print_date",
+   "validity_days"
+  ]
+ },
+ "templates/offline.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [],
+  "variables": [
+   "content"
+  ]
+ },
+ "templates/password_reset_complete.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "confirm_password",
+   "password"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "confirm_password",
+     "password"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "confirm_password",
+   "password"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [],
+  "variables": [
+   "content"
+  ]
+ },
+ "templates/password_reset_request.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "username"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "username"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "username"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "auth.login"
+  ],
+  "variables": [
+   "content"
+  ]
+ },
+ "templates/patient_appointment.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "date",
+   "description",
+   "time"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "/patient/book_appointment/{{ doctor.id }}",
+    "campos": [
+     "_csrf_token",
+     "date",
+     "description",
+     "time"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [
+   "calendar_component.html"
+  ],
+  "rutas": [
+   "/patient/dashboard"
+  ],
+  "url_for": [],
+  "variables": [
+   "afternoon_slots",
+   "content",
+   "doctor",
+   "morning_slots",
+   "selected_date",
+   "slot",
+   "slots"
+  ]
+ },
+ "templates/patient_chat.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "comment",
+   "content",
+   "file",
+   "flow_response",
+   "flow_response_open",
+   "reason",
+   "stars",
+   "tags",
+   "update_reason"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "reason",
+     "update_reason"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/doctor/mark_no_show/{{ chat.appointment.id }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/patient/chat/{{ chat.id }}",
+    "campos": [
+     "_csrf_token",
+     "flow_response_open"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/patient/chat/{{ chat.id }}",
+    "campos": [
+     "_csrf_token",
+     "flow_response"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/patient/rate_chat/{{ chat.id }}",
+    "campos": [
+     "_csrf_token",
+     "comment",
+     "stars",
+     "tags"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "content",
+     "file"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "/patient/close_chat/{{ chat.id }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "appointment-countdown",
+   "countdown-timer",
+   "video-call-modal"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/patient/dashboard"
+  ],
+  "url_for": [],
+  "variables": [
+   "can_rate",
+   "can_send",
+   "chat",
+   "content",
+   "current_user",
+   "doctor",
+   "is_doctor_busy_elsewhere",
+   "is_on_duty",
+   "is_read_only",
+   "key",
+   "message",
+   "messages",
+   "msg",
+   "tag",
+   "val"
+  ]
+ },
+ "templates/patient_dashboard.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "clinic_id",
+   "doctor_id",
+   "mode",
+   "near",
+   "q"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('settings.index') }}",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "clinic_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('patient.notify_arriving', ticket_id=ticket.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('staff.start_chat') }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "mode",
+     "near",
+     "q"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "doctor_id",
+     "q"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   }
+  ],
+  "ids": [
+   "dashboard-skeleton",
+   "patient-dashboard-container",
+   "patient-live-clock"
+  ],
+  "incluye": [
+   "doctor_card.html"
+  ],
+  "rutas": [
+   "/patient/consentimiento-datos-sensibles",
+   "/patient/dashboard"
+  ],
+  "url_for": [
+   "patient.dashboard",
+   "patient.map_view",
+   "patient.notify_arriving",
+   "settings.index",
+   "staff.start_chat"
+  ],
+  "variables": [
+   "active_chats",
+   "active_doctor_chats",
+   "active_staff_chats",
+   "appointments",
+   "appt",
+   "avail_data",
+   "c",
+   "clinic_rows",
+   "closed_doctor_chats",
+   "closed_staff_chats",
+   "content",
+   "current_user",
+   "data",
+   "doc",
+   "doctors_with_chats",
+   "fav_data",
+   "is_today",
+   "item",
+   "med",
+   "medical_orders",
+   "meds",
+   "mode",
+   "mode_filter",
+   "near",
+   "near_me",
+   "needs_sensitive_consent",
+   "order",
+   "payment_tickets",
+   "pickup_tickets",
+   "row",
+   "search_query",
+   "selected_doctor_id",
+   "staff_with_chats",
+   "status_colors",
+   "status_icons",
+   "status_labels",
+   "ticket",
+   "ticket_id",
+   "today_str",
+   "unavail_data"
+  ]
+ },
+ "templates/patient_doctor_payment.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "patient_note",
+   "plan_type",
+   "proof"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "patient_note",
+     "plan_type",
+     "proof"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "patient.dashboard"
+  ],
+  "variables": [
+   "content",
+   "discount_percent",
+   "doctor",
+   "plan_labels",
+   "price",
+   "prices",
+   "tariff",
+   "ticket",
+   "tickets"
+  ]
+ },
+ "templates/patient_map.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "accept_location",
+   "address",
+   "latitude",
+   "longitude"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('patient.update_location') }}",
+    "campos": [
+     "_csrf_token",
+     "accept_location",
+     "address",
+     "latitude",
+     "longitude"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "cache-map-points",
+   "care-map",
+   "clinic-list",
+   "doctor-list",
+   "patient-lat",
+   "patient-lng",
+   "pharmacy-list"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "patient.dashboard",
+   "patient.update_location",
+   "static"
+  ],
+  "variables": [
+   "content",
+   "current_user",
+   "filename",
+   "near"
+  ]
+ },
+ "templates/pickup_ticket.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.dashboard"
+  ],
+  "variables": [
+   "content",
+   "current_user",
+   "med",
+   "meds",
+   "related",
+   "related_tickets",
+   "ticket"
+  ]
+ },
+ "templates/pqrs.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "complaint_type",
+   "detail",
+   "subject"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('pqrs.create') }}",
+    "campos": [
+     "_csrf_token",
+     "complaint_type",
+     "detail",
+     "subject"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "complaint_type",
+   "detail",
+   "subject"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "pqrs.create",
+   "privacy.index"
+  ],
+  "variables": [
+   "content",
+   "etiquetas",
+   "r",
+   "radicados",
+   "tipo",
+   "tipos"
+  ]
+ },
+ "templates/pqrs_manage.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "resolution"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('pqrs.resolve', complaint_id=r.id) }}",
+    "campos": [
+     "_csrf_token",
+     "resolution"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "pqrs.resolve"
+  ],
+  "variables": [
+   "abiertas",
+   "complaint_id",
+   "content",
+   "etiquetas",
+   "r",
+   "resueltas",
+   "vencidas"
+  ]
+ },
+ "templates/privacy_center.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "consent_type",
+   "detail",
+   "request_type"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('privacy.export_my_data') }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('privacy.revoke_consent') }}",
+    "campos": [
+     "_csrf_token",
+     "consent_type"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('privacy.create_request') }}",
+    "campos": [
+     "_csrf_token",
+     "detail",
+     "request_type"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "detail",
+   "request_type"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "privacy.create_request",
+   "privacy.export_my_data",
+   "privacy.revoke_consent"
+  ],
+  "variables": [
+   "consent",
+   "consents",
+   "content",
+   "count",
+   "inventory",
+   "item",
+   "label",
+   "request_labels",
+   "requests_made"
+  ]
+ },
+ "templates/privacy_requests.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "outcome",
+   "resolution_note"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "{{ url_for('privacy.resolve_request', request_id=item.id) }}",
+    "campos": [
+     "_csrf_token",
+     "outcome",
+     "resolution_note"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('privacy.deactivate_account', request_id=item.id) }}",
+    "campos": [
+     "_csrf_token"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "privacy.deactivate_account",
+   "privacy.resolve_request"
+  ],
+  "variables": [
+   "content",
+   "item",
+   "overdue_count",
+   "pending",
+   "request_id",
+   "request_labels",
+   "resolved"
+  ]
+ },
+ "templates/register.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "accept_location",
+   "accept_privacy",
+   "accept_terms",
+   "accept_transparency",
+   "address",
+   "cedula",
+   "clinic_code",
+   "email",
+   "latitude",
+   "longitude",
+   "name",
+   "password",
+   "phone",
+   "username"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "accept_location",
+     "accept_privacy",
+     "accept_terms",
+     "accept_transparency",
+     "address",
+     "cedula",
+     "clinic_code",
+     "email",
+     "latitude",
+     "longitude",
+     "name",
+     "password",
+     "phone",
+     "username"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "lat",
+   "lng",
+   "register-form",
+   "registration-map"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/aviso-de-privacidad",
+   "/login",
+   "/privacidad",
+   "/terminos",
+   "/transparencia"
+  ],
+  "url_for": [],
+  "variables": [
+   "content"
+  ]
+ },
+ "templates/settings.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "accept_location",
+   "access_type",
+   "action",
+   "address",
+   "billing_email",
+   "billing_phone",
+   "clinic_code",
+   "clinic_id",
+   "confirm_password",
+   "confirm_text",
+   "consent_prefix",
+   "contact_email",
+   "current_password",
+   "disability",
+   "document_number",
+   "document_type",
+   "ethnic_group",
+   "fiscal_address",
+   "invoice_prefix",
+   "is_vat_responsible",
+   "latitude",
+   "legal_name",
+   "legal_{{ key }}",
+   "location",
+   "logo",
+   "longitude",
+   "medical_registration",
+   "nationality_code",
+   "new_password",
+   "nit",
+   "opening_hours",
+   "policy_code",
+   "policy_file",
+   "range_from",
+   "range_to",
+   "resolution_date",
+   "resolution_number",
+   "resolution_valid_until",
+   "specialty",
+   "verification_digit",
+   "zone"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "clinic_code"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "policy_code",
+     "policy_file"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "clinic_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "access_type",
+     "action",
+     "contact_email",
+     "latitude",
+     "location",
+     "logo",
+     "longitude",
+     "nit",
+     "opening_hours"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "consent_prefix"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "medical_registration",
+     "specialty"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "accept_location",
+     "action",
+     "address",
+     "latitude",
+     "longitude"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "disability",
+     "ethnic_group",
+     "nationality_code",
+     "zone"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "confirm_password",
+     "current_password",
+     "new_password"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "billing_email",
+     "billing_phone",
+     "document_number",
+     "document_type",
+     "fiscal_address",
+     "invoice_prefix",
+     "is_vat_responsible",
+     "legal_name",
+     "range_from",
+     "range_to",
+     "resolution_date",
+     "resolution_number",
+     "resolution_valid_until",
+     "verification_digit"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "legal_{{ key }}"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "confirm_text"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "clinic-settings-lat",
+   "clinic-settings-lng",
+   "confirm_text",
+   "disability",
+   "ethnic_group",
+   "facturacion",
+   "legal",
+   "nationality_code",
+   "settings-user-lat",
+   "settings-user-lng",
+   "zone"
+  ],
+  "incluye": [],
+  "rutas": [
+   "/privacidad",
+   "/terminos",
+   "/transparencia"
+  ],
+  "url_for": [
+   "privacy.index"
+  ],
+  "variables": [
+   "billing_gaps",
+   "billing_profile",
+   "clinic_rows",
+   "codigo",
+   "content",
+   "current_user",
+   "discapacidades",
+   "enrollment",
+   "etiqueta",
+   "gap",
+   "grupos_etnicos",
+   "help_text",
+   "key",
+   "label",
+   "legal_labels",
+   "legal_pending",
+   "legal_values",
+   "policy_enrollments",
+   "row"
+  ]
+ },
+ "templates/socio.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "ciudad",
+   "email",
+   "institucion",
+   "mensaje",
+   "nombre",
+   "telefono"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "ciudad",
+     "email",
+     "institucion",
+     "mensaje",
+     "nombre",
+     "telefono"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [],
+  "variables": [
+   "content"
+  ]
+ },
+ "templates/staff_chat.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "content",
+   "pickup_date",
+   "pickup_time",
+   "qty_{{ item.id }}",
+   "stock_id"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "content"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "pickup_date",
+     "pickup_time",
+     "qty_{{ item.id }}",
+     "stock_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.dashboard"
+  ],
+  "variables": [
+   "chat",
+   "content",
+   "current_user",
+   "disponible",
+   "item",
+   "messages",
+   "msg",
+   "order",
+   "patient_orders",
+   "stock_items"
+  ]
+ },
+ "templates/staff_dashboard.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "atencion_fin",
+   "atencion_inicio",
+   "fulfillment_strategy",
+   "pharmacy_id",
+   "pickup_date",
+   "pickup_time",
+   "verification_hash"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "atencion_fin",
+     "atencion_inicio"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "{{ url_for('staff.verify_order', verification_hash='TOKEN') }}",
+    "campos": [
+     "verification_hash"
+    ],
+    "csrf": false,
+    "metodo": "get"
+   },
+   {
+    "accion": "{{ url_for('staff.dispense', order_id=order.id) }}",
+    "campos": [
+     "_csrf_token",
+     "fulfillment_strategy",
+     "pharmacy_id",
+     "pickup_date",
+     "pickup_time"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.chat",
+   "staff.dispense",
+   "staff.inventory",
+   "staff.order_map",
+   "staff.verify_order"
+  ],
+  "variables": [
+   "chat",
+   "chat_id",
+   "content",
+   "current_user",
+   "item",
+   "med",
+   "med_row",
+   "order",
+   "order_id",
+   "orders",
+   "pharmacy_row",
+   "row",
+   "staff_chats",
+   "verification_hash",
+   "verified_order"
+  ]
+ },
+ "templates/staff_envios.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "expected_date",
+   "med_name[]",
+   "note",
+   "pharmacy_id",
+   "quantity[]",
+   "shipment_id",
+   "supplier_name"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "expected_date",
+     "med_name[]",
+     "note",
+     "pharmacy_id",
+     "quantity[]",
+     "supplier_name"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "shipment_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "shipment_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "med-rows",
+   "shipment-form"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.dashboard",
+   "staff.pendientes"
+  ],
+  "variables": [
+   "cfg",
+   "content",
+   "item",
+   "pharmacies",
+   "pharmacy",
+   "shipment",
+   "shipments",
+   "status_cfg",
+   "today_str"
+  ]
+ },
+ "templates/staff_order_map.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [],
+  "extiende": "base.html",
+  "formularios": [],
+  "ids": [
+   "map-data-provider",
+   "staff-order-map"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.dashboard",
+   "static"
+  ],
+  "variables": [
+   "content",
+   "filename",
+   "med",
+   "med_row",
+   "meds",
+   "order",
+   "pharmacy_rows",
+   "row"
+  ]
+ },
+ "templates/staff_pendientes.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "action",
+   "priority",
+   "ticket_id"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "priority",
+     "ticket_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "ticket_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "staff.dashboard",
+   "staff.envios"
+  ],
+  "variables": [
+   "alert",
+   "alerts",
+   "altos",
+   "content",
+   "criticos",
+   "incoming",
+   "item",
+   "med",
+   "normales",
+   "row",
+   "rows",
+   "shipment",
+   "ticket",
+   "urgency_classes"
+  ]
+ },
+ "templates/superadmin_dashboard.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "access_type",
+   "action",
+   "admin_cedula",
+   "admin_email",
+   "admin_name",
+   "admin_password",
+   "admin_username",
+   "cedula",
+   "clinic_id",
+   "clinic_name",
+   "code_prefix",
+   "consent_codes",
+   "discount_percent",
+   "duration_days",
+   "email",
+   "insurer_name",
+   "latitude",
+   "location",
+   "longitude",
+   "name",
+   "office_address",
+   "office_latitude",
+   "office_longitude",
+   "password",
+   "patient_id",
+   "phone",
+   "plan_pago",
+   "policy_code",
+   "policy_name",
+   "quantity",
+   "specialty",
+   "username"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "access_type",
+     "action",
+     "admin_cedula",
+     "admin_email",
+     "admin_name",
+     "admin_password",
+     "admin_username",
+     "clinic_name",
+     "latitude",
+     "location",
+     "longitude",
+     "plan_pago"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "cedula",
+     "email",
+     "name",
+     "office_address",
+     "office_latitude",
+     "office_longitude",
+     "password",
+     "phone",
+     "specialty",
+     "username"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "code_prefix",
+     "consent_codes",
+     "discount_percent",
+     "duration_days",
+     "insurer_name",
+     "policy_code",
+     "policy_name",
+     "quantity"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "clinic_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "clinic_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   },
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "action",
+     "patient_id"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "super-clinic-lat",
+   "super-clinic-lng",
+   "super-doctor-lat",
+   "super-doctor-lng"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [],
+  "variables": [
+   "autonomous_doctors",
+   "clinic_rows",
+   "content",
+   "doctor",
+   "invite",
+   "label",
+   "lead",
+   "leads",
+   "metrics",
+   "patient",
+   "patients",
+   "policies",
+   "policy",
+   "policy_batches",
+   "recent_policy_codes",
+   "row",
+   "value"
+  ]
+ },
+ "templates/telemedicine_consent.html": {
+  "bloques": [
+   "content"
+  ],
+  "campos": [
+   "_csrf_token",
+   "accept_telemedicine"
+  ],
+  "extiende": "base.html",
+  "formularios": [
+   {
+    "accion": "",
+    "campos": [
+     "_csrf_token",
+     "accept_telemedicine"
+    ],
+    "csrf": true,
+    "metodo": "post"
+   }
+  ],
+  "ids": [
+   "accept_telemedicine"
+  ],
+  "incluye": [],
+  "rutas": [],
+  "url_for": [
+   "privacy.index"
+  ],
+  "variables": [
+   "body",
+   "content",
+   "current_consent",
+   "document",
+   "norma"
+  ]
+ }
+}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-    <div class="bg-accent p-6 rounded-lg shadow-sm mb-8">
+    <div class="bg-accent p-6 rounded-lg mb-8">
         <i data-lucide="wifi-off" class="w-16 h-16 text-white"></i>
     </div>
     <h1 class="text-2xl font-semibold text-slate-900 mb-3">Sin conexión a Internet</h1>
@@ -10,7 +10,7 @@
         la página se cargará automáticamente.
     </p>
     <div class="space-y-3">
-        <button onclick="window.location.reload()" class="bg-accent text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-sm hover:shadow-sm transition-colors flex items-center gap-3 mx-auto">
+        <button onclick="window.location.reload()" class="{{ BOTON }}">
             <i data-lucide="refresh-cw" class="w-5 h-5"></i> Reintentar
         </button>
         <p class="text-xs text-slate-600">Los mensajes escritos offline se enviarán automáticamente al volver la señal.</p>

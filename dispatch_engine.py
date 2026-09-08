@@ -24,7 +24,10 @@ from ledger import (
     InsufficientStock,
     dispense_units,
     dispensed_totals,
+    disponible_para_ticket,
+    liberar_reservas,
     record_dispensing,
+    reservar_para_ticket,
     reserve_units,
 )
 from pharmacy_utils import (alerta_por_punto_de_reposicion, available_quantity,
@@ -126,7 +129,15 @@ def evaluate_dispatch_status(ticket, pharmacy_id: int, ignore_commitments: bool 
         if ignore_commitments:
             avail = stock.cantidad if stock else 0
         else:
-            avail = available_quantity(stock)
+            # Lo que puede llevarse ESTE ticket: lo que hay menos lo apartado
+            # por OTROS. Antes se usaba `cantidad - comprometida` a secas, y
+            # como la reserva del propio ticket esta dentro de `comprometida`,
+            # la funcion se la restaba a si misma: con diez unidades en
+            # estante y un ticket por diez, disponible daba cero. El paciente
+            # se iba sin nada con el frasco delante, el ticket caia a "sin
+            # stock" y no habia forma de reactivarlo. En un puesto con
+            # existencias justas — el caso normal — pasaba siempre.
+            avail = disponible_para_ticket(stock, ticket.id)
         
         can_give = min(still_needed, avail)
         
@@ -165,6 +176,22 @@ def evaluate_dispatch_status(ticket, pharmacy_id: int, ignore_commitments: bool 
 # 2. Confirm Delivery (full or partial)
 # ─────────────────────────────────────────────
 
+def _bloquear_ticket(ticket_id, clinic_id):
+    """Recupera el ticket con bloqueo de fila, para revalidarlo sin carreras.
+
+    `lock_stock_row` protegia las existencias, pero nadie protegia el ticket:
+    su estado se leia fuera de la transaccion y dos peticiones simultaneas
+    pasaban las dos.
+    """
+    from ledger import _supports_row_locking
+
+    consulta = MedicationPickupTicket.query.filter_by(id=ticket_id,
+                                                      clinic_id=clinic_id)
+    if _supports_row_locking():
+        consulta = consulta.with_for_update(nowait=False)
+    return consulta.first()
+
+
 def confirm_delivery(
     ticket,
     pharmacy,
@@ -192,6 +219,33 @@ def confirm_delivery(
        revierte: no queda una entrega a medias registrada como completa.
     """
     clinic_id = ticket.clinic_id
+
+    # --- Puertas de entrada, antes de tocar nada ---
+    #
+    # a) La fila del ticket se bloquea y se revalida su estado DENTRO de la
+    #    transaccion. Antes la comprobacion vivia en la ruta, fuera de toda
+    #    transaccion: dos peticiones simultaneas — un doble clic, un reenvio
+    #    del formulario, dos expendedores con el mismo codigo — leian
+    #    "autorizado" a la vez y ambas dispensaban. Reproducido: 20 unidades
+    #    entregadas contra una prescripcion de 10, y el libro de dispensacion
+    #    registrando una entrega que excede la orden medica.
+    ticket = _bloquear_ticket(ticket.id, clinic_id)
+    if ticket is None or ticket.status not in ('autorizado', 'parcial'):
+        return {'status': (ticket.status if ticket else 'desconocido'),
+                'delivered': [], 'motivo': 'El ticket ya no admite entrega.'}
+
+    # b) La orden que respalda el ticket tiene que seguir vigente. Se validaba
+    #    al EMITIR el ticket y nunca mas. Entre la emision y el mostrador, el
+    #    profesional puede haber anulado la orden — por una dosis equivocada,
+    #    una alergia o una interaccion — y el ticket seguia entregando lo que
+    #    el medico acababa de retirar.
+    if ticket.order_id and ticket.order is not None and not ticket.order.is_dispensable:
+        audit('dispense_blocked_order_not_dispensable',
+              details=f'ticket_id={ticket.id}; order_id={ticket.order_id}')
+        db.session.commit()
+        return {'status': ticket.status, 'delivered': [],
+                'motivo': 'La orden que respalda este ticket fue anulada o vencio.'}
+
     deliverable_now = dispatch_eval['deliverable']
     remaining_after = list(dispatch_eval['pending'])
 
@@ -357,6 +411,18 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
         .filter(
             MedicationPickupTicket.clinic_id == clinic_id,
             MedicationPickupTicket.status.in_(['sin_stock', 'parcial']),
+            # Solo los de ESTA sede.
+            #
+            # Sin este filtro, la llegada de mercancia a la sede B reasignaba
+            # (mas abajo, `ticket.pharmacy_id = pharmacy_id`) tickets de la
+            # sede A, dejando `pickup_location` diciendo "Sede A" — que es lo
+            # impreso en el papel que el paciente lleva en la mano — mientras
+            # la notificacion le decia que fuera a B. El paciente se presenta
+            # donde dice su ticket, el expendedor de A lo rechaza por
+            # pertenecer a otra farmacia, y en una vereda "la otra sede" puede
+            # ser media jornada de camino.
+            (MedicationPickupTicket.pharmacy_id == pharmacy_id)
+            | (MedicationPickupTicket.pharmacy_id.is_(None)),
         )
         .order_by(
             # alta priority first (alphabetically 'alta' < 'normal')
@@ -389,7 +455,11 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
                 s = stock_for_med(clinic_id, med['nombre_med'], pharmacy_id)
                 if s:
                     commit_qty = med.get('deliver_qty', med['cantidad'])
-                    s.cantidad_comprometida = (s.cantidad_comprometida or 0) + commit_qty
+                    # Con dueno y de forma idempotente: antes se sumaba a mano
+                    # a `cantidad_comprometida`, asi que cada reintento
+                    # apartaba otro tanto y nadie lo soltaba nunca.
+                    reservar_para_ticket(clinic_id, s, ticket.id, commit_qty,
+                                         reason='Reserva al llegar mercancia')
 
             # Reactivate ticket
             old_status = ticket.status

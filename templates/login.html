@@ -18,9 +18,9 @@
 <div class="min-h-[80vh] flex items-center justify-center p-4">
     <div class="w-full max-w-md">
 
-        <div class="bg-white border border-slate-200 rounded-lg p-8">
+        <div class="bg-white border border-linea rounded-lg p-8">
 
-            <header class="pb-5 mb-7 border-b border-slate-200">
+            <header class="pb-5 mb-7 border-b border-linea">
                 <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
                     Iniciar sesión
                 </h1>
@@ -39,9 +39,7 @@
                     </label>
                     <input type="text" id="username" name="username" required
                            autocomplete="username" autocapitalize="none" spellcheck="false"
-                           class="w-full px-4 py-3.5 border border-slate-300 rounded-lg text-base
-                                  focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none
-                                  transition-colors placeholder:text-slate-400">
+                           class="{{ CAMPO }} w-full">
                 </div>
 
                 <div>
@@ -51,9 +49,7 @@
                     </label>
                     <input type="password" id="password" name="password" required
                            autocomplete="current-password"
-                           class="w-full px-4 py-3.5 border border-slate-300 rounded-lg text-base
-                                  focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none
-                                  transition-colors placeholder:text-slate-400">
+                           class="{{ CAMPO }} w-full">
                 </div>
 
                 <button type="submit"
@@ -63,7 +59,7 @@
                 </button>
             </form>
 
-            <div class="mt-7 pt-6 border-t border-slate-200 space-y-3 text-sm">
+            <div class="mt-7 pt-6 border-t border-linea space-y-3 text-sm">
                 <p>
                     <a href="{{ url_for('auth.request_password_reset') }}"
                        class="text-accent font-medium hover:underline underline-offset-4">
@@ -84,7 +80,7 @@
         {# Información permanente, no una alerta. Va fuera de la tarjeta para
            que no compita con el formulario, y sin rojo para que el rojo siga
            significando algo cuando aparezca de verdad. #}
-        <div class="mt-4 border border-slate-200 bg-slate-50 rounded-lg px-4 py-3.5">
+        <div class="mt-4 border border-linea bg-lienzo-seccion rounded-lg px-4 py-3.5">
             <p class="text-sm text-slate-700 leading-relaxed">
                 <span class="font-semibold text-slate-900">Esta plataforma no atiende urgencias.</span>
                 Ante una situación que comprometa la vida, acuda al servicio de

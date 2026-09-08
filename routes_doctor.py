@@ -320,16 +320,30 @@ def _medications_from_form_legal():
     meds = []
     errores = []
 
-    for indice, nombre in enumerate(campos['med_name']):
-        med_name = bleach.clean((nombre or '').strip()[:180])
-        if not med_name:
+    # Se recorre por el numero de renglones, no por una sola lista.
+    #
+    # Antes se iteraba `campos['med_name']`, que es el nombre COMERCIAL y es
+    # opcional: el campo obligatorio del formulario es el principio activo.
+    # Prescribir por generico — que es lo que exige la Resolucion 1403 de 2007
+    # y lo que hace un medico que no quiere atar al paciente a una marca —
+    # dejaba la lista vacia y devolvia "Agregue al menos un medicamento". El
+    # unico camino que funcionaba era escribir la marca.
+    renglones = max(len(campos['med_name']), len(campos['generic_name']))
+
+    for indice in range(renglones):
+        generico = bleach.clean(leer('generic_name', indice).strip()[:180])
+        med_name = bleach.clean(leer('med_name', indice).strip()[:180])
+        # Un renglon existe si tiene cualquiera de los dos nombres.
+        if not generico and not med_name:
             continue
 
         renglon = indice + 1
-        generico = bleach.clean(leer('generic_name', indice).strip()[:180])
-        # Si no se indica generico aparte, se asume que el nombre ya lo es.
+        # Sin marca, el nombre que se muestra es el generico. Sin generico, se
+        # asume que lo escrito ya lo es.
         if not generico:
             generico = med_name
+        if not med_name:
+            med_name = generico
 
         concentracion = bleach.clean(leer('concentration', indice).strip()[:60])
         forma = bleach.clean(leer('dosage_form', indice).strip().lower()[:60])

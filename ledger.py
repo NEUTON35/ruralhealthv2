@@ -28,6 +28,9 @@ from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 
 from models import (
+    RESERVA_ACTIVA,
+    RESERVA_CONSUMIDA,
+    RESERVA_LIBERADA,
     STOCK_MOVE_ADJUST,
     STOCK_MOVE_DISPENSE,
     STOCK_MOVE_RECEIPT,
@@ -36,6 +39,7 @@ from models import (
     DispensingLedgerEntry,
     Stock,
     StockLedgerEntry,
+    StockReservation,
     db,
 )
 from time_utils import colombia_now
@@ -181,8 +185,152 @@ def record_stock_movement(
     return entry
 
 
-def _conditional_decrement(stock_id, quantity):
+# --- Reservas con dueno ------------------------------------------------------
+#
+# `Stock.cantidad_comprometida` sigue existiendo como total, porque hay codigo
+# y pantallas que lo leen, pero deja de ser la fuente de verdad: el reparto por
+# ticket vive en `StockReservation`. Un total sin dueno no puede responder a la
+# unica pregunta que importa en el mostrador — cuanto puede llevarse ESTE
+# paciente — y por no poder responderla dejaba sin medicamento al que tenia el
+# ticket en la mano.
+
+
+def reserva_de_ticket(ticket_id, stock_id):
+    """Cuantas unidades tiene apartadas este ticket sobre esta fila."""
+    if not ticket_id or not stock_id:
+        return 0
+    total = db.session.query(
+        func.coalesce(func.sum(StockReservation.quantity), 0)
+    ).filter(
+        StockReservation.ticket_id == ticket_id,
+        StockReservation.stock_id == stock_id,
+        StockReservation.status == RESERVA_ACTIVA,
+    ).scalar()
+    return int(total or 0)
+
+
+def disponible_para_ticket(stock, ticket_id):
+    """Lo que este ticket puede llevarse: lo que hay menos lo apartado por OTROS.
+
+    La version anterior devolvia `cantidad - comprometida` sin mas, y como la
+    reserva del propio ticket estaba dentro de `comprometida`, se la restaba a
+    si mismo. Diez unidades en estante y un ticket por diez daban cero
+    disponible: el paciente se iba sin nada con el frasco delante.
+    """
+    if stock is None:
+        return 0
+    total = stock.cantidad or 0
+    de_otros = max(0, (stock.cantidad_comprometida or 0)
+                   - reserva_de_ticket(ticket_id, stock.id))
+    return max(0, total - de_otros)
+
+
+def reservar_para_ticket(clinic_id, stock, ticket_id, quantity,
+                         performed_by_id=None, reason=None):
+    """Aparta unidades a nombre de un ticket. Idempotente por ticket y fila.
+
+    Idempotente a proposito: el boton de reactivar un pendiente se podia pulsar
+    varias veces y cada pulsacion apartaba otro tanto, hasta bloquear el
+    inventario de la sede con reservas que nadie iba a soltar.
+    """
+    if stock is None or quantity <= 0:
+        return None
+
+    ya = reserva_de_ticket(ticket_id, stock.id)
+    if ya >= quantity:
+        return None
+
+    libre = (stock.cantidad or 0) - (stock.cantidad_comprometida or 0)
+    delta = min(quantity - ya, max(0, libre))
+    if delta <= 0:
+        return None
+
+    reserva = StockReservation(clinic_id=clinic_id, stock_id=stock.id,
+                               ticket_id=ticket_id, quantity=delta,
+                               status=RESERVA_ACTIVA)
+    db.session.add(reserva)
+    stock.cantidad_comprometida = (stock.cantidad_comprometida or 0) + delta
+
+    record_stock_movement(
+        clinic_id=clinic_id, stock=stock, movement_type=STOCK_MOVE_RESERVE,
+        quantity=0, performed_by_id=performed_by_id,
+        reason=reason or 'Reserva para ticket de entrega', ticket_id=ticket_id,
+    )
+    return reserva
+
+
+def liberar_reservas(ticket_id, motivo='Liberacion de reserva',
+                     performed_by_id=None, stock_id=None):
+    """Suelta lo que un ticket tenia apartado y lo devuelve al comun.
+
+    Sin esto, un ticket que el paciente nunca reclama mantiene sus unidades
+    bloqueadas para siempre, y el inventario efectivo de la sede baja con cada
+    ticket olvidado.
+    """
+    consulta = StockReservation.query.filter_by(ticket_id=ticket_id,
+                                                status=RESERVA_ACTIVA)
+    if stock_id:
+        consulta = consulta.filter_by(stock_id=stock_id)
+
+    soltadas = 0
+    for reserva in consulta.all():
+        stock = db.session.get(Stock, reserva.stock_id)
+        if stock is not None:
+            stock.cantidad_comprometida = max(
+                0, (stock.cantidad_comprometida or 0) - reserva.quantity)
+            record_stock_movement(
+                clinic_id=reserva.clinic_id, stock=stock,
+                movement_type=STOCK_MOVE_RELEASE, quantity=0,
+                performed_by_id=performed_by_id, reason=motivo,
+                ticket_id=ticket_id,
+            )
+        reserva.status = RESERVA_LIBERADA
+        reserva.released_at = colombia_now()
+        reserva.release_reason = motivo[:120]
+        soltadas += reserva.quantity
+    return soltadas
+
+
+def _consumir_reserva(ticket_id, stock_id, quantity):
+    """Marca como consumidas las unidades que este ticket se acaba de llevar.
+
+    Devuelve cuantas de las entregadas estaban efectivamente apartadas por este
+    ticket. Ese numero es el unico que puede descontarse de
+    `cantidad_comprometida`: descontar mas seria comerse la reserva de otro
+    paciente, que es exactamente lo que ocurria antes.
+    """
+    if not ticket_id:
+        return 0
+    restante = quantity
+    consumidas = 0
+    reservas = StockReservation.query.filter_by(
+        ticket_id=ticket_id, stock_id=stock_id, status=RESERVA_ACTIVA
+    ).order_by(StockReservation.id.asc()).all()
+
+    for reserva in reservas:
+        if restante <= 0:
+            break
+        if reserva.quantity <= restante:
+            restante -= reserva.quantity
+            consumidas += reserva.quantity
+            reserva.status = RESERVA_CONSUMIDA
+            reserva.released_at = colombia_now()
+            reserva.release_reason = 'Entregada al paciente'
+        else:
+            reserva.quantity -= restante
+            consumidas += restante
+            restante = 0
+    return consumidas
+
+
+def _conditional_decrement(stock_id, quantity, liberar=0):
     """Descuenta `quantity` solo si el saldo actual alcanza. Devuelve si ocurrio.
+
+    `liberar` es cuanto de lo entregado estaba apartado POR ESTE ticket, y es
+    lo unico que puede bajar de `cantidad_comprometida`. La version anterior
+    restaba siempre la cantidad entregada completa, sin mirar de quien era la
+    reserva: una entrega sin reserva propia se comia la de un paciente cronico
+    que todavia no habia pasado a recoger.
 
     Es una operacion de comparar-y-actualizar en una sola sentencia SQL:
 
@@ -202,12 +350,12 @@ def _conditional_decrement(stock_id, quantity):
             'UPDATE stock '
             'SET cantidad = cantidad - :quantity, '
             '    cantidad_comprometida = CASE '
-            '        WHEN COALESCE(cantidad_comprometida, 0) >= :quantity '
-            '        THEN COALESCE(cantidad_comprometida, 0) - :quantity '
+            '        WHEN COALESCE(cantidad_comprometida, 0) >= :liberar '
+            '        THEN COALESCE(cantidad_comprometida, 0) - :liberar '
             '        ELSE 0 END '
             'WHERE id = :stock_id AND cantidad >= :quantity'
         ),
-        {'quantity': quantity, 'stock_id': stock_id},
+        {'quantity': quantity, 'liberar': liberar, 'stock_id': stock_id},
     )
     return result.rowcount == 1
 
@@ -246,7 +394,11 @@ def dispense_units(
     if balance_before < quantity:
         raise InsufficientStock(med_name, quantity, balance_before)
 
-    if not _conditional_decrement(stock_id, quantity):
+    # Cuanto de lo que se entrega estaba apartado por este mismo ticket. Es lo
+    # unico que puede soltarse de `cantidad_comprometida`.
+    liberar = _consumir_reserva(ticket_id, stock_id, quantity)
+
+    if not _conditional_decrement(stock_id, quantity, liberar=liberar):
         # Entre la lectura y la escritura, otra entrega consumio las existencias.
         # Sin esta comprobacion ambas prosperarian y se entregaria mas inventario
         # del que existe, dejando sin medicamento a un paciente con ticket valido.
@@ -258,6 +410,14 @@ def dispense_units(
     # saldo real y no el que el ORM tenia en memoria.
     db.session.expire(stock)
     stock = db.session.get(Stock, stock_id)
+
+    # La reserva queda a nombre del ticket. `cantidad_comprometida` es solo el
+    # total; sin el reparto por ticket no se puede saber cuanto puede llevarse
+    # cada paciente, y esa pregunta es la que se hace en el mostrador.
+    if ticket_id:
+        db.session.add(StockReservation(
+            clinic_id=clinic_id, stock_id=stock_id, ticket_id=ticket_id,
+            quantity=quantity, status=RESERVA_ACTIVA))
 
     record_stock_movement(
         clinic_id=clinic_id,

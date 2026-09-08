@@ -231,7 +231,10 @@ class TestSafetyGate:
         client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
         response = client.post(
             f'/doctor/prescription/{doctor_and_patient["patient"].id}',
-            data=prescription_form(med_name='Amoxicilina'),
+            # El alergeno va en el principio activo, que es lo que evalua el
+            # motor. Ponerlo solo en el nombre comercial fue el defecto.
+            data=prescription_form(generic_name='Amoxicilina',
+                                   med_name='Amoxal'),
         )
 
         # No se redirige: se vuelve a mostrar el formulario con las alertas.
@@ -258,7 +261,8 @@ class TestSafetyGate:
         response = client.post(
             f'/doctor/prescription/{doctor_and_patient["patient"].id}',
             data=prescription_form(
-                med_name='Amoxicilina',
+                generic_name='Amoxicilina',
+                med_name='Amoxal',
                 safety_override_reason=(
                     'Reaccion previa fue exantema leve no inmediato, hace 15 anos. '
                     'Riesgo de anafilaxia bajo. Se indica observacion 30 minutos.'
@@ -291,7 +295,8 @@ class TestSafetyGate:
         client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
         client.post(
             f'/doctor/prescription/{doctor_and_patient["patient"].id}',
-            data=prescription_form(med_name='Amoxicilina', safety_override_reason='ok'),
+            data=prescription_form(generic_name='Amoxicilina', med_name='Amoxal',
+                                   safety_override_reason='ok'),
         )
         with app.app_context():
             assert MedicalOrder.query.count() == 0
@@ -413,7 +418,10 @@ class TestAllergyManagement:
         client.post('/login', data={'username': 'doc_receta', 'password': VALID_PASSWORD})
         response = client.post(
             f'/doctor/prescription/{doctor_and_patient["patient"].id}',
-            data=prescription_form(med_name='Amoxicilina'),
+            # El alergeno va en el principio activo, que es lo que evalua el
+            # motor. Ponerlo solo en el nombre comercial fue el defecto.
+            data=prescription_form(generic_name='Amoxicilina',
+                                   med_name='Amoxal'),
         )
         assert response.status_code == 302
         with app.app_context():

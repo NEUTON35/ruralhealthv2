@@ -811,7 +811,28 @@ ABSURD_QUANTITY = 1000
 # --- Motor -------------------------------------------------------------------
 
 def _med_display(med):
-    return (med.get('medicamento') or med.get('nombre_med') or med.get('name') or '').strip()
+    """El nombre con el que se evalua un medicamento: el principio activo.
+
+    El orden de estas tres claves es una decision de seguridad, no de estilo.
+
+    El formulario guarda la marca en `medicamento` y el generico en
+    `nombre_med`. Esta funcion leia `medicamento` primero, asi que con una
+    receta de "Amoxal" el motor normalizaba "amoxal", no lo encontraba en
+    `DRUG_CLASSES` y devolvia cero hallazgos — en un paciente con alergia a la
+    penicilina registrada y confirmada. Ninguna comprobacion saltaba: ni
+    alergia, ni interaccion, ni duplicidad, ni embarazo, ni pediatria. Y la
+    orden quedaba archivada con un `safety_report_json` que decia "sin
+    hallazgos", o sea con constancia de que se habia verificado.
+
+    Las marcas son infinitas y cambian por pais y por laboratorio; los
+    principios activos son los que estan en las tablas. Se evalua siempre el
+    generico. El nombre que se le ensena al profesional en la alerta tambien
+    es el generico, que es lo que le permite entender por que salta.
+    """
+    return (med.get('nombre_med')
+            or med.get('denominacion_comun')
+            or med.get('medicamento')
+            or med.get('name') or '').strip()
 
 
 def check_allergies(medications, allergies):

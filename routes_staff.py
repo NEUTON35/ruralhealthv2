@@ -37,6 +37,7 @@ from pharmacy_utils import (
     resolver_alerta_de_punto_de_reposicion,
     stock_for_med,
 )
+from ledger import liberar_reservas, reservar_para_ticket
 from security import audit, generate_pickup_hash, role_required, verify_order_hash
 from time_utils import colombia_now
 from dispatch_engine import reserve_stock_for_pending_tickets
@@ -122,11 +123,9 @@ def _build_shortages(clinic_id, meds, pharmacy_id):
 def _create_pickup_ticket(order, patient_id, meds, pickup_date, pickup_time, pharmacy, stock_rows, shortages=None):
     shortages = shortages or []
     all_shortage = bool(shortages) and len(shortages) == len(meds)  # ALL meds are missing
-    for med in meds:
-        stock = stock_rows.get(med['nombre_med'])
-        # Only commit stock if there IS available stock for this med
-        if stock and available_quantity(stock) >= med['cantidad']:
-            stock.cantidad_comprometida = (stock.cantidad_comprometida or 0) + med['cantidad']
+    # La reserva se hace mas abajo, cuando el ticket ya tiene id: sin id no
+    # puede tener dueno, y una reserva sin dueno es la que dejaba al paciente
+    # sin poder recoger lo que tenia apartado.
 
     pickup_code = secrets.token_urlsafe(8).replace('-', '').replace('_', '')[:12].upper()
     location = pharmacy.address or pharmacy.name if pharmacy else current_user.clinic.location or current_user.clinic.name
@@ -157,6 +156,17 @@ def _create_pickup_ticket(order, patient_id, meds, pickup_date, pickup_time, pha
     db.session.add(ticket)
     db.session.flush()
     ticket.pickup_hash = generate_pickup_hash(ticket.id, ticket.order_id, ticket.patient_id, ticket.clinic_id, ticket.pickup_code)
+
+    # Ahora si: la reserva queda a nombre de este ticket. Solo se aparta lo que
+    # esta realmente disponible; si falta, el faltante se gestiona por la
+    # alerta de reposicion, no apartando unidades que no existen.
+    for med in meds:
+        stock = stock_rows.get(med['nombre_med'])
+        if stock is not None and available_quantity(stock) >= med['cantidad']:
+            reservar_para_ticket(
+                current_user.clinic_id, stock, ticket.id, med['cantidad'],
+                performed_by_id=current_user.id,
+                reason=f'Reserva al emitir el ticket {ticket.pickup_code}')
     if shortages and pharmacy:
         for med in meds:
             stock = stock_rows.get(med['nombre_med'])
@@ -652,19 +662,31 @@ def pendientes():
                 db.session.commit()
                 flash(f'Prioridad del ticket {ticket.pickup_code} cambiada a {new_priority.upper()}.')
         elif action == 'reactivate' and ticket_id:
+            # Solo se reactiva lo que esta detenido por falta de existencias.
+            #
+            # Antes se buscaba el ticket solo por id, sin mirar su estado, y
+            # cada pulsacion del boton apartaba otra vez la cantidad completa:
+            # tres clics sobre un ticket ya autorizado dejaban cuarenta
+            # unidades comprometidas para una orden de diez, y nadie las
+            # soltaba nunca. La sede se quedaba sin inventario efectivo.
             ticket = MedicationPickupTicket.query.filter_by(
-                id=ticket_id, clinic_id=current_user.clinic_id
+                id=ticket_id, clinic_id=current_user.clinic_id,
+                status='sin_stock',
             ).first()
             if ticket:
                 from dispatch_engine import evaluate_dispatch_status
                 pharmacy_id = ticket.pharmacy_id or ensure_default_pharmacy(current_user.clinic).id
-                dispatch_eval = evaluate_dispatch_status(ticket, pharmacy_id, ignore_commitments=True)
+                dispatch_eval = evaluate_dispatch_status(ticket, pharmacy_id)
                 if dispatch_eval['is_ready']:
                     for med in dispatch_eval['deliverable']:
                         s = stock_for_med(current_user.clinic_id, med['nombre_med'], pharmacy_id)
                         if s:
                             commit_qty = med.get('deliver_qty', med['cantidad'])
-                            s.cantidad_comprometida = (s.cantidad_comprometida or 0) + commit_qty
+                            # Idempotente: repetir la accion no aparta de mas.
+                            reservar_para_ticket(
+                                current_user.clinic_id, s, ticket.id, commit_qty,
+                                performed_by_id=current_user.id,
+                                reason='Reactivacion desde pendientes')
                     ticket.status = 'autorizado'
                     db.session.add(Notification(
                         user_id=ticket.patient_id,

@@ -37,8 +37,8 @@
     {% endfor %}
 
     {% for scope, scope_issues in grouped.items() %}
-    <section class="bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+    <section class="bg-white rounded-lg border border-linea overflow-hidden">
+        <div class="px-6 py-4 border-b border-linea bg-lienzo-seccion">
             <h2 class="font-semibold text-slate-800 capitalize">
                 {{ scope|capitalize }}: {{ scope_issues | length }} problema(s)
             </h2>
@@ -86,7 +86,7 @@
     </div>
 
     <form method="GET" action="{{ url_for('admin.export_rips') }}"
-          class="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+          class="bg-white rounded-lg border border-linea p-6 space-y-4">
         <input type="hidden" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') }}">
         <input type="hidden" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') }}">
 
@@ -96,7 +96,7 @@
             </label>
             <input type="text" id="invoice" name="invoice" maxlength="40"
                 placeholder="Por ejemplo: FE-2026-00123"
-                class="w-full mt-1 px-4 py-3 border border-slate-200 rounded-lg focus:border-primary outline-none">
+                class="{{ CAMPO }} w-full">
             <p class="text-xs text-slate-500 mt-2 leading-relaxed">
                 Si se deja vacío, el archivo llevará un marcador provisional que
                 deberá reemplazarse antes de radicar. La norma no admite un número
@@ -105,14 +105,14 @@
         </div>
 
         <button type="submit"
-            class="bg-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
+            class="{{ BOTON }}">
             <i data-lucide="download" class="w-5 h-5"></i>
             Generar y descargar RIPS
         </button>
     </form>
     {% endif %}
 
-    <div class="bg-slate-50 border border-slate-200 rounded-lg p-5 text-sm text-slate-600 leading-relaxed">
+    <div class="bg-lienzo-seccion border border-linea rounded-lg p-5 text-sm text-slate-600 leading-relaxed">
         <b class="text-slate-800">Antes de radicar.</b> Este paquete cubre los
         archivos planos CT, AF, US y AC. La radicación vigente bajo la Resolución
         2275 de 2023 exige además la factura electrónica validada por la DIAN y el

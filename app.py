@@ -212,8 +212,12 @@ def create_app(environment=None, config_override=None):
 
 
 def register_jinja(app):
+    import ui
     from estados import traducir as traducir_estado
     from legal_markup import render as render_legal_markup
+
+    # El vocabulario visual, disponible en todas las plantillas sin importar.
+    ui.registrar(app.jinja_env)
 
     app.jinja_env.filters['colombia_iso'] = colombia_iso
     app.jinja_env.filters['colombia_time'] = lambda dt: colombia_strftime(dt, '%H:%M')

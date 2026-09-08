@@ -2,25 +2,25 @@
 {% block content %}
 <div class="grid lg:grid-cols-3 gap-6">
     <!-- Chat Principal -->
-    <section class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[80vh] relative">
+    <section class="lg:col-span-2 bg-white rounded-lg border border-linea overflow-hidden flex flex-col h-[80vh] relative">
         <!-- Cabecera Integrada -->
-        <div class="bg-white border-b border-slate-200 p-5 sm:p-6 shrink-0">
+        <div class="bg-white border-b border-linea p-5 sm:p-6 shrink-0">
             <div class="flex justify-between items-start mb-2 relative z-10">
                 <div>
                     <h2 class="text-xl font-semibold tracking-tight">Chat con {{ chat.patient.name }}</h2>
                     <p class="text-sm text-slate-600 mt-1 font-medium">{{ chat.reason or 'Consulta de medicamentos' }}</p>
                 </div>
-                <a href="{{ url_for('staff.dashboard') }}" class="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <a href="{{ url_for('staff.dashboard') }}" class="border border-linea text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-lienzo-seccion transition-colors flex items-center gap-2">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Panel
                 </a>
             </div>
         </div>
 
         <!-- Contenedor de Mensajes -->
-        <div class="flex-1 p-6 overflow-y-auto bg-slate-50/80 space-y-4">
+        <div class="flex-1 p-6 overflow-y-auto bg-lienzo-seccion/80 space-y-4">
             {% for msg in messages %}
             <div class="flex {% if msg.sender_id == current_user.id %}justify-end{% else %}justify-start{% endif %}">
-                <div class="max-w-[85%] rounded-lg {% if msg.sender_id == current_user.id %}bg-primary text-white rounded-tr-sm shadow-sm{% else %}bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm{% endif %} p-4 relative group">
+                <div class="max-w-[85%] rounded-lg {% if msg.sender_id == current_user.id %}bg-primary text-white rounded-tr-sm{% else %}bg-white border border-linea text-slate-800 rounded-tl-sm{% endif %} p-4 relative group">
                     <p class="text-xs font-bold opacity-70 mb-1 uppercase tracking-wider">{{ msg.sender.name }} · {{ msg.timestamp|colombia_time }}</p>
                     <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
                 </div>
@@ -30,10 +30,10 @@
             {% endfor %}
         </div>
         {% if chat.status == 'open' %}
-        <form method="POST" class="p-4 sm:p-5 bg-white border-t border-slate-200 flex gap-3 items-center relative">
+        <form method="POST" class="p-4 sm:p-5 bg-white border-t border-linea flex gap-3 items-center relative">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input name="content" required placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
-            <button class="bg-accent text-white p-4 rounded-full hover:bg-accent-hover transition shadow-sm shrink-0">
+            <input name="content" required placeholder="Responder al paciente..." class="{{ CAMPO }} flex-1" aria-label="Responder al paciente...">
+            <button class="{{ BOTON }}">
                 <i data-lucide="send" class="w-5 h-5 ml-1"></i>
             </button>
         </form>
@@ -42,11 +42,11 @@
 
     <aside class="space-y-4">
         <!-- Stock Rápido -->
-        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
+        <section class="bg-white border border-linea rounded-lg p-5">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Stock rapido</h2>
             <div class="space-y-2 max-h-72 overflow-y-auto">
                 {% for item in stock_items %}
-                <div class="flex justify-between gap-3 border-b border-slate-200 pb-2">
+                <div class="flex justify-between gap-3 border-b border-linea pb-2">
                     <span class="font-bold text-sm">{{ item.nombre_med }}<span class="block text-xs text-slate-600">{{ item.pharmacy.name if item.pharmacy else 'Sin farmacia' }}</span></span>
                     {% set disponible = item.cantidad - (item.cantidad_comprometida or 0) %}
                     <span class="text-sm {% if disponible <= 0 %}text-red-600 font-semibold{% else %}text-slate-600{% endif %}">{{ disponible }} {{ item.unidad }}</span>
@@ -58,29 +58,29 @@
         </section>
         <!-- Orden Rápida -->
         {% if chat.status == 'open' %}
-        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
+        <section class="bg-white border border-linea rounded-lg p-5">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Orden de recolección rapida</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="create_pickup_ticket">
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="date" name="pickup_date" class="border p-2 rounded-lg text-sm" value="{{ chat.timestamp.strftime('%Y-%m-%d') }}" aria-label="Fecha de recogida">
-                    <input type="time" name="pickup_time" class="border p-2 rounded-lg text-sm" value="09:00" aria-label="Hora de recogida">
+                    <input type="date" name="pickup_date" class="{{ CAMPO }}" value="{{ chat.timestamp.strftime('%Y-%m-%d') }}" aria-label="Fecha de recogida">
+                    <input type="time" name="pickup_time" class="{{ CAMPO }}" value="09:00" aria-label="Hora de recogida">
                 </div>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for item in stock_items %}
                     {% set disponible = item.cantidad - (item.cantidad_comprometida or 0) %}
-                    <label class="grid grid-cols-[auto_1fr_70px] gap-2 items-center text-sm border border-slate-200 rounded-lg p-2">
+                    <label class="grid grid-cols-[auto_1fr_70px] gap-2 items-center text-sm border border-linea rounded-lg p-2">
                         <input type="checkbox" name="stock_id" value="{{ item.id }}" class="accent-emerald-600" aria-label="Stock id">
                         <span>
                             <b>{{ item.nombre_med }}</b>
                             <span class="block text-xs text-slate-600">{{ item.pharmacy.name if item.pharmacy else 'Sin farmacia' }} | Disp. {{ disponible }} {{ item.unidad }}</span>
                         </span>
-                        <input type="number" name="qty_{{ item.id }}" min="0" value="0" class="border p-1 rounded text-sm" aria-label="Qty {{ item.id }}">
+                        <input type="number" name="qty_{{ item.id }}" min="0" value="0" class="{{ CAMPO }}" aria-label="Qty {{ item.id }}">
                     </label>
                     {% endfor %}
                 </div>
-                <button class="w-full bg-accent text-white px-3 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-sm">
+                <button class="{{ BOTON }}">
                     <i data-lucide="ticket-check" class="w-5 h-5"></i>
                     Generar ticket
                 </button>
@@ -89,11 +89,11 @@
         {% endif %}
         <!-- Órdenes Médicas -->
         {% if patient_orders %}
-        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
+        <section class="bg-white border border-linea rounded-lg p-5">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Ordenes médicas pendientes</h2>
             <div class="space-y-2">
                 {% for order in patient_orders %}
-                <div class="border border-slate-200 rounded-lg p-2">
+                <div class="border border-linea rounded-lg p-2">
                     <p class="font-bold text-sm">Orden #{{ order.id }}</p>
                     <p class="text-xs text-slate-500 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
                 </div>

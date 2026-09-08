@@ -34,6 +34,10 @@ module.exports = {
   content: [
     './templates/**/*.html',
     './static/**/*.js',
+    // El vocabulario visual vive en Python (`ui.py`) y se inyecta en Jinja
+    // como variables globales, asi que sus clases no aparecen escritas en
+    // ninguna plantilla. Sin esta linea, el CSS saldria sin ellas.
+    './ui.py',
   ],
 
   theme: {
@@ -74,6 +78,25 @@ module.exports = {
           text: '#064E3B',
         },
 
+        /* Estructura. Toda la jerarquía que no es semántica sale de aquí.
+           Sin sombras, la única forma de separar un contenedor de otro es el
+           contorno y el tono de fondo, así que los dos niveles tienen que
+           distinguirse de verdad en una pantalla barata a plena luz. */
+        linea: {
+          /* Contorno por defecto de una tarjeta o una fila de tabla. */
+          DEFAULT: '#CBD5E1',
+          /* Contenedor principal, o el que está activo. */
+          fuerte: '#334155',
+          /* Separador interno: dentro de una tarjeta ya delimitada. */
+          suave: '#E2E8F0',
+        },
+        lienzo: {
+          /* Fondo de la aplicación, detrás de las tarjetas. */
+          DEFAULT: '#F1F5F9',
+          /* Cabecera de tabla y bandas de sección. */
+          seccion: '#F5F5F7',
+        },
+
         /* Compatibilidad con las clases que ya existían en las plantillas. */
         primary: '#0369A1',
         'primary-dark': '#075985',
@@ -81,6 +104,14 @@ module.exports = {
         medical: '#0369A1',
         'medical-dark': '#075985',
         'medical-light': '#F0F9FF',
+      },
+
+      minHeight: {
+        /* Área táctil mínima. Se usa con guantes, de pie, en movimiento. */
+        control: '2.75rem',
+      },
+      minWidth: {
+        control: '2.75rem',
       },
 
       borderRadius: {
@@ -98,13 +129,27 @@ module.exports = {
       },
 
       boxShadow: {
-        /* Casi planas: la jerarquía la dan el borde y el espacio, no la sombra. */
-        sm: '0 1px 2px 0 rgb(15 23 42 / 0.04)',
-        DEFAULT: '0 1px 3px 0 rgb(15 23 42 / 0.06)',
-        md: '0 2px 6px -1px rgb(15 23 42 / 0.07)',
-        lg: '0 4px 10px -2px rgb(15 23 42 / 0.08)',
-        xl: '0 6px 16px -4px rgb(15 23 42 / 0.09)',
-        '2xl': '0 8px 24px -6px rgb(15 23 42 / 0.10)',
+        /* Sin sombras. Ninguna.
+         *
+         * La sombra es profundidad simulada: dice "esto flota por encima de
+         * aquello". En una pantalla clínica no hay nada que flote, y en la
+         * pantalla barata de un puesto de salud a plena luz una sombra suave
+         * no se ve — solo ensucia el borde. La jerarquía la dan el contorno,
+         * el tono de fondo y el peso tipográfico, que sí sobreviven al sol.
+         *
+         * Se dejan definidas en cero en lugar de borrarlas: así una clase
+         * `shadow-sm` heredada de una plantilla vieja no rompe el build, solo
+         * deja de pintar. El menú desplegable conserva la suya porque ahí la
+         * capa sí es real: hay contenido debajo.
+         */
+        none: 'none',
+        sm: 'none',
+        DEFAULT: 'none',
+        md: 'none',
+        lg: 'none',
+        xl: 'none',
+        '2xl': 'none',
+        capa: '0 4px 12px -2px rgb(15 23 42 / 0.12)',
       },
     },
   },

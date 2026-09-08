@@ -3,7 +3,7 @@
 <div class="max-w-5xl mx-auto space-y-6">
 
   <!-- Header -->
-  <div class="bg-white border border-slate-200 rounded-lg p-6">
+  <div class="bg-white border border-linea rounded-lg p-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Logística</p>
@@ -11,10 +11,10 @@
         <p class="text-slate-600 text-sm mt-1">Registra envíos entrantes y confirma recepciones para activar stock automáticamente.</p>
       </div>
       <div class="flex gap-2">
-        <a href="{{ url_for('staff.pendientes') }}" class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
+        <a href="{{ url_for('staff.pendientes') }}" class="inline-flex items-center gap-2 border border-linea text-slate-700 hover:bg-lienzo-seccion px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
           <i data-lucide="clock" class="w-4 h-4"></i> Pendientes
         </a>
-        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
+        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center gap-2 border border-linea text-slate-700 hover:bg-lienzo-seccion px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
         </a>
       </div>
@@ -22,7 +22,7 @@
   </div>
 
   <!-- Create new shipment form -->
-  <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
+  <section class="bg-white border border-linea rounded-lg p-6">
     <h2 class="font-semibold text-slate-900 text-lg mb-4 flex items-center gap-2">
       <i data-lucide="plus-circle" class="w-5 h-5 text-slate-500"></i>
       Registrar Nuevo Cargamento
@@ -33,7 +33,7 @@
       <div class="grid sm:grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Farmacia Destino *</label>
-          <select name="pharmacy_id" required class="w-full border border-slate-200 p-3 rounded-lg bg-white focus:border-blue-500 focus:outline-none text-sm" aria-label="Farmacia">
+          <select name="pharmacy_id" required class="{{ CAMPO }} w-full" aria-label="Farmacia">
             <option value="">Seleccionar farmacia...</option>
             {% for pharmacy in pharmacies %}
             <option value="{{ pharmacy.id }}">{{ pharmacy.name }}</option>
@@ -42,15 +42,15 @@
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Fecha Estimada de Llegada *</label>
-          <input type="date" name="expected_date" required class="w-full border border-slate-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Fecha estimada de llegada">
+          <input type="date" name="expected_date" required class="{{ CAMPO }} w-full" aria-label="Fecha estimada de llegada">
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Proveedor / Distribuidor</label>
-          <input type="text" name="supplier_name" placeholder="Ej: Farmacias del Norte S.A." class="w-full border border-slate-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Proveedor">
+          <input type="text" name="supplier_name" placeholder="Ej: Farmacias del Norte S.A." class="{{ CAMPO }} w-full" aria-label="Proveedor">
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Notas</label>
-          <input type="text" name="note" placeholder="Número de guía, observaciones..." class="w-full border border-slate-200 p-3 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Número de guía, observaciones...">
+          <input type="text" name="note" placeholder="Número de guía, observaciones..." class="{{ CAMPO }} w-full" aria-label="Número de guía, observaciones...">
         </div>
       </div>
 
@@ -64,13 +64,13 @@
         </div>
         <div id="med-rows" class="space-y-2">
           <div class="med-row grid grid-cols-3 gap-2">
-            <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Nombre del medicamento">
-            <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="border border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Cant.">
+            <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="{{ CAMPO }} col-span-2" aria-label="Nombre del medicamento">
+            <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="{{ CAMPO }}" aria-label="Cant.">
           </div>
         </div>
       </div>
 
-      <button type="submit" class="w-full bg-accent text-white py-3.5 rounded-lg font-semibold text-base inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-sm">
+      <button type="submit" class="w-full bg-accent text-white py-3.5 rounded-lg font-semibold text-base inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition">
         <i data-lucide="truck" class="w-5 h-5"></i>
         Registrar Cargamento
       </button>
@@ -78,8 +78,8 @@
   </section>
 
   <!-- Shipments list -->
-  <section class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-    <div class="p-5 border-b border-slate-200">
+  <section class="bg-white border border-linea rounded-lg overflow-hidden">
+    <div class="p-5 border-b border-linea">
       <h2 class="font-semibold text-slate-900 flex items-center gap-2">
         <i data-lucide="list" class="w-5 h-5 text-slate-500"></i>
         Historial de Cargamentos
@@ -91,9 +91,9 @@
       {% set status_cfg = {
         'en_camino': ('bg-blue-100 text-blue-800 border-blue-200', 'truck', 'En camino'),
         'recibido':  ('bg-positive-subtle text-emerald-800 border-positive-border', 'package-check', 'Recibido'),
-        'cancelado': ('bg-slate-100 text-slate-500 border-slate-200', 'x-circle', 'Cancelado'),
+        'cancelado': ('bg-slate-100 text-slate-500 border-linea', 'x-circle', 'Cancelado'),
       } %}
-      {% set cfg = status_cfg.get(shipment.status, ('bg-slate-100 text-slate-600 border-slate-200', 'circle', shipment.status)) %}
+      {% set cfg = status_cfg.get(shipment.status, ('bg-slate-100 text-slate-600 border-linea', 'circle', shipment.status)) %}
       <div class="p-4">
         <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div class="flex-1">
@@ -113,7 +113,7 @@
             </p>
             <div class="flex flex-wrap gap-1.5 mt-2">
               {% for item in shipment.items %}
-              <span class="bg-slate-50 border border-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-lg font-medium">
+              <span class="bg-lienzo-seccion border border-linea text-slate-700 text-xs px-2 py-0.5 rounded-lg font-medium">
                 {{ item.med_name }} ×{{ item.quantity_incoming }}
               </span>
               {% endfor %}
@@ -128,7 +128,7 @@
               <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="receive_shipment">
               <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
-              <button type="submit" class="w-full bg-accent text-white px-4 py-2.5 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-1.5 hover:bg-accent-hover transition shadow-sm">
+              <button type="submit" class="{{ BOTON }}">
                 <i data-lucide="package-check" class="w-4 h-4"></i>
                 Confirmar Recepción
               </button>
@@ -137,7 +137,7 @@
               <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="cancel_shipment">
               <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
-              <button type="submit" class="w-full border border-slate-200 text-slate-500 px-4 py-2 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-1.5 hover:bg-slate-50 transition text-xs">
+              <button type="submit" class="w-full border border-linea text-slate-500 px-4 py-2 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-1.5 hover:bg-lienzo-seccion transition text-xs">
                 Cancelar
               </button>
             </form>
@@ -162,9 +162,9 @@ function addMedRow() {
   const div = document.createElement('div');
   div.className = 'med-row grid grid-cols-3 gap-2';
   div.innerHTML = `
-    <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="col-span-2 border border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Nombre del medicamento">
+    <input type="text" name="med_name[]" placeholder="Nombre del medicamento" class="{{ CAMPO }} col-span-2" aria-label="Nombre del medicamento">
     <div class="flex gap-1">
-      <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="flex-1 border border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:outline-none text-sm" aria-label="Cant.">
+      <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="{{ CAMPO }} flex-1" aria-label="Cant.">
       <button type="button" onclick="this.closest('.med-row').remove()" class="px-2 text-critical hover:text-critical-hover transition" aria-label="Quitar medicamento">Quitar</button>
     </div>
   `;

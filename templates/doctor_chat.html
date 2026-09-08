@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[80vh] relative">
+<div class="bg-white rounded-lg border border-linea overflow-hidden flex flex-col h-[80vh] relative">
     <!-- CABECERA DEL DOCTOR -->
-    <div class="bg-white border-b border-slate-200 p-5 sm:p-6 shrink-0">
+    <div class="bg-white border-b border-linea p-5 sm:p-6 shrink-0">
         <div class="flex justify-between items-start mb-3 relative z-10">
             <div>
                 <h2 class="text-xl font-semibold tracking-tight">{{ chat.patient.name }}</h2>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="border border-slate-300 text-slate-700 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider">
+                    <span class="border border-linea text-slate-700 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider">
                         {{ chat.status|estado }}
                     </span>
                     <span class="text-sm text-slate-600 flex items-center gap-1 font-medium bg-slate-100 px-2 py-1 rounded-lg">
@@ -16,27 +16,27 @@
                 </div>
             </div>
             <div class="flex gap-2 items-center">
-                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="border border-slate-300 text-slate-700 p-2.5 rounded-lg hover:bg-slate-50 transition-colors" title="Videollamada">
+                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="border border-linea text-slate-700 p-2.5 rounded-lg hover:bg-lienzo-seccion transition-colors" title="Videollamada">
                     <i data-lucide="video" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
 
         <!-- Barra de Motivo de Consulta -->
-        <form method="POST" class="flex gap-2 items-center bg-slate-50 p-2 rounded-lg mt-3 border border-slate-200">
+        <form method="POST" class="flex gap-2 items-center bg-lienzo-seccion p-2 rounded-lg mt-3 border border-linea">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="update_reason" value="1">
             <i data-lucide="tag" class="w-4 h-4 text-slate-500 ml-2"></i>
             <input type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="flex-1 bg-transparent text-slate-800 placeholder-slate-400 text-sm focus:outline-none px-2 font-medium" aria-label="Añadir motivo de la consulta...">
-            <button type="submit" class="text-xs bg-accent text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-accent-hover transition-colors">Guardar</button>
+            <button type="submit" class="{{ BOTON_MINI }}">Guardar</button>
         </form>
     </div>
 
     <!-- CONTENEDOR DE MENSAJES -->
-    <div class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
+    <div class="flex-1 p-4 overflow-y-auto bg-lienzo-seccion space-y-3">
         <!-- COUNTDOWN DE 10 MINUTOS PARA CITAS -->
         {% if chat.appointment and chat.appointment.status == 'in_progress' and chat.appointment.started_at %}
-        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg text-center shadow-sm mb-4">
+        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg text-center mb-4">
             <h3 class="font-semibold text-lg flex items-center justify-center gap-2">
                 <i data-lucide="timer" class="w-5 h-5"></i> Consulta en Curso (10 min)
             </h3>
@@ -45,7 +45,7 @@
             
             <form method="POST" action="/doctor/mark_no_show/{{ chat.appointment.id }}" class="mt-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="bg-critical text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-critical-hover transition">
+                <button type="submit" class="{{ BOTON_PELIGRO }}">
                     Marcar como "No Asistió"
                 </button>
             </form>
@@ -105,14 +105,14 @@
 
         <!-- MENSAJES FLASH -->
         {% for message in get_flashed_messages() %}
-        <div class="bg-blue-100 text-blue-800 p-3 rounded-lg text-sm font-bold text-center shadow-sm animate-pulse">
+        <div class="bg-blue-100 text-blue-800 p-3 rounded-lg text-sm font-bold text-center animate-pulse">
             {{ message }}
         </div>
         {% endfor %}
 
         {% for msg in messages %}
         <div class="{% if msg.sender_id == current_user.id %}flex justify-end{% else %}flex justify-start{% endif %}">
-            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-lg rounded-tr-sm shadow-sm{% else %}bg-white border border-slate-200 text-slate-800 rounded-lg rounded-tl-sm shadow-sm{% endif %} p-4 max-w-[85%] relative group">
+            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-lg rounded-tr-sm{% else %}bg-white border border-linea text-slate-800 rounded-lg rounded-tl-sm{% endif %} p-4 max-w-[85%] relative group">
                 <p class="text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
                 
                 {% if msg.file_path %}
@@ -128,7 +128,7 @@
                 {% endif %}
 
                 {% if msg.is_flow_question and msg.sender_id == current_user.id %}
-                <div class="mt-2 pt-2 border-t {% if msg.sender_id == current_user.id %}border-white/20{% else %}border-slate-200{% endif %}">
+                <div class="mt-2 pt-2 border-t {% if msg.sender_id == current_user.id %}border-white/20{% else %}border-linea{% endif %}">
                     <p class="text-xs uppercase font-bold mb-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-slate-600{% endif %}">
                         Opciones enviadas al paciente:
                     </p>
@@ -164,13 +164,13 @@
     <form method="POST" class="p-4 sm:p-5 bg-white flex gap-3 items-center relative">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="send_message">
-        <input type="text" name="content" placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
-        <button type="submit" class="bg-accent text-white p-4 rounded-full hover:bg-accent-hover transition shadow-sm shrink-0">
+        <input type="text" name="content" placeholder="Responder al paciente..." class="{{ CAMPO }} flex-1" aria-label="Responder al paciente...">
+        <button type="submit" class="{{ BOTON }}">
             <i data-lucide="send" class="w-5 h-5 ml-1"></i>
         </button>
     </form>
     {% elif chat.mode == 'read-only' %}
-    <div class="p-4 bg-slate-50 border-t border-slate-200 text-center text-slate-500 font-medium">
+    <div class="p-4 bg-lienzo-seccion border-t border-linea text-center text-slate-500 font-medium">
         <i data-lucide="eye-off" class="w-4 h-4 inline mr-1 text-slate-500"></i> Modo <span class="font-bold text-slate-700">"Solo Ver"</span> activo. Cambia el modo a "Atender" en el panel inferior.
     </div>
     {% endif %}
@@ -179,7 +179,7 @@
 {% if chat.status == 'open' %}
 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
     <!-- 0. Registro de Historia Clinica (NUEVO) -->
-    <div class="md:col-span-2 bg-white p-4 rounded-lg border-2 border-caution-border shadow-sm">
+    <div class="md:col-span-2 bg-white p-4 rounded-lg border-2 border-caution-border">
         <h3 class="font-bold text-slate-900 text-xs mb-3 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="clipboard-list" class="w-4 h-4"></i> Registro de Historia Clínica
         </h3>
@@ -189,11 +189,11 @@
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="text-xs font-bold text-slate-600 uppercase">Código CIE-10 (Diag.)</label>
-                    <input type="text" name="cie10_code" placeholder="Ej: Z000" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Código CIE-10">
+                    <input type="text" name="cie10_code" placeholder="Ej: Z000" class="{{ CAMPO }} w-full" required aria-label="Código CIE-10">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-600 uppercase">Código CUPS (Proc.)</label>
-                    <input type="text" name="cups_code" placeholder="Ej: 890201" class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Código CUPS">
+                    <input type="text" name="cups_code" placeholder="Ej: 890201" class="{{ CAMPO }} w-full" required aria-label="Código CUPS">
                 </div>
             </div>
             {# Causa externa y finalidad. Antes el reporte los inventaba: toda
@@ -205,7 +205,7 @@
                 <div>
                     <label for="external_cause" class="text-xs font-bold text-slate-600 uppercase">Causa externa</label>
                     <select id="external_cause" name="external_cause" required
-                            class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none">
+                            class="{{ CAMPO }} w-full">
                         <option value="">Seleccione…</option>
                         {% for codigo, etiqueta in causas_externas %}
                         <option value="{{ codigo }}">{{ etiqueta }}</option>
@@ -215,7 +215,7 @@
                 <div>
                     <label for="consultation_purpose" class="text-xs font-bold text-slate-600 uppercase">Finalidad</label>
                     <select id="consultation_purpose" name="consultation_purpose" required
-                            class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none">
+                            class="{{ CAMPO }} w-full">
                         <option value="">Seleccione…</option>
                         {% for codigo, etiqueta in finalidades %}
                         <option value="{{ codigo }}">{{ etiqueta }}</option>
@@ -226,22 +226,22 @@
             <div>
                 <label for="care_modality" class="text-xs font-bold text-slate-600 uppercase">Modalidad de atención</label>
                 <select id="care_modality" name="care_modality" required
-                        class="w-full border p-2 rounded text-xs focus:ring-2 focus:ring-orange-200 focus:outline-none">
+                        class="{{ CAMPO }} w-full">
                     {% for codigo, etiqueta in modalidades %}
                     <option value="{{ codigo }}" {% if codigo == modalidad_sugerida %}selected{% endif %}>{{ etiqueta }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <textarea name="diagnosis" placeholder="Diagnóstico detallado..." class="w-full border p-2 rounded text-xs h-16 focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Diagnóstico detallado..."></textarea>
-            <textarea name="treatment" placeholder="Plan de tratamiento / Conducta..." class="w-full border p-2 rounded text-xs h-16 focus:ring-2 focus:ring-orange-200 focus:outline-none" required aria-label="Plan de tratamiento / Conducta..."></textarea>
-            <button type="submit" class="w-full bg-caution text-white p-2 rounded-lg font-bold text-xs hover:bg-caution transition flex items-center justify-center gap-2">
+            <textarea name="diagnosis" placeholder="Diagnóstico detallado..." class="{{ CAMPO }} w-full" required aria-label="Diagnóstico detallado..."></textarea>
+            <textarea name="treatment" placeholder="Plan de tratamiento / Conducta..." class="{{ CAMPO }} w-full" required aria-label="Plan de tratamiento / Conducta..."></textarea>
+            <button type="submit" class="{{ BOTON_MINI }}">
                 <i data-lucide="save" class="w-4 h-4"></i> Guardar Historia Clínica
             </button>
         </form>
     </div>
 
     <!-- 1. Gestión de Modos -->
-    <div class="bg-white p-3 rounded-lg border border-slate-200 flex flex-col justify-between shadow-sm">
+    <div class="bg-white p-3 rounded-lg border border-linea flex flex-col justify-between">
         <h3 class="font-bold text-slate-700 text-xs mb-2 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="settings" class="w-4 h-4"></i> Estado del Chat
         </h3>
@@ -251,14 +251,14 @@
             </div>
             <form method="POST" action="/doctor/end_consultation/{{ chat.id }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-critical text-white p-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 hover:bg-critical-hover transition">
+                <button type="submit" class="{{ BOTON_PELIGRO }}">
                     <i data-lucide="phone-off" class="w-4 h-4"></i> Salir de atención
                 </button>
             </form>
         {% else %}
             <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/consultation" class="mb-2">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="w-full bg-accent text-white p-2 rounded-lg font-bold text-sm flex items-center justify-center gap-1 hover:bg-accent-hover transition">
+                <button type="submit" class="{{ BOTON }}">
                     <i data-lucide="stethoscope" class="w-4 h-4"></i> Atender
                 </button>
             </form>
@@ -281,7 +281,7 @@
     </div>
 
     <!-- 2. Agendar Cita -->
-    <a href="/doctor/book_appointment/{{ chat.patient.id }}" class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col justify-between hover:border-blue-400 transition group shadow-sm">
+    <a href="/doctor/book_appointment/{{ chat.patient.id }}" class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col justify-between hover:border-blue-400 transition group">
         <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="calendar" class="w-4 h-4"></i> Agendar Cita
         </h3>
@@ -292,7 +292,7 @@
     </a>
 
     <!-- 3. Herramientas Rápidas -->
-    <a href="{{ url_for('doctor.prescription', patient_id=chat.patient.id, chat_id=chat.id) }}" class="bg-positive-subtle p-3 rounded-lg border-2 border-positive-border flex flex-col justify-between hover:border-positive transition group shadow-sm">
+    <a href="{{ url_for('doctor.prescription', patient_id=chat.patient.id, chat_id=chat.id) }}" class="bg-positive-subtle p-3 rounded-lg border-2 border-positive-border flex flex-col justify-between hover:border-positive transition group">
         <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="pill" class="w-4 h-4"></i> Orden médica
         </h3>
@@ -303,57 +303,57 @@
     </a>
 
     <div class="flex flex-col gap-2">
-        <form method="POST" class="bg-slate-50 p-2 rounded-lg border border-slate-200 shadow-sm">
+        <form method="POST" class="bg-lienzo-seccion p-2 rounded-lg border border-linea">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="start_flow">
-            <select name="flow_id" class="w-full border p-1 rounded text-xs mb-1 bg-white focus:outline-none" aria-label="Flow id">
+            <select name="flow_id" class="{{ CAMPO }} w-full" aria-label="Flow id">
                 {% for flow in flows %}<option value="{{ flow.id }}">{{ flow.title }}</option>{% endfor %}
             </select>
-            <button type="submit" class="w-full bg-accent text-white p-1 rounded-lg font-bold text-xs hover:bg-accent transition">Enviar Formulario</button>
+            <button type="submit" class="{{ BOTON_MINI }}">Enviar Formulario</button>
         </form>
-        <form method="POST" enctype="multipart/form-data" class="bg-caution-subtle p-2 rounded-lg border-2 border-caution-border shadow-sm">
+        <form method="POST" enctype="multipart/form-data" class="bg-caution-subtle p-2 rounded-lg border-2 border-caution-border">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="upload_file">
             <input type="file" name="file" accept="image/*,.pdf" required class="w-full text-xs mb-1" aria-label="Archivo">
-            <button type="submit" class="w-full bg-caution text-white p-1 rounded-lg font-bold text-xs hover:bg-caution transition">Adjuntar Receta/PDF</button>
+            <button type="submit" class="{{ BOTON_MINI }}">Adjuntar Receta/PDF</button>
         </form>
     </div>
 
     {% if nearby_doctors %}
-    <form method="POST" action="{{ url_for('doctor.refer_patient', chat_id=chat.id) }}" class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col justify-between shadow-sm">
+    <form method="POST" action="{{ url_for('doctor.refer_patient', chat_id=chat.id) }}" class="bg-lienzo-seccion p-3 rounded-lg border border-linea flex flex-col justify-between">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
             <i data-lucide="route" class="w-4 h-4"></i> Remitir cerca
         </h3>
-        <select name="target_doctor_id" class="w-full border p-2 rounded-lg text-xs bg-white mb-2" aria-label="Target doctor id">
+        <select name="target_doctor_id" class="{{ CAMPO }} w-full" aria-label="Target doctor id">
             {% for item in nearby_doctors %}
             <option value="{{ item.doctor.id }}">
                 Dr. {{ item.doctor.name }}{% if item.distance_km is not none %} - {{ item.distance_km }} km{% endif %}
             </option>
             {% endfor %}
         </select>
-        <input name="reason" value="{{ chat.reason or '' }}" class="w-full border p-2 rounded-lg text-xs mb-2" placeholder="Motivo" aria-label="Motivo">
-        <button class="w-full bg-accent text-white p-2 rounded-lg font-bold text-sm hover:bg-accent transition">Remitir</button>
+        <input name="reason" value="{{ chat.reason or '' }}" class="{{ CAMPO }} w-full" placeholder="Motivo" aria-label="Motivo">
+        <button class="{{ BOTON }}">Remitir</button>
     </form>
     {% endif %}
 
     <!-- 4. Salir -->
-    <form method="POST" class="bg-critical-subtle p-3 rounded-lg border-2 border-critical-border flex flex-col justify-between shadow-sm">
+    <form method="POST" class="bg-critical-subtle p-3 rounded-lg border-2 border-critical-border flex flex-col justify-between">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="close_chat">
         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1"><i data-lucide="power" class="w-3 h-3 inline"></i> Finalizar Caso</h3>
         <p class="text-xs text-red-600/70 mb-2">Cierra la consulta y habilita la calificación del paciente.</p>
-        <button type="submit" class="w-full bg-critical text-white p-2 rounded-lg font-bold text-sm hover:bg-critical-hover transition">Cerrar Sesión</button>
+        <button type="submit" class="{{ BOTON_PELIGRO }}">Cerrar Sesión</button>
     </form>
 </div>
 {% endif %}
 
 {% if file_history %}
-<div class="mt-6 bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+<div class="mt-6 bg-white p-4 rounded-lg border-l-4 border-blue-500">
     <h3 class="font-bold text-lg mb-3 text-slate-800 flex items-center gap-2"><i data-lucide="folder-open" class="w-5 h-5 text-slate-500"></i> Expediente Digital (Archivos)</h3>
     <div class="flex flex-wrap gap-2">
         {% for file in file_history %}
-        <a href="/uploads/{{ file.file_path }}" target="_blank" class="bg-slate-50 border p-2 rounded-lg flex items-center gap-2 hover:bg-blue-50 transition group" rel="noopener noreferrer">
+        <a href="/uploads/{{ file.file_path }}" target="_blank" class="{{ BOTON_2 }}" rel="noopener noreferrer">
             {% if file.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')) %}
                 <i data-lucide="image" class="w-4 h-4 text-slate-500 group-hover:text-slate-500"></i>
             {% else %}
@@ -368,8 +368,8 @@
 
 <!-- Modal Video Llamada -->
 <div id="video-call-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg overflow-hidden w-full max-w-3xl h-[600px] relative shadow-sm">
-        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-4 right-4 bg-critical text-white p-2 rounded-full z-10 hover:bg-critical-hover transition shadow-sm">
+    <div class="bg-white rounded-lg overflow-hidden w-full max-w-3xl h-[600px] relative">
+        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="{{ BOTON_PELIGRO }}">
             <i data-lucide="x" class="w-6 h-6"></i>
         </button>
         <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone; display-capture" width="100%" height="100%"></iframe>
@@ -377,7 +377,7 @@
 </div>
 
 <div class="mt-6">
-    <a href="/doctor/dashboard" class="inline-flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg hover:border-primary hover:text-primary transition shadow-sm group">
+    <a href="/doctor/dashboard" class="{{ BOTON_2 }}">
         <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver a mis pacientes
     </a>
 </div>

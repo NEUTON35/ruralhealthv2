@@ -51,8 +51,8 @@
         </p>
     </div>
 
-    <article class="bg-white border border-slate-200 rounded-lg">
-        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 rounded-t-lg">
+    <article class="bg-white border border-linea rounded-lg">
+        <div class="px-6 py-4 border-b border-linea bg-lienzo-seccion rounded-t-lg">
             <dl class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600">
                 <div class="flex gap-1.5">
                     <dt class="font-medium">Versión:</dt>
@@ -81,7 +81,7 @@
         </div>
 
         {% if document.legal_basis %}
-        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+        <div class="px-6 py-4 border-t border-linea bg-lienzo-seccion rounded-b-lg">
             <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-2">
                 Normativa aplicable
             </h3>
@@ -92,12 +92,12 @@
         {% endif %}
     </article>
 
-    <form method="POST" class="mt-6 bg-white border border-slate-200 rounded-lg p-6 no-print">
+    <form method="POST" class="mt-6 bg-white border border-linea rounded-lg p-6 no-print">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
         <label for="accept_telemedicine" class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" id="accept_telemedicine" name="accept_telemedicine" required
-                   class="mt-0.5 w-4 h-4 rounded border-slate-300 shrink-0">
+                   class="mt-0.5 w-4 h-4 rounded border-linea shrink-0">
             <span class="text-sm text-slate-700 leading-relaxed">
                 Declaro que leí y comprendí el presente documento, que conozco la
                 imposibilidad de realizar examen físico en esta modalidad y que
@@ -108,11 +108,11 @@
 
         <div class="mt-5 flex flex-wrap gap-3 items-center">
             <button type="submit"
-                class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
+                class="{{ BOTON }}">
                 {{ 'Aceptar la versión vigente' if current_consent else 'Aceptar y continuar' }}
             </button>
             <button type="button" onclick="window.print()"
-                class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors">
+                class="inline-flex items-center gap-2 border border-linea text-slate-700 px-4 py-2.5 rounded-lg font-medium text-sm hover:bg-lienzo-seccion transition-colors">
                 <i data-lucide="printer" class="w-4 h-4"></i> Guardar copia
             </button>
             <a href="{{ url_for('privacy.index') }}"

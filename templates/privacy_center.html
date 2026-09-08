@@ -14,7 +14,7 @@
     </header>
 
     <!-- Inventario de datos -->
-    <section class="bg-white rounded-lg border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-linea p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="database" class="w-5 h-5 text-slate-500"></i>
             Qué información tenemos sobre usted
@@ -28,7 +28,7 @@
                 ('Entregas de medicamentos', inventory.tickets),
                 ('Alergias registradas', inventory.alergias)
             ] %}
-            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div class="bg-lienzo-seccion rounded-lg p-4 border border-linea">
                 <dd class="text-xl font-semibold text-slate-900">{{ count }}</dd>
                 <dt class="text-xs text-slate-500 font-semibold mt-1">{{ label }}</dt>
             </div>
@@ -37,7 +37,7 @@
     </section>
 
     <!-- Descarga -->
-    <section class="bg-white rounded-lg border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-linea p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
             <i data-lucide="download" class="w-5 h-5 text-slate-500"></i>
             Descargar una copia
@@ -54,7 +54,7 @@
         <form method="POST" action="{{ url_for('privacy.export_my_data') }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
-                class="bg-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
+                class="{{ BOTON }}">
                 <i data-lucide="file-down" class="w-5 h-5"></i>
                 Descargar mis datos
             </button>
@@ -62,7 +62,7 @@
     </section>
 
     <!-- Consentimientos -->
-    <section class="bg-white rounded-lg border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-linea p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="file-signature" class="w-5 h-5 text-slate-500"></i>
             Autorizaciones que has dado
@@ -72,7 +72,7 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="text-left text-xs uppercase text-slate-600 border-b border-slate-200">
+                    <tr class="text-left text-xs uppercase text-slate-600 border-b border-linea">
                         <th class="pb-2 font-bold">Fecha</th>
                         <th class="pb-2 font-bold">Tipo</th>
                         <th class="pb-2 font-bold">Versión</th>
@@ -98,7 +98,7 @@
             </table>
         </div>
 
-        <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-slate-200"
+        <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-linea"
               onsubmit="return confirm('Al revocar la autorización no podrá usar el chat clínico ni agendar consultas hasta otorgarla de nuevo. ¿Continuar?');">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="consent_type" value="sensitive_data">
@@ -120,7 +120,7 @@
     </section>
 
     <!-- Solicitudes -->
-    <section class="bg-white rounded-lg border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-linea p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
             <i data-lucide="message-square-warning" class="w-5 h-5 text-caution"></i>
             Hacer una solicitud
@@ -130,7 +130,7 @@
             revoquemos una autorización.
         </p>
 
-        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-5 text-sm text-slate-700 leading-relaxed">
+        <div class="bg-lienzo-seccion border border-linea rounded-lg p-4 mb-5 text-sm text-slate-700 leading-relaxed">
             <b class="text-slate-900">Sobre la eliminación de la historia clínica.</b>
             La historia clínica no puede suprimirse a solicitud del titular. La
             Resolución 839 de 2017 obliga al prestador a conservarla por un término
@@ -145,7 +145,7 @@
             <div>
                 <label for="request_type" class="text-sm font-bold text-slate-700">Tipo de solicitud</label>
                 <select id="request_type" name="request_type" required
-                    class="w-full mt-1 px-4 py-3 border border-slate-200 rounded-lg focus:border-primary outline-none">
+                    class="{{ CAMPO }} w-full">
                     <option value="rectificacion">Corregir un dato incorrecto</option>
                     <option value="acceso">Consultar cómo se usan mis datos</option>
                     <option value="supresion">Solicitar eliminación / desactivar mi cuenta</option>
@@ -157,11 +157,11 @@
                 <label for="detail" class="text-sm font-bold text-slate-700">Describa su solicitud</label>
                 <textarea id="detail" name="detail" rows="4" required minlength="10" maxlength="2000"
                     placeholder="Por ejemplo: mi número de teléfono está mal escrito, el correcto es..."
-                    class="w-full mt-1 px-4 py-3 border border-slate-200 rounded-lg focus:border-primary outline-none resize-y"></textarea>
+                    class="{{ CAMPO }} w-full"></textarea>
             </div>
 
             <button type="submit"
-                class="bg-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-accent-hover transition-colors inline-flex items-center gap-2">
+                class="{{ BOTON }}">
                 <i data-lucide="send" class="w-4 h-4"></i>
                 Enviar solicitud
             </button>
@@ -170,14 +170,14 @@
 
     <!-- Historial de solicitudes -->
     {% if requests_made %}
-    <section class="bg-white rounded-lg border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-linea p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
             Mis solicitudes anteriores
         </h2>
         <ul class="space-y-3">
             {% for item in requests_made %}
-            <li class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+            <li class="border border-linea rounded-lg p-4 bg-lienzo-seccion">
                 <div class="flex items-start justify-between gap-3 flex-wrap">
                     <div>
                         <p class="font-bold text-slate-800">
@@ -202,7 +202,7 @@
                     {% endif %}
                 </div>
                 {% if item.resolution_note %}
-                <p class="text-sm text-slate-600 mt-3 pt-3 border-t border-slate-200 leading-relaxed">
+                <p class="text-sm text-slate-600 mt-3 pt-3 border-t border-linea leading-relaxed">
                     <b class="text-slate-700">Respuesta:</b> {{ item.resolution_note }}
                 </p>
                 {% endif %}

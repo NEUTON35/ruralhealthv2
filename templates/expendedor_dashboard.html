@@ -3,7 +3,7 @@
 <div class="max-w-5xl mx-auto space-y-6">
 
     <!-- Cabecera -->
-    <div class="bg-white border border-slate-200 rounded-lg p-6">
+    <div class="bg-white border border-linea rounded-lg p-6">
         <div>
             <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Entrega de medicamentos</h1>
             <p class="text-slate-600 mt-1">Sede asignada: <span class="font-semibold text-slate-900">{{ pharmacy.name }}</span></p>
@@ -11,27 +11,27 @@
     </div>
 
     <!-- Scanner de ticket y Filtros -->
-    <section class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-slate-200">
+    <section class="bg-white border border-linea rounded-lg overflow-hidden">
+        <div class="p-5 border-b border-linea">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Validar ticket</h2>
             <form method="GET" class="flex flex-col sm:flex-row gap-3">
-                <input name="q" value="{{ query or '' }}" required placeholder="Código o hash del ticket..." class="flex-1 border border-slate-200 p-3 rounded-lg font-mono text-sm focus:border-primary focus:outline-none bg-slate-50 focus:bg-white transition" aria-label="Código o hash del ticket...">
-                <button type="submit" class="bg-accent text-white px-5 py-3 rounded-lg font-semibold inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-sm">
+                <input name="q" value="{{ query or '' }}" required placeholder="Código o hash del ticket..." class="{{ CAMPO }} flex-1" aria-label="Código o hash del ticket...">
+                <button type="submit" class="{{ BOTON }}">
                     <i data-lucide="scan-search" class="w-5 h-5"></i> Validar
                 </button>
             </form>
         </div>
-        <div class="bg-slate-50 p-2 flex flex-wrap gap-2">
-            <a href="?filter=active" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-primary shadow-sm' if view_filter == 'active' else 'text-slate-500 hover:bg-slate-100' }}">
+        <div class="bg-lienzo-seccion p-2 flex flex-wrap gap-2">
+            <a href="?filter=active" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-primary' if view_filter == 'active' else 'text-slate-500 hover:bg-slate-100' }}">
                 <i data-lucide="zap" class="w-3.5 h-3.5 inline-block mr-1"></i> Activos
             </a>
-            <a href="?filter=ready" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-emerald-600 shadow-sm' if view_filter == 'ready' else 'text-slate-500 hover:bg-slate-100' }}">
+            <a href="?filter=ready" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-emerald-600' if view_filter == 'ready' else 'text-slate-500 hover:bg-slate-100' }}">
                 <i data-lucide="check-circle-2" class="w-3.5 h-3.5 inline-block mr-1"></i> Listos para completar
             </a>
-            <a href="?filter=pending" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-amber-600 shadow-sm' if view_filter == 'pending' else 'text-slate-500 hover:bg-slate-100' }}">
+            <a href="?filter=pending" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-amber-600' if view_filter == 'pending' else 'text-slate-500 hover:bg-slate-100' }}">
                 <i data-lucide="clock" class="w-3.5 h-3.5 inline-block mr-1"></i> Sin Stock
             </a>
-            <a href="?filter=delivered" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-slate-600 shadow-sm' if view_filter == 'delivered' else 'text-slate-500 hover:bg-slate-100' }}">
+            <a href="?filter=delivered" class="px-4 py-2 rounded-lg text-xs font-semibold transition {{ 'bg-white text-slate-600' if view_filter == 'delivered' else 'text-slate-500 hover:bg-slate-100' }}">
                 <i data-lucide="package-check" class="w-3.5 h-3.5 inline-block mr-1"></i> Entregados
             </a>
         </div>
@@ -39,7 +39,7 @@
 
     <!-- Ticket encontrado -->
     {% if ticket %}
-    <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
+    <section class="bg-white border border-linea rounded-lg p-6">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div>
                 <div class="flex items-center gap-2 mb-2">
@@ -60,12 +60,12 @@
             <div class="flex flex-col gap-2 min-w-[180px]">
                 <form method="POST" action="{{ url_for('expendedor.toggle_priority', ticket_id=ticket.id) }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full text-xs font-semibold border border-slate-200 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                    <button type="submit" class="w-full text-xs font-semibold border border-linea px-4 py-2 rounded-lg text-slate-600 hover:bg-lienzo-seccion transition flex items-center justify-center gap-2">
                         <i data-lucide="zap" class="w-4 h-4"></i>
                         {{ 'Bajar Prioridad' if ticket.priority == 'alta' else 'Marcar Prioridad' }}
                     </button>
                 </form>
-                <div class="text-center p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div class="text-center p-3 rounded-lg bg-lienzo-seccion border border-linea">
                     <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Estado Actual</p>
                     <span class="font-semibold text-slate-900 uppercase">{{ ticket.status|estado }}</span>
                 </div>
@@ -86,7 +86,7 @@
             </h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
-                    <thead class="text-left text-xs uppercase tracking-widest text-slate-600 border-b border-slate-200">
+                    <thead class="text-left text-xs uppercase tracking-widest text-slate-600 border-b border-linea">
                         <tr>
                             <th class="py-3 px-4">Medicamento</th>
                             <th class="py-3 px-4 text-center">Faltante</th>
@@ -115,7 +115,7 @@
                         </tr>
                         {% endfor %}
                         {% for med in dispatch_status.pending %}
-                        <tr class="opacity-70 bg-slate-50/50">
+                        <tr class="opacity-70 bg-lienzo-seccion/50">
                             <td class="py-4 px-4">
                                 <p class="font-semibold text-slate-900">{{ med.nombre_med }}</p>
                                 <p class="text-xs text-slate-600 mt-0.5">Pendiente de entrega</p>
@@ -143,7 +143,7 @@
             </h3>
             <div class="space-y-2">
                 {% for med in dispatch_status.history %}
-                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 border-dashed">
+                <div class="flex items-center justify-between p-3 bg-lienzo-seccion rounded-lg border border-linea border-dashed">
                     <div class="flex items-center gap-3">
                         <i data-lucide="check-circle-2" class="w-4 h-4 text-slate-500"></i>
                         <div>
@@ -163,7 +163,7 @@
                 {% if dispatch_status.status == 'full' %}
                 <form method="POST" action="{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-accent text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-accent-hover transition shadow-sm group">
+                    <button type="submit" class="{{ BOTON }}">
                         <i data-lucide="package-check" class="w-6 h-6 group-hover:scale-110 transition"></i>
                         Confirmar Entrega Total
                     </button>
@@ -171,7 +171,7 @@
                 {% elif dispatch_status.status == 'partial' %}
                 <form method="POST" action="{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-caution text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-caution transition shadow-sm group">
+                    <button type="submit" class="{{ BOTON }}">
                         <i data-lucide="split" class="w-6 h-6 group-hover:scale-110 transition"></i>
                         Confirmar Entrega Parcial
                     </button>
@@ -180,7 +180,7 @@
                 {% else %}
                 <form method="POST" action="{{ url_for('expendedor.confirm', ticket_id=ticket.id) }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-critical text-white px-4 py-5 rounded-lg font-semibold text-xl inline-flex items-center justify-center gap-3 hover:bg-critical-hover transition shadow-sm group">
+                    <button type="submit" class="{{ BOTON_PELIGRO }}">
                         <i data-lucide="alert-circle" class="w-6 h-6 group-hover:scale-110 transition"></i>
                         Generar Ticket de Espera
                     </button>
@@ -188,7 +188,7 @@
                 </form>
                 {% endif %}
             {% elif ticket.status == 'sin_stock' %}
-                <div class="flex flex-col items-center gap-4 bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
+                <div class="flex flex-col items-center gap-4 bg-lienzo-seccion border border-linea rounded-lg p-8 text-center">
                     <div class="w-16 h-16 bg-caution-subtle text-amber-600 rounded-full flex items-center justify-center shadow-inner">
                         <i data-lucide="clock" class="w-8 h-8"></i>
                     </div>
@@ -198,7 +198,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('expendedor.reactivate', ticket_id=ticket.id) }}">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="bg-accent text-white px-8 py-3 rounded-lg font-semibold text-sm hover:bg-accent-hover transition shadow-sm">
+                        <button type="submit" class="{{ BOTON }}">
                             Intentar Reactivación Ahora
                         </button>
                     </form>
@@ -210,7 +210,7 @@
 
     <!-- Llegadas esperadas hoy -->
     {% if today_tickets %}
-    <section class="bg-white border border-blue-100 rounded-lg shadow-sm p-5">
+    <section class="bg-white border border-blue-100 rounded-lg p-5">
         <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
             <i data-lucide="calendar-clock" class="w-4 h-4"></i> Llegadas Esperadas Hoy
         </h2>
@@ -221,7 +221,7 @@
                 <p class="text-xs text-blue-700">{{ t.patient.name }} · {{ t.pickup_time }}</p>
                 <form method="GET" class="mt-2">
                     <input type="hidden" name="q" value="{{ t.pickup_code }}">
-                    <button type="submit" class="text-xs bg-accent text-white px-3 py-1.5 rounded-lg font-bold hover:bg-accent-hover transition">Ver ticket</button>
+                    <button type="submit" class="{{ BOTON_MINI }}">Ver ticket</button>
                 </form>
             </div>
             {% endfor %}
@@ -231,7 +231,7 @@
 
     <!-- Tickets sin stock -->
     {% if sin_stock_tickets %}
-    <section class="bg-white border border-caution-border rounded-lg shadow-sm p-5">
+    <section class="bg-white border border-caution-border rounded-lg p-5">
         <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-900 mb-3 flex items-center gap-2">
             <i data-lucide="alert-triangle" class="w-4 h-4"></i> Pendientes de Reposición (Sin Stock)
         </h2>
@@ -251,7 +251,7 @@
                     </div>
                     <form method="POST" action="{{ url_for('expendedor.reactivate', ticket_id=t.id) }}">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="bg-accent text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-accent-hover transition whitespace-nowrap">
+                        <button type="submit" class="{{ BOTON }}">
                             <i data-lucide="refresh-cw" class="w-4 h-4 inline-block mr-1"></i> Reactivar
                         </button>
                     </form>
@@ -263,7 +263,7 @@
     {% endif %}
 
     <!-- Stock y otras secciones -->
-    <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5 space-y-6">
+    <section class="bg-white border border-linea rounded-lg p-5 space-y-6">
 
         <div>
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3 flex items-center gap-2">
@@ -276,7 +276,7 @@
             <div class="grid md:grid-cols-2 gap-2">
                 {% for fila in stock_items %}
                 {% set item = fila.stock %}
-                <div class="border border-slate-200 rounded-lg p-3 space-y-2">
+                <div class="border border-linea rounded-lg p-3 space-y-2">
                     <div class="flex justify-between gap-3">
                         <span class="font-bold text-sm text-slate-800">{{ item.nombre_med }}</span>
                         <span class="text-sm font-mono {% if fila.estado == 'agotado' %}text-critical font-semibold{% elif fila.estado == 'bajo' %}text-caution font-semibold{% else %}text-slate-700{% endif %}">
@@ -299,8 +299,8 @@
                         <label class="text-xs text-slate-600 whitespace-nowrap" for="minimo-{{ item.id }}">Reponer al llegar a</label>
                         <input id="minimo-{{ item.id }}" type="number" name="cantidad_minima" min="0"
                                value="{{ item.cantidad_minima or 0 }}"
-                               class="w-20 border border-slate-200 p-1.5 rounded-lg text-sm">
-                        <button class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">Guardar</button>
+                               class="{{ CAMPO }} w-20">
+                        <button class="{{ BOTON_MINI_2 }}">Guardar</button>
                     </form>
                 </div>
                 {% else %}
@@ -316,15 +316,15 @@
             <form method="POST" class="grid md:grid-cols-4 gap-2">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="request_transfer">
-                <select name="source_pharmacy_id" class="border border-slate-200 p-2.5 rounded-lg bg-white focus:border-primary focus:outline-none text-sm" aria-label="Source pharmacy id">
+                <select name="source_pharmacy_id" class="{{ CAMPO }}" aria-label="Source pharmacy id">
                     {% for stock in source_stock_items %}
                     <option value="{{ stock.pharmacy_id }}">{{ stock.pharmacy.name }}: {{ stock.nombre_med }} ({{ stock.cantidad - (stock.cantidad_comprometida or 0) }})</option>
                     {% else %}
                     <option disabled>Sin stock disponible en otras farmacias</option>
                     {% endfor %}
                 </select>
-                <input name="med_name" placeholder="Medicamento" class="border border-slate-200 p-2.5 rounded-lg focus:border-primary focus:outline-none text-sm" aria-label="Medicamento">
-                <input type="number" name="quantity" min="1" value="1" class="border border-slate-200 p-2.5 rounded-lg focus:border-primary focus:outline-none text-sm" aria-label="Cantidad">
+                <input name="med_name" placeholder="Medicamento" class="{{ CAMPO }}" aria-label="Medicamento">
+                <input type="number" name="quantity" min="1" value="1" class="{{ CAMPO }}" aria-label="Cantidad">
                 <button type="submit" class="bg-accent text-white rounded-lg font-semibold inline-flex items-center justify-center gap-2 px-4 hover:bg-accent-hover transition">
                     <i data-lucide="repeat-2" class="w-4 h-4"></i> Solicitar
                 </button>
@@ -332,7 +332,7 @@
             {% if transfer_requests %}
             <div class="grid md:grid-cols-2 gap-2 mt-3">
                 {% for transfer in transfer_requests %}
-                <div class="border border-slate-200 bg-slate-50 rounded-lg p-3">
+                <div class="border border-linea bg-lienzo-seccion rounded-lg p-3">
                     <p class="font-semibold text-slate-800 text-sm">{{ transfer.med_name }} × {{ transfer.quantity }}</p>
                     <p class="text-xs text-slate-500">{{ transfer.source_pharmacy.name }} · <span class="font-bold">{{ transfer.status|estado }}</span></p>
                 </div>
@@ -348,7 +348,7 @@
             </h2>
             <div class="grid md:grid-cols-2 gap-3">
                 {% for item in recent %}
-                <div class="border border-slate-200 rounded-lg p-3 bg-white hover:border-primary transition group cursor-pointer relative overflow-hidden" onclick="window.location.href='?q={{ item.pickup_code }}'">
+                <div class="border border-linea rounded-lg p-3 bg-white hover:border-primary transition group cursor-pointer relative overflow-hidden" onclick="window.location.href='?q={{ item.pickup_code }}'">
                     {% if item.priority == 'alta' %}
                     <div class="absolute top-0 right-0 p-1">
                         <span class="bg-critical w-2 h-2 rounded-full block"></span>

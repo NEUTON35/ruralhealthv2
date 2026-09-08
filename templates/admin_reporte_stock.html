@@ -3,7 +3,7 @@
 <div class="max-w-5xl mx-auto space-y-6">
 
   <!-- Header -->
-  <div class="bg-white border border-slate-200 rounded-lg p-6">
+  <div class="bg-white border border-linea rounded-lg p-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Auditoría y Control</p>
@@ -11,12 +11,12 @@
         <p class="text-slate-600 text-sm mt-1">Análisis de medicamentos con mayor frecuencia de faltantes en los últimos {{ days }} días.</p>
       </div>
       <div class="flex gap-2">
-        <div class="flex bg-slate-50 rounded-lg p-1 border border-slate-200">
+        <div class="flex bg-lienzo-seccion rounded-lg p-1 border border-linea">
             <a href="?days=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 7 %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">7d</a>
             <a href="?days=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 30 %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">30d</a>
             <a href="?days=90" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 90 %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">90d</a>
         </div>
-        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
+        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center gap-2 border border-linea text-slate-700 hover:bg-lienzo-seccion px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
         </a>
       </div>
@@ -27,7 +27,7 @@
   <!-- Top Offenders Grid -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     {% for name, data in stats[:3] %}
-    <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm relative overflow-hidden">
+    <div class="bg-white border border-linea rounded-lg p-5 relative overflow-hidden">
         <div class="absolute top-0 right-0 p-3 opacity-10">
             <i data-lucide="alert-circle" class="w-12 h-12 text-critical"></i>
         </div>
@@ -49,8 +49,8 @@
   </div>
 
   <!-- Detailed Table -->
-  <section class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+  <section class="bg-white border border-linea rounded-lg overflow-hidden">
+    <div class="p-5 border-b border-linea flex items-center justify-between">
         <h2 class="font-semibold text-slate-900 flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-slate-500"></i>
             Análisis Detallado por Producto
@@ -58,7 +58,7 @@
     </div>
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-slate-50 text-left text-xs uppercase tracking-widest text-slate-600">
+            <thead class="bg-lienzo-seccion text-left text-xs uppercase tracking-widest text-slate-600">
                 <tr>
                     <th class="px-6 py-4">Medicamento</th>
                     <th class="px-6 py-4">Total Solicitudes</th>
@@ -70,7 +70,7 @@
             <tbody class="divide-y divide-slate-100">
                 {% for name, data in stats %}
                 {% set rate = (data['sin_stock_count'] * 100 / data['total_requested'])|round(1) if data['total_requested'] > 0 else 0 %}
-                <tr class="hover:bg-slate-50/50 transition">
+                <tr class="hover:bg-lienzo-seccion/50 transition">
                     <td class="px-6 py-4 font-bold text-slate-900">{{ name }}</td>
                     <td class="px-6 py-4 text-slate-600 font-medium">{{ data['total_requested'] }}</td>
                     <td class="px-6 py-4 font-semibold text-red-600">{{ data['sin_stock_count'] }}</td>
@@ -96,8 +96,8 @@
     </div>
   </section>
   {% else %}
-  <div class="bg-white border border-slate-200 rounded-lg p-16 text-center shadow-sm">
-      <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+  <div class="bg-white border border-linea rounded-lg p-16 text-center">
+      <div class="w-20 h-20 bg-lienzo-seccion rounded-full flex items-center justify-center mx-auto mb-6">
           <i data-lucide="bar-chart" class="w-10 h-10 text-slate-500"></i>
       </div>
       <h2 class="text-xl font-semibold text-slate-900 mb-2">Sin datos de quiebre</h2>
