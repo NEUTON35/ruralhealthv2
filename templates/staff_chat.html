@@ -2,16 +2,15 @@
 {% block content %}
 <div class="grid lg:grid-cols-3 gap-6">
     <!-- Chat Principal -->
-    <section class="lg:col-span-2 bg-white rounded-[2rem] shadow-md border border-slate-100 overflow-hidden flex flex-col h-[80vh] relative">
+    <section class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[80vh] relative">
         <!-- Cabecera Integrada -->
-        <div class="bg-accent p-5 sm:p-6 text-white shrink-0 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+        <div class="bg-white border-b border-slate-200 p-5 sm:p-6 shrink-0">
             <div class="flex justify-between items-start mb-2 relative z-10">
                 <div>
                     <h2 class="text-xl font-semibold tracking-tight">Chat con {{ chat.patient.name }}</h2>
-                    <p class="text-sm text-primary-100 mt-1 font-medium">{{ chat.reason or 'Consulta de medicamentos' }}</p>
+                    <p class="text-sm text-slate-600 mt-1 font-medium">{{ chat.reason or 'Consulta de medicamentos' }}</p>
                 </div>
-                <a href="{{ url_for('staff.dashboard') }}" class="bg-white/20 px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider shadow-sm hover:bg-white/30 transition flex items-center gap-2">
+                <a href="{{ url_for('staff.dashboard') }}" class="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Panel
                 </a>
             </div>
@@ -21,7 +20,7 @@
         <div class="flex-1 p-6 overflow-y-auto bg-slate-50/80 space-y-4">
             {% for msg in messages %}
             <div class="flex {% if msg.sender_id == current_user.id %}justify-end{% else %}justify-start{% endif %}">
-                <div class="max-w-[85%] rounded-[1.5rem] {% if msg.sender_id == current_user.id %}bg-primary text-white rounded-tr-sm shadow-md{% else %}bg-white border border-slate-100 text-slate-800 rounded-tl-sm shadow-sm{% endif %} p-4 relative group">
+                <div class="max-w-[85%] rounded-lg {% if msg.sender_id == current_user.id %}bg-primary text-white rounded-tr-sm shadow-sm{% else %}bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm{% endif %} p-4 relative group">
                     <p class="text-xs font-bold opacity-70 mb-1 uppercase tracking-wider">{{ msg.sender.name }} · {{ msg.timestamp|colombia_time }}</p>
                     <p class="whitespace-pre-wrap text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
                 </div>
@@ -31,9 +30,9 @@
             {% endfor %}
         </div>
         {% if chat.status == 'open' %}
-        <form method="POST" class="p-4 sm:p-5 bg-white border-t border-slate-100 flex gap-3 items-center relative">
+        <form method="POST" class="p-4 sm:p-5 bg-white border-t border-slate-200 flex gap-3 items-center relative">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input name="content" required placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border-2 border-slate-100 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
+            <input name="content" required placeholder="Responder al paciente..." class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Responder al paciente...">
             <button class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shrink-0">
                 <i data-lucide="send" class="w-5 h-5 ml-1"></i>
             </button>
@@ -43,11 +42,11 @@
 
     <aside class="space-y-4">
         <!-- Stock Rápido -->
-        <section class="bg-white border border-slate-100 rounded-[1.5rem] shadow-sm p-5">
+        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Stock rapido</h2>
             <div class="space-y-2 max-h-72 overflow-y-auto">
                 {% for item in stock_items %}
-                <div class="flex justify-between gap-3 border-b border-slate-100 pb-2">
+                <div class="flex justify-between gap-3 border-b border-slate-200 pb-2">
                     <span class="font-bold text-sm">{{ item.nombre_med }}<span class="block text-xs text-slate-600">{{ item.pharmacy.name if item.pharmacy else 'Sin farmacia' }}</span></span>
                     {% set disponible = item.cantidad - (item.cantidad_comprometida or 0) %}
                     <span class="text-sm {% if disponible <= 0 %}text-red-600 font-semibold{% else %}text-slate-600{% endif %}">{{ disponible }} {{ item.unidad }}</span>
@@ -59,7 +58,7 @@
         </section>
         <!-- Orden Rápida -->
         {% if chat.status == 'open' %}
-        <section class="bg-white border border-slate-100 rounded-[1.5rem] shadow-sm p-5">
+        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Orden de recoleccion rapida</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -71,7 +70,7 @@
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for item in stock_items %}
                     {% set disponible = item.cantidad - (item.cantidad_comprometida or 0) %}
-                    <label class="grid grid-cols-[auto_1fr_70px] gap-2 items-center text-sm border border-slate-100 rounded-lg p-2">
+                    <label class="grid grid-cols-[auto_1fr_70px] gap-2 items-center text-sm border border-slate-200 rounded-lg p-2">
                         <input type="checkbox" name="stock_id" value="{{ item.id }}" class="accent-emerald-600" aria-label="Stock id">
                         <span>
                             <b>{{ item.nombre_med }}</b>
@@ -81,7 +80,7 @@
                     </label>
                     {% endfor %}
                 </div>
-                <button class="w-full bg-positive text-white px-3 py-3 rounded-xl font-bold inline-flex items-center justify-center gap-2 hover:bg-positive transition shadow-sm">
+                <button class="w-full bg-positive text-white px-3 py-3 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-positive transition shadow-sm">
                     <i data-lucide="ticket-check" class="w-5 h-5"></i>
                     Generar ticket
                 </button>
@@ -90,11 +89,11 @@
         {% endif %}
         <!-- Órdenes Médicas -->
         {% if patient_orders %}
-        <section class="bg-white border border-slate-100 rounded-[1.5rem] shadow-sm p-5">
+        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3">Ordenes medicas pendientes</h2>
             <div class="space-y-2">
                 {% for order in patient_orders %}
-                <div class="border border-slate-100 rounded-lg p-2">
+                <div class="border border-slate-200 rounded-lg p-2">
                     <p class="font-bold text-sm">Orden #{{ order.id }}</p>
                     <p class="text-xs text-slate-500 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
                 </div>
@@ -106,7 +105,7 @@
         {% if chat.status == 'open' %}
         <form method="POST">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button name="action" value="close" class="w-full bg-critical-subtle text-red-600 px-4 py-3.5 rounded-[1.5rem] font-bold inline-flex items-center justify-center gap-2 hover:bg-critical-subtle border border-critical-border transition">
+            <button name="action" value="close" class="w-full bg-critical-subtle text-red-600 px-4 py-3.5 rounded-lg font-bold inline-flex items-center justify-center gap-2 hover:bg-critical-subtle border border-critical-border transition">
                 <i data-lucide="power" class="w-5 h-5"></i>
                 Finalizar Chat
             </button>

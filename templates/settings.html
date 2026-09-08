@@ -6,32 +6,32 @@
 
     <div class="space-y-6">
         {% if current_user.role == 'patient' %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-700">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-purple-700"><i data-lucide="key-round" class="w-6 h-6"></i> Codigos y polizas</h2>
             <div class="grid md:grid-cols-2 gap-4">
-                <form method="POST" class="space-y-3 border border-slate-100 rounded-xl p-4">
+                <form method="POST" class="space-y-3 border border-slate-200 rounded-lg p-4">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="redeem_clinic_code">
                     <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600">Codigo de clinica privada</label>
-                    <input name="clinic_code" placeholder="CLINIC-XXXX" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="CLINIC-XXXX">
-                    <button class="bg-slate-700 text-white px-5 py-2 rounded-xl font-semibold">Desbloquear clinica</button>
+                    <input name="clinic_code" placeholder="CLINIC-XXXX" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="CLINIC-XXXX">
+                    <button class="bg-slate-700 text-white px-5 py-2 rounded-lg font-semibold">Desbloquear clinica</button>
                 </form>
-                <form method="POST" enctype="multipart/form-data" class="space-y-3 border border-slate-100 rounded-xl p-4">
+                <form method="POST" enctype="multipart/form-data" class="space-y-3 border border-slate-200 rounded-lg p-4">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="redeem_policy_code">
                     <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600">Codigo de poliza / aseguradora</label>
-                    <input name="policy_code" placeholder="POLIZA-XXXX" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="POLIZA-XXXX">
-                    <input type="file" name="policy_file" accept="image/*,.pdf" class="w-full border-2 p-3 rounded-xl text-sm" aria-label="Policy file">
-                    <button class="bg-slate-900 text-white px-5 py-2 rounded-xl font-semibold">Activar poliza</button>
+                    <input name="policy_code" placeholder="POLIZA-XXXX" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="POLIZA-XXXX">
+                    <input type="file" name="policy_file" accept="image/*,.pdf" class="w-full border p-3 rounded-lg text-sm" aria-label="Policy file">
+                    <button class="bg-slate-900 text-white px-5 py-2 rounded-lg font-semibold">Activar poliza</button>
                 </form>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-600">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-600">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-blue-700"><i data-lucide="building-2" class="w-6 h-6"></i> Cambiar clinica activa</h2>
             <div class="grid sm:grid-cols-2 gap-3">
                 {% for row in clinic_rows %}
-                <form method="POST" class="border rounded-xl p-3 {% if row.is_current %}border-blue-300 bg-blue-50{% elif row.allowed %}border-positive-subtle bg-positive-subtle{% else %}border-slate-200 bg-slate-50{% endif %}">
+                <form method="POST" class="border rounded-lg p-3 {% if row.is_current %}border-blue-300 bg-blue-50{% elif row.allowed %}border-positive-subtle bg-positive-subtle{% else %}border-slate-200 bg-slate-50{% endif %}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="switch_clinic">
                     <input type="hidden" name="clinic_id" value="{{ row.clinic.id }}">
@@ -53,7 +53,7 @@
                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Polizas activas o recientes</p>
                 <div class="space-y-2">
                     {% for enrollment in policy_enrollments %}
-                    <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 flex justify-between gap-3">
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 flex justify-between gap-3">
                         <div>
                             <p class="font-semibold text-sm text-slate-900">{{ enrollment.policy.name }}</p>
                             <p class="text-xs text-slate-500">Vence: {{ enrollment.expires_at|colombia_date if enrollment.expires_at else 'Sin vencimiento' }}</p>
@@ -67,41 +67,41 @@
         </div>
         {% endif %}
         {% if current_user.role == 'admin' and current_user.clinic %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-700">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-700"><i data-lucide="building-2" class="w-6 h-6"></i> Configuración de Clínica</h2>
             <form method="POST" enctype="multipart/form-data" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="clinic_settings">
-                <select name="access_type" class="w-full border-2 p-3 rounded-xl text-lg bg-white focus:border-slate-700 focus:outline-none" aria-label="Tipo de acceso">
+                <select name="access_type" class="w-full border p-3 rounded-lg text-lg bg-white focus:border-slate-700 focus:outline-none" aria-label="Tipo de acceso">
                     <option value="public" {% if current_user.clinic.access_type == 'public' %}selected{% endif %}>Publica / pagada por el estado</option>
                     <option value="private" {% if current_user.clinic.access_type == 'private' %}selected{% endif %}>Privada / requiere codigo</option>
                 </select>
-                <input type="text" name="nit" value="{{ current_user.clinic.nit or '' }}" placeholder="NIT / Tax ID" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="NIT / Tax ID">
-                <input type="email" name="contact_email" value="{{ current_user.clinic.contact_email or '' }}" placeholder="Correo de contacto" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Correo de contacto">
-                <input type="text" name="location" value="{{ current_user.clinic.location or '' }}" placeholder="Direccion de la clinica" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Direccion de la clinica">
+                <input type="text" name="nit" value="{{ current_user.clinic.nit or '' }}" placeholder="NIT / Tax ID" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="NIT / Tax ID">
+                <input type="email" name="contact_email" value="{{ current_user.clinic.contact_email or '' }}" placeholder="Correo de contacto" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Correo de contacto">
+                <input type="text" name="location" value="{{ current_user.clinic.location or '' }}" placeholder="Direccion de la clinica" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Direccion de la clinica">
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <input id="clinic-settings-lat" type="number" step="any" name="latitude" value="{{ current_user.clinic.latitude if current_user.clinic.latitude is not none else '' }}" placeholder="Latitud clinica" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Latitud clinica">
-                    <input id="clinic-settings-lng" type="number" step="any" name="longitude" value="{{ current_user.clinic.longitude if current_user.clinic.longitude is not none else '' }}" placeholder="Longitud clinica" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Longitud clinica">
+                    <input id="clinic-settings-lat" type="number" step="any" name="latitude" value="{{ current_user.clinic.latitude if current_user.clinic.latitude is not none else '' }}" placeholder="Latitud clinica" class="border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Latitud clinica">
+                    <input id="clinic-settings-lng" type="number" step="any" name="longitude" value="{{ current_user.clinic.longitude if current_user.clinic.longitude is not none else '' }}" placeholder="Longitud clinica" class="border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Longitud clinica">
                 </div>
-                <div class="h-72 rounded-xl overflow-hidden border border-slate-200" data-location-picker data-lat-input="#clinic-settings-lat" data-lng-input="#clinic-settings-lng"></div>
-                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
-                <textarea name="opening_hours" rows="4" placeholder="Horarios de apertura de la sede" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Horarios de apertura de la sede">{{ current_user.clinic.opening_hours or '' }}</textarea>
+                <div class="h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#clinic-settings-lat" data-lng-input="#clinic-settings-lng"></div>
+                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
+                <textarea name="opening_hours" rows="4" placeholder="Horarios de apertura de la sede" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Horarios de apertura de la sede">{{ current_user.clinic.opening_hours or '' }}</textarea>
                 <label class="block text-sm font-bold text-slate-600">Logo white label</label>
-                <input type="file" name="logo" accept="image/*" class="w-full border-2 p-3 rounded-xl text-sm" aria-label="Logotipo">
-                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700 transition">Guardar Clínica</button>
+                <input type="file" name="logo" accept="image/*" class="w-full border p-3 rounded-lg text-sm" aria-label="Logotipo">
+                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Guardar Clínica</button>
             </form>
-            <form method="POST" class="mt-4 bg-slate-50 border border-slate-100 rounded-xl p-4">
+            <form method="POST" class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-4">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="generate_clinic_consent">
                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">Consentimiento para polizas</p>
                 <p class="font-mono font-semibold text-slate-900 break-all my-2">{{ current_user.clinic.policy_consent_code or 'Sin codigo generado' }}</p>
-                <input name="consent_prefix" placeholder="Prefijo del codigo, ej: clinicalamejor" class="w-full border p-3 rounded-xl mb-3" aria-label="Prefijo del codigo, ej: clinicalamejor">
-                <button class="bg-slate-900 text-white px-4 py-2 rounded-xl font-semibold text-sm">Generar nuevo codigo</button>
+                <input name="consent_prefix" placeholder="Prefijo del codigo, ej: clinicalamejor" class="w-full border p-3 rounded-lg mb-3" aria-label="Prefijo del codigo, ej: clinicalamejor">
+                <button class="bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold text-sm">Generar nuevo codigo</button>
             </form>
         </div>
         {% endif %}
         {% if current_user.role == 'doctor' %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-positive">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-positive">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-teal-700"><i data-lucide="stethoscope" class="w-6 h-6"></i> Datos Profesionales (Orden Médica)</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -109,18 +109,18 @@
                 <div class="grid sm:grid-cols-2 gap-3">
                     <div>
                         <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Registro Médico (Reg. Méd.)</label>
-                        <input type="text" name="medical_registration" value="{{ current_user.medical_registration or '' }}" placeholder="Ej: RM-12345" class="w-full border-2 p-3 rounded-xl text-lg focus:border-positive focus:outline-none mt-1" aria-label="Registro medico profesional">
+                        <input type="text" name="medical_registration" value="{{ current_user.medical_registration or '' }}" placeholder="Ej: RM-12345" class="w-full border-2 p-3 rounded-lg text-lg focus:border-positive focus:outline-none mt-1" aria-label="Registro medico profesional">
                     </div>
                     <div>
                         <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Especialidad</label>
-                        <input type="text" name="specialty" value="{{ current_user.specialty or '' }}" placeholder="Ej: Medicina General" class="w-full border-2 p-3 rounded-xl text-lg focus:border-positive focus:outline-none mt-1" aria-label="Especialidad">
+                        <input type="text" name="specialty" value="{{ current_user.specialty or '' }}" placeholder="Ej: Medicina General" class="w-full border-2 p-3 rounded-lg text-lg focus:border-positive focus:outline-none mt-1" aria-label="Especialidad">
                     </div>
                 </div>
                 <p class="text-xs text-slate-500">Estos datos aparecen en las órdenes médicas digitales y documentos legales.</p>
-                <button type="submit" class="bg-positive text-white px-6 py-2 rounded-xl font-bold hover:bg-positive transition">Guardar Datos Profesionales</button>
+                <button type="submit" class="bg-positive text-white px-6 py-2 rounded-lg font-bold hover:bg-positive transition">Guardar Datos Profesionales</button>
             </form>
             {% if current_user.signature_path %}
-            <div class="mt-4 p-3 bg-positive-subtle border border-positive-subtle rounded-xl">
+            <div class="mt-4 p-3 bg-positive-subtle border border-positive-subtle rounded-lg">
                 <p class="text-xs font-semibold uppercase tracking-widest text-teal-700 mb-2">Firma digital registrada</p>
                 <img src="/uploads/{{ current_user.signature_path }}" alt="Firma" class="h-12">
             </div>
@@ -128,23 +128,23 @@
         </div>
         {% endif %}
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-700">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-700">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-cyan-700"><i data-lucide="map-pin" class="w-6 h-6"></i> Direccion y ubicacion</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="profile_location">
-                <input type="text" name="address" value="{{ current_user.address or '' }}" placeholder="Direccion registrada" class="w-full border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Direccion registrada">
+                <input type="text" name="address" value="{{ current_user.address or '' }}" placeholder="Direccion registrada" class="w-full border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Direccion registrada">
                 <div class="grid sm:grid-cols-2 gap-3">
-                    <input id="settings-user-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" placeholder="Latitud" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Latitud">
-                    <input id="settings-user-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" placeholder="Longitud" class="border-2 p-3 rounded-xl text-lg focus:border-slate-700 focus:outline-none" aria-label="Longitud">
+                    <input id="settings-user-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" placeholder="Latitud" class="border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Latitud">
+                    <input id="settings-user-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" placeholder="Longitud" class="border p-3 rounded-lg text-lg focus:border-slate-700 focus:outline-none" aria-label="Longitud">
                 </div>
-                <div class="h-72 rounded-xl overflow-hidden border border-slate-200" data-location-picker data-lat-input="#settings-user-lat" data-lng-input="#settings-user-lng"></div>
-                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
-                <label class="flex items-start gap-3 text-sm text-slate-700 bg-slate-50 border border-slate-100 rounded-xl p-3">
+                <div class="h-72 rounded-lg overflow-hidden border border-slate-200" data-location-picker data-lat-input="#settings-user-lat" data-lng-input="#settings-user-lng"></div>
+                <button type="button" data-use-browser-location class="border border-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"><i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS</button>
+                <label class="flex items-start gap-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg p-3">
                     <input type="checkbox" name="accept_location" required class="mt-1 accent-cyan-700" aria-label="Accept location">
                     <span>Autorizo el uso de esta ubicacion para calcular cercania a farmacias, consultorios y orientar mi atencion.</span>
                 </label>
-                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-700 transition">Guardar ubicacion</button>
+                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Guardar ubicacion</button>
             </form>
         </div>
 
@@ -153,7 +153,7 @@
            clinica interoperable (Resolucion 1888 de 2025). Se explica para que
            son: pedir la pertenencia etnica sin decir por que es lo que hace
            que la gente no responda o responda cualquier cosa. #}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-slate-400">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-slate-400">
             <h2 class="text-xl font-bold mb-1 flex items-center gap-2 text-slate-700">
                 <i data-lucide="user-round" class="w-6 h-6"></i> Datos para su historia clínica
             </h2>
@@ -172,7 +172,7 @@
                         Pertenencia étnica
                     </label>
                     <select id="ethnic_group" name="ethnic_group"
-                            class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                            class="w-full border p-3 rounded-lg focus:border-slate-700 focus:outline-none">
                         <option value="">Prefiero no responder</option>
                         {% for codigo, etiqueta in grupos_etnicos.items() %}
                         <option value="{{ codigo }}" {% if current_user.ethnic_group == codigo %}selected{% endif %}>{{ etiqueta }}</option>
@@ -188,7 +188,7 @@
                         Condición de discapacidad
                     </label>
                     <select id="disability" name="disability"
-                            class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                            class="w-full border p-3 rounded-lg focus:border-slate-700 focus:outline-none">
                         <option value="">Sin especificar</option>
                         {% for codigo, etiqueta in discapacidades.items() %}
                         <option value="{{ codigo }}" {% if current_user.disability == codigo %}selected{% endif %}>{{ etiqueta }}</option>
@@ -202,7 +202,7 @@
                             Zona de residencia
                         </label>
                         <select id="zone" name="zone"
-                                class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                                class="w-full border p-3 rounded-lg focus:border-slate-700 focus:outline-none">
                             <option value="R" {% if current_user.zone == 'R' %}selected{% endif %}>Rural</option>
                             <option value="U" {% if current_user.zone == 'U' %}selected{% endif %}>Urbana</option>
                         </select>
@@ -212,7 +212,7 @@
                             Nacionalidad
                         </label>
                         <select id="nationality_code" name="nationality_code"
-                                class="w-full border-2 p-3 rounded-xl focus:border-slate-700 focus:outline-none">
+                                class="w-full border p-3 rounded-lg focus:border-slate-700 focus:outline-none">
                             <option value="170" {% if not current_user.nationality_code or current_user.nationality_code == '170' %}selected{% endif %}>Colombia</option>
                             <option value="862" {% if current_user.nationality_code == '862' %}selected{% endif %}>Venezuela</option>
                             <option value="218" {% if current_user.nationality_code == '218' %}selected{% endif %}>Ecuador</option>
@@ -225,31 +225,31 @@
                     </div>
                 </div>
 
-                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-800 transition">
+                <button type="submit" class="bg-slate-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800 transition">
                     Guardar
                 </button>
             </form>
         </div>
         {% endif %}
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-positive">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-positive">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-emerald-700"><i data-lucide="shield-check" class="w-6 h-6"></i> Legal y datos personales</h2>
             <div class="grid sm:grid-cols-3 gap-3 text-sm">
-                <a href="/terminos" class="bg-positive-subtle border border-positive-subtle p-3 rounded-xl font-bold text-emerald-800 hover:bg-positive-subtle">Términos de uso</a>
-                <a href="/privacidad" class="bg-blue-50 border border-blue-100 p-3 rounded-xl font-bold text-blue-800 hover:bg-blue-100">Privacidad y tratamiento</a>
-                <a href="/transparencia" class="bg-slate-50 border border-slate-100 p-3 rounded-xl font-bold text-slate-700 hover:bg-slate-100">Transparencia</a>
+                <a href="/terminos" class="bg-positive-subtle border border-positive-subtle p-3 rounded-lg font-bold text-emerald-800 hover:bg-positive-subtle">Términos de uso</a>
+                <a href="/privacidad" class="bg-blue-50 border border-blue-100 p-3 rounded-lg font-bold text-blue-800 hover:bg-blue-100">Privacidad y tratamiento</a>
+                <a href="/transparencia" class="bg-slate-50 border border-slate-200 p-3 rounded-lg font-bold text-slate-700 hover:bg-slate-100">Transparencia</a>
             </div>
             <p class="text-xs text-slate-500 mt-3">Puede consultar sus autorizaciones y solicitar actualización, rectificación o eliminación cuando proceda.</p>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-blue-600"><i data-lucide="key-round" class="w-6 h-6"></i> Cambiar Contraseña</h2>
             <form method="POST" class="space-y-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="change_password">
-                <input type="password" name="current_password" required placeholder="Contraseña actual" class="w-full border-2 p-3 rounded-xl text-lg focus:border-blue-500 focus:outline-none" aria-label="Contraseña actual">
-                <input type="password" name="new_password" required placeholder="Nueva contraseña (mín. 6 caracteres)" class="w-full border-2 p-3 rounded-xl text-lg focus:border-blue-500 focus:outline-none" aria-label="Nueva contraseña (mín. 6 caracteres)">
-                <input type="password" name="confirm_password" required placeholder="Confirmar nueva contraseña" class="w-full border-2 p-3 rounded-xl text-lg focus:border-blue-500 focus:outline-none" aria-label="Confirmar nueva contraseña">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-blue-700 transition">Actualizar Contraseña</button>
+                <input type="password" name="current_password" required placeholder="Contraseña actual" class="w-full border p-3 rounded-lg text-lg focus:border-blue-500 focus:outline-none" aria-label="Contraseña actual">
+                <input type="password" name="new_password" required placeholder="Nueva contraseña (mín. 6 caracteres)" class="w-full border p-3 rounded-lg text-lg focus:border-blue-500 focus:outline-none" aria-label="Nueva contraseña (mín. 6 caracteres)">
+                <input type="password" name="confirm_password" required placeholder="Confirmar nueva contraseña" class="w-full border p-3 rounded-lg text-lg focus:border-blue-500 focus:outline-none" aria-label="Confirmar nueva contraseña">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition">Actualizar Contraseña</button>
             </form>
         </div>
 
@@ -483,7 +483,7 @@
         {% endif %}
 
         <!-- Cierre de cuenta -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-caution">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-caution">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-amber-700">
                 <i data-lucide="user-x" class="w-6 h-6"></i> Cerrar mi cuenta
             </h2>
@@ -497,7 +497,7 @@
                clinica, que es justo lo que la ley prohibe y lo que el centro de
                privacidad de esta misma aplicacion explica que no puede hacerse.
                Una promesa que el sistema no cumple es peor que no ofrecerla. #}
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4 text-sm text-slate-700 leading-relaxed">
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-4 text-sm text-slate-700 leading-relaxed">
                 <b class="text-slate-900">Qué pasa con su historia clínica.</b>
                 No se elimina. La Resolución 839 de 2017 obliga al prestador a
                 conservarla durante 15 años, y ese deber legal está por encima de
@@ -505,7 +505,7 @@
                 pero seguirá existiendo por si tú o una autoridad la necesitan.
             </div>
 
-            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-4 text-sm text-sky-900 leading-relaxed">
+            <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 mb-4 text-sm text-sky-900 leading-relaxed">
                 <b>Antes de cerrar, descargue una copia de sus datos.</b>
                 Después de cerrar la cuenta no podrá ingresar a solicitarla.
                 <a href="{{ url_for('privacy.index') }}" class="font-bold underline underline-offset-2">
@@ -522,9 +522,9 @@
                 </label>
                 <input type="text" id="confirm_text" name="confirm_text" required
                     autocomplete="off" placeholder="CERRAR"
-                    class="w-full border-2 border-caution-border p-3 rounded-xl text-lg focus:border-caution focus:outline-none">
+                    class="w-full border-2 border-caution-border p-3 rounded-lg text-lg focus:border-caution focus:outline-none">
                 <button type="submit"
-                    class="bg-caution text-white px-6 py-2 rounded-xl font-bold hover:bg-caution transition-colors flex items-center gap-2">
+                    class="bg-caution text-white px-6 py-2 rounded-lg font-bold hover:bg-caution transition-colors flex items-center gap-2">
                     <i data-lucide="user-x" class="w-5 h-5"></i> Cerrar mi cuenta
                 </button>
             </form>

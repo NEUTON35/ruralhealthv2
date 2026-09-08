@@ -3,19 +3,18 @@
 <div class="max-w-6xl mx-auto space-y-6">
 
   <!-- Header -->
-  <div class="bg-slate-900 rounded-[2rem] p-6 text-white shadow-md relative overflow-hidden">
-    <div class="absolute inset-0 bg-critical/5"></div>
-    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <div class="bg-white border border-slate-200 rounded-lg p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <p class="text-slate-600 text-xs font-semibold uppercase tracking-widest mb-1">Control de Faltantes</p>
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Control de Faltantes</p>
         <h1 class="text-2xl font-semibold tracking-tight">Panel de Pendientes</h1>
         <p class="text-slate-600 text-sm mt-1">{{ rows|length }} ticket(s) con entregas incompletas</p>
       </div>
       <div class="flex gap-2 flex-wrap">
-        <a href="{{ url_for('staff.envios') }}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition">
+        <a href="{{ url_for('staff.envios') }}" class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
           <i data-lucide="truck" class="w-4 h-4"></i> Cargamentos
         </a>
-        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition">
+        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
         </a>
       </div>
@@ -24,13 +23,13 @@
 
   <!-- Upcoming Shipments Banner -->
   {% if incoming %}
-  <div class="bg-blue-50 border border-blue-200 rounded-[1.5rem] p-4">
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
     <p class="text-blue-800 font-semibold text-sm flex items-center gap-2 mb-2">
       <i data-lucide="truck" class="w-4 h-4"></i> Cargamentos en camino
     </p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
       {% for shipment in incoming %}
-      <div class="bg-white border border-blue-100 rounded-xl p-3">
+      <div class="bg-white border border-blue-100 rounded-lg p-3">
         <p class="font-bold text-blue-900 text-sm">{{ shipment.pharmacy.name }}</p>
         <p class="text-xs text-blue-600">
           Llegada estimada: <span class="font-semibold">{{ shipment.expected_date }}</span>
@@ -52,15 +51,15 @@
     {% set criticos = rows | selectattr('urgency', 'equalto', 'critico') | list %}
     {% set altos = rows | selectattr('urgency', 'equalto', 'alto') | list %}
     {% set normales = rows | selectattr('urgency', 'equalto', 'normal') | list %}
-    <div class="bg-critical-subtle border border-critical-subtle rounded-2xl p-4 text-center">
+    <div class="bg-critical-subtle border border-critical-subtle rounded-lg p-4 text-center">
       <p class="text-3xl font-semibold text-red-600">{{ criticos|length }}</p>
       <p class="text-xs font-semibold uppercase tracking-widest text-red-400 mt-1">Críticos ≥7d</p>
     </div>
-    <div class="bg-caution-subtle border border-caution-subtle rounded-2xl p-4 text-center">
+    <div class="bg-caution-subtle border border-caution-subtle rounded-lg p-4 text-center">
       <p class="text-3xl font-semibold text-amber-600">{{ altos|length }}</p>
       <p class="text-xs font-semibold uppercase tracking-widest text-amber-400 mt-1">Altos 3-6d</p>
     </div>
-    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-center">
+    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
       <p class="text-3xl font-semibold text-slate-600">{{ normales|length }}</p>
       <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mt-1">Normales <3d</p>
     </div>
@@ -68,8 +67,8 @@
 
   <!-- Pending Tickets Table -->
   {% if rows %}
-  <section class="bg-white border border-slate-100 rounded-[1.5rem] shadow-sm overflow-hidden">
-    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+  <section class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
       <h2 class="font-semibold text-slate-900 flex items-center gap-2">
         <i data-lucide="clock" class="w-5 h-5 text-caution"></i>
         Tickets Pendientes de Entrega
@@ -88,7 +87,7 @@
             <th class="px-4 py-3">Acciones</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-50">
+        <tbody class="divide-y divide-slate-100">
           {% for row in rows %}
           {% set ticket = row.ticket %}
           {% set urgency_classes = {
@@ -185,7 +184,7 @@
     </div>
   </section>
   {% else %}
-  <div class="bg-white border border-slate-100 rounded-2xl p-12 text-center">
+  <div class="bg-white border border-slate-200 rounded-lg p-12 text-center">
     <i data-lucide="check-circle-2" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
     <p class="font-semibold text-slate-900 text-lg">¡Sin pendientes!</p>
     <p class="text-slate-600 text-sm">Todos los tickets han sido entregados.</p>
@@ -194,13 +193,13 @@
 
   <!-- Replenishment Alerts -->
   {% if alerts %}
-  <section class="bg-white border border-caution-subtle rounded-[1.5rem] shadow-sm p-5">
+  <section class="bg-white border border-caution-subtle rounded-lg shadow-sm p-5">
     <h2 class="font-semibold text-amber-800 flex items-center gap-2 mb-4">
       <i data-lucide="bell" class="w-5 h-5"></i> Alertas de Reposición Activas
     </h2>
     <div class="grid sm:grid-cols-2 gap-3">
       {% for alert in alerts %}
-      <div class="border border-caution-subtle bg-caution-subtle rounded-xl p-3">
+      <div class="border border-caution-subtle bg-caution-subtle rounded-lg p-3">
         <p class="font-semibold text-amber-900 text-sm">{{ alert.med_name }}</p>
         <p class="text-xs text-amber-700">{{ alert.pharmacy.name }} · Disponible: {{ alert.available_quantity }} / Requerido: {{ alert.required_quantity }}</p>
         {% if alert.note %}<p class="text-xs text-amber-600 mt-0.5">{{ alert.note }}</p>{% endif %}

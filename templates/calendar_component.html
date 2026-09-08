@@ -10,7 +10,7 @@
 </div>
 
 <!-- Cuadrícula del Calendario Mensual -->
-<div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+<div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
     <div class="grid grid-cols-7 gap-1 text-center mb-2">
         <div class="text-xs font-bold text-gray-500 py-2">Lun</div>
         <div class="text-xs font-bold text-gray-500 py-2">Mar</div>
@@ -24,14 +24,14 @@
         {% for day in month_days %}
             {% if day.is_current_month and not day.is_past %}
                 <a href="?month={{ current_view_date.strftime('%Y-%m') }}&date={{ day.date_str }}" 
-                   class="relative p-2 md:p-3 rounded-xl border-2 text-center transition {% if day.date_str == selected_date %}border-medical bg-medical-light shadow-md{% elif day.is_working_day %}border-positive-border bg-positive-subtle hover:bg-positive-subtle cursor-pointer{% else %}border-gray-100 bg-gray-50 cursor-not-allowed opacity-40{% endif %}">
+                   class="relative p-2 md:p-3 rounded-lg border-2 text-center transition {% if day.date_str == selected_date %}border-medical bg-medical-light shadow-sm{% elif day.is_working_day %}border-positive-border bg-positive-subtle hover:bg-positive-subtle cursor-pointer{% else %}border-gray-100 bg-gray-50 cursor-not-allowed opacity-40{% endif %}">
                     <span class="block text-sm md:text-lg font-bold {% if day.date_str == selected_date %}text-medical-dark{% elif day.is_working_day %}text-green-800{% else %}text-gray-600{% endif %}">{{ day.day_num }}</span>
                     {% if day.is_working_day and day.date_str != selected_date %}
                         <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-positive rounded-full"></span>
                     {% endif %}
                 </a>
             {% else %}
-                <div class="p-2 md:p-3 rounded-xl text-center text-gray-500 border border-transparent">
+                <div class="p-2 md:p-3 rounded-lg text-center text-gray-500 border border-transparent">
                     <span class="block text-sm md:text-lg">{{ day.day_num }}</span>
                 </div>
             {% endif %}

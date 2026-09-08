@@ -14,7 +14,7 @@
     </header>
 
     <!-- Inventario de datos -->
-    <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-slate-200 p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="database" class="w-5 h-5 text-slate-500"></i>
             Qué información tenemos sobre usted
@@ -28,7 +28,7 @@
                 ('Entregas de medicamentos', inventory.tickets),
                 ('Alergias registradas', inventory.alergias)
             ] %}
-            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
                 <dd class="text-xl font-semibold text-slate-900">{{ count }}</dd>
                 <dt class="text-xs text-slate-500 font-semibold mt-1">{{ label }}</dt>
             </div>
@@ -37,7 +37,7 @@
     </section>
 
     <!-- Descarga -->
-    <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-slate-200 p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
             <i data-lucide="download" class="w-5 h-5 text-slate-500"></i>
             Descargar una copia
@@ -47,14 +47,14 @@
             de cálculo: perfil, citas, consultas, historia clínica, órdenes médicas,
             alergias, entregas de medicamentos y consentimientos otorgados.
         </p>
-        <div class="bg-caution-subtle border border-caution-border rounded-xl p-3 mb-4 text-sm text-amber-900">
+        <div class="bg-caution-subtle border border-caution-border rounded-lg p-3 mb-4 text-sm text-amber-900">
             El archivo contiene información de salud. Consérvelo en un lugar seguro
             y tenga precaución al compartirlo.
         </div>
         <form method="POST" action="{{ url_for('privacy.export_my_data') }}">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <button type="submit"
-                class="bg-positive text-white px-6 py-3 rounded-xl font-bold hover:bg-positive transition-colors inline-flex items-center gap-2">
+                class="bg-positive text-white px-6 py-3 rounded-lg font-bold hover:bg-positive transition-colors inline-flex items-center gap-2">
                 <i data-lucide="file-down" class="w-5 h-5"></i>
                 Descargar mis datos
             </button>
@@ -62,7 +62,7 @@
     </section>
 
     <!-- Consentimientos -->
-    <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-slate-200 p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="file-signature" class="w-5 h-5 text-slate-500"></i>
             Autorizaciones que has dado
@@ -98,7 +98,7 @@
             </table>
         </div>
 
-        <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-slate-100"
+        <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-slate-200"
               onsubmit="return confirm('Al revocar la autorización no podrá usar el chat clínico ni agendar consultas hasta otorgarla de nuevo. ¿Continuar?');">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="consent_type" value="sensitive_data">
@@ -109,7 +109,7 @@
                 la ley impone al prestador.
             </p>
             <button type="submit"
-                class="text-rose-600 border-2 border-critical-border px-5 py-2.5 rounded-xl font-bold hover:bg-critical-subtle transition-colors inline-flex items-center gap-2">
+                class="text-rose-600 border-2 border-critical-border px-5 py-2.5 rounded-lg font-bold hover:bg-critical-subtle transition-colors inline-flex items-center gap-2">
                 <i data-lucide="x-circle" class="w-4 h-4"></i>
                 Revocar autorización de datos de salud
             </button>
@@ -120,7 +120,7 @@
     </section>
 
     <!-- Solicitudes -->
-    <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-slate-200 p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
             <i data-lucide="message-square-warning" class="w-5 h-5 text-caution"></i>
             Hacer una solicitud
@@ -130,7 +130,7 @@
             revoquemos una autorización.
         </p>
 
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-sm text-slate-700 leading-relaxed">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-5 text-sm text-slate-700 leading-relaxed">
             <b class="text-slate-900">Sobre la eliminación de la historia clínica.</b>
             La historia clínica no puede suprimirse a solicitud del titular. La
             Resolución 839 de 2017 obliga al prestador a conservarla por un término
@@ -145,7 +145,7 @@
             <div>
                 <label for="request_type" class="text-sm font-bold text-slate-700">Tipo de solicitud</label>
                 <select id="request_type" name="request_type" required
-                    class="w-full mt-1 px-4 py-3 border-2 border-slate-100 rounded-xl focus:border-primary outline-none">
+                    class="w-full mt-1 px-4 py-3 border border-slate-200 rounded-lg focus:border-primary outline-none">
                     <option value="rectificacion">Corregir un dato incorrecto</option>
                     <option value="acceso">Consultar cómo se usan mis datos</option>
                     <option value="supresion">Solicitar eliminación / desactivar mi cuenta</option>
@@ -157,11 +157,11 @@
                 <label for="detail" class="text-sm font-bold text-slate-700">Describa su solicitud</label>
                 <textarea id="detail" name="detail" rows="4" required minlength="10" maxlength="2000"
                     placeholder="Por ejemplo: mi número de teléfono está mal escrito, el correcto es..."
-                    class="w-full mt-1 px-4 py-3 border-2 border-slate-100 rounded-xl focus:border-primary outline-none resize-y"></textarea>
+                    class="w-full mt-1 px-4 py-3 border border-slate-200 rounded-lg focus:border-primary outline-none resize-y"></textarea>
             </div>
 
             <button type="submit"
-                class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary-dark transition-colors inline-flex items-center gap-2">
+                class="bg-primary text-white px-6 py-3 rounded-lg font-bold hover:bg-primary-dark transition-colors inline-flex items-center gap-2">
                 <i data-lucide="send" class="w-4 h-4"></i>
                 Enviar solicitud
             </button>
@@ -170,14 +170,14 @@
 
     <!-- Historial de solicitudes -->
     {% if requests_made %}
-    <section class="bg-white rounded-2xl border border-slate-200 p-6">
+    <section class="bg-white rounded-lg border border-slate-200 p-6">
         <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
             <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
             Mis solicitudes anteriores
         </h2>
         <ul class="space-y-3">
             {% for item in requests_made %}
-            <li class="border border-slate-100 rounded-xl p-4 bg-slate-50">
+            <li class="border border-slate-200 rounded-lg p-4 bg-slate-50">
                 <div class="flex items-start justify-between gap-3 flex-wrap">
                     <div>
                         <p class="font-bold text-slate-800">

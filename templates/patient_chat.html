@@ -1,13 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="bg-white rounded-[2rem] shadow-md border border-slate-100 overflow-hidden flex flex-col h-[80vh] relative">
+<div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[80vh] relative">
     <!-- CABECERA -->
-    <div class="bg-accent p-5 sm:p-6 text-white shrink-0 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+    <div class="bg-white border-b border-slate-200 p-5 sm:p-6 shrink-0">
         <div class="flex justify-between items-start mb-3 relative z-10">
             <div>
                 <h2 class="text-xl font-semibold tracking-tight">{% if doctor.role != 'doctor' %}Staff {{ doctor.name }}{% else %}Dr. {{ doctor.name }}{% endif %}</h2>
-                <p class="text-sm text-primary-100 flex items-center gap-1.5 font-medium mt-1">
+                <p class="text-sm text-slate-600 flex items-center gap-1.5 font-medium mt-1">
                     <i data-lucide="clock" class="w-4 h-4"></i> 
                     {% if doctor.role != 'doctor' %}
                         {{ doctor.atencion_inicio or '08:00' }} - {{ doctor.atencion_fin or '17:00' }}
@@ -17,22 +16,22 @@
                 </p>
             </div>
             <div class="flex gap-2 items-center">
-                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="bg-white/20 p-2.5 rounded-xl hover:bg-white/30 transition shadow-sm">
+                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="border border-slate-300 text-slate-700 p-2.5 rounded-lg hover:bg-slate-50 transition-colors">
                     <i data-lucide="video" class="w-5 h-5"></i>
                 </button>
-                <span class="bg-white/20 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider shadow-sm">
+                <span class="border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider">
                     {{ chat.status }}
                 </span>
             </div>
         </div>
 
         <!-- Barra de Motivo de Consulta -->
-        <form method="POST" class="flex gap-2 items-center bg-black/10 p-2 rounded-xl mt-4 border border-white/10 relative z-10">
+        <form method="POST" class="flex gap-2 items-center bg-black/10 p-2 rounded-lg mt-4 border border-white/10 relative z-10">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="update_reason" value="1">
-            <i data-lucide="tag" class="w-4 h-4 text-white/70 ml-2"></i>
-            <input type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="flex-1 bg-transparent text-white placeholder-white/50 text-sm focus:outline-none px-2 font-medium" aria-label="Añadir motivo de la consulta...">
-            <button type="submit" class="text-xs bg-white/20 px-3 py-1.5 rounded-lg font-bold hover:bg-white/30 transition shadow-sm">Guardar</button>
+            <i data-lucide="tag" class="w-4 h-4 text-slate-500 ml-2"></i>
+            <input type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="flex-1 bg-transparent text-slate-800 placeholder-slate-400 text-sm focus:outline-none px-2 font-medium" aria-label="Añadir motivo de la consulta...">
+            <button type="submit" class="text-xs bg-accent text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-accent-hover transition-colors">Guardar</button>
         </form>
     </div>
 
@@ -40,7 +39,7 @@
     <div class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
         <!-- COUNTDOWN DE 5 MINUTOS PARA CITAS -->
         {% if chat.appointment and chat.appointment.status == 'in_progress' and chat.appointment.started_at %}
-        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-xl text-center shadow-sm mb-4">
+        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg text-center shadow-sm mb-4">
             <h3 class="font-semibold text-lg flex items-center justify-center gap-2">
                 <i data-lucide="timer" class="w-5 h-5"></i> Consulta en Curso (10 min)
             </h3>
@@ -109,7 +108,7 @@
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                <div class="bg-critical-subtle text-red-800 p-3 rounded-xl text-sm font-bold text-center shadow-sm animate-pulse border border-critical-border">
+                <div class="bg-critical-subtle text-red-800 p-3 rounded-lg text-sm font-bold text-center shadow-sm animate-pulse border border-critical-border">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -118,7 +117,7 @@
 
         {% for msg in messages %}
         <div class="{% if msg.sender_id == current_user.id %}flex justify-end{% else %}flex justify-start{% endif %}">
-            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-[1.5rem] rounded-tr-sm shadow-md{% else %}bg-white border border-slate-100 text-slate-800 rounded-[1.5rem] rounded-tl-sm shadow-sm{% endif %} p-4 max-w-[85%] relative group">
+            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-lg rounded-tr-sm shadow-sm{% else %}bg-white border border-slate-200 text-slate-800 rounded-lg rounded-tl-sm shadow-sm{% endif %} p-4 max-w-[85%] relative group">
                 <p class="text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
                 
                 {% if msg.file_path %}
@@ -143,7 +142,7 @@
                 </div>
                 
                 {% if msg.is_flow_question and msg.sender_id != current_user.id %}
-                <div class="mt-3 border-t pt-2 border-slate-100">
+                <div class="mt-3 border-t pt-2 border-slate-200">
                     {% if msg.flow_input_type == 'open' %}
                     <form method="POST" action="/patient/chat/{{ chat.id }}" class="flex gap-2">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -154,7 +153,7 @@
                     <form method="POST" action="/patient/chat/{{ chat.id }}" class="space-y-2">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         {% for key, val in msg.parsed_flow_options.items() %}
-                        <button type="submit" name="flow_response" value="{{ key }}" class="w-full bg-white text-blue-600 border-2 border-blue-400 p-2 rounded-lg font-bold text-left hover:bg-blue-50 transition">
+                        <button type="submit" name="flow_response" value="{{ key }}" class="w-full bg-white text-blue-600 border border-blue-400 p-2 rounded-lg font-bold text-left hover:bg-blue-50 transition">
                             {{ key }}. {{ val['text'] }}
                         </button>
                         {% endfor %}
@@ -179,7 +178,7 @@
                         </h3>
                         <div class="flex gap-2 items-center">
                             <label class="font-bold text-sm">Estrellas:</label>
-                            <select name="stars" class="border-2 p-2 rounded-lg bg-white focus:outline-none" aria-label="Calificacion">
+                            <select name="stars" class="border p-2 rounded-lg bg-white focus:outline-none" aria-label="Calificacion">
                                 <option value="5">5 - Excelente</option>
                                 <option value="4">4 - Buena</option>
                                 <option value="3">3 - Aceptable</option>
@@ -233,11 +232,11 @@
         {% elif can_send %}
             <form method="POST" enctype="multipart/form-data" class="p-4 sm:p-5 bg-white flex gap-3 items-center relative" data-offline-chat-form data-chat-id="{{ chat.id }}" data-doctor-name="{{ doctor.name }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <label class="p-3.5 bg-slate-50 hover:bg-slate-100 rounded-full cursor-pointer transition text-slate-600 hover:text-primary border-2 border-slate-100 shrink-0">
+                <label class="p-3.5 bg-slate-50 hover:bg-slate-100 rounded-full cursor-pointer transition text-slate-600 hover:text-primary border border-slate-200 shrink-0">
                     <i data-lucide="paperclip" class="w-5 h-5"></i>
                     <input type="file" name="file" accept="image/*,.pdf" hidden aria-label="Archivo">
                 </label>
-                <input type="text" name="content" placeholder="Escribe tu mensaje aquí..." class="flex-1 bg-slate-50 border-2 border-slate-100 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Escribe tu mensaje aquí...">
+                <input type="text" name="content" placeholder="Escribe tu mensaje aquí..." class="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-full text-sm font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 focus:outline-none transition-colors" aria-label="Escribe tu mensaje aquí...">
                 <button type="submit" class="bg-primary text-white p-4 rounded-full hover:bg-primary-dark transition shadow-sm shrink-0">
                     <i data-lucide="send" class="w-5 h-5 ml-1"></i>
                 </button>
@@ -256,7 +255,7 @@
 {% endif %}
 
 <div id="video-call-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl overflow-hidden w-full max-w-2xl h-[500px] relative shadow-md">
+    <div class="bg-white rounded-lg overflow-hidden w-full max-w-2xl h-[500px] relative shadow-sm">
         <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="absolute top-2 right-2 bg-critical text-white p-2 rounded-full z-10 hover:bg-critical transition">
             <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -265,7 +264,7 @@
 </div>
 
 <div class="mt-6">
-    <a href="/patient/dashboard" class="inline-flex items-center gap-2 px-5 py-3 bg-white border-2 border-slate-100 text-slate-600 font-bold rounded-2xl hover:border-primary hover:text-primary transition shadow-sm group">
+    <a href="/patient/dashboard" class="inline-flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg hover:border-primary hover:text-primary transition shadow-sm group">
         <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver al panel
     </a>
 </div>

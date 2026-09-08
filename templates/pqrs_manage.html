@@ -51,7 +51,7 @@
             <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-line mb-4">{{ r.detail }}</p>
 
             <form method="POST" action="{{ url_for('pqrs.resolve', complaint_id=r.id) }}"
-                  class="space-y-2 pt-3 border-t border-slate-100">
+                  class="space-y-2 pt-3 border-t border-slate-200">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <label for="resolution-{{ r.id }}" class="block text-xs font-semibold text-slate-700">
                     Respuesta al usuario
@@ -59,7 +59,7 @@
                 <textarea id="resolution-{{ r.id }}" name="resolution" rows="3" required
                           minlength="20" maxlength="4000"
                           placeholder="Lo que se le respondió y qué se hizo. Queda visible para quien radicó."
-                          class="w-full border-2 border-slate-200 p-3 rounded-xl text-sm focus:border-accent focus:outline-none resize-y"></textarea>
+                          class="w-full border border-slate-200 p-3 rounded-lg text-sm focus:border-accent focus:outline-none resize-y"></textarea>
                 <button type="submit"
                     class="bg-accent text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
                     Responder y cerrar
@@ -86,7 +86,7 @@
             </thead>
             <tbody>
                 {% for r in resueltas %}
-                <tr class="border-b border-slate-100">
+                <tr class="border-b border-slate-200">
                     <td class="py-2 pr-4 font-mono text-xs">{{ r.ticket_code }}</td>
                     <td class="py-2 pr-4">{{ etiquetas.get(r.complaint_type, r.complaint_type) }}</td>
                     <td class="py-2 pr-4">{{ r.subject }}</td>

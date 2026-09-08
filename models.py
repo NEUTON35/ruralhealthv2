@@ -650,6 +650,24 @@ class MedicalOrder(ClinicScoped, db.Model):
     doctor = db.relationship('User', foreign_keys=[doctor_id])
     patient = db.relationship('User', foreign_keys=[patient_id])
 
+    @property
+    def is_expired(self):
+        """Si la orden paso su fecha de vigencia.
+
+        Vive aqui y no en la plantilla porque la respuesta tiene que ser la
+        misma en la pantalla del paciente, en la de la farmacia y en el
+        reporte. Una orden sin fecha no esta vencida: no tiene plazo.
+        """
+        if self.expires_at is None:
+            return False
+        return colombia_now() > self.expires_at
+
+    @property
+    def is_dispensable(self):
+        """Si la farmacia puede entregar contra esta orden."""
+        return (self.annulled_at is None and not self.is_expired
+                and self.status not in ('anulada', 'completada'))
+
 class MedicationPickupTicket(ClinicScoped, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('medical_order.id'), nullable=True, index=True)

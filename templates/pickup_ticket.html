@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white border border-slate-100 rounded-lg shadow-sm p-6 print:shadow-none print:border-0">
-    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+<div class="max-w-3xl mx-auto bg-white border border-slate-200 rounded-lg shadow-sm p-6 print:shadow-none print:border-0">
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-200 pb-4 mb-4">
         <div>
             <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600">Ticket de recogida</p>
             <h1 class="text-2xl font-semibold text-slate-900">{{ ticket.pickup_code }}</h1>
@@ -16,7 +16,7 @@
     </div>
 
     <div class="grid sm:grid-cols-2 gap-4 mb-5">
-        <div class="bg-slate-50 border border-slate-100 rounded-lg p-3">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Hash de entrega</p>
             <p class="text-xs font-mono break-all text-slate-700">{{ ticket.pickup_hash }}</p>
         </div>

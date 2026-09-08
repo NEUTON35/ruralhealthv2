@@ -14,7 +14,7 @@
 
     <!-- Selección de Hora -->
     {% if selected_date %}
-        <div class="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-500 mt-6">
+        <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500 mt-6">
             <h3 class="font-bold text-gray-800 mb-4 text-lg">Sus horas para el {{ selected_date }}</h3>
             
             {% if slots %}
@@ -33,14 +33,14 @@
                                 {% if slot.status == 'available' %}
                                 <label class="cursor-pointer">
                                     <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required aria-label="Hora">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-positive-subtle text-green-800 p-3 rounded-xl text-center font-bold hover:bg-positive-subtle transition">
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-positive-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-positive-subtle transition">
                                         {{ slot.time }}
                                     </div>
                                 </label>
                                 {% elif slot.status == 'booked' %}
-                                <div class="border-2 border-critical-border bg-critical-subtle text-red-500 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
+                                <div class="border-2 border-critical-border bg-critical-subtle text-red-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
                                 {% else %}
-                                <div class="border-2 border-gray-600 bg-gray-800 text-gray-500 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
+                                <div class="border border-gray-600 bg-gray-800 text-gray-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -55,14 +55,14 @@
                                 {% if slot.status == 'available' %}
                                 <label class="cursor-pointer">
                                     <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required aria-label="Hora">
-                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-positive-subtle text-green-800 p-3 rounded-xl text-center font-bold hover:bg-positive-subtle transition">
+                                    <div class="peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-positive-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-positive-subtle transition">
                                         {{ slot.time }}
                                     </div>
                                 </label>
                                 {% elif slot.status == 'booked' %}
-                                <div class="border-2 border-critical-border bg-critical-subtle text-red-500 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
+                                <div class="border-2 border-critical-border bg-critical-subtle text-red-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
                                 {% else %}
-                                <div class="border-2 border-gray-600 bg-gray-800 text-gray-500 p-3 rounded-xl text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
+                                <div class="border border-gray-600 bg-gray-800 text-gray-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
                                 {% endif %}
                             {% endfor %}
                         </div>
@@ -70,21 +70,21 @@
                     {% endif %}
 
                     <div class="border-t pt-4 mt-4">
-                        <input type="text" name="description" placeholder="Motivo de la cita..." class="w-full border-2 p-3 rounded-xl text-lg focus:border-blue-500 focus:outline-none" aria-label="Motivo de la cita...">
+                        <input type="text" name="description" placeholder="Motivo de la cita..." class="w-full border p-3 rounded-lg text-lg focus:border-blue-500 focus:outline-none" aria-label="Motivo de la cita...">
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-xl font-bold text-xl hover:bg-blue-700 flex items-center justify-center gap-2 transition shadow-sm">
+                    <button type="submit" class="w-full bg-blue-600 text-white p-4 rounded-lg font-bold text-xl hover:bg-blue-700 flex items-center justify-center gap-2 transition shadow-sm">
                         <i data-lucide="check-circle" class="w-6 h-6"></i> Confirmar Cita para {{ patient.name }}
                     </button>
                 </form>
             {% else %}
-                <div class="bg-caution-subtle p-6 rounded-xl text-yellow-800 font-semibold text-center flex flex-col items-center gap-2">
+                <div class="bg-caution-subtle p-6 rounded-lg text-yellow-800 font-semibold text-center flex flex-col items-center gap-2">
                     <i data-lucide="calendar-x-2" class="w-10 h-10 text-caution"></i>
                     No atiende este día. Seleccione otro día en verde.
                 </div>
             {% endif %}
         </div>
     {% else %}
-        <div class="bg-blue-50 p-6 rounded-xl text-blue-800 font-semibold text-center flex flex-col items-center gap-2 mt-6">
+        <div class="bg-blue-50 p-6 rounded-lg text-blue-800 font-semibold text-center flex flex-col items-center gap-2 mt-6">
             <i data-lucide="mouse-pointer-click" class="w-10 h-10 text-slate-500"></i>
             Seleccione un día en el calendario para ver sus horas.
         </div>

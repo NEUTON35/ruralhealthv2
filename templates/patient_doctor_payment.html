@@ -5,7 +5,7 @@
         <i data-lucide="arrow-left" class="w-5 h-5"></i> Volver
     </a>
 
-    <section class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+    <section class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-widest text-purple-600">Pago independiente</p>
@@ -13,19 +13,19 @@
                 <p class="text-slate-500">{{ doctor.specialty or 'Medicina General' }}</p>
             </div>
             {% if discount_percent %}
-            <span class="bg-positive-subtle text-emerald-700 px-3 py-2 rounded-xl text-sm font-semibold">{{ discount_percent|round|int }}% por poliza activa</span>
+            <span class="bg-positive-subtle text-emerald-700 px-3 py-2 rounded-lg text-sm font-semibold">{{ discount_percent|round|int }}% por poliza activa</span>
             {% endif %}
         </div>
 
         <div class="grid lg:grid-cols-2 gap-5">
             <div class="space-y-4">
-                <div class="border border-slate-100 bg-slate-50 rounded-xl p-4">
+                <div class="border border-slate-200 bg-slate-50 rounded-lg p-4">
                     <h2 class="font-semibold text-purple-900 flex items-center gap-2 mb-3">
                         <i data-lucide="wallet-cards" class="w-5 h-5"></i>
                         Metodos de pago
                     </h2>
                     {% if tariff.payment_methods_image %}
-                    <a href="/uploads/{{ tariff.payment_methods_image }}" target="_blank" class="block overflow-hidden rounded-xl border border-slate-100 bg-white" rel="noopener noreferrer">
+                    <a href="/uploads/{{ tariff.payment_methods_image }}" target="_blank" class="block overflow-hidden rounded-lg border border-slate-200 bg-white" rel="noopener noreferrer">
                         <img src="/uploads/{{ tariff.payment_methods_image }}" class="w-full max-h-80 object-contain bg-white" alt="Metodos de pago">
                     </a>
                     {% else %}
@@ -37,7 +37,7 @@
                 </div>
 
                 {% if tickets %}
-                <div class="border border-slate-100 rounded-xl p-4">
+                <div class="border border-slate-200 rounded-lg p-4">
                     <h2 class="font-semibold text-slate-900 mb-3">Sus comprobantes recientes</h2>
                     <div class="space-y-2">
                         {% for ticket in tickets %}
@@ -54,7 +54,7 @@
                 {% endif %}
             </div>
 
-            <form method="POST" enctype="multipart/form-data" class="border border-slate-100 rounded-xl p-4 space-y-4">
+            <form method="POST" enctype="multipart/form-data" class="border border-slate-200 rounded-lg p-4 space-y-4">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <h2 class="font-semibold text-slate-900 flex items-center gap-2">
                     <i data-lucide="upload" class="w-5 h-5 text-slate-500"></i>
@@ -62,7 +62,7 @@
                 </h2>
                 <div class="grid gap-2">
                     {% for price in prices %}
-                    <label class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-slate-700">
+                    <label class="border border-slate-200 rounded-lg p-3 cursor-pointer hover:border-slate-700">
                         <div class="flex items-center justify-between gap-3">
                             <div>
                                 <p class="font-semibold text-slate-900">{{ price.label }}</p>
@@ -80,10 +80,10 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Comprobante</label>
-                    <input type="file" name="proof" accept="image/*,.pdf" required class="w-full border p-3 rounded-xl text-sm" aria-label="Proof">
+                    <input type="file" name="proof" accept="image/*,.pdf" required class="w-full border p-3 rounded-lg text-sm" aria-label="Proof">
                 </div>
-                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el medico" class="w-full border p-3 rounded-xl text-sm" aria-label="Nota opcional para el medico"></textarea>
-                <button class="w-full bg-slate-700 text-white py-3 rounded-xl font-semibold hover:bg-slate-700">Enviar para revision</button>
+                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el medico" class="w-full border p-3 rounded-lg text-sm" aria-label="Nota opcional para el medico"></textarea>
+                <button class="w-full bg-slate-700 text-white py-3 rounded-lg font-semibold hover:bg-slate-700">Enviar para revision</button>
             </form>
         </div>
     </section>

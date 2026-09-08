@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+    <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
         <form method="POST" action="{{ url_for('patient.update_location') }}" class="grid lg:grid-cols-8 gap-2 items-end">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="lg:col-span-3">
@@ -29,7 +29,7 @@
                 <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Longitud</label>
                 <input id="patient-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" class="w-full border p-3 rounded-lg" aria-label="Longitud">
             </div>
-            <label class="lg:col-span-2 flex items-start gap-2 text-xs text-slate-600 border border-slate-100 rounded-lg p-3">
+            <label class="lg:col-span-2 flex items-start gap-2 text-xs text-slate-600 border border-slate-200 rounded-lg p-3">
                 <input type="checkbox" name="accept_location" required class="mt-1 accent-emerald-600" aria-label="Accept location">
                 <span>Autorizo usar mi ubicacion para calcular cercania y orientar mi atencion.</span>
             </label>
@@ -43,20 +43,20 @@
         </form>
     </section>
 
-    <section class="bg-white border border-slate-100 rounded-lg shadow-sm overflow-hidden">
+    <section class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
         <div id="care-map" class="h-[520px] bg-slate-100"></div>
     </section>
 
     <div class="grid lg:grid-cols-3 gap-4">
-        <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
             <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="building-2" class="w-5 h-5 text-slate-500"></i> Clinicas</h2>
             <div id="clinic-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
         </section>
-        <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
             <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="pill" class="w-5 h-5 text-slate-500"></i> Farmacias</h2>
             <div id="pharmacy-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
         </section>
-        <section class="bg-white border border-slate-100 rounded-lg shadow-sm p-4">
+        <section class="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
             <div class="flex items-center justify-between gap-3 mb-3">
                 <h2 class="font-semibold text-slate-900 flex items-center gap-2"><i data-lucide="map" class="w-5 h-5 text-slate-500"></i> Consultorios</h2>
                 <button id="cache-map-points" class="text-xs bg-slate-900 text-white px-3 py-2 rounded-lg font-bold">Guardar puntos offline</button>
@@ -118,7 +118,7 @@
             addPoint(clinic, markerIcon('clinic'), `<b>${clinic.name}</b><br>${clinic.address || ''}<br>${clinic.opening_hours || 'Horario no publicado'}<br>${distanceText(clinic.distance_km)}<br>${clinic.locked ? 'Acceso bloqueado' : 'Acceso disponible'}`);
             if (clinic.lat !== null && clinic.lng !== null) bounds.push([clinic.lat, clinic.lng]);
             clinicList.insertAdjacentHTML('beforeend', `
-                <div class="border border-slate-100 rounded-lg p-3 ${clinic.locked ? 'bg-slate-50' : 'bg-blue-50 border-blue-100'}">
+                <div class="border border-slate-200 rounded-lg p-3 ${clinic.locked ? 'bg-slate-50' : 'bg-blue-50 border-blue-100'}">
                     <div class="flex justify-between gap-3">
                         <p class="font-semibold text-slate-900">${clinic.name}</p>
                         <span class="text-xs font-semibold ${clinic.locked ? 'text-slate-600' : 'text-blue-700'}">${clinic.locked ? 'Bloqueada' : 'Disponible'}</span>
@@ -134,7 +134,7 @@
             addPoint(pharmacy, markerIcon('pharmacy', pharmacy.has_stock), `<b>${pharmacy.name}</b><br>${pharmacy.address || ''}<br>${distanceText(pharmacy.distance_km)}<hr>${stockText}`);
             if (pharmacy.lat !== null && pharmacy.lng !== null) bounds.push([pharmacy.lat, pharmacy.lng]);
             pharmacyList.insertAdjacentHTML('beforeend', `
-                <div class="border border-slate-100 rounded-lg p-3 ${index === 0 ? 'bg-positive-subtle border-positive-subtle' : 'bg-white'}">
+                <div class="border border-slate-200 rounded-lg p-3 ${index === 0 ? 'bg-positive-subtle border-positive-subtle' : 'bg-white'}">
                     <div class="flex justify-between gap-3">
                         <p class="font-semibold text-slate-900">${pharmacy.name}</p>
                         <span class="text-xs font-semibold ${pharmacy.has_stock ? 'text-emerald-700' : 'text-red-600'}">${pharmacy.has_stock ? 'Con stock' : 'Sin stock'}</span>
@@ -148,7 +148,7 @@
             addPoint(doctor, markerIcon('doctor'), `<b>Dr. ${doctor.name}</b><br>${doctor.specialty}<br>${doctor.affiliation}<br>${doctor.schedule || 'Horario no publicado'}<br>${distanceText(doctor.distance_km)}`);
             if (doctor.lat !== null && doctor.lng !== null) bounds.push([doctor.lat, doctor.lng]);
             doctorList.insertAdjacentHTML('beforeend', `
-                <div class="border border-slate-100 rounded-lg p-3">
+                <div class="border border-slate-200 rounded-lg p-3">
                     <div class="flex justify-between gap-3">
                         <p class="font-semibold text-slate-900">Dr. ${doctor.name}</p>
                         <span class="text-xs font-semibold ${doctor.available ? 'text-emerald-700' : 'text-slate-600'}">${doctor.available ? 'Disponible' : 'No disponible'}</span>

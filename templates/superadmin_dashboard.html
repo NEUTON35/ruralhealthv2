@@ -18,14 +18,14 @@
             'Chats': metrics.chats_total,
             'Leads': metrics.leads_total
         }.items() %}
-        <div class="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
+        <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-600">{{ label }}</p>
             <p class="text-2xl font-semibold text-slate-900">{{ value }}</p>
         </div>
         {% endfor %}
     </div>
 
-    <section class="bg-white rounded-lg shadow-sm border border-slate-100 p-4">
+    <section class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
         <h2 class="text-xl font-semibold text-slate-800 mb-4">Crear clinica</h2>
         <form method="POST" class="grid md:grid-cols-4 gap-3">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -53,7 +53,7 @@
         </form>
     </section>
 
-    <section class="bg-white rounded-lg shadow-sm border border-slate-100 p-4">
+    <section class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
         <h2 class="text-xl font-semibold text-slate-800 mb-4">Medicos autonomos</h2>
         <form method="POST" class="grid md:grid-cols-4 gap-3 mb-5">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -74,7 +74,7 @@
         </form>
         <div class="grid md:grid-cols-2 gap-2">
             {% for doctor in autonomous_doctors %}
-            <div class="border border-slate-100 bg-slate-50 rounded-lg p-3">
+            <div class="border border-slate-200 bg-slate-50 rounded-lg p-3">
                 <p class="font-semibold text-purple-950">Dr. {{ doctor.name }}</p>
                 <p class="text-xs text-purple-700">{{ doctor.specialty or 'Medicina General' }} | {{ doctor.office_address or 'Sin consultorio' }}</p>
             </div>
@@ -84,7 +84,7 @@
         </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow-sm border border-slate-100 p-4">
+    <section class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
         <h2 class="text-xl font-semibold text-slate-800 mb-4">Polizas y aseguradoras</h2>
         <form method="POST" class="grid md:grid-cols-4 gap-3 mb-5">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -105,7 +105,7 @@
                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Polizas</p>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for policy in policies %}
-                    <div class="border border-slate-100 bg-slate-50 rounded-lg p-3">
+                    <div class="border border-slate-200 bg-slate-50 rounded-lg p-3">
                         <p class="font-semibold text-cyan-950">{{ policy.name }}</p>
                         <p class="text-xs text-cyan-700">{{ policy.code }} | {{ policy.insurer_name or '-' }}</p>
                     </div>
@@ -118,7 +118,7 @@
                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Lotes</p>
                 <div class="space-y-2 max-h-64 overflow-y-auto">
                     {% for batch in policy_batches %}
-                    <div class="border border-slate-100 bg-slate-50 rounded-lg p-3">
+                    <div class="border border-slate-200 bg-slate-50 rounded-lg p-3">
                         <p class="font-semibold text-slate-900">{{ batch.policy.code }}</p>
                         <p class="text-xs text-slate-500">{{ batch.generated_count }}/{{ batch.max_codes }} codigos | {{ batch.duration_days }} dias</p>
                     </div>
@@ -143,8 +143,8 @@
         </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
-        <div class="p-4 border-b border-slate-100">
+    <section class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-4 border-b border-slate-200">
             <h2 class="text-xl font-semibold text-slate-800">Clinicas</h2>
         </div>
         <div class="overflow-x-auto">
@@ -162,7 +162,7 @@
                 </thead>
                 <tbody>
                     {% for row in clinic_rows %}
-                    <tr class="border-t border-slate-100">
+                    <tr class="border-t border-slate-200">
                         <td class="p-3 font-bold text-slate-800">{{ row.clinic.name }}</td>
                         <td class="p-3 text-slate-500">{{ row.clinic.location or '-' }}</td>
                         <td class="p-3 text-slate-500">{{ row.clinic.access_type }}</td>
@@ -206,8 +206,8 @@ Las historias clinicas NO se eliminan: la ley obliga a conservarlas 15 anos.
     </section>
 
     <div class="grid lg:grid-cols-2 gap-6">
-        <section class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-4 border-b border-slate-100">
+        <section class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-200">
                 <h2 class="text-xl font-semibold text-slate-800">Leads de socios</h2>
             </div>
             <div class="divide-y divide-slate-100">
@@ -227,8 +227,8 @@ Las historias clinicas NO se eliminan: la ley obliga a conservarlas 15 anos.
             </div>
         </section>
 
-        <section class="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-4 border-b border-slate-100">
+        <section class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 border-b border-slate-200">
                 <h2 class="text-xl font-semibold text-slate-800">Pacientes recientes</h2>
             </div>
             <div class="divide-y divide-slate-100">

@@ -3,21 +3,20 @@
 <div class="max-w-5xl mx-auto space-y-6">
 
   <!-- Header -->
-  <div class="bg-slate-900 rounded-[2rem] p-6 text-white shadow-md relative overflow-hidden">
-    <div class="absolute inset-0 bg-blue-500/5"></div>
-    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <div class="bg-white border border-slate-200 rounded-lg p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <p class="text-slate-600 text-xs font-semibold uppercase tracking-widest mb-1">Auditoría y Control</p>
+        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Auditoría y Control</p>
         <h1 class="text-2xl font-semibold tracking-tight">Reporte de Quiebre de Stock</h1>
         <p class="text-slate-600 text-sm mt-1">Análisis de medicamentos con mayor frecuencia de faltantes en los últimos {{ days }} días.</p>
       </div>
       <div class="flex gap-2">
-        <div class="flex bg-white/10 rounded-xl p-1 border border-white/20">
-            <a href="?days=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 7 %}bg-white text-slate-900{% else %}text-white hover:bg-white/5{% endif %}">7d</a>
-            <a href="?days=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 30 %}bg-white text-slate-900{% else %}text-white hover:bg-white/5{% endif %}">30d</a>
-            <a href="?days=90" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 90 %}bg-white text-slate-900{% else %}text-white hover:bg-white/5{% endif %}">90d</a>
+        <div class="flex bg-slate-50 rounded-lg p-1 border border-slate-200">
+            <a href="?days=7" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 7 %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">7d</a>
+            <a href="?days=30" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 30 %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">30d</a>
+            <a href="?days=90" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if days == 90 %}bg-slate-900 text-white{% else %}text-slate-600 hover:bg-slate-100{% endif %}">90d</a>
         </div>
-        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition">
+        <a href="{{ url_for('admin.dashboard') }}" class="inline-flex items-center gap-2 border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
         </a>
       </div>
@@ -28,7 +27,7 @@
   <!-- Top Offenders Grid -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     {% for name, data in stats[:3] %}
-    <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+    <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm relative overflow-hidden">
         <div class="absolute top-0 right-0 p-3 opacity-10">
             <i data-lucide="alert-circle" class="w-12 h-12 text-critical"></i>
         </div>
@@ -50,8 +49,8 @@
   </div>
 
   <!-- Detailed Table -->
-  <section class="bg-white border border-slate-100 rounded-[1.5rem] shadow-sm overflow-hidden">
-    <div class="p-5 border-b border-slate-50 flex items-center justify-between">
+  <section class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
         <h2 class="font-semibold text-slate-900 flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-slate-500"></i>
             Análisis Detallado por Producto
@@ -68,7 +67,7 @@
                     <th class="px-6 py-4">Estado Sugerido</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-50">
+            <tbody class="divide-y divide-slate-100">
                 {% for name, data in stats %}
                 {% set rate = (data['sin_stock_count'] * 100 / data['total_requested'])|round(1) if data['total_requested'] > 0 else 0 %}
                 <tr class="hover:bg-slate-50/50 transition">
@@ -97,7 +96,7 @@
     </div>
   </section>
   {% else %}
-  <div class="bg-white border border-slate-100 rounded-3xl p-16 text-center shadow-sm">
+  <div class="bg-white border border-slate-200 rounded-lg p-16 text-center shadow-sm">
       <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <i data-lucide="bar-chart" class="w-10 h-10 text-slate-500"></i>
       </div>

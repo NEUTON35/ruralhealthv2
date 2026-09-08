@@ -62,7 +62,7 @@
 
         <div id="sidebar-content" class="hidden md:flex flex-col flex-1 px-3 py-4 space-y-1">
             {% if current_user.is_authenticated %}
-                <div class="mb-4 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
+                <div class="mb-4 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
                     <p class="font-semibold text-sm text-slate-800 truncate">{{ current_user.name }}</p>
                     <p class="text-xs text-slate-500 capitalize">{{ current_user.role }}</p>
                 </div>
@@ -112,23 +112,23 @@
                 </button>
 
                 <div class="mt-auto space-y-2 pt-6">
-                    <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="{{ url_for('privacy.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
                         <i data-lucide="shield" class="w-5 h-5 text-slate-500"></i> Mis datos
                     </a>
-                    <a href="{{ url_for('pqrs.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="{{ url_for('pqrs.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
                         <i data-lucide="message-square-warning" class="w-5 h-5 text-slate-500"></i> Quejas y reclamos
                     </a>
                     {% if current_user.role in ('admin', 'super') %}
-                    <a href="{{ url_for('pqrs.manage') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="{{ url_for('pqrs.manage') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
                         <i data-lucide="inbox" class="w-5 h-5 text-slate-500"></i> Gestión de PQRS
                     </a>
                     {% endif %}
-                    <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
+                    <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-bold">
                         <i data-lucide="settings" class="w-5 h-5 text-slate-500"></i> Ajustes
                     </a>
                     <form method="POST" action="/logout">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-critical-subtle transition-colors font-semibold">
+                        <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-rose-500 hover:bg-critical-subtle transition-colors font-semibold">
                             <i data-lucide="log-out" class="w-5 h-5"></i> Cerrar Sesión
                         </button>
                     </form>
@@ -147,7 +147,7 @@
     <div class="flex-1 flex flex-col min-h-screen">
         <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full md:mt-8">
             {% if current_user.is_authenticated and current_user.must_change_password %}
-            <div class="bg-caution-subtle border-2 border-caution rounded-2xl p-5 mb-5">
+            <div class="bg-caution-subtle border-2 border-caution rounded-lg p-5 mb-5">
                 <h2 class="font-semibold text-amber-900 flex items-center gap-2 mb-2">
                     <i data-lucide="key-round" class="w-5 h-5"></i>
                     Debe cambiar la contraseña inicial
@@ -182,7 +182,7 @@
         </footer>
     </div>
 
-    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-medical text-white px-4 py-3 rounded-xl font-semibold shadow-sm items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
+    <button id="install-home-screen" type="button" class="hidden fixed left-3 right-3 bottom-3 z-50 bg-medical text-white px-4 py-3 rounded-lg font-semibold shadow-sm items-center justify-center gap-2 sm:left-auto sm:right-6 sm:w-auto">
         <i data-lucide="download" class="w-5 h-5"></i>
         Instalar en pantalla de inicio
     </button>
@@ -193,7 +193,7 @@
     <!-- Command Palette Modal -->
     <div id="command-palette" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-900/40" onclick="toggleCommandPalette()"></div>
-        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-xl shadow-md overflow-hidden flex flex-col">
+        <div class="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-lg bg-white rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div class="p-4 border-b flex items-center gap-3">
                 <i data-lucide="search" class="w-5 h-5 text-slate-500"></i>
                 <input type="text" id="omnisearch-input" placeholder="Buscar médicos, pacientes, clínicas..." class="w-full outline-none text-lg bg-transparent" aria-label="Buscar médicos, pacientes, clínicas...">
@@ -310,7 +310,7 @@
                         
                         if (data.results && data.results.length > 0) {
                             searchResults.innerHTML = data.results.map(item => `
-                                <a href="${item.url}" class="flex items-center gap-3 p-3 hover:bg-white rounded-lg group transition-colors border border-transparent hover:border-slate-100 hover:shadow-sm">
+                                <a href="${item.url}" class="flex items-center gap-3 p-3 hover:bg-white rounded-lg group transition-colors border border-transparent hover:border-slate-200 hover:shadow-sm">
                                     <div class="bg-primary/10 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                         <i data-lucide="${item.icon || 'file'}" class="w-5 h-5"></i>
                                     </div>
