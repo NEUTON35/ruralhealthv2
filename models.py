@@ -1525,3 +1525,161 @@ class SivigilaNotification(ClinicScoped, db.Model):
     def is_overdue(self):
         return (self.status == SIVIGILA_PENDIENTE and self.due_at is not None
                 and colombia_now() > self.due_at)
+
+
+# =============================================================================
+# PQRS del servicio de salud
+# =============================================================================
+#
+# Distinto del habeas data. `DataSubjectRequest` atiende lo que la Ley 1581
+# obliga sobre los DATOS del titular. Esto atiende lo que el paciente reclama
+# sobre LA ATENCION: que no le dieron cita, que lo trataron mal, que el
+# medicamento no llego.
+#
+# Los documentos legales de la plataforma ya prometen por escrito un canal de
+# PQRS y respuesta dentro de los quince dias habiles. Prometer un plazo sin el
+# sistema que lo sostiene es peor que no prometerlo: deja la constancia del
+# incumplimiento y ninguna del cumplimiento.
+
+PQRS_PETICION = 'peticion'
+PQRS_QUEJA = 'queja'
+PQRS_RECLAMO = 'reclamo'
+PQRS_SUGERENCIA = 'sugerencia'
+PQRS_FELICITACION = 'felicitacion'
+
+PQRS_TIPOS = (PQRS_PETICION, PQRS_QUEJA, PQRS_RECLAMO, PQRS_SUGERENCIA,
+              PQRS_FELICITACION)
+
+PQRS_RECIBIDA = 'recibida'
+PQRS_EN_TRAMITE = 'en_tramite'
+PQRS_RESUELTA = 'resuelta'
+
+# Dias habiles de respuesta. Quince es el plazo que la plataforma se
+# comprometio a cumplir en sus terminos y condiciones.
+PQRS_DIAS_RESPUESTA = 15
+
+
+class ServiceComplaint(ClinicScoped, db.Model):
+    """Peticion, queja, reclamo, sugerencia o felicitacion sobre la atencion."""
+    __tablename__ = 'service_complaint'
+
+    id = db.Column(db.Integer, primary_key=True)
+    # Numero visible para el usuario. Sin el, quien reclama no tiene con que
+    # hacer seguimiento ni con que acreditar que radico.
+    ticket_code = db.Column(db.String(20), unique=True, nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    complaint_type = db.Column(db.String(20), nullable=False, index=True)
+    subject = db.Column(db.String(200), nullable=False)
+    detail = db.Column(EncryptedText, nullable=False)
+
+    status = db.Column(db.String(20), default=PQRS_RECIBIDA, nullable=False, index=True)
+    submitted_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+    due_at = db.Column(db.DateTime, nullable=True, index=True)
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    resolution = db.Column(EncryptedText, nullable=True)
+    # Una queja sobre una atencion concreta se vincula a ella; una sobre el
+    # servicio en general, no.
+    related_history_id = db.Column(db.Integer, db.ForeignKey('medical_history.id'),
+                                   nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id])
+    resolved_by = db.relationship('User', foreign_keys=[resolved_by_id])
+
+    @property
+    def is_overdue(self):
+        if self.resolved_at or not self.due_at:
+            return False
+        return colombia_now() > self.due_at
+
+    @property
+    def is_open(self):
+        return self.status != PQRS_RESUELTA
+
+
+# =============================================================================
+# Farmacovigilancia (Resolucion 1403 de 2007)
+# =============================================================================
+#
+# La norma obliga al servicio farmaceutico a tener un programa de
+# farmacovigilancia y a reportar al INVIMA las reacciones adversas a
+# medicamentos.
+#
+# `PatientAllergy` no cubre esto, aunque lo parezca. Esa tabla registra la
+# alergia DE UN PACIENTE para impedir una prescripcion futura: mira hacia
+# adelante y es de uso clinico. El reporte de farmacovigilancia mira hacia
+# atras y es de uso poblacional: sirve para que el INVIMA detecte que un lote,
+# un principio activo o un fabricante estan causando dano a mucha gente.
+#
+# El sistema detectaba el riesgo antes de prescribir y no hacia nada con el
+# evento cuando ocurria.
+
+FARMACO_SOSPECHA = 'sospecha'
+FARMACO_REPORTADO = 'reportado'
+FARMACO_DESCARTADO = 'descartado'
+
+# Seriedad segun la clasificacion que usa el formato de reporte del INVIMA.
+SERIEDAD_NO_SERIA = 'no_seria'
+SERIEDAD_SERIA = 'seria'
+
+# Una reaccion seria se reporta en 72 horas; el resto, dentro del mes.
+FARMACO_HORAS_SERIA = 72
+FARMACO_DIAS_NO_SERIA = 30
+
+
+class AdverseDrugEvent(ClinicScoped, db.Model):
+    """Sospecha de reaccion adversa a un medicamento, para reporte al INVIMA.
+
+    Que hace y que no
+    -----------------
+    No radica el reporte. El INVIMA lo recibe por su propio formato (FOREAM) y
+    sus canales. Igual que con el Sivigila, fingir la radicacion dejaria al
+    prestador creyendo que cumplio.
+
+    Lo que hace es que el evento exista como registro: que se pueda abrir desde
+    la consulta, que tenga plazo segun su seriedad, que quede quien lo reporto
+    y con que numero, y que un evento serio no se pierda entre las notas de una
+    historia clinica.
+    """
+    __tablename__ = 'adverse_drug_event'
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    reported_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    medical_history_id = db.Column(db.Integer, db.ForeignKey('medical_history.id'),
+                                   nullable=True, index=True)
+
+    # Medicamento sospechoso. El nombre normalizado permite agrupar sin
+    # descifrar, igual que en PatientAllergy.
+    medication = db.Column(EncryptedText, nullable=False)
+    medication_normalized = db.Column(db.String(180), nullable=True, index=True)
+    # Codigo unico de medicamento del INVIMA, cuando se conozca. Es lo que
+    # permite al INVIMA llegar al lote y al fabricante.
+    cum_code = db.Column(db.String(30), nullable=True, index=True)
+    batch_number = db.Column(db.String(60), nullable=True)
+
+    description = db.Column(EncryptedText, nullable=False)
+    seriousness = db.Column(db.String(12), default=SERIEDAD_NO_SERIA,
+                            nullable=False, index=True)
+    onset_date = db.Column(db.Date, nullable=True)
+
+    status = db.Column(db.String(12), default=FARMACO_SOSPECHA, nullable=False, index=True)
+    detected_at = db.Column(db.DateTime, default=colombia_now, nullable=False, index=True)
+    due_at = db.Column(db.DateTime, nullable=True, index=True)
+    reported_at = db.Column(db.DateTime, nullable=True)
+    # Numero del reporte radicado ante el INVIMA. Es la constancia.
+    invima_reference = db.Column(db.String(60), nullable=True)
+    resolution_note = db.Column(EncryptedText, nullable=True)
+
+    patient = db.relationship('User', foreign_keys=[patient_id])
+    reported_by = db.relationship('User', foreign_keys=[reported_by_id])
+    medical_history = db.relationship('MedicalHistory', foreign_keys=[medical_history_id])
+
+    @property
+    def is_serious(self):
+        return self.seriousness == SERIEDAD_SERIA
+
+    @property
+    def is_overdue(self):
+        return (self.status == FARMACO_SOSPECHA and self.due_at is not None
+                and colombia_now() > self.due_at)

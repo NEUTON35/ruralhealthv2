@@ -676,6 +676,7 @@ def register_blueprints(app):
     from routes_doctor import doctor_bp
     from routes_expendedor import expendedor_bp
     from routes_patient import patient_bp
+    from routes_pqrs import pqrs_bp
     from routes_privacy import privacy_bp
     from routes_settings import settings_bp
     from routes_staff import staff_bp
@@ -691,6 +692,7 @@ def register_blueprints(app):
     app.register_blueprint(superadmin_bp, url_prefix='/superadmin')
     app.register_blueprint(analytics_bp, url_prefix='/admin')
     app.register_blueprint(privacy_bp, url_prefix='/privacidad-datos')
+    app.register_blueprint(pqrs_bp, url_prefix='/pqrs')
 
 
 def bootstrap_database(app):

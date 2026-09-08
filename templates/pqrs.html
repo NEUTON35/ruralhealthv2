@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+    <header class="mb-6">
+        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+            Peticiones, quejas y reclamos
+        </h1>
+        <p class="text-slate-600 mt-1.5 text-sm leading-relaxed">
+            Para reclamos sobre la atención recibida. Si su solicitud es sobre
+            el uso de sus datos personales, use
+            <a href="{{ url_for('privacy.index') }}" class="text-accent font-medium underline underline-offset-2">Mis datos</a>.
+        </p>
+    </header>
+
+    <form method="POST" action="{{ url_for('pqrs.create') }}"
+          class="bg-white border border-slate-200 rounded-lg p-6 mb-8 space-y-4">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+            <label for="complaint_type" class="block text-sm font-semibold text-slate-700 mb-1">
+                Tipo de solicitud
+            </label>
+            <select id="complaint_type" name="complaint_type" required
+                    class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-accent focus:outline-none">
+                {% for tipo in tipos %}
+                <option value="{{ tipo }}">{{ etiquetas[tipo] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="subject" class="block text-sm font-semibold text-slate-700 mb-1">
+                Asunto
+            </label>
+            <input type="text" id="subject" name="subject" required
+                   minlength="5" maxlength="200"
+                   placeholder="Resuma en una línea de qué se trata"
+                   class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-accent focus:outline-none">
+        </div>
+
+        <div>
+            <label for="detail" class="block text-sm font-semibold text-slate-700 mb-1">
+                Descripción
+            </label>
+            <textarea id="detail" name="detail" rows="5" required
+                      minlength="15" maxlength="4000"
+                      placeholder="Cuente qué pasó, cuándo y en qué sede. Entre más concreto, más rápido puede resolverse."
+                      class="w-full border-2 border-slate-200 p-3 rounded-xl focus:border-accent focus:outline-none resize-y"></textarea>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <button type="submit"
+                class="bg-accent text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-accent-hover transition-colors">
+                Radicar
+            </button>
+            <span class="text-xs text-slate-600">
+                Recibirá un número de radicado y respuesta dentro de los quince días hábiles.
+            </span>
+        </div>
+    </form>
+
+    <h2 class="text-lg font-semibold text-slate-900 mb-3">Sus radicados</h2>
+
+    {% if not radicados %}
+    <p class="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-4">
+        Todavía no ha radicado ninguna solicitud.
+    </p>
+    {% else %}
+    <div class="space-y-3">
+        {% for r in radicados %}
+        <article class="bg-white border border-slate-200 rounded-lg p-4">
+            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+                <div>
+                    <p class="font-mono text-sm font-semibold text-slate-900">{{ r.ticket_code }}</p>
+                    <p class="text-sm text-slate-700">{{ etiquetas.get(r.complaint_type, r.complaint_type) }} · {{ r.subject }}</p>
+                </div>
+                {% if r.status == 'resuelta' %}
+                <span class="bg-positive-subtle text-positive-text border border-positive-border px-2.5 py-1 rounded-full text-xs font-semibold">Respondida</span>
+                {% elif r.is_overdue %}
+                <span class="bg-critical-subtle text-critical-text border border-critical-border px-2.5 py-1 rounded-full text-xs font-semibold">Fuera de plazo</span>
+                {% else %}
+                <span class="bg-caution-subtle text-caution-text border border-caution-border px-2.5 py-1 rounded-full text-xs font-semibold">En trámite</span>
+                {% endif %}
+            </div>
+            <dl class="text-xs text-slate-600 flex flex-wrap gap-x-5 gap-y-1">
+                <div class="flex gap-1.5">
+                    <dt>Radicada:</dt><dd>{{ r.submitted_at | colombia_date }}</dd>
+                </div>
+                {% if r.due_at and not r.resolved_at %}
+                <div class="flex gap-1.5">
+                    <dt>Plazo de respuesta:</dt><dd>{{ r.due_at | colombia_date }}</dd>
+                </div>
+                {% endif %}
+                {% if r.resolved_at %}
+                <div class="flex gap-1.5">
+                    <dt>Respondida:</dt><dd>{{ r.resolved_at | colombia_date }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+            {% if r.resolution %}
+            <div class="mt-3 pt-3 border-t border-slate-100">
+                <p class="text-xs font-semibold text-slate-700 mb-1">Respuesta</p>
+                <p class="text-sm text-slate-700 leading-relaxed">{{ r.resolution }}</p>
+            </div>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <p class="text-xs text-slate-600 mt-6 leading-relaxed">
+        Agotado el trámite ante el prestador sin respuesta satisfactoria, puede
+        acudir a la Superintendencia Nacional de Salud.
+    </p>
+</div>
+{% endblock %}
