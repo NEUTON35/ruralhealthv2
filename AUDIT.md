@@ -979,3 +979,53 @@ ninguna de estas normas.
 Como no hay datos clínicos todavía, la vía limpia es eliminar la instancia de
 base de datos y crear otra: mata el URI comprometido, entrega credenciales
 nuevas y no hay nada que migrar.
+
+---
+
+## Novena pasada · El punto de reposición no existía
+
+### P1-21 · El aviso de stock bajo usaba un umbral fijo de cinco unidades
+
+Salió de mirar las capturas del recorrido, no de leer código: en la pantalla del
+expendedor, **Amoxicilina 500 mg con 8 unidades aparecía en verde**.
+
+`Stock` —las existencias de una farmacia concreta— no tenía umbral de
+reposición. El único mínimo del sistema estaba en `InventoryItem.min_stock`,
+que es de la clínica entera. Así que la pantalla avisaba con un cinco
+codificado a mano, igual para un antibiótico que para un analgésico, y las
+alertas del administrador solo nacían cuando **un paciente ya se había quedado
+sin su medicamento**: reaccionaban al daño, no lo prevenían.
+
+En un puesto de salud rural, el paciente que llega ha caminado. Que el aviso
+llegue el día que el frasco se vacía y no dos semanas antes es la diferencia
+entre reponer y mandarlo de vuelta.
+
+**Acción:**
+
+- `Stock.cantidad_minima`: punto de reposición **de ese medicamento en esa
+  sede**. Lo que decide si alguien se queda sin tratamiento es lo que hay en el
+  mostrador al que llega, no el agregado de la clínica.
+- `pharmacy_utils.estado_de_stock`: una sola definición de «stock bajo» para la
+  pantalla, el motor de entrega y las alertas. Antes había dos que no se
+  hablaban.
+- Cero significa **sin definir**, no «cero es suficiente». Sin umbral el
+  sistema no afirma que el stock esté bien: solo puede decir que no está
+  agotado. Las pantallas lo dicen con esas palabras, que es lo que hace que el
+  campo acabe configurándose en vez de quedarse en cero para siempre.
+- La alerta nace al cruzar el punto, no al agotarse, y se cierra sola cuando
+  llega mercancía. Sin eso el umbral sería un número que nadie mira, y una
+  bandeja de avisos caducados deja de leerse entera.
+- Las alertas ahora distinguen su origen. No piden lo mismo del administrador:
+  `demanda` significa que ya hubo daño; `punto_reposicion`, que todavía hay
+  tiempo.
+- Lo fijan el expendedor para su sede —que es quien sabe cuánto se consume en
+  ese mostrador—, el personal desde el inventario, y el administrador para
+  cualquier farmacia de su clínica.
+
+Migración `a7c41d92be03`. Las filas existentes quedan sin umbral, que es lo
+único honesto: nadie ha dicho todavía cuánto es suficiente en cada sede.
+
+**Queda por hacer, y es del prestador, no del código:** fijar el punto de
+reposición real de cada medicamento en cada sede. Hasta que se haga, el sistema
+sigue avisando solo cuando algo se agota. El panel de administración ordena la
+lista poniendo arriba lo que falta por configurar.

@@ -269,14 +269,39 @@
             <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-3 flex items-center gap-2">
                 <i data-lucide="package" class="w-4 h-4"></i> Stock de esta farmacia
             </h2>
+            <p class="text-xs text-slate-500 mb-3">
+                El punto de reposición es de esta sede. Mientras esté en cero, el
+                sistema solo avisa cuando el medicamento se agota.
+            </p>
             <div class="grid md:grid-cols-2 gap-2">
-                {% for item in stock_items %}
-                {% set disponible = item.cantidad - (item.cantidad_comprometida or 0) %}
-                <div class="border border-slate-200 rounded-lg p-3 flex justify-between gap-3">
-                    <span class="font-bold text-sm text-slate-800">{{ item.nombre_med }}</span>
-                    <span class="text-sm font-mono {% if disponible <= 0 %}text-critical font-semibold{% elif disponible < 5 %}text-caution font-semibold{% else %}text-slate-700{% endif %}">
-                        {{ disponible }} {{ item.unidad }}
-                    </span>
+                {% for fila in stock_items %}
+                {% set item = fila.stock %}
+                <div class="border border-slate-200 rounded-lg p-3 space-y-2">
+                    <div class="flex justify-between gap-3">
+                        <span class="font-bold text-sm text-slate-800">{{ item.nombre_med }}</span>
+                        <span class="text-sm font-mono {% if fila.estado == 'agotado' %}text-critical font-semibold{% elif fila.estado == 'bajo' %}text-caution font-semibold{% else %}text-slate-700{% endif %}">
+                            {{ fila.disponible }} {{ item.unidad }}
+                        </span>
+                    </div>
+                    {% if fila.estado == 'agotado' %}
+                    <p class="text-xs font-semibold text-critical">Agotado</p>
+                    {% elif fila.estado == 'bajo' %}
+                    <p class="text-xs font-semibold text-caution">
+                        En el punto de reposición ({{ item.cantidad_minima }}). Solicite reposición.
+                    </p>
+                    {% elif fila.estado == 'sin_umbral' %}
+                    <p class="text-xs text-slate-500">Sin punto de reposición definido.</p>
+                    {% endif %}
+                    <form method="POST" class="flex items-center gap-2">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="set_punto_reposicion">
+                        <input type="hidden" name="stock_id" value="{{ item.id }}">
+                        <label class="text-xs text-slate-600 whitespace-nowrap" for="minimo-{{ item.id }}">Reponer al llegar a</label>
+                        <input id="minimo-{{ item.id }}" type="number" name="cantidad_minima" min="0"
+                               value="{{ item.cantidad_minima or 0 }}"
+                               class="w-20 border border-slate-200 p-1.5 rounded-lg text-sm">
+                        <button class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold">Guardar</button>
+                    </form>
                 </div>
                 {% else %}
                 <p class="text-sm text-slate-600 col-span-2">Sin stock asignado a esta farmacia.</p>

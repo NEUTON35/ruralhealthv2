@@ -7,7 +7,9 @@ from datetime import datetime, timedelta
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 
-from models import ACCESS_ACTIVE, APPOINTMENT_FREEING_STATUSES, ACCESS_REVOKED, Appointment, Chat, ClinicAccessCode, InventoryItem, MedicationPickupTicket, Message, PasswordResetToken, PatientDoctorSubscription, Pharmacy, PolicyNetworkProvider, Rating, ReplenishmentAlert, ROLE_DOCTOR, ROLE_EXPENDOR, ROLE_RECEPTIONIST, ROLE_STAFF, STAFF_ROLE_VALUES, StockTransferRequest, User, UserClinicAccess, UserPolicyEnrollment, db
+from models import ACCESS_ACTIVE, ALERTA_POR_PUNTO_REPOSICION, APPOINTMENT_FREEING_STATUSES, ACCESS_REVOKED, Appointment, Chat, ClinicAccessCode, InventoryItem, MedicationPickupTicket, Message, PasswordResetToken, PatientDoctorSubscription, Pharmacy, PolicyNetworkProvider, Rating, ReplenishmentAlert, ROLE_DOCTOR, ROLE_EXPENDOR, ROLE_RECEPTIONIST, ROLE_STAFF, STAFF_ROLE_VALUES, Stock, StockTransferRequest, User, UserClinicAccess, UserPolicyEnrollment, db
+from pharmacy_utils import (alerta_por_punto_de_reposicion, available_quantity,
+                           estado_de_stock, resolver_alerta_de_punto_de_reposicion)
 from pharmacy_utils import ensure_default_pharmacy
 from security import audit, hash_password, pii_hash, role_required, validate_password
 from time_utils import colombia_now
@@ -208,6 +210,26 @@ def dashboard():
                 db.session.commit()
                 flash('Acceso revocado.')
 
+        elif action == 'set_punto_reposicion':
+            # El administrador puede fijarlo para cualquier sede de su clinica.
+            # El expendedor solo para la suya; los dos escriben el mismo campo.
+            stock_id = request.form.get('stock_id', type=int)
+            minimo = max(0, request.form.get('cantidad_minima', type=int) or 0)
+            item = Stock.query.filter_by(
+                id=stock_id, clinic_id=current_user.clinic_id).first()
+            if item is None:
+                flash('Ese medicamento no está en el inventario de la clínica.')
+            else:
+                anterior = item.cantidad_minima or 0
+                item.cantidad_minima = minimo
+                db.session.flush()
+                alerta_por_punto_de_reposicion(item)
+                resolver_alerta_de_punto_de_reposicion(item)
+                audit('stock_minimo_actualizado',
+                      details=f'stock_id={item.id}; antes={anterior}; ahora={minimo}')
+                db.session.commit()
+                flash(f'Punto de reposición de {item.nombre_med}: {minimo}.')
+
         elif action == 'resolve_replenishment_alert':
             alert_id = request.form.get('alert_id', type=int)
             alert = ReplenishmentAlert.query.filter_by(id=alert_id, clinic_id=current_user.clinic_id).first()
@@ -324,6 +346,21 @@ def dashboard():
         clinic_id=current_user.clinic_id,
         status='abierta',
     ).order_by(ReplenishmentAlert.created_at.desc()).limit(25).all()
+    puntos_de_reposicion = [
+        {'stock': fila,
+         'disponible': available_quantity(fila),
+         'estado': estado_de_stock(fila)}
+        for fila in Stock.query.filter_by(clinic_id=current_user.clinic_id)
+        .join(Pharmacy, Stock.pharmacy_id == Pharmacy.id)
+        .order_by(Pharmacy.name.asc(), Stock.nombre_med.asc()).all()
+    ]
+    # Lo que necesita atencion va arriba: primero agotados, luego los que
+    # cruzaron su punto de reposicion, y al final los que ni siquiera lo
+    # tienen definido — que son los que el administrador debe configurar.
+    ORDEN = {'agotado': 0, 'bajo': 1, 'sin_umbral': 2, 'normal': 3}
+    puntos_de_reposicion.sort(key=lambda f: (ORDEN[f['estado']],
+                                             f['stock'].nombre_med.lower()))
+
     transfer_requests = StockTransferRequest.query.filter_by(
         clinic_id=current_user.clinic_id,
     ).order_by(StockTransferRequest.created_at.desc()).limit(25).all()
@@ -373,6 +410,7 @@ def dashboard():
         pharmacies=pharmacies,
         default_pharmacy=default_pharmacy,
         replenishment_alerts=replenishment_alerts,
+        puntos_de_reposicion=puntos_de_reposicion,
         transfer_requests=transfer_requests,
         access_codes=access_codes,
         clinic_accesses=clinic_accesses,

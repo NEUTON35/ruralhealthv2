@@ -573,6 +573,20 @@ class Stock(ClinicScoped, db.Model):
     cantidad = db.Column(db.Integer, default=0, nullable=False)
     cantidad_comprometida = db.Column(db.Integer, default=0, nullable=False)
     unidad = db.Column(db.String(40), default='unidad', nullable=False)
+
+    # Punto de reposicion de ESTE medicamento en ESTA sede.
+    #
+    # No basta con el minimo de `InventoryItem`: aquel es de la clinica entera,
+    # y lo que decide si un paciente se queda sin su tratamiento es lo que hay
+    # en el mostrador al que llega. Un puesto de salud que atiende una vereda
+    # con veinte hipertensos necesita un punto de reposicion de losartan que no
+    # tiene nada que ver con el de la sede urbana de la misma clinica.
+    #
+    # Cero significa "sin definir", no "cero es suficiente". La diferencia
+    # importa: sin umbral el sistema no afirma que el stock este bien, solo
+    # avisa cuando llega a cero. Ver `pharmacy_utils.estado_de_stock`.
+    cantidad_minima = db.Column(db.Integer, default=0, nullable=False)
+
     pharmacy = db.relationship('Pharmacy')
 
 class MedicalOrder(ClinicScoped, db.Model):
@@ -698,6 +712,11 @@ class MedicationPickupTicket(ClinicScoped, db.Model):
     parent_ticket = db.relationship('MedicationPickupTicket', remote_side='MedicationPickupTicket.id',
                                     foreign_keys=[parent_ticket_id], backref='sub_tickets')
 
+# Origen de una alerta de reposicion. Ver el comentario de la columna.
+ALERTA_POR_DEMANDA = 'demanda'
+ALERTA_POR_PUNTO_REPOSICION = 'punto_reposicion'
+
+
 class ReplenishmentAlert(ClinicScoped, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     pharmacy_id = db.Column(db.Integer, db.ForeignKey('pharmacy.id'), nullable=False, index=True)
@@ -706,6 +725,20 @@ class ReplenishmentAlert(ClinicScoped, db.Model):
     med_name = db.Column(db.String(180), nullable=False, index=True)
     required_quantity = db.Column(db.Integer, default=0, nullable=False)
     available_quantity = db.Column(db.Integer, default=0, nullable=False)
+
+    # Que disparo la alerta. Las dos llegan al mismo sitio, pero no significan
+    # lo mismo y el administrador tiene que poder distinguirlas:
+    #
+    #   'demanda'           un paciente con orden valida se quedo sin su
+    #                       medicamento. Ya hubo dano; se atiende primero.
+    #   'punto_reposicion'  el stock bajo del minimo de la sede. Todavia hay
+    #                       existencias; es un aviso para reponer a tiempo.
+    #
+    # `required_quantity` guarda lo que se pedia en el primer caso y el punto
+    # de reposicion en el segundo.
+    origin = db.Column(db.String(30), default=ALERTA_POR_DEMANDA, nullable=False,
+                       index=True)
+
     status = db.Column(db.String(30), default='abierta', nullable=False, index=True)
     note = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=colombia_now, nullable=False)

@@ -27,7 +27,8 @@ from ledger import (
     record_dispensing,
     reserve_units,
 )
-from pharmacy_utils import available_quantity, stock_for_med
+from pharmacy_utils import (alerta_por_punto_de_reposicion, available_quantity,
+                           resolver_alerta_de_punto_de_reposicion, stock_for_med)
 from security import audit, generate_pickup_hash, pii_hash
 from time_utils import colombia_now
 
@@ -308,6 +309,13 @@ def confirm_delivery(
 
         check_order_completion(ticket.order_id, clinic_id)
 
+        # Entregar baja el stock, y bajar el stock puede cruzar el punto de
+        # reposicion de la sede. Se mira aqui, dentro de la misma transaccion:
+        # si la entrega se revierte, la alerta se revierte con ella.
+        for registro in delivered_records:
+            alerta_por_punto_de_reposicion(
+                stock_for_med(clinic_id, registro['nombre_med'], pharmacy.id))
+
         audit(
             'pickup_ticket_delivered',
             details=(
@@ -360,6 +368,12 @@ def reserve_stock_for_pending_tickets(clinic_id: int, pharmacy_id: int, med_name
 
     reactivated = []
     stock = stock_for_med(clinic_id, med_name, pharmacy_id)
+
+    # Llego mercancia: si con ella el medicamento vuelve por encima del punto
+    # de reposicion, la alerta que lo avisaba ya no describe nada. Cerrarla
+    # aqui es lo que evita que la bandeja del administrador se llene de avisos
+    # de cosas ya resueltas — el dia que eso pasa, deja de leerlos todos.
+    resolver_alerta_de_punto_de_reposicion(stock)
 
     for ticket in sin_stock_tickets:
         meds = _parse_meds(ticket.meds_json)

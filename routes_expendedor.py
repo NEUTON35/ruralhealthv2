@@ -8,7 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from dispatch_engine import confirm_delivery, evaluate_dispatch_status, get_ready_to_complete_tickets, set_ticket_priority
 from ledger import InsufficientStock, reserve_units
 from models import MedicalOrder, MedicationPickupTicket, Notification, Pharmacy, ROLE_EXPENDOR, Stock, StockTransferRequest, User, db
-from pharmacy_utils import available_quantity, create_replenishment_alert, ensure_default_pharmacy, stock_for_med
+from pharmacy_utils import (available_quantity, create_replenishment_alert,
+                           ensure_default_pharmacy, estado_de_stock,
+                           resolver_alerta_de_punto_de_reposicion,
+                           alerta_por_punto_de_reposicion, stock_for_med)
 from security import audit, pii_hash, role_required, verify_pickup_hash
 from time_utils import colombia_now
 import bleach
@@ -85,6 +88,33 @@ def dashboard():
             flash('Solicitud de transferencia enviada al administrador.')
         return redirect(url_for('expendedor.dashboard'))
 
+    if request.method == 'POST' and request.form.get('action') == 'set_punto_reposicion':
+        # El expendedor fija el punto de reposicion de SU sede. Es quien sabe
+        # cuanto se consume en ese mostrador; el administrador, desde la
+        # cabecera, no lo sabe para cada vereda.
+        stock_id = request.form.get('stock_id', type=int)
+        minimo = max(0, request.form.get('cantidad_minima', type=int) or 0)
+        item = Stock.query.filter_by(
+            id=stock_id,
+            clinic_id=current_user.clinic_id,
+            pharmacy_id=pharmacy.id,
+        ).first()
+        if item is None:
+            flash('Ese medicamento no está en el inventario de esta farmacia.')
+        else:
+            anterior = item.cantidad_minima or 0
+            item.cantidad_minima = minimo
+            db.session.flush()
+            # Cambiar el umbral cambia el estado: puede abrir una alerta que
+            # no existia, o cerrar una que ya no corresponde.
+            alerta_por_punto_de_reposicion(item)
+            resolver_alerta_de_punto_de_reposicion(item)
+            audit('stock_minimo_actualizado',
+                  details=f'stock_id={item.id}; antes={anterior}; ahora={minimo}')
+            db.session.commit()
+            flash(f'Punto de reposición de {item.nombre_med}: {minimo} {item.unidad}.')
+        return redirect(url_for('expendedor.dashboard'))
+
     ticket = None
     meds = []
     query = (request.values.get('q') or '').strip()
@@ -133,7 +163,14 @@ def dashboard():
     else:
         recent = recent_query.order_by(MedicationPickupTicket.created_at.desc()).limit(15).all()
 
-    stock_items = Stock.query.filter_by(clinic_id=current_user.clinic_id, pharmacy_id=pharmacy.id).order_by(Stock.nombre_med.asc()).all()
+    stock_items = [
+        {'stock': fila,
+         'disponible': available_quantity(fila),
+         'estado': estado_de_stock(fila)}
+        for fila in Stock.query.filter_by(
+            clinic_id=current_user.clinic_id, pharmacy_id=pharmacy.id
+        ).order_by(Stock.nombre_med.asc()).all()
+    ]
     source_stock_items = Stock.query.filter(
         Stock.clinic_id == current_user.clinic_id,
         Stock.pharmacy_id != pharmacy.id,

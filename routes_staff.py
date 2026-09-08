@@ -26,12 +26,15 @@ from models import (
     db,
 )
 from pharmacy_utils import (
+    alerta_por_punto_de_reposicion,
     available_quantity,
     build_stock_matrix,
     create_replenishment_alert,
     ensure_default_pharmacy,
+    estado_de_stock,
     nearest_pharmacy,
     pharmacies_for_clinic,
+    resolver_alerta_de_punto_de_reposicion,
     stock_for_med,
 )
 from security import audit, generate_pickup_hash, role_required, verify_order_hash
@@ -480,6 +483,9 @@ def inventory():
         name = (request.form.get('nombre_med') or '').strip()[:180]
         quantity = max(0, request.form.get('cantidad', type=int) or 0)
         unit = (request.form.get('unidad') or 'unidad').strip()[:40] or 'unidad'
+        # Punto de reposicion de ese medicamento en esa sede. Cero es "sin
+        # definir": el sistema entonces no afirma que el stock este bien.
+        minimo = max(0, request.form.get('cantidad_minima', type=int) or 0)
 
         item = Stock.query.filter_by(id=stock_id, clinic_id=current_user.clinic_id).first() if stock_id else None
         qty_added = 0
@@ -490,14 +496,21 @@ def inventory():
             item.cantidad = quantity
             item.pharmacy_id = pharmacy_id
             item.unidad = unit
-            audit('stock_updated', details=f'stock_id={item.id}')
+            item.cantidad_minima = minimo
+            audit('stock_updated',
+                  details=f'stock_id={item.id}; minimo={minimo}')
         elif name:
             qty_added = quantity
-            item = Stock(clinic_id=current_user.clinic_id, pharmacy_id=pharmacy_id, nombre_med=name, medicamento=name, cantidad=quantity, unidad=unit)
+            item = Stock(clinic_id=current_user.clinic_id, pharmacy_id=pharmacy_id, nombre_med=name, medicamento=name, cantidad=quantity, unidad=unit, cantidad_minima=minimo)
             db.session.add(item)
             audit('stock_created', details=f'name={name}')
 
         db.session.flush()
+        if item:
+            # Guardar puede cruzar el punto de reposicion en cualquiera de los
+            # dos sentidos: subiendo la cantidad o bajando el umbral.
+            alerta_por_punto_de_reposicion(item)
+            resolver_alerta_de_punto_de_reposicion(item)
         if qty_added > 0 and item:
             reactivated = reserve_stock_for_pending_tickets(current_user.clinic_id, pharmacy_id, item.nombre_med, qty_added)
             if reactivated:
@@ -510,7 +523,14 @@ def inventory():
         db.session.commit()
         return redirect(url_for('staff.inventory'))
 
-    items = Stock.query.filter_by(clinic_id=current_user.clinic_id).join(Pharmacy, Stock.pharmacy_id == Pharmacy.id).order_by(Pharmacy.name.asc(), Stock.nombre_med.asc()).all()
+    items = [
+        {'stock': fila,
+         'disponible': available_quantity(fila),
+         'estado': estado_de_stock(fila)}
+        for fila in Stock.query.filter_by(clinic_id=current_user.clinic_id)
+        .join(Pharmacy, Stock.pharmacy_id == Pharmacy.id)
+        .order_by(Pharmacy.name.asc(), Stock.nombre_med.asc()).all()
+    ]
     return render_template('inventory.html', stock_items=items, pharmacies=pharmacies, default_pharmacy=default_pharmacy)
 
 

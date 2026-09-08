@@ -164,7 +164,8 @@ def login(client):
 def make_stock(app):
     from models import Pharmacy, Stock, db as _db
 
-    def _make(med_name, quantity, clinic_id=1, committed=0, pharmacy_id=None):
+    def _make(med_name, quantity, clinic_id=1, committed=0, pharmacy_id=None,
+              minimo=0):
         with app.app_context():
             if pharmacy_id is None:
                 pharmacy = Pharmacy.query.filter_by(clinic_id=clinic_id).first()
@@ -177,6 +178,7 @@ def make_stock(app):
                 cantidad=quantity,
                 cantidad_comprometida=committed,
                 unidad='unidad',
+                cantidad_minima=minimo,
             )
             _db.session.add(stock)
             _db.session.commit()

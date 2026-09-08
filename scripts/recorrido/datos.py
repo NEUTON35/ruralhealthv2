@@ -31,6 +31,7 @@ def preparar():
                         InventoryItem, MedicalHistory, MedicalOrder,
                         MedicationPickupTicket, Message, Notification, Pharmacy,
                         ServiceComplaint, SivigilaNotification, Stock, User, db)
+    from pharmacy_utils import alerta_por_punto_de_reposicion
     from security import (bootstrap_schema, generate_pickup_hash,
                           generate_signed_order_hash, hash_password, pii_hash)
     from service_quality import radicar_pqrs, registrar_evento_adverso
@@ -104,11 +105,20 @@ def preparar():
         db.session.add(InventoryItem(clinic_id=cl.id, name='Losartán 50mg',
                                      sku='LOS-50', unit='tabletas',
                                      stock=120, min_stock=30))
-        for nombre, cant in (('Losartán 50mg', 120), ('Acetaminofén 500mg', 45),
-                             ('Amoxicilina 500mg', 8)):
-            db.session.add(Stock(clinic_id=cl.id, pharmacy_id=ph.id,
-                                 nombre_med=nombre, medicamento=nombre,
-                                 cantidad=cant, unidad='tabletas'))
+        # Las tres situaciones del punto de reposicion, para poder verlas en el
+        # recorrido: por encima, en el punto, y sin punto definido.
+        for nombre, cant, minimo in (('Losartán 50mg', 120, 30),
+                                     ('Amoxicilina 500mg', 8, 50),
+                                     ('Acetaminofén 500mg', 45, 0)):
+            fila = Stock(clinic_id=cl.id, pharmacy_id=ph.id,
+                         nombre_med=nombre, medicamento=nombre,
+                         cantidad=cant, unidad='tabletas',
+                         cantidad_minima=minimo)
+            db.session.add(fila)
+            db.session.flush()
+            # Igual que al guardar desde la pantalla: si ya esta en el punto de
+            # reposicion, el administrador tiene que verlo en sus alertas.
+            alerta_por_punto_de_reposicion(fila)
 
         chat = Chat(clinic_id=cl.id, patient_id=pac.id, doctor_id=doc.id,
                     status='open', reason='Dolor de cabeza persistente',

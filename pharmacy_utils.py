@@ -4,13 +4,57 @@ from flask import current_app
 
 from sqlalchemy import func
 
-from models import Pharmacy, ReplenishmentAlert, Stock, db
+from models import (ALERTA_POR_DEMANDA, ALERTA_POR_PUNTO_REPOSICION, Pharmacy,
+                    ReplenishmentAlert, Stock, db)
 
 
 def available_quantity(stock):
     if not stock:
         return 0
     return max(0, (stock.cantidad or 0) - (stock.cantidad_comprometida or 0))
+
+
+# --- Estado de existencias -------------------------------------------------
+#
+# Una sola definicion de "stock bajo" para toda la aplicacion. Antes habia dos
+# que no se hablaban: la pantalla del expendedor pintaba en verde cualquier
+# cantidad por encima de cinco unidades — un cinco fijo, igual para un
+# antibiotico que para un analgesico — y las alertas del administrador solo
+# nacian cuando un paciente ya se habia quedado sin su medicamento.
+#
+# Ahora el umbral es el punto de reposicion de la sede (`Stock.cantidad_minima`)
+# y lo usan la pantalla, el motor de entrega y las alertas.
+
+STOCK_AGOTADO = 'agotado'
+STOCK_BAJO = 'bajo'
+STOCK_NORMAL = 'normal'
+STOCK_SIN_UMBRAL = 'sin_umbral'
+
+
+def estado_de_stock(stock):
+    """Devuelve el estado de una fila de existencias.
+
+    `sin_umbral` no es lo mismo que `normal`. Si nadie ha fijado el punto de
+    reposicion de ese medicamento en esa sede, el sistema no sabe cuanto es
+    suficiente y no debe afirmar que hay bastante: solo puede decir que no
+    esta agotado. Esa distincion es la que hace que el campo se acabe
+    configurando en vez de quedarse en cero para siempre.
+    """
+    disponible = available_quantity(stock)
+    if disponible <= 0:
+        return STOCK_AGOTADO
+    minimo = (getattr(stock, 'cantidad_minima', 0) or 0)
+    if minimo <= 0:
+        return STOCK_SIN_UMBRAL
+    return STOCK_BAJO if disponible <= minimo else STOCK_NORMAL
+
+
+def stock_bajo_minimo(stock):
+    """¿Esta fila esta en o por debajo de su punto de reposicion?
+
+    Agotado tambien cuenta: es el caso extremo de estar por debajo.
+    """
+    return estado_de_stock(stock) in (STOCK_AGOTADO, STOCK_BAJO)
 
 
 def distance_km(origin_lat, origin_lng, dest_lat, dest_lng):
@@ -187,6 +231,7 @@ def create_replenishment_alert(clinic_id, pharmacy_id, med, available, order_id=
         med_name=med["nombre_med"],
         required_quantity=med["cantidad"],
         available_quantity=max(0, available),
+        origin=ALERTA_POR_DEMANDA,
         note=note,
     )
     db.session.add(alert)
@@ -207,7 +252,7 @@ def create_replenishment_alert(clinic_id, pharmacy_id, med, available, order_id=
             db.session.add(Notification(
                 user_id=admin.id,
                 clinic_id=clinic_id,
-                title='Alerta de reposicion de inventario',
+                title='Alerta de reposición de inventario',
                 message=(
                     f"Se requiere reponer {med['nombre_med']} en {pharmacy_name}. "
                     f"Solicitado: {med['cantidad']}, disponible: {max(0, available)}."
@@ -222,3 +267,105 @@ def create_replenishment_alert(clinic_id, pharmacy_id, med, available, order_id=
         )
 
     return alert
+
+
+def alerta_por_punto_de_reposicion(stock):
+    """Levanta una alerta si estas existencias cayeron bajo su punto de reposicion.
+
+    Se llama despues de descontar stock. La diferencia con la alerta por
+    demanda es el momento: aquella nace cuando un paciente ya no recibio su
+    medicamento, esta nace mientras todavia queda algo en el mostrador y da
+    tiempo a reponer. Sin esta, el punto de reposicion seria un numero que
+    nadie mira.
+
+    No hace nada si la sede no tiene punto de reposicion definido: sin umbral
+    no hay nada que cruzar, y el caso de agotado ya lo cubre la alerta por
+    demanda cuando alguien lo necesita.
+
+    Tampoco duplica: si ya hay una alerta abierta del mismo origen para ese
+    medicamento en esa sede, se deja la que hay. Un administrador con quince
+    avisos del mismo losartan deja de leer los avisos.
+    """
+    from models import Notification, User
+    from time_utils import colombia_now
+
+    if stock is None or estado_de_stock(stock) != STOCK_BAJO:
+        return None
+
+    abierta = ReplenishmentAlert.query.filter_by(
+        clinic_id=stock.clinic_id,
+        pharmacy_id=stock.pharmacy_id,
+        med_name=stock.nombre_med,
+        origin=ALERTA_POR_PUNTO_REPOSICION,
+        status='abierta',
+    ).first()
+    if abierta:
+        return abierta
+
+    disponible = available_quantity(stock)
+    minimo = stock.cantidad_minima or 0
+    alert = ReplenishmentAlert(
+        clinic_id=stock.clinic_id,
+        pharmacy_id=stock.pharmacy_id,
+        med_name=stock.nombre_med,
+        required_quantity=minimo,
+        available_quantity=disponible,
+        origin=ALERTA_POR_PUNTO_REPOSICION,
+        note=(f'Quedan {disponible} {stock.unidad or "unidad"}; '
+              f'el punto de reposición de esta sede es {minimo}.'),
+    )
+    db.session.add(alert)
+
+    # Igual que en la alerta por demanda: que falle el aviso no puede impedir
+    # que quede el registro.
+    try:
+        pharmacy = db.session.get(Pharmacy, stock.pharmacy_id)
+        pharmacy_name = pharmacy.name if pharmacy else 'la farmacia'
+        for admin in User.query.filter_by(clinic_id=stock.clinic_id, role='admin').all():
+            db.session.add(Notification(
+                user_id=admin.id,
+                clinic_id=stock.clinic_id,
+                title='Punto de reposición alcanzado',
+                message=(f'{stock.nombre_med} en {pharmacy_name}: quedan '
+                         f'{disponible}, punto de reposición {minimo}.'),
+                type='stock_alert',
+                timestamp=colombia_now(),
+            ))
+    except Exception:
+        current_app.logger.exception(
+            'No se pudo notificar el punto de reposicion de %s en la farmacia %s',
+            stock.nombre_med, stock.pharmacy_id,
+        )
+
+    return alert
+
+
+def resolver_alerta_de_punto_de_reposicion(stock):
+    """Cierra la alerta de punto de reposicion cuando el stock vuelve a subir.
+
+    Sin esto la alerta se queda abierta para siempre aunque el medicamento ya
+    este repuesto, y el administrador acaba con una bandeja de avisos que no
+    corresponden a nada. Una alerta que no se cierra sola deja de ser una
+    alerta y pasa a ser ruido.
+
+    Solo cierra las de este origen: la alerta por demanda documenta que un
+    paciente concreto se quedo sin su medicamento, y esa no la borra el hecho
+    de que despues llegara mercancia.
+    """
+    from time_utils import colombia_now
+
+    if stock is None or estado_de_stock(stock) in (STOCK_AGOTADO, STOCK_BAJO):
+        return 0
+
+    abiertas = ReplenishmentAlert.query.filter_by(
+        clinic_id=stock.clinic_id,
+        pharmacy_id=stock.pharmacy_id,
+        med_name=stock.nombre_med,
+        origin=ALERTA_POR_PUNTO_REPOSICION,
+        status='abierta',
+    ).all()
+    for alerta in abiertas:
+        alerta.status = 'resuelta'
+        alerta.resolved_at = colombia_now()
+        alerta.available_quantity = available_quantity(stock)
+    return len(abiertas)
