@@ -5,7 +5,7 @@ import json
 import os
 import secrets
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import wraps
 
 import jwt
@@ -575,13 +575,37 @@ def verify_order_hash(doctor_id, patient_id, verification_hash, meds_json=None, 
             
         payload = json.loads(decoded)
         expected_meds_digest = hashlib.sha256(str(meds_json or "").encode("utf-8")).hexdigest()
-        
-        return (
+
+        coincide = (
             int(payload.get("doctor_id")) == int(doctor_id)
             and int(payload.get("patient_id")) == int(patient_id)
             and int(payload.get("clinic_id")) == int(clinic_id or 0)
             and hmac.compare_digest(payload.get("meds_digest", ""), expected_meds_digest)
         )
+        if not coincide:
+            return False
+
+        # Vencimiento.
+        #
+        # El token venia firmando `expires_at` y no lo comprobaba nunca: una
+        # orden vencida hacia un ano seguia verificando como valida. El
+        # vencimiento se controlaba aparte, contra la fecha en la base de datos,
+        # asi que no habia un hueco abierto. Pero un token que firma un dato y
+        # no lo verifica es una trampa: invita a confiar en el solo, y el dia
+        # que alguien lo haga la orden vencida pasa.
+        vence = (payload.get("expires_at") or "").strip()
+        if vence:
+            try:
+                limite = datetime.fromisoformat(vence)
+            except ValueError:
+                # Firmado pero ilegible: no se puede afirmar que siga vigente.
+                return False
+            if limite.tzinfo is not None:
+                limite = limite.replace(tzinfo=None)
+            if colombia_now() > limite:
+                return False
+
+        return True
     except (ValueError, TypeError, json.JSONDecodeError):
         return False
 

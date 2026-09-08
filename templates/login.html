@@ -1,60 +1,95 @@
 {% extends 'base.html' %}
 {% block content %}
+{#
+  Acceso.
+
+  Qué cambió y por qué
+  --------------------
+  La versión anterior tenía el aspecto de una aplicación de consumo: un bloque
+  con icono decorativo, bordes de 2px, radios grandes y sombra. Aquí se atiende
+  gente enferma; la pantalla debe parecerse a un sistema clínico y no a una red
+  social.
+
+  El aviso de urgencias es lo único que se añade de contenido, y va abajo. Una
+  persona que llega a esta pantalla con una emergencia tiene que leer a dónde ir
+  antes de perder tiempo creando una cuenta. Va como información permanente, no
+  como alerta roja: una alerta que está siempre encendida deja de leerse.
+#}
 <div class="min-h-[80vh] flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-md border border-slate-100 transition-colors">
-        <div class="text-center mb-10">
-            <div class="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="activity" class="w-10 h-10 text-primary"></i>
-            </div>
-            <h1 class="text-3xl font-semibold text-slate-900 tracking-tight">Bienvenido</h1>
-            <p class="text-slate-500 mt-2 font-medium">Ingrese a su cuenta de RuralHealth</p>
-        </div>
+    <div class="w-full max-w-md">
 
-        <form method="POST" class="space-y-6">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            
-            <div class="space-y-1">
-                <label class="text-sm font-bold text-slate-700 ml-1">Usuario</label>
-                <div class="relative">
-                    <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                    <input type="text" name="username" placeholder="Su nombre de usuario" required 
-                        class="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-lg focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-colors placeholder:text-slate-400" aria-label="Su nombre de usuario">
+        <div class="bg-white border border-slate-200 rounded-lg p-8">
+
+            <header class="pb-5 mb-7 border-b border-slate-200">
+                <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+                    Iniciar sesión
+                </h1>
+                <p class="text-sm text-slate-600 mt-1.5">
+                    RuralHealth Connect
+                </p>
+            </header>
+
+            <form method="POST" class="space-y-5">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                <div>
+                    <label for="username"
+                           class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        Usuario
+                    </label>
+                    <input type="text" id="username" name="username" required
+                           autocomplete="username" autocapitalize="none" spellcheck="false"
+                           class="w-full px-4 py-3.5 border border-slate-300 rounded-lg text-base
+                                  focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none
+                                  transition-colors placeholder:text-slate-400">
                 </div>
-            </div>
 
-            <div class="space-y-1">
-                <label class="text-sm font-bold text-slate-700 ml-1">Contraseña</label>
-                <div class="relative">
-                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                    <input type="password" name="password" placeholder="••••••••" required 
-                        class="w-full pl-12 pr-4 py-4 border-2 border-slate-100 rounded-2xl text-lg focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-colors placeholder:text-slate-400" aria-label="Contrasena">
+                <div>
+                    <label for="password"
+                           class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        Contraseña
+                    </label>
+                    <input type="password" id="password" name="password" required
+                           autocomplete="current-password"
+                           class="w-full px-4 py-3.5 border border-slate-300 rounded-lg text-base
+                                  focus:border-accent focus:ring-2 focus:ring-accent/20 outline-none
+                                  transition-colors placeholder:text-slate-400">
                 </div>
-            </div>
 
-            <button type="submit" 
-                class="w-full bg-accent text-white py-4 rounded-2xl font-semibold text-xl shadow-sm hover:bg-accent-hover transition-colors flex items-center justify-center gap-3">
-                <span>Iniciar Sesión</span>
-                <i data-lucide="arrow-right" class="w-6 h-6"></i>
-            </button>
-        </form>
+                <button type="submit"
+                    class="w-full bg-accent text-white py-3.5 rounded-lg font-semibold text-base
+                           hover:bg-accent-hover transition-colors">
+                    Entrar
+                </button>
+            </form>
 
-        <div class="mt-10 pt-8 border-t border-slate-100 space-y-4">
-            <p class="text-center">
-                <a href="{{ url_for('auth.request_password_reset') }}"
-                   class="text-slate-500 font-bold hover:text-primary text-sm underline underline-offset-4">
-                    ¿Olvidó su contraseña?
-                </a>
-            </p>
-            <p class="text-center text-slate-600 font-medium">
-                ¿No tiene cuenta?
-                <a href="/register" class="text-primary font-semibold hover:underline underline-offset-4">Cree una aquí</a>
-            </p>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p class="text-center text-sm text-slate-500 font-medium">
-                    ¿Eres una institución de salud? 
-                    <a href="/socio" class="text-primary font-bold hover:text-primary-dark">Únete como socio</a>
+            <div class="mt-7 pt-6 border-t border-slate-200 space-y-3 text-sm">
+                <p>
+                    <a href="{{ url_for('auth.request_password_reset') }}"
+                       class="text-accent font-medium hover:underline underline-offset-4">
+                        ¿Olvidó su contraseña?
+                    </a>
+                </p>
+                <p class="text-slate-600">
+                    ¿No tiene cuenta?
+                    <a href="/register" class="text-accent font-medium hover:underline underline-offset-4">Cree una aquí</a>
+                </p>
+                <p class="text-slate-600">
+                    ¿Representa una institución de salud?
+                    <a href="/socio" class="text-accent font-medium hover:underline underline-offset-4">Escríbanos</a>
                 </p>
             </div>
+        </div>
+
+        {# Información permanente, no una alerta. Va fuera de la tarjeta para
+           que no compita con el formulario, y sin rojo para que el rojo siga
+           significando algo cuando aparezca de verdad. #}
+        <div class="mt-4 border border-slate-200 bg-slate-50 rounded-lg px-4 py-3.5">
+            <p class="text-sm text-slate-700 leading-relaxed">
+                <span class="font-semibold text-slate-900">Esta plataforma no atiende urgencias.</span>
+                Ante una situación que comprometa la vida, acuda al servicio de
+                urgencias más cercano o llame a la línea 123.
+            </p>
         </div>
     </div>
 </div>

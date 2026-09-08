@@ -1,77 +1,192 @@
-# 🏥 RuralHealth Connect - Pitch Comercial & Prompt Maestro
+# RuralHealth Connect
 
-Este documento contiene un pitch comercial estructurado para presentar el proyecto ante inversionistas o clínicas, seguido de un **Prompt Maestro** diseñado para que cualquier nuevo agente de Inteligencia Artificial (IA) comprenda instantáneamente la arquitectura, lógica de negocio y seguridad de RuralHealth Connect.
+Plataforma de salud digital para zonas rurales de Colombia, diseñada para operar
+con conectividad intermitente y para cumplir la normativa colombiana de
+prestación de servicios de salud.
 
----
-
-## 🚀 Pitch Comercial: Estructura de Presentación (Pitch Deck)
-
-### Diapositiva 1: La Portada (El Gancho)
-*   **Título**: RuralHealth Connect
-*   **Subtítulo**: Salud digital sin fronteras para comunidades rurales.
-*   **Mensaje Clave**: Conectamos de forma asíncrona, segura y robusta a médicos, pacientes y farmacias en zonas con baja conectividad, eliminando los viajes perdidos por falta de stock médico.
-*   **Guion del Orador**: *"¿Qué harías si para reclamar una pastilla para la presión tuvieras que caminar 4 horas bajo el sol y, al llegar, te dijeran que no hay inventario? Esto le pasa todos los días a millones de personas en Latinoamérica. RuralHealth Connect es la primera plataforma de salud digital diseñada específicamente para operar en entornos con internet intermitente o nulo, garantizando que nadie viaje en vano por su salud."*
-
-### Diapositiva 2: El Problema (La Brecha de Salud Rural)
-*   **Puntos de Dolor**:
-    1.  **Aislamiento y Conectividad**: Las plataformas de telemedicina actuales exigen banda ancha constante. En el campo, el internet móvil es inestable o inexistente.
-    2.  **Quiebre de Stock en Farmacias**: Los centros de salud rurales no saben qué medicamentos tienen disponibles en tiempo real, forzando a los pacientes a viajes inútiles.
-    3.  **Cumplimiento Legal (RIPS)**: Las normativas como el RIPS de Colombia exigen estructurar y exportar datos de consultas de forma estricta, lo que satura administrativamente al escaso personal de salud.
-    4.  **Vulnerabilidad de Datos**: La información de pacientes se expone en planillas físicas o chats no seguros.
-
-### Diapositiva 3: La Solución (RuralHealth Connect)
-*   **Propuesta de Valor**:
-    *   **PWA Offline-First**: Aplicación instalable en celulares y PC que almacena datos de citas y chats en caché local y los sincroniza automáticamente cuando detecta señal.
-    *   **Despacho Farmacéutico Balance-Aware**: Un motor logístico inteligente de asignación que gestiona entregas parciales y reserva automáticamente el inventario físico entrante para los pacientes que quedaron pendientes.
-    *   **Cumplimiento RIPS Automático**: Genera los archivos de transacciones y consultas de ley en un archivo comprimido (.zip) con un solo clic.
-
-### Diapositiva 4: Seguridad y Privacidad "Zero-Trust"
-*   **Pilares de Ciberseguridad**:
-    *   **Clinic Scoping**: Consultas a bases de datos filtradas de manera autónoma a nivel de ORM (SQLAlchemy) mediante el identificador de clínica del usuario, impidiendo accesos cruzados accidentales.
-    *   **Cifrado AES-256**: Historias clínicas y chats cifrados en reposo.
-    *   **Blind Index**: Búsqueda segura de identificaciones (cédulas) mediante un hash seguro enriquecido con sal privada (HMAC con Pepper), protegiendo la identidad del paciente.
-    *   **Validación CIE-10 / CUPS**: Verificación estricta de códigos médicos mediante expresiones regulares para garantizar validez clínica y legal.
-
-### Diapositiva 5: Modelo de Negocio e Impacto
-*   **Monetización**:
-    *   **Suscripción B2B**: Planes mensuales o anuales para clínicas rurales institucionales.
-    *   **Suscripción para Médicos Autónomos**: Modelo flexible para profesionales independientes que prestan consulta externa en áreas rurales.
-    *   **Integración con Aseguradoras**: Códigos de invitación y validación manual de tiquetes de pago bancario mediante carga de comprobantes.
-*   **Impacto Social**: Reducción de costos logísticos para pacientes y aumento de la eficiencia del personal de salud de hasta un 45%.
+Este documento sirve para presentar el proyecto ante una clínica, una entidad
+territorial o un inversionista. Está escrito para que cada afirmación pueda
+comprobarse en el código o en la norma que se cita. Lo que todavía no está
+hecho aparece en la sección de estado, no omitido.
 
 ---
 
-## 🤖 Prompt Maestro para Transferencia de Contexto a otra IA
+## El problema
 
-*Copia y pega este prompt al iniciar una nueva conversación con una IA para que entienda todo el proyecto y pueda codificar, documentar o diseñar de inmediato.*
+En una zona rural colombiana, una persona con hipertensión puede caminar cuatro
+horas hasta el puesto de salud para reclamar su medicamento y encontrarse con
+que no hay existencias. Nadie pudo avisarle porque nadie lo sabía: el inventario
+vive en una planilla que se actualiza cuando alguien tiene tiempo.
 
-```text
-Actúa como un Ingeniero de Software Principal y Arquitecto de Soluciones de Salud Digital. A continuación, te proporciono el contexto técnico y funcional completo del proyecto "RuralHealth Connect". Memorízalo para responder preguntas, optimizar el código, crear nuevas funcionalidades o redactar documentación técnica.
+Alrededor de eso hay tres problemas más:
 
-### 1. PROPÓSITO DEL PROYECTO
-RuralHealth Connect es una plataforma web e instalable (PWA) construida en Python (Flask) enfocada en entornos rurales o con baja conectividad. Permite gestionar agendas médicas, telemedicina asíncrona, recetas legales digitales y logística inteligente de farmacia.
+1. **Las plataformas de telemedicina asumen banda ancha.** En el campo el
+   internet móvil es intermitente. Una aplicación que exige conexión continua no
+   sirve donde más falta hace.
+2. **La carga normativa recae sobre personal escaso.** RIPS, historia clínica
+   interoperable, notificación al Sivigila, farmacovigilancia y facturación
+   electrónica son obligaciones simultáneas para un puesto de salud que puede
+   tener dos personas.
+3. **Los datos clínicos viven donde no deben.** Planillas en papel, fotos de
+   fórmulas médicas y conversaciones por aplicaciones de mensajería general.
 
-### 2. ARQUITECTURA GENERAL
-- Backend: Python 3.10+ utilizando Flask, Flask-SQLAlchemy, Flask-Login, Flask-Migrate y python-dotenv.
-- Base de Datos: SQLite (para desarrollo y pruebas locales) y PostgreSQL compatible (para producción).
-- Seguridad de Red: Flask-Talisman para headers HTTP (CSP, HSTS, secure cookies) y Flask-Limiter para control de peticiones.
-- Frontend: Jinja2, Tailwind CSS (CDN), Lucide Icons, Leaflet.js para mapas interactivos y Chart.js para analítica.
+---
 
-### 3. ESTRUCTURA DEL CÓDIGO FUENTE
-El proyecto sigue un patrón MVC. Sus archivos principales son:
-- app.py: Punto de entrada. Configura la app, inicializa extensiones, registra blueprints y arranca el servidor. Configurado para autodetectar la IP local para hosting en red local (LAN) y relajar cookies seguras si FLASK_ENV != 'production'.
-- models.py: Contiene el esquema de base de datos. Implementa la clase mixin 'ClinicScoped' para filtrar automáticamente consultas por 'clinic_id' usando events de SQLAlchemy.
-- security.py: Centraliza el cifrado AES-256 en base de datos (EncryptedText), hashing de contraseñas (PBKDF2), blind indexes para cédulas (HMAC con Pepper), auditorías y limitación de intentos de login fallidos.
-- dispatch_engine.py: Motor de despacho de medicamentos. Administra tiquetes de recogida parciales ('autorizado', 'sin_stock', 'parcial', 'entregado') y reserva inventarios automáticamente.
-- pharmacy_utils.py: Utilidades de inventario. Contiene 'build_stock_matrix' optimizado con consulta única por lote para evitar el antipatrón de base de datos N*M.
-- rips_service.py: Generador de archivos de texto plano requeridos por el Ministerio de Salud de Colombia (RIPS: archivos AC, US, AF, CT) empaquetados en un ZIP.
-- Blueprints: routes_auth.py, routes_patient.py, routes_doctor.py, routes_admin.py, routes_staff.py, routes_expendedor.py, routes_settings.py, routes_superadmin.py, routes_analytics.py.
+## Qué hace la plataforma
 
-### 4. REGLAS CRÍTICAS DE PROGRAMACIÓN Y SEGURIDAD
-1. CLINIC SCOPING: Siempre que consultes datos clínicos (pacientes, doctores, chats, órdenes, tiquetes, inventario), la consulta debe pasar por el filtro de 'clinic_id'. La clase 'ClinicScoped' en models.py lo hace automáticamente a menos que se use la opción '.execution_options(include_all_clinics=True)'.
-2. CIFRADO PII: Datos personales sensibles (nombres, teléfonos, correos, direcciones, cédulas) se guardan usando el tipo 'EncryptedText' en la base de datos (cifrado AES transparente). Las búsquedas por cédula se deben hacer consultando el campo 'cedula_hash' usando la función 'pii_hash()'.
-3. ENTREGAS PARCIALES: El estado de una orden médica pasa a 'completada' únicamente cuando todos los tiquetes de medicamentos asociados a ella tienen estado 'entregado'.
-4. COMPATIBILIDAD LAN: Las variables de Talisman y de sesión 'session_cookie_secure', 'force_https' y 'strict_transport_security' deben estar vinculadas a 'is_production = os.environ.get("FLASK_ENV") == "production"' para permitir pruebas HTTP en red local a través de IPs dinámicas.
+**Funciona con conectividad intermitente.** Aplicación instalable que conserva
+agenda y mensajes en el dispositivo y sincroniza al recuperar señal. No depende
+de ningún recurso externo: tipografías, hojas de estilo, iconos, mapas y
+gráficas se sirven desde el propio servidor. La política de seguridad de
+contenido no autoriza ningún origen de terceros para código ni estilos.
 
-Entendido el contexto, confírmamelo con un breve resumen técnico de los componentes y espere mis instrucciones.
-```
+**Despacho farmacéutico con reserva.** El motor de entrega gestiona entregas
+parciales y reserva el inventario entrante para quien quedó pendiente. Cada
+movimiento de existencias tiene un asiento en un libro mayor encadenado, de modo
+que el saldo puede reconstruirse en cualquier fecha y una discrepancia es
+detectable.
+
+**Órdenes médicas con contenido legal.** Conforme a la Resolución 1403 de 2007:
+identificación completa del prestador y del profesional con su registro médico,
+dosis, vía de administración, duración del tratamiento, y vigencia. Antes de
+firmar, el sistema contrasta la prescripción con las alergias registradas, el
+tratamiento activo, el estado de gestación y las interacciones conocidas.
+
+**Verificación antes de dispensar.** Cada orden lleva un sello criptográfico que
+liga profesional, paciente, institución, la lista exacta de medicamentos y la
+fecha de vencimiento. Alterar una cantidad después de firmada invalida el sello.
+
+---
+
+## Cumplimiento normativo
+
+La plataforma se construyó contra la norma, no contra una idea general de lo que
+la norma pide. Cada módulo cita la disposición que lo obliga.
+
+| Obligación | Norma | Estado |
+| :--- | :--- | :--- |
+| Historia clínica y su conservación | Resolución 1995 de 1999, Resolución 839 de 2017 | Implementado |
+| Contenido de la prescripción | Resolución 1403 de 2007 | Implementado |
+| Consentimiento de telemedicina | Resolución 2654 de 2019 | Implementado |
+| Habeas data y derechos del titular | Ley 1581 de 2012, Decreto 1377 de 2013 | Implementado |
+| Historia clínica interoperable (RDA) | Ley 2015 de 2020, Resolución 1888 de 2025 | Implementado, falta credencial |
+| RIPS como soporte de la factura | Resolución 948 de 2026 | Implementado, falta facturador |
+| Vigilancia en salud pública | Decreto 3518 de 2006 | Detección implementada |
+| Farmacovigilancia | Resolución 1403 de 2007 | Registro implementado |
+| PQRS del servicio de salud | Circular Única de la Supersalud | Implementado |
+| Facturación electrónica | Resolución DIAN | Estructura lista, falta proveedor |
+
+«Falta credencial» y «falta proveedor» significan exactamente eso: el desarrollo
+está hecho y probado, y lo que falta es un trámite que solo puede adelantar el
+prestador. Se detalla en la sección de estado.
+
+### Dos decisiones que conviene explicar
+
+**El sistema no radica ante la autoridad; deja constancia de que hay que
+hacerlo.** El Sivigila y el INVIMA reciben por sus propios canales, con
+credenciales del prestador. Fingir una radicación dejaría al prestador creyendo
+que cumplió, que es peor que no tener nada. Lo que la plataforma sí hace es
+cerrar el hueco anterior: que un caso notificable pasara inadvertido.
+
+**El sistema se niega a exportar datos incompletos.** El generador de RIPS no
+rellena lo que falta. Si una atención no tiene causa externa, o un paciente no
+tiene régimen de afiliación, la exportación se detiene y dice qué falta y en qué
+registro. Es más incómodo que producir siempre un archivo, y es la única forma de
+no radicar información falsa ante el sistema de salud.
+
+---
+
+## Protección de datos
+
+**Cifrado en reposo con AES-256-GCM.** Historia clínica, mensajes, nombres,
+documentos y direcciones. Se eligió 256 y no 128 porque la historia clínica se
+conserva quince años: lo que se cifra hoy debe seguir siendo secreto en 2041, y
+frente a un adversario con computación cuántica el algoritmo de Grover reduce a
+la mitad el nivel efectivo de una clave simétrica.
+
+**Búsqueda sin almacenar el documento.** La cédula no se guarda en forma
+consultable: se busca por un índice ciego derivado con HMAC y pimienta privada.
+Dos instalaciones distintas no pueden cruzarse por ese campo.
+
+**Aislamiento entre instituciones.** Las consultas se filtran por institución en
+la capa del ORM, no en cada consulta escrita a mano. Saltarse el filtro exige
+declararlo de forma explícita, lo que lo vuelve visible en revisión de código.
+
+**Auditoría encadenada.** Cada entrada incorpora el hash de la anterior, de modo
+que alterar o borrar una rompe la verificación de todas las siguientes. No impide
+la manipulación —nada lo hace desde dentro de la misma base de datos— pero la
+vuelve detectable, que es el requisito real de un registro clínico.
+
+**Transporte.** TLS 1.3 obligatorio hacia las API del Ministerio, como exige el
+artículo 6.4 del manual de interoperabilidad.
+
+---
+
+## Modelo de negocio
+
+**Suscripción institucional.** Planes para clínicas y puestos de salud, por
+número de profesionales.
+
+**Profesionales independientes.** Un médico rural que ejerce por su cuenta
+factura a su propio nombre, con su identificación tributaria y su propia
+resolución de numeración ante la DIAN. La plataforma lo contempla como emisor
+autónomo, no como un caso derivado de la clínica.
+
+**Aseguradoras y pólizas.** Códigos de afiliación que habilitan descuentos sobre
+las tarifas del profesional.
+
+Los servicios de salud humana están excluidos del IVA por el numeral 1 del
+artículo 476 del Estatuto Tributario, y la facturación lo refleja.
+
+---
+
+## Estado del proyecto
+
+Honestidad sobre lo que hay: **513 pruebas automatizadas**, ocho auditorías
+internas documentadas en `AUDIT.md` con cada hallazgo y su corrección.
+
+### Listo para operar
+
+Atención por chat y videollamada, agenda, historia clínica, órdenes médicas con
+verificación de seguridad clínica, despacho farmacéutico con libro mayor,
+habeas data, PQRS, vigilancia epidemiológica, farmacovigilancia, y generación de
+RIPS y del Resumen Digital de Atención.
+
+### Requiere un trámite del prestador
+
+1. **Credenciales del IHCE**, que se obtienen en Hércules (SISPRO) tras
+   registrar al prestador y a su delegado. El código está listo y probado; sin
+   credenciales los documentos se acumulan en cola sin perderse.
+2. **Proveedor tecnológico de facturación electrónica** y resolución de
+   numeración ante la DIAN. Sin factura validada no hay RIPS que radicar.
+3. **Catálogos oficiales completos**: CIE-10, CUPS, tablas de referencia del
+   RIPS y catálogo de eventos del INS. La aplicación trae semillas parciales,
+   marcadas como tales, y comandos de carga.
+
+### Requiere revisión profesional
+
+1. **Un abogado** debe revisar los textos legales. Tienen la estructura que
+   exige la norma y citan su fundamento, pero son la base sobre la que esa
+   revisión trabaja, no su sustituto.
+2. **Un químico farmacéutico** debe revisar la base de conocimiento de seguridad
+   clínica. El contenido es verificable, pero es una revisión inicial de
+   atención primaria, no un catálogo exhaustivo. El módulo lo declara y hay un
+   comando que informa de su antigüedad.
+
+### Antes del primer paciente
+
+`python manage.py preflight` verifica el entorno y **falla** si algo impide
+desplegar: secretos comprometidos, base de datos inadecuada, profesionales sin
+registro médico, cadena de auditoría rota o credenciales del IHCE ausentes.
+
+---
+
+## Arquitectura, en breve
+
+Python con Flask y SQLAlchemy, PostgreSQL en producción. El esquema lo gobierna
+Alembic. Interfaz en Jinja2 con Tailwind compilado localmente. Todo el frontal
+se sirve desde el propio servidor.
+
+Los detalles de despliegue están en `DEPLOYMENT.md`, el modelo de amenazas y el
+procedimiento de rotación de llaves en `SECURITY.md`, y el historial completo de
+auditorías con cada hallazgo en `AUDIT.md`.

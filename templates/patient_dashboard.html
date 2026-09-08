@@ -140,17 +140,12 @@
 
     {# === TICKETS DE RECOGIDA DE MEDICAMENTOS === #}
     {% if pickup_tickets %}
-    <section class="mb-6 rounded-2xl overflow-hidden shadow-md border border-slate-100">
-        <div class="bg-positive p-4 text-white flex items-center gap-3">
-            <div class="bg-white/20 p-2 rounded-xl">
-                <i data-lucide="pill" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h2 class="font-semibold text-lg leading-tight">Sus medicamentos</h2>
-                <p class="text-emerald-100 text-xs">Tickets de recogida activos y recientes</p>
-            </div>
+    <section class="mb-6 rounded-lg overflow-hidden border border-slate-200 bg-white">
+        <div class="px-5 py-4 border-b border-slate-200 bg-slate-50">
+            <h2 class="font-semibold text-lg leading-tight text-slate-900">Sus medicamentos</h2>
+            <p class="text-slate-600 text-sm mt-0.5">Órdenes de recogida activas y recientes</p>
         </div>
-        <div class="bg-white divide-y divide-slate-50">
+        <div class="bg-white divide-y divide-slate-100">
             {% for ticket in pickup_tickets %}
             {% set is_today = ticket.pickup_date == today_str %}
             {% set status_colors = {
@@ -182,7 +177,7 @@
                                 {{ status_labels.get(ticket.status, ticket.status) }}
                             </span>
                             {% if ticket.is_partial %}
-                            <span class="bg-slate-700 text-white text-xs font-semibold px-2 py-0.5 rounded-full">SUB-TICKET</span>
+                            <span class="border border-slate-300 text-slate-700 text-xs font-semibold px-2 py-0.5 rounded-full">Entrega parcial</span>
                             {% endif %}
                             {% if is_today and ticket.status in ('autorizado', 'parcial') %}
                             <span class="bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full text-xs font-bold">Hoy</span>
