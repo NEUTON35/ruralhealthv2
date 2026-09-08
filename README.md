@@ -14,6 +14,32 @@
 
 ---
 
+## Estructura del repositorio
+
+```
+.
+├── README.md          ← estás aquí
+├── AUDIT.md           auditoría técnica, clínica y legal
+├── SECURITY.md        rotación de credenciales y modelo de amenazas
+├── DEPLOYMENT.md      puesta en producción
+├── PITCH.md           el producto, para quien no lo conoce
+└── ruralhealth/       la aplicación
+```
+
+Los documentos viven en la raíz porque es donde GitHub los renderiza: quien
+entra al repositorio ve primero qué es esto y qué hay que leer antes de
+desplegarlo con datos de pacientes.
+
+**Todos los comandos de este documento se ejecutan desde `ruralhealth/`**, que
+es donde está la aplicación:
+
+```bash
+cd ruralhealth
+```
+
+
+---
+
 ## 📋 Tabla de Contenido
 
 *   [🚀 Visión General](#-visión-general)

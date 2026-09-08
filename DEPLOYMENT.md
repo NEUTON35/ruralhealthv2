@@ -1,5 +1,17 @@
 # Despliegue, RuralHealth Connect
 
+> [!IMPORTANT]
+> La aplicación vive en el subdirectorio `ruralhealth/`. **Todos los
+> comandos de este documento se ejecutan desde ahí**, y el directorio
+> de trabajo del servicio en producción tiene que ser ese: el
+> comando de arranque es `cd ruralhealth && gunicorn -c
+> gunicorn.conf.py wsgi:app`. Las rutas de `uploads/`, `logs/` e
+> `instance/` se resuelven contra el directorio de trabajo, así que
+> arrancar desde la raíz del repositorio crearía esas carpetas en el
+> sitio equivocado y la aplicación no encontraría los archivos
+> subidos.
+
+
 Guía para poner el sistema en operación real. Cada paso está aquí porque su
 ausencia causa un fallo concreto, no por completitud.
 
