@@ -1,210 +1,156 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, chip, aviso %}
 {% block content %}
-<div class="max-w-6xl mx-auto py-8 px-4">
-    <div class="grid lg:grid-cols-[1fr_380px] gap-8 items-start">
-        <section class="bg-white p-8 rounded-lg border border-linea relative overflow-hidden">
-            <!-- Decorative Gradient -->
-            
-            <div class="mb-10 relative">
-                <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest mb-4">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                    Registro Seguro
-                </div>
-                <h2 class="text-3xl font-semibold text-slate-900 tracking-tight">Crear cuenta de paciente</h2>
-                <p class="text-slate-500 mt-3 font-medium leading-relaxed max-w-2xl">
-                    Sus datos clínicos se almacenan cifrados. Solo se utilizan para su atención en salud y para las gestiones administrativas que exige la ley.
-                </p>
-            </div>
+{#
+  Registro de paciente.
 
-            <form method="POST" class="space-y-8" id="register-form">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                
-                <div class="grid sm:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Nombre Completo</label>
-                        <div class="relative">
-                            <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="text" name="name" required placeholder="Ej: María González" 
-                                class="{{ CAMPO }} w-full" aria-label="Nombre">
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Cédula de Ciudadanía</label>
-                        <div class="relative">
-                            <i data-lucide="credit-card" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="text" name="cedula" required inputmode="numeric" placeholder="Número de documento" 
-                                class="{{ CAMPO }} w-full" aria-label="Número de documento">
-                        </div>
-                    </div>
+  Los iconos que iban dentro de las casillas se quitaron: estaban posicionados
+  encima del texto que la persona escribe. El rotulo va encima y visible, que
+  es lo unico que hace falta para saber que va en cada casilla.
+#}
+<div class="max-w-7xl mx-auto">
 
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Usuario</label>
-                        <div class="relative">
-                            <i data-lucide="at-sign" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="text" name="username" required placeholder="maria.gonzalez" 
-                                class="{{ CAMPO }} w-full" aria-label="maria.gonzalez">
-                        </div>
-                    </div>
+  {{ cabecera('Crear cuenta de paciente',
+              'Sus datos clínicos se almacenan cifrados. Solo se utilizan para su atención en salud y para las gestiones administrativas que exige la ley.') }}
 
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Contraseña</label>
-                        <div class="relative">
-                            <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="password" name="password" required minlength="10" placeholder="Mínimo 10 caracteres" 
-                                class="{{ CAMPO }} w-full" aria-label="Mínimo 10 caracteres">
-                        </div>
-                    </div>
+  <div class="grid lg:grid-cols-[1fr_340px] gap-6 items-start">
+    <section class="{{ TARJETA }} p-4 sm:p-6">
+      <form method="POST" class="space-y-6" id="register-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Teléfono</label>
-                        <div class="relative">
-                            <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="tel" name="phone" placeholder="Opcional" 
-                                class="{{ CAMPO }} w-full" aria-label="Opcional">
-                        </div>
-                    </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="{{ ROTULO }}" for="reg-name">Nombre completo <span class="text-critical" aria-hidden="true">*</span></label>
+            <input id="reg-name" type="text" name="name" required placeholder="María González"
+                   class="{{ CAMPO }}" aria-label="Nombre">
+          </div>
 
-                    <div class="space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Correo Electrónico</label>
-                        <div class="relative">
-                            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="email" name="email" placeholder="Opcional" 
-                                class="{{ CAMPO }} w-full" aria-label="Opcional">
-                        </div>
-                    </div>
+          <div>
+            <label class="{{ ROTULO }}" for="reg-cedula">Cédula de ciudadanía <span class="text-critical" aria-hidden="true">*</span></label>
+            <input id="reg-cedula" type="text" name="cedula" required inputmode="numeric"
+                   class="{{ CAMPO }}" aria-label="Número de documento">
+          </div>
 
-                    <div class="sm:col-span-2 space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Dirección de Residencia</label>
-                        <div class="relative">
-                            <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="text" name="address" placeholder="Ej: Vereda El Carmen, casa 12" 
-                                class="{{ CAMPO }} w-full" aria-label="Dirección">
-                        </div>
-                    </div>
+          <div>
+            <label class="{{ ROTULO }}" for="reg-username">Usuario <span class="text-critical" aria-hidden="true">*</span></label>
+            <input id="reg-username" type="text" name="username" required placeholder="maria.gonzalez"
+                   class="{{ CAMPO }}" aria-label="maria.gonzalez">
+          </div>
 
-                    <div class="sm:col-span-2 space-y-2">
-                        <label class="text-sm font-bold text-slate-700 ml-1">Código de Clínica (Opcional)</label>
-                        <div class="relative">
-                            <i data-lucide="key" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                            <input type="text" name="clinic_code" placeholder="Si tiene un código para una clínica privada" 
-                                class="{{ CAMPO }} w-full" aria-label="Si tiene un código para una clínica privada">
-                        </div>
-                        <p class="text-xs text-slate-600 ml-2 font-medium">Déjalo en blanco para registrarte en la clínica pública por defecto.</p>
-                    </div>
-                </div>
+          <div>
+            <label class="{{ ROTULO }}" for="reg-password">Contraseña <span class="text-critical" aria-hidden="true">*</span></label>
+            <input id="reg-password" type="password" name="password" required minlength="10"
+                   class="{{ CAMPO }}" aria-label="Mínimo 10 caracteres">
+            <p class="{{ PISTA }}">Mínimo 10 caracteres.</p>
+          </div>
 
-                <div class="space-y-4">
-                    <label class="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
-                        <i data-lucide="map" class="w-4 h-4"></i> Ubicación exacta (Opcional)
-                    </label>
-                    <div class="bg-lienzo-seccion p-2 rounded-lg border border-linea overflow-hidden">
-                        <div id="registration-map" 
-                            data-location-picker 
-                            data-lat-input="#lat" 
-                            data-lng-input="#lng"
-                            data-use-browser-location="true"
-                            class="h-64 w-full rounded-lg"></div>
-                    </div>
-                    <input type="hidden" name="latitude" id="lat">
-                    <input type="hidden" name="longitude" id="lng">
-                </div>
+          <div>
+            <label class="{{ ROTULO }}" for="reg-phone">Teléfono</label>
+            <input id="reg-phone" type="tel" name="phone" class="{{ CAMPO }}" aria-label="Opcional">
+            <p class="{{ PISTA }}">Opcional.</p>
+          </div>
 
-                <div class="bg-lienzo-seccion border border-linea rounded-lg p-6 space-y-4">
-                    <h3 class="font-semibold text-slate-900 flex items-center gap-2 mb-2">
-                        <i data-lucide="info" class="w-5 h-5 text-primary"></i> Consentimientos
-                    </h3>
-                    
-                    <div class="grid gap-3">
-                        <label class="flex gap-4 items-start cursor-pointer group">
-                            <input type="checkbox" name="accept_terms" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0" aria-label="Accept terms">
-                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
-                                Acepto los <a href="/terminos" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Términos y Condiciones</a>.
-                            </span>
-                        </label>
-                        
-                        {# La autorizacion para datos sensibles NO va aqui. El
-                           articulo 6 de la Ley 1581 exige que se obtenga de forma
-                           separada y advirtiendo que el titular no esta obligado
-                           a darla. Se pide en `patient.consent`, antes de la
-                           primera atencion. Juntarlas en una sola casilla es lo
-                           que vicia el consentimiento. #}
-                        <label class="flex gap-4 items-start cursor-pointer group">
-                            <input type="checkbox" name="accept_privacy" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0" aria-label="Autorizo el tratamiento de mis datos personales">
-                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
-                                Autorizo el tratamiento de mis datos personales conforme al
-                                <a href="/aviso-de-privacidad" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Aviso de Privacidad</a>
-                                y a la <a href="/privacidad" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Política de Tratamiento de Datos</a>.
-                                La autorización para tratar mis datos de salud se solicitará
-                                por separado y puedo negarla.
-                            </span>
-                        </label>
+          <div>
+            <label class="{{ ROTULO }}" for="reg-email">Correo electrónico</label>
+            <input id="reg-email" type="email" name="email" class="{{ CAMPO }}" aria-label="Opcional">
+            <p class="{{ PISTA }}">Opcional.</p>
+          </div>
 
-                        <label class="flex gap-4 items-start cursor-pointer group">
-                            <input type="checkbox" name="accept_transparency" required class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0" aria-label="Accept transparency">
-                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
-                                He leído el <a href="/transparencia" target="_blank" class="text-primary font-bold hover:underline" rel="noopener noreferrer">Aviso de Transparencia</a> y acceso a la información.
-                            </span>
-                        </label>
+          <div class="sm:col-span-2">
+            <label class="{{ ROTULO }}" for="reg-address">Dirección de residencia</label>
+            <input id="reg-address" type="text" name="address" placeholder="Vereda El Carmen, casa 12"
+                   class="{{ CAMPO }}" aria-label="Dirección">
+          </div>
 
-                        <label class="flex gap-4 items-start cursor-pointer group">
-                            <input type="checkbox" name="accept_location" class="mt-1 w-5 h-5 rounded-md accent-primary shrink-0" aria-label="Accept location">
-                            <span class="text-sm text-slate-600 font-medium group-hover:text-slate-900 transition-colors">
-                                Autorizo el uso de mi ubicación para encontrar servicios cercanos.
-                            </span>
-                        </label>
-                    </div>
-                </div>
+          <div class="sm:col-span-2">
+            <label class="{{ ROTULO }}" for="reg-clinic-code">Código de clínica</label>
+            <input id="reg-clinic-code" type="text" name="clinic_code"
+                   class="{{ CAMPO }}" aria-label="Si tiene un código para una clínica privada">
+            <p class="{{ PISTA }}">Solo si tiene un código de una clínica privada. En blanco se registra en la clínica pública por defecto.</p>
+          </div>
+        </div>
 
-                <div class="pt-4">
-                    <button type="submit" 
-                        class="w-full bg-accent text-white py-5 rounded-lg font-semibold text-xl hover:bg-accent-hover transition-colors flex items-center justify-center gap-3">
-                        <span>Crear Cuenta Segura</span>
-                        <i data-lucide="check-circle" class="w-6 h-6"></i>
-                    </button>
-                    <p class="text-center mt-6 text-slate-600 font-medium">
-                        ¿Ya tiene cuenta? 
-                        <a href="/login" class="text-primary font-semibold hover:underline">Inicia Sesión</a>
-                    </p>
-                </div>
-            </form>
-        </section>
+        <div class="border-t border-linea pt-4">
+          {{ seccion('Ubicación exacta', 'map') }}
+          <p class="{{ PISTA }} mb-2">Opcional. Sirve para encontrar la farmacia y el puesto de salud más cercanos.</p>
+          <div id="registration-map"
+               data-location-picker
+               data-lat-input="#lat"
+               data-lng-input="#lng"
+               data-use-browser-location="true"
+               class="h-64 w-full rounded-lg border border-linea overflow-hidden"></div>
+          <input type="hidden" name="latitude" id="lat">
+          <input type="hidden" name="longitude" id="lng">
+        </div>
 
-        <aside class="space-y-6 lg:sticky lg:top-24">
-            <div class="bg-slate-900 text-white p-8 rounded-lg relative overflow-hidden">
-                <i data-lucide="lock" class="absolute -bottom-8 -right-8 w-32 h-32 text-white/5 rotate-12"></i>
-                <h3 class="text-xl font-semibold mb-6 flex items-center gap-3">
-                    <i data-lucide="shield" class="w-7 h-7 text-slate-500"></i> 
-                    Protección RuralHealth
-                </h3>
-                <div class="space-y-5">
-                    <div class="flex gap-4">
-                        <div class="bg-positive/20 p-2 rounded-lg h-fit">
-                            <i data-lucide="key" class="w-4 h-4 text-slate-500"></i>
-                        </div>
-                        <p class="text-sm text-slate-500 font-medium">Cifrado AES-256 para los datos sensibles y los registros clínicos.</p>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="bg-positive/20 p-2 rounded-lg h-fit">
-                            <i data-lucide="eye-off" class="w-4 h-4 text-slate-500"></i>
-                        </div>
-                        <p class="text-sm text-slate-500 font-medium">Acceso restringido solo a personal médico autorizado.</p>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="bg-positive/20 p-2 rounded-lg h-fit">
-                            <i data-lucide="file-text" class="w-4 h-4 text-slate-500"></i>
-                        </div>
-                        <p class="text-sm text-slate-500 font-medium">Cumplimiento estricto con la Ley 1581 de Protección de Datos.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white p-6 rounded-lg border border-linea text-center">
-                <i data-lucide="smartphone" class="w-8 h-8 text-primary mx-auto mb-3"></i>
-                <h4 class="font-bold text-slate-900">App Instalable</h4>
-                <p class="text-xs text-slate-500 mt-1">Usa RuralHealth sin internet en zonas de baja señal una vez instalada.</p>
-            </div>
-        </aside>
-    </div>
+        <div class="border-t border-linea pt-4">
+          {{ seccion('Consentimientos', 'info') }}
+          <div class="grid gap-2">
+            <label class="flex gap-3 items-start cursor-pointer border border-linea rounded-lg p-3">
+              <input type="checkbox" name="accept_terms" required class="mt-0.5 w-4 h-4 rounded accent-slate-700 shrink-0" aria-label="Accept terms">
+              <span class="text-sm text-slate-700">
+                Acepto los <a href="/terminos" target="_blank" class="text-accent font-semibold hover:underline" rel="noopener noreferrer">Términos y Condiciones</a>.
+              </span>
+            </label>
+
+            {# La autorizacion para datos sensibles NO va aqui. El
+               articulo 6 de la Ley 1581 exige que se obtenga de forma
+               separada y advirtiendo que el titular no esta obligado
+               a darla. Se pide en `patient.consent`, antes de la
+               primera atencion. Juntarlas en una sola casilla es lo
+               que vicia el consentimiento. #}
+            <label class="flex gap-3 items-start cursor-pointer border border-linea rounded-lg p-3">
+              <input type="checkbox" name="accept_privacy" required class="mt-0.5 w-4 h-4 rounded accent-slate-700 shrink-0" aria-label="Autorizo el tratamiento de mis datos personales">
+              <span class="text-sm text-slate-700">
+                Autorizo el tratamiento de mis datos personales conforme al
+                <a href="/aviso-de-privacidad" target="_blank" class="text-accent font-semibold hover:underline" rel="noopener noreferrer">Aviso de Privacidad</a>
+                y a la <a href="/privacidad" target="_blank" class="text-accent font-semibold hover:underline" rel="noopener noreferrer">Política de Tratamiento de Datos</a>.
+                La autorización para tratar mis datos de salud se solicitará
+                por separado y puedo negarla.
+              </span>
+            </label>
+
+            <label class="flex gap-3 items-start cursor-pointer border border-linea rounded-lg p-3">
+              <input type="checkbox" name="accept_transparency" required class="mt-0.5 w-4 h-4 rounded accent-slate-700 shrink-0" aria-label="Accept transparency">
+              <span class="text-sm text-slate-700">
+                He leído el <a href="/transparencia" target="_blank" class="text-accent font-semibold hover:underline" rel="noopener noreferrer">Aviso de Transparencia</a> y acceso a la información.
+              </span>
+            </label>
+
+            <label class="flex gap-3 items-start cursor-pointer border border-linea rounded-lg p-3">
+              <input type="checkbox" name="accept_location" class="mt-0.5 w-4 h-4 rounded accent-slate-700 shrink-0" aria-label="Accept location">
+              <span class="text-sm text-slate-700">
+                Autorizo el uso de mi ubicación para encontrar servicios cercanos.
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="border-t border-linea pt-4">
+          <button type="submit" class="{{ BOTON }} w-full">Crear cuenta</button>
+          <p class="text-center mt-3 text-sm text-slate-600">
+            ¿Ya tiene cuenta?
+            <a href="/login" class="text-accent font-semibold hover:underline">Inicie sesión</a>
+          </p>
+        </div>
+      </form>
+    </section>
+
+    <aside class="space-y-4 lg:sticky lg:top-24">
+      {% call panel('Cómo se protegen sus datos', 'shield') %}
+        <ul class="space-y-3 text-sm text-slate-700">
+          <li>Cifrado AES-256 para los datos sensibles y los registros clínicos.</li>
+          <li>Acceso restringido solo a personal médico autorizado.</li>
+          <li>Cumplimiento de la Ley 1581 de protección de datos.</li>
+        </ul>
+      {% endcall %}
+
+      {% call panel('Aplicación instalable', 'smartphone') %}
+        <p class="text-sm text-slate-700">
+          Una vez instalada, RuralHealth funciona sin internet en zonas de baja señal.
+        </p>
+      {% endcall %}
+    </aside>
+  </div>
 </div>
 {% endblock %}

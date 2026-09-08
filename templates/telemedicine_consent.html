@@ -1,133 +1,105 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso %}
 {% block content %}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto space-y-6">
 
-    <header class="mb-6">
-        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
-            {{ document.title }}
-        </h1>
-        <p class="text-slate-600 mt-1.5 text-sm leading-relaxed">{{ document.summary }}</p>
-    </header>
+  {{ cabecera(document.title, document.summary) }}
 
-    {% if current_consent %}
-    <div class="border border-positive-border bg-positive-subtle rounded-lg p-4 mb-6 flex items-start gap-3">
-        <i data-lucide="check-circle" class="w-5 h-5 text-positive shrink-0 mt-0.5"></i>
-        <div class="text-sm text-positive-text leading-relaxed">
-            <p class="font-semibold">Consentimiento otorgado</p>
-            <p class="mt-1">
-                Versión {{ current_consent.document_version or 'sin versión' }}, aceptada el
-                {{ current_consent.timestamp | colombia_date }}.
-                {% if current_consent.document_version != document.version %}
-                Existe una versión posterior del documento. Revísela y acéptela si
-                está de acuerdo con sus términos.
-                {% endif %}
-            </p>
-            <p class="mt-2">
-                Puede revocarlo en cualquier momento desde
-                <a href="{{ url_for('privacy.index') }}" class="font-semibold underline underline-offset-2">Mis datos</a>.
-            </p>
+  {# La limitacion sustantiva de la modalidad se anticipa aqui. Va arriba
+     porque es lo que determina si el paciente acepta con conocimiento. #}
+  {% call aviso('revisar', 'Antes de aceptar', 'info') %}
+    <p class="leading-relaxed">
+      En la atención a distancia el profesional no puede realizar examen
+      físico. No puede palpar, auscultar ni valorar directamente una lesión.
+      Existen diagnósticos que no pueden establecerse por esta modalidad, y
+      el profesional puede determinar que su caso requiere valoración
+      presencial.
+    </p>
+    <p class="leading-relaxed mt-2">
+      Esta modalidad no está destinada a la atención de urgencias. Ante una
+      situación que comprometa la vida, acuda al servicio de urgencias más
+      cercano o comuníquese con la línea 123.
+    </p>
+  {% endcall %}
+
+  {% if current_consent %}
+  {% call aviso('completado', 'Consentimiento otorgado', 'check-circle') %}
+    <p>
+      Versión {{ current_consent.document_version or 'sin versión' }}, aceptada el
+      {{ current_consent.timestamp | colombia_date }}.
+      {% if current_consent.document_version != document.version %}
+      Existe una versión posterior del documento. Revísela y acéptela si
+      está de acuerdo con sus términos.
+      {% endif %}
+    </p>
+    <p class="mt-2">
+      Puede revocarlo en cualquier momento desde
+      <a href="{{ url_for('privacy.index') }}" class="font-semibold underline underline-offset-2">Mis datos</a>.
+    </p>
+  {% endcall %}
+  {% endif %}
+
+  {% call tira(3) %}
+    {{ dato('Versión', document.version) }}
+    {{ dato('Vigente desde', document.effective_date.strftime('%d/%m/%Y')) }}
+    {{ dato('Huella', document.content_hash[:16]) }}
+  {% endcall %}
+
+  <article class="{{ TARJETA }}">
+    <div class="px-4 py-4 space-y-6">
+      {% for title, body in document.sections %}
+      <section>
+        <h2 class="{{ TITULO_SECCION }} mb-2">{{ title }}</h2>
+        <div class="text-sm text-slate-700 leading-relaxed space-y-3 legal-body">
+          {{ body | legal_markup }}
         </div>
+      </section>
+      {% endfor %}
+    </div>
+
+    {% if document.legal_basis %}
+    <div class="px-4 py-3 border-t border-linea-suave {{ BANDA }} rounded-b-lg">
+      <span class="{{ ROTULO_DATO }}">Normativa aplicable</span>
+      <ul class="text-xs text-slate-600 space-y-0.5 mt-1">
+        {% for norma in document.legal_basis %}<li>{{ norma }}</li>{% endfor %}
+      </ul>
     </div>
     {% endif %}
+  </article>
 
-    {# La limitacion sustantiva de la modalidad se anticipa aqui. Va arriba
-       porque es lo que determina si el paciente acepta con conocimiento. #}
-    <div class="border border-caution-border bg-caution-subtle rounded-lg p-5 mb-6">
-        <h2 class="font-semibold text-caution-text flex items-center gap-2 mb-2">
-            <i data-lucide="info" class="w-5 h-5"></i>
-            Antes de aceptar
-        </h2>
-        <p class="text-sm text-caution-text leading-relaxed">
-            En la atención a distancia el profesional no puede realizar examen
-            físico. No puede palpar, auscultar ni valorar directamente una lesión.
-            Existen diagnósticos que no pueden establecerse por esta modalidad, y
-            el profesional puede determinar que su caso requiere valoración
-            presencial.
-        </p>
-        <p class="text-sm text-caution-text leading-relaxed mt-2">
-            Esta modalidad no está destinada a la atención de urgencias. Ante una
-            situación que comprometa la vida, acuda al servicio de urgencias más
-            cercano o comuníquese con la línea 123.
-        </p>
+  <form method="POST" class="{{ TARJETA_FUERTE }} p-4 no-print">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <label for="accept_telemedicine" class="flex items-start gap-3 cursor-pointer">
+      <input type="checkbox" id="accept_telemedicine" name="accept_telemedicine" required
+             class="mt-0.5 w-4 h-4 rounded border-linea shrink-0">
+      <span class="text-sm text-slate-700 leading-relaxed">
+        Declaro que leí y comprendí el presente documento, que conozco la
+        imposibilidad de realizar examen físico en esta modalidad y que
+        puedo solicitar atención presencial en cualquier momento. Acepto de
+        manera libre y voluntaria recibir atención por telemedicina.
+      </span>
+    </label>
+
+    <div class="mt-4 flex flex-wrap gap-2 items-center">
+      <button type="submit" class="{{ BOTON }}">
+        {{ 'Aceptar la versión vigente' if current_consent else 'Aceptar y continuar' }}
+      </button>
+      <button type="button" onclick="window.print()" class="{{ BOTON_2 }}">
+        <i data-lucide="printer" class="w-4 h-4"></i> Guardar copia
+      </button>
+      <a href="{{ url_for('privacy.index') }}" class="text-sm text-slate-600 font-medium hover:text-slate-900 px-2">
+        En otro momento
+      </a>
     </div>
 
-    <article class="bg-white border border-linea rounded-lg">
-        <div class="px-6 py-4 border-b border-linea bg-lienzo-seccion rounded-t-lg">
-            <dl class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-600">
-                <div class="flex gap-1.5">
-                    <dt class="font-medium">Versión:</dt>
-                    <dd class="font-mono">{{ document.version }}</dd>
-                </div>
-                <div class="flex gap-1.5">
-                    <dt class="font-medium">Vigente desde:</dt>
-                    <dd>{{ document.effective_date.strftime('%d/%m/%Y') }}</dd>
-                </div>
-                <div class="flex gap-1.5">
-                    <dt class="font-medium">Huella:</dt>
-                    <dd class="font-mono">{{ document.content_hash[:16] }}</dd>
-                </div>
-            </dl>
-        </div>
-
-        <div class="px-6 py-6 space-y-6">
-            {% for title, body in document.sections %}
-            <section>
-                <h3 class="font-semibold text-slate-900 mb-2">{{ title }}</h3>
-                <div class="text-sm text-slate-700 leading-relaxed space-y-3 legal-body">
-                    {{ body | legal_markup }}
-                </div>
-            </section>
-            {% endfor %}
-        </div>
-
-        {% if document.legal_basis %}
-        <div class="px-6 py-4 border-t border-linea bg-lienzo-seccion rounded-b-lg">
-            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-2">
-                Normativa aplicable
-            </h3>
-            <ul class="text-xs text-slate-600 space-y-0.5">
-                {% for norma in document.legal_basis %}<li>{{ norma }}</li>{% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-    </article>
-
-    <form method="POST" class="mt-6 bg-white border border-linea rounded-lg p-6 no-print">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-        <label for="accept_telemedicine" class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" id="accept_telemedicine" name="accept_telemedicine" required
-                   class="mt-0.5 w-4 h-4 rounded border-linea shrink-0">
-            <span class="text-sm text-slate-700 leading-relaxed">
-                Declaro que leí y comprendí el presente documento, que conozco la
-                imposibilidad de realizar examen físico en esta modalidad y que
-                puedo solicitar atención presencial en cualquier momento. Acepto de
-                manera libre y voluntaria recibir atención por telemedicina.
-            </span>
-        </label>
-
-        <div class="mt-5 flex flex-wrap gap-3 items-center">
-            <button type="submit"
-                class="{{ BOTON }}">
-                {{ 'Aceptar la versión vigente' if current_consent else 'Aceptar y continuar' }}
-            </button>
-            <button type="button" onclick="window.print()"
-                class="inline-flex items-center gap-2 border border-linea text-slate-700 px-4 py-2.5 rounded-lg font-medium text-sm hover:bg-lienzo-seccion transition-colors">
-                <i data-lucide="printer" class="w-4 h-4"></i> Guardar copia
-            </button>
-            <a href="{{ url_for('privacy.index') }}"
-               class="text-slate-600 font-medium text-sm hover:text-slate-900">
-                En otro momento
-            </a>
-        </div>
-
-        <p class="text-xs text-slate-600 mt-4 leading-relaxed">
-            De la aceptación quedará constancia con indicación de la fecha, la hora,
-            el dispositivo empleado y la versión del documento. La revocatoria puede
-            solicitarse en cualquier momento y no afecta el derecho a recibir
-            atención presencial.
-        </p>
-    </form>
+    <p class="{{ PISTA }} leading-relaxed">
+      De la aceptación quedará constancia con indicación de la fecha, la hora,
+      el dispositivo empleado y la versión del documento. La revocatoria puede
+      solicitarse en cualquier momento y no afecta el derecho a recibir
+      atención presencial.
+    </p>
+  </form>
 </div>
 
 <style>

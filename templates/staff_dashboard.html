@@ -1,191 +1,213 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso,
+                          vacio, tabla %}
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-    <div>
-        <h1 class="text-3xl font-bold">Recepción</h1>
-        <p class="text-sm text-slate-500">Ordenes pendientes de medicamentos</p>
-    </div>
-    <a href="{{ url_for('staff.inventory') }}" class="{{ BOTON }}">
-        <i data-lucide="boxes" class="w-5 h-5"></i>
-        Inventario
-    </a>
-</div>
+<div class="max-w-7xl mx-auto space-y-6">
 
-<section class="bg-white border border-linea rounded-lg p-4 mb-5">
-    <form method="POST" class="grid sm:grid-cols-4 gap-3 items-end">
+  {% call cabecera('Recepción', 'Órdenes pendientes de medicamentos') %}
+    <a href="{{ url_for('staff.inventory') }}" class="{{ BOTON }}">
+      <i data-lucide="boxes" class="w-4 h-4"></i> Inventario
+    </a>
+  {% endcall %}
+
+  <!-- Validación de orden: la acción con la que empieza el turno -->
+  <section class="{{ TARJETA_FUERTE }} p-4">
+    <form method="GET" action="{{ url_for('staff.verify_order', verification_hash='TOKEN') }}"
+          onsubmit="this.action=this.action.replace('TOKEN', encodeURIComponent(this.elements.verification_hash.value));"
+          class="flex flex-col sm:flex-row sm:items-end gap-3">
+      <div class="flex-1">
+        <label class="{{ ROTULO }}" for="verification-hash">Hash de seguridad de la orden</label>
+        <input id="verification-hash" name="verification_hash" required
+               placeholder="Pega el token de la orden" class="{{ CAMPO }}"
+               aria-label="Pega el token de la orden">
+      </div>
+      <button class="{{ BOTON }}">
+        <i data-lucide="shield-check" class="w-4 h-4"></i> Validar
+      </button>
+    </form>
+  </section>
+
+  {% if verified_order %}
+  {% call aviso('completado', 'Orden verificada', 'badge-check') %}
+    La orden #{{ verified_order.id }} se verificó correctamente.
+  {% endcall %}
+  {% endif %}
+
+  <div class="grid lg:grid-cols-2 gap-4">
+    {% call panel('Horario de atención', 'clock') %}
+      <form method="POST" class="grid sm:grid-cols-3 gap-3 items-end">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="update_hours">
         <div>
-            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atención inicio</label>
-            <input type="time" name="atencion_inicio" value="{{ current_user.atencion_inicio or '08:00' }}" class="{{ CAMPO }} w-full" aria-label="Hora de inicio de atención">
+          <label class="{{ ROTULO }}" for="atencion-inicio">Inicio</label>
+          <input id="atencion-inicio" type="time" name="atencion_inicio"
+                 value="{{ current_user.atencion_inicio or '08:00' }}"
+                 class="{{ CAMPO }}" aria-label="Hora de inicio de atención">
         </div>
         <div>
-            <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Atención fin</label>
-            <input type="time" name="atencion_fin" value="{{ current_user.atencion_fin or '17:00' }}" class="{{ CAMPO }} w-full" aria-label="Hora de fin de atención">
+          <label class="{{ ROTULO }}" for="atencion-fin">Fin</label>
+          <input id="atencion-fin" type="time" name="atencion_fin"
+                 value="{{ current_user.atencion_fin or '17:00' }}"
+                 class="{{ CAMPO }}" aria-label="Hora de fin de atención">
         </div>
-        <button class="{{ BOTON }}">
-            <i data-lucide="clock" class="w-5 h-5"></i>
-            Guardar horario
-        </button>
-    </form>
-</section>
+        <button class="{{ BOTON_2 }}">Guardar horario</button>
+      </form>
+    {% endcall %}
 
-<form method="GET" action="{{ url_for('staff.verify_order', verification_hash='TOKEN') }}" class="bg-white border border-linea rounded-lg p-4 mb-5" onsubmit="this.action=this.action.replace('TOKEN', encodeURIComponent(this.elements.verification_hash.value));">
-    <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-2">Hash de seguridad</label>
-    <div class="flex flex-col sm:flex-row gap-2">
-        <input name="verification_hash" required placeholder="Pega el token de la orden" class="{{ CAMPO }} flex-1" aria-label="Pega el token de la orden">
-        <button class="{{ BOTON }}">
-            <i data-lucide="shield-check" class="w-5 h-5"></i>
-            Validar
-        </button>
-    </div>
-</form>
-
-<section class="bg-white border border-linea rounded-lg p-4 mb-5">
-    <div class="flex items-center justify-between gap-3 mb-3">
-        <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <i data-lucide="messages-square" class="w-5 h-5 text-slate-500"></i>
-            Chats de medicamentos
-        </h2>
-        <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">{{ staff_chats|length if staff_chats else 0 }} abiertos</span>
-    </div>
-    <div class="grid sm:grid-cols-2 gap-3">
+    {% call panel('Chats de medicamentos', 'messages-square') %}
+      {% call tabla(['Paciente', 'Último mensaje', 'Sin leer']) %}
         {% for item in staff_chats %}
         {% set chat = item.chat %}
-        <a href="{{ url_for('staff.chat', chat_id=chat.id) }}" class="block border border-linea rounded-lg p-3 hover:border-positive-border hover:bg-positive-subtle transition">
-            <div class="flex justify-between gap-2">
-                <span class="font-semibold text-slate-900">{{ chat.patient.name }}</span>
-                {% if item.unread > 0 %}
-                <span class="bg-accent text-white text-xs font-semibold px-2 py-1 rounded-full">{{ item.unread }}</span>
-                {% endif %}
-            </div>
-            <p class="text-xs text-slate-500 truncate">{{ item.last_msg.content if item.last_msg else chat.reason }}</p>
-        </a>
+        <tr>
+          <td class="{{ TABLA_TD }} font-semibold text-slate-900">
+            <a class="hover:underline" href="{{ url_for('staff.chat', chat_id=chat.id) }}">{{ chat.patient.name }}</a>
+          </td>
+          <td class="{{ TABLA_TD }} text-slate-600 max-w-xs truncate">{{ item.last_msg.content if item.last_msg else chat.reason }}</td>
+          <td class="{{ TABLA_TD }}">
+            {% if item.unread > 0 %}{{ chip(item.unread, 'accion') }}{% endif %}
+          </td>
+        </tr>
         {% else %}
-        <p class="text-sm text-slate-600 sm:col-span-2">Sin chats de medicamentos abiertos.</p>
+        <tr><td class="{{ TABLA_TD }}" colspan="3">{{ vacio('Sin chats de medicamentos abiertos.') }}</td></tr>
         {% endfor %}
-    </div>
-</section>
+      {% endcall %}
+    {% endcall %}
+  </div>
 
-{% if verified_order %}
-<div class="bg-positive-subtle border border-positive-border text-emerald-900 p-4 rounded-lg mb-5 font-semibold flex items-center gap-2">
-    <i data-lucide="badge-check" class="w-5 h-5"></i>
-    Orden #{{ verified_order.id }} verificada correctamente.
-</div>
-{% endif %}
-
-<div class="space-y-4">
+  <!-- Órdenes pendientes -->
+  <div class="space-y-4">
     {% for row in orders %}
     {% set order = row.order %}
-    <section class="bg-white border border-linea rounded-lg p-4">
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Orden #{{ order.id }}</span>
-                    <span class="text-xs bg-caution-subtle text-amber-800 px-2 py-1 rounded-full font-bold">{{ order.status|estado }}</span>
-                </div>
-                <h2 class="text-xl font-semibold text-slate-900">{{ order.patient.name }}</h2>
-                <p class="text-sm text-slate-500">Medico: {{ order.doctor.name }} | Expedida: {{ order.created_at|colombia_date }} {{ order.created_at|colombia_time }} | Vence: {{ order.expires_at|colombia_date }} {{ order.expires_at|colombia_time }}</p>
-                <p class="text-xs font-mono text-slate-600 mt-2 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
-            </div>
-            <div class="flex flex-col gap-2 min-w-[220px]">
-                <a href="{{ url_for('staff.verify_order', verification_hash=order.hash_seguridad or order.verification_hash) }}" class="inline-flex items-center justify-center gap-2 border border-linea px-3 py-2 rounded-lg font-bold text-slate-700">
-                    <i data-lucide="scan-line" class="w-4 h-4"></i>
-                    Verificar
-                </a>
-                <a href="{{ url_for('staff.order_map', order_id=order.id) }}" class="inline-flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 px-3 py-2 rounded-lg font-bold text-blue-700">
-                    <i data-lucide="map" class="w-4 h-4"></i>
-                    Mapa paciente
-                </a>
-                <form method="POST" action="{{ url_for('staff.dispense', order_id=order.id) }}" class="space-y-2">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="date" name="pickup_date" value="{{ order.created_at.strftime('%Y-%m-%d') }}" class="{{ CAMPO }}" aria-label="Fecha de recogida">
-                        <input type="time" name="pickup_time" value="09:00" class="{{ CAMPO }}" aria-label="Hora de recogida">
-                    </div>
-                    <select name="pharmacy_id" class="{{ CAMPO }} w-full" aria-label="Farmacia">
-                        {% for pharmacy_row in row.pharmacy_rows %}
-                        <option value="{{ pharmacy_row.pharmacy.id }}">{{ pharmacy_row.pharmacy.name }}{% if pharmacy_row.distance_km is not none %} - {{ pharmacy_row.distance_km }} km{% endif %}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="grid grid-cols-1 gap-2">
-                        <button name="fulfillment_strategy" value="nearest" class="{{ BOTON }}">
-                            <i data-lucide="map-pin" class="w-4 h-4"></i>
-                            Mas cercana
-                        </button>
-                        <button name="fulfillment_strategy" value="split" class="{{ BOTON }}">
-                            <i data-lucide="split" class="w-4 h-4"></i>
-                            Dividir tickets
-                        </button>
-                        <button name="fulfillment_strategy" value="selected" class="w-full inline-flex items-center justify-center gap-2 border border-linea text-slate-700 px-3 py-2 rounded-lg font-bold">
-                            <i data-lucide="ticket-check" class="w-4 h-4"></i>
-                            Usar seleccionada
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <section class="{{ TARJETA }} p-4 space-y-4">
+
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+        <div>
+          <span class="{{ ROTULO_DATO }}">Orden #{{ order.id }}</span>
+          <h2 class="text-xl font-bold text-slate-900 mt-0.5">{{ order.patient.name }}</h2>
+          <div class="mt-1">{{ chip(order.status|estado, 'neutro') }}</div>
         </div>
-        <div class="mt-4 overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="text-left text-xs uppercase tracking-widest text-slate-600">
-                    <tr><th class="py-2">Medicamento</th><th class="py-2">Cantidad</th><th class="py-2">Unidad</th></tr>
-                </thead>
-                <tbody>
-                    {% for med in row.meds %}
-                    <tr class="border-t">
-                        <td class="py-2 font-bold">{{ med.nombre_med }}</td>
-                        <td class="py-2">{{ med.cantidad }}</td>
-                        <td class="py-2">{{ med.unidad }}{% if med.instrucciones %}<p class="text-xs text-slate-500">{{ med.instrucciones }}</p>{% endif %}</td>
-                    </tr>
-                    {% else %}
-                    <tr><td colspan="3" class="py-3 text-slate-600">La orden no tiene medicamentos legibles.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="flex flex-wrap gap-2">
+          <a href="{{ url_for('staff.verify_order', verification_hash=order.hash_seguridad or order.verification_hash) }}" class="{{ BOTON_2 }}">
+            <i data-lucide="scan-line" class="w-4 h-4"></i> Verificar
+          </a>
+          <a href="{{ url_for('staff.order_map', order_id=order.id) }}" class="{{ BOTON_2 }}">
+            <i data-lucide="map" class="w-4 h-4"></i> Mapa paciente
+          </a>
         </div>
-        <div class="mt-4 overflow-x-auto border border-linea rounded-lg">
-            <table class="w-full text-xs">
-                <thead class="text-left text-xs uppercase tracking-widest text-slate-600 bg-lienzo-seccion">
-                    <tr>
-                        <th class="p-2">Farmacia</th>
-                        <th class="p-2">Distancia</th>
-                        {% for med in row.meds %}
-                        <th class="p-2">{{ med.nombre_med }}</th>
-                        {% endfor %}
-                        <th class="p-2">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pharmacy_row in row.pharmacy_rows %}
-                    <tr class="border-t">
-                        <td class="p-2 font-semibold text-slate-900">{{ pharmacy_row.pharmacy.name }}</td>
-                        <td class="p-2 text-slate-500">{{ pharmacy_row.distance_km ~ ' km' if pharmacy_row.distance_km is not none else 'Sin coords' }}</td>
-                        {% for med_row in pharmacy_row.meds %}
-                        <td class="p-2 {% if med_row.can_fulfill %}text-emerald-700{% else %}text-red-600{% endif %}">
-                            {{ med_row.available }}/{{ med_row.required }}
-                        </td>
-                        {% endfor %}
-                        <td class="p-2">
-                            {% if pharmacy_row.can_fulfill_all %}
-                            <span class="bg-positive-subtle text-emerald-700 px-2 py-1 rounded-full font-semibold">Disponible</span>
-                            {% elif pharmacy_row.any_available %}
-                            <span class="bg-caution-subtle text-amber-700 px-2 py-1 rounded-full font-semibold">Parcial</span>
-                            {% else %}
-                            <span class="bg-critical-subtle text-red-700 px-2 py-1 rounded-full font-semibold">Agotado</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr><td class="p-3 text-slate-600" colspan="{{ row.meds|length + 3 }}">No hay farmacias activas.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+      </div>
+
+      {% call tira(3) %}
+        {{ dato('Médico', order.doctor.name) }}
+        {{ dato('Expedida', order.created_at|colombia_date, order.created_at|colombia_time) }}
+        {{ dato('Vence', order.expires_at|colombia_date, order.expires_at|colombia_time) }}
+      {% endcall %}
+
+      <p class="text-xs font-mono text-slate-500 break-all">{{ order.hash_seguridad or order.verification_hash }}</p>
+
+      <!-- Medicamentos prescritos -->
+      <div>
+        {{ seccion('Medicamentos prescritos') }}
+        {% call tabla(['Medicamento', 'Cantidad', 'Unidad e instrucciones']) %}
+          {% for med in row.meds %}
+          <tr>
+            <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ med.nombre_med }}</td>
+            <td class="{{ TABLA_TD }} tabular-nums">{{ med.cantidad }}</td>
+            <td class="{{ TABLA_TD }}">
+              {{ med.unidad }}
+              {% if med.instrucciones %}<span class="block text-xs text-slate-500">{{ med.instrucciones }}</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td class="{{ TABLA_TD }}" colspan="3">{{ vacio('La orden no tiene medicamentos legibles.') }}</td></tr>
+          {% endfor %}
+        {% endcall %}
+      </div>
+
+      <!-- Disponibilidad por farmacia -->
+      <div>
+        {{ seccion('Disponibilidad por farmacia') }}
+        <div class="overflow-x-auto -mx-4 sm:mx-0">
+          <table class="{{ TABLA }}">
+            <thead class="{{ TABLA_CABECERA }}">
+              <tr>
+                <th scope="col" class="{{ TABLA_TH }}">Farmacia</th>
+                <th scope="col" class="{{ TABLA_TH }}">Distancia</th>
+                {% for med in row.meds %}
+                <th scope="col" class="{{ TABLA_TH }}">{{ med.nombre_med }}</th>
+                {% endfor %}
+                <th scope="col" class="{{ TABLA_TH }}">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pharmacy_row in row.pharmacy_rows %}
+              <tr>
+                <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ pharmacy_row.pharmacy.name }}</td>
+                <td class="{{ TABLA_TD }} tabular-nums text-slate-600">{{ pharmacy_row.distance_km ~ ' km' if pharmacy_row.distance_km is not none else 'Sin coords' }}</td>
+                {% for med_row in pharmacy_row.meds %}
+                <td class="{{ TABLA_TD }} tabular-nums {% if not med_row.can_fulfill %}text-critical font-semibold{% endif %}">
+                  {{ med_row.available }}/{{ med_row.required }}
+                </td>
+                {% endfor %}
+                <td class="{{ TABLA_TD }}">
+                  {% if pharmacy_row.can_fulfill_all %}
+                  {{ chip('Disponible', 'completado') }}
+                  {% elif pharmacy_row.any_available %}
+                  {{ chip('Parcial', 'revisar') }}
+                  {% else %}
+                  {{ chip('Agotado', 'riesgo') }}
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td class="{{ TABLA_TD }}" colspan="{{ row.meds|length + 3 }}">{{ vacio('No hay farmacias activas.') }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+      </div>
+
+      <!-- Despacho: una acción principal, dos alternativas -->
+      <form method="POST" action="{{ url_for('staff.dispense', order_id=order.id) }}"
+            class="border-t border-linea pt-4 space-y-3">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="grid sm:grid-cols-3 gap-3">
+          <div>
+            <label class="{{ ROTULO }}" for="pickup-date-{{ order.id }}">Fecha de recogida</label>
+            <input id="pickup-date-{{ order.id }}" type="date" name="pickup_date"
+                   value="{{ order.created_at.strftime('%Y-%m-%d') }}"
+                   class="{{ CAMPO }}" aria-label="Fecha de recogida">
+          </div>
+          <div>
+            <label class="{{ ROTULO }}" for="pickup-time-{{ order.id }}">Hora de recogida</label>
+            <input id="pickup-time-{{ order.id }}" type="time" name="pickup_time" value="09:00"
+                   class="{{ CAMPO }}" aria-label="Hora de recogida">
+          </div>
+          <div>
+            <label class="{{ ROTULO }}" for="pharmacy-{{ order.id }}">Farmacia</label>
+            <select id="pharmacy-{{ order.id }}" name="pharmacy_id" class="{{ CAMPO }}" aria-label="Farmacia">
+              {% for pharmacy_row in row.pharmacy_rows %}
+              <option value="{{ pharmacy_row.pharmacy.id }}">{{ pharmacy_row.pharmacy.name }}{% if pharmacy_row.distance_km is not none %} - {{ pharmacy_row.distance_km }} km{% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button name="fulfillment_strategy" value="nearest" class="{{ BOTON }}">
+            <i data-lucide="map-pin" class="w-4 h-4"></i> Más cercana
+          </button>
+          <button name="fulfillment_strategy" value="selected" class="{{ BOTON_2 }}">
+            <i data-lucide="ticket-check" class="w-4 h-4"></i> Usar seleccionada
+          </button>
+          <button name="fulfillment_strategy" value="split" class="{{ BOTON_2 }}">
+            <i data-lucide="split" class="w-4 h-4"></i> Dividir tickets
+          </button>
+        </div>
+      </form>
     </section>
     {% else %}
-    <div class="bg-white border border-linea rounded-lg p-8 text-center text-slate-500">
-        No hay ordenes pendientes para esta clínica.
-    </div>
+    <div class="{{ TARJETA }}">{{ vacio('No hay órdenes pendientes para esta clínica.') }}</div>
     {% endfor %}
+  </div>
+
 </div>
 {% endblock %}

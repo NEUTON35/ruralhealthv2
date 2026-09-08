@@ -1,91 +1,92 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio, tabla %}
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-    <a href="{{ url_for('patient.dashboard') }}" class="text-slate-500 hover:text-slate-800 font-bold flex items-center gap-2">
-        <i data-lucide="arrow-left" class="w-5 h-5"></i> Volver
-    </a>
+<div class="max-w-4xl mx-auto">
 
-    <section class="bg-white border border-linea rounded-lg p-5">
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5">
-            <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-slate-700">Pago independiente</p>
-                <h1 class="text-2xl font-semibold text-slate-900">Dr. {{ doctor.name }}</h1>
-                <p class="text-slate-500">{{ doctor.specialty or 'Medicina General' }}</p>
-            </div>
-            {% if discount_percent %}
-            <span class="bg-positive-subtle text-emerald-700 px-3 py-2 rounded-lg text-sm font-semibold">{{ discount_percent|round|int }}% por poliza activa</span>
+    {% call cabecera('Dr. ' ~ doctor.name, (doctor.specialty or 'Medicina General') ~ ' · Pago independiente') %}
+        {% if discount_percent %}
+            {{ chip(discount_percent|round|int ~ '% por póliza activa', 'completado') }}
+        {% endif %}
+        <a href="{{ url_for('patient.dashboard') }}" class="{{ BOTON_2 }}">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
+        </a>
+    {% endcall %}
+
+    <div class="grid lg:grid-cols-2 gap-6">
+        <div class="space-y-6">
+            {% call panel('Métodos de pago', 'wallet-cards') %}
+                {% if tariff.payment_methods_image %}
+                <a href="/uploads/{{ tariff.payment_methods_image }}" target="_blank" class="block overflow-hidden rounded-lg border border-linea bg-white" rel="noopener noreferrer">
+                    <img src="/uploads/{{ tariff.payment_methods_image }}" class="w-full max-h-80 object-contain bg-white" alt="Metodos de pago">
+                </a>
+                {% else %}
+                <p class="text-sm text-slate-600">El médico aun no subio imagen de metodos de pago.</p>
+                {% endif %}
+                {% if tariff.payment_instructions %}
+                <div class="mt-3 pt-3 border-t border-linea-suave">
+                    <span class="{{ ROTULO_DATO }}">Instrucciones del médico</span>
+                    <p class="text-sm text-slate-900 mt-1 whitespace-pre-line">{{ tariff.payment_instructions }}</p>
+                </div>
+                {% endif %}
+            {% endcall %}
+
+            {% if tickets %}
+            {% call panel('Sus comprobantes recientes', 'receipt-text') %}
+                {% call tabla(['Plan', 'Monto', 'Estado']) %}
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }}</td>
+                        <td class="{{ TABLA_TD }} whitespace-nowrap text-slate-600">${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</td>
+                        <td class="{{ TABLA_TD }}">
+                            {% if ticket.status == 'approved' %}
+                                {{ chip(ticket.status|estado, 'completado') }}
+                            {% elif ticket.status == 'rejected' %}
+                                {{ chip(ticket.status|estado, 'riesgo') }}
+                            {% else %}
+                                {{ chip(ticket.status|estado, 'revisar') }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endcall %}
+            {% endcall %}
             {% endif %}
         </div>
 
-        <div class="grid lg:grid-cols-2 gap-5">
-            <div class="space-y-4">
-                <div class="border border-linea bg-lienzo-seccion rounded-lg p-4">
-                    <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3">
-                        <i data-lucide="wallet-cards" class="w-5 h-5"></i>
-                        Metodos de pago
-                    </h2>
-                    {% if tariff.payment_methods_image %}
-                    <a href="/uploads/{{ tariff.payment_methods_image }}" target="_blank" class="block overflow-hidden rounded-lg border border-linea bg-white" rel="noopener noreferrer">
-                        <img src="/uploads/{{ tariff.payment_methods_image }}" class="w-full max-h-80 object-contain bg-white" alt="Metodos de pago">
-                    </a>
-                    {% else %}
-                    <p class="text-sm text-slate-500">El médico aun no subio imagen de metodos de pago.</p>
-                    {% endif %}
-                    {% if tariff.payment_instructions %}
-                    <p class="text-sm text-slate-700 mt-3 whitespace-pre-line">{{ tariff.payment_instructions }}</p>
-                    {% endif %}
-                </div>
-
-                {% if tickets %}
-                <div class="border border-linea rounded-lg p-4">
-                    <h2 class="font-semibold text-slate-900 mb-3">Sus comprobantes recientes</h2>
-                    <div class="space-y-2">
-                        {% for ticket in tickets %}
-                        <div class="flex items-center justify-between gap-3 bg-lienzo-seccion rounded-lg p-3">
-                            <div>
-                                <p class="font-semibold text-sm text-slate-800">{{ plan_labels.get(ticket.plan_type, ticket.plan_type) }}</p>
-                                <p class="text-xs text-slate-500">${{ '%.0f'|format(ticket.final_amount or ticket.amount or 0) }}</p>
-                            </div>
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold {% if ticket.status == 'approved' %}bg-positive-subtle text-emerald-700{% elif ticket.status == 'rejected' %}bg-critical-subtle text-red-700{% else %}bg-caution-subtle text-amber-700{% endif %}">{{ ticket.status|estado }}</span>
-                        </div>
+        {% call panel('Enviar comprobante', 'upload') %}
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <fieldset>
+                    <legend class="{{ ROTULO }}">Plan que va a pagar <span class="text-critical" aria-hidden="true">*</span></legend>
+                    <div class="border border-linea rounded-lg divide-y divide-linea-suave">
+                        {% for price in prices %}
+                        <label class="flex items-center justify-between gap-3 px-3 py-3 cursor-pointer hover:bg-lienzo-seccion">
+                            <span class="min-w-0">
+                                <span class="block text-sm font-bold text-slate-900">{{ price.label }}</span>
+                                <span class="block text-sm text-slate-600 mt-0.5">
+                                    {% if discount_percent and price.final_amount != price.amount %}
+                                    <span class="line-through text-slate-500">${{ '%.0f'|format(price.amount) }}</span>
+                                    {% endif %}
+                                    <span class="font-bold text-slate-900">${{ '%.0f'|format(price.final_amount) }}</span>
+                                </span>
+                            </span>
+                            <input type="radio" name="plan_type" value="{{ price.plan_type }}" required class="w-4 h-4 accent-accent shrink-0" aria-label="Plan type">
+                        </label>
                         {% endfor %}
                     </div>
-                </div>
-                {% endif %}
-            </div>
-
-            <form method="POST" enctype="multipart/form-data" class="border border-linea rounded-lg p-4 space-y-4">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <h2 class="font-semibold text-slate-900 flex items-center gap-2">
-                    <i data-lucide="upload" class="w-5 h-5 text-slate-500"></i>
-                    Enviar comprobante
-                </h2>
-                <div class="grid gap-2">
-                    {% for price in prices %}
-                    <label class="border border-linea rounded-lg p-3 cursor-pointer hover:border-slate-700">
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <p class="font-semibold text-slate-900">{{ price.label }}</p>
-                                <p class="text-sm text-slate-500">
-                                    {% if discount_percent and price.final_amount != price.amount %}
-                                    <span class="line-through">${{ '%.0f'|format(price.amount) }}</span>
-                                    {% endif %}
-                                    <span class="font-semibold text-slate-700">${{ '%.0f'|format(price.final_amount) }}</span>
-                                </p>
-                            </div>
-                            <input type="radio" name="plan_type" value="{{ price.plan_type }}" required class="accent-slate-700" aria-label="Plan type">
-                        </div>
-                    </label>
-                    {% endfor %}
+                </fieldset>
+                <div>
+                    <label class="{{ ROTULO }}" for="campo-proof">Comprobante de pago <span class="text-critical" aria-hidden="true">*</span></label>
+                    <input id="campo-proof" type="file" name="proof" accept="image/*,.pdf" required class="{{ CAMPO }}" aria-label="Proof">
+                    <p class="{{ PISTA }}">Imagen o PDF del recibo de la transferencia.</p>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Comprobante</label>
-                    <input type="file" name="proof" accept="image/*,.pdf" required class="{{ CAMPO }} w-full" aria-label="Proof">
+                    <label class="{{ ROTULO }}" for="campo-patient_note">Nota para el médico (opcional)</label>
+                    <textarea id="campo-patient_note" name="patient_note" rows="3" placeholder="Nota opcional para el médico" class="{{ CAMPO }}" aria-label="Nota opcional para el médico"></textarea>
                 </div>
-                <textarea name="patient_note" rows="3" placeholder="Nota opcional para el médico" class="{{ CAMPO }} w-full" aria-label="Nota opcional para el médico"></textarea>
-                <button class="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent">Enviar para revisión</button>
+                <button class="{{ BOTON }} w-full">Enviar para revisión</button>
             </form>
-        </div>
-    </section>
+        {% endcall %}
+    </div>
 </div>
 {% endblock %}

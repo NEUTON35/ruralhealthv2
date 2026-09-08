@@ -1,51 +1,49 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio %}
 {% block content %}
-<div class="bg-white rounded-lg border border-linea overflow-hidden flex flex-col h-[80vh] relative">
-    <!-- CABECERA -->
-    <div class="bg-white border-b border-linea p-5 sm:p-6 shrink-0">
-        <div class="flex justify-between items-start mb-3 relative z-10">
-            <div>
-                <h2 class="text-xl font-semibold tracking-tight">{% if doctor.role != 'doctor' %}Staff {{ doctor.name }}{% else %}Dr. {{ doctor.name }}{% endif %}</h2>
-                <p class="text-sm text-slate-600 flex items-center gap-1.5 font-medium mt-1">
-                    <i data-lucide="clock" class="w-4 h-4"></i> 
-                    {% if doctor.role != 'doctor' %}
-                        {{ doctor.atencion_inicio or '08:00' }} - {{ doctor.atencion_fin or '17:00' }}
-                    {% else %}
-                        {{ doctor.schedule or 'Horario no definido' }}
-                    {% endif %}
-                </p>
-            </div>
-            <div class="flex gap-2 items-center">
-                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="border border-linea text-slate-700 p-2.5 rounded-lg hover:bg-lienzo-seccion transition-colors">
-                    <i data-lucide="video" class="w-5 h-5"></i>
-                </button>
-                <span class="border border-linea text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider">
-                    {{ chat.status|estado }}
-                </span>
-            </div>
-        </div>
 
-        <!-- Barra de Motivo de Consulta -->
-        <form method="POST" class="flex gap-2 items-center bg-black/10 p-2 rounded-lg mt-4 border border-white/10 relative z-10">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="update_reason" value="1">
-            <i data-lucide="tag" class="w-4 h-4 text-slate-500 ml-2"></i>
-            <input type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="flex-1 bg-transparent text-slate-800 placeholder-slate-400 text-sm focus:outline-none px-2 font-medium" aria-label="Añadir motivo de la consulta...">
-            <button type="submit" class="{{ BOTON_MINI }}">Guardar</button>
-        </form>
+{% call cabecera(('Staff ' ~ doctor.name) if doctor.role != 'doctor' else ('Dr. ' ~ doctor.name), 'Consulta por chat') %}
+    <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="{{ BOTON_2 }}" aria-label="Abrir videollamada">
+        <i data-lucide="video" class="w-4 h-4"></i> Videollamada
+    </button>
+    <a href="/patient/dashboard" class="{{ BOTON_2 }}">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel
+    </a>
+{% endcall %}
+
+<!-- Contexto de la consulta -->
+{% call tira(2) %}
+    {{ dato('Estado de la consulta', chat.status|estado) }}
+    {% if doctor.role != 'doctor' %}
+        {{ dato('Horario de atención', (doctor.atencion_inicio or '08:00') ~ ' - ' ~ (doctor.atencion_fin or '17:00')) }}
+    {% else %}
+        {{ dato('Horario de atención', doctor.schedule or 'Horario no definido') }}
+    {% endif %}
+{% endcall %}
+
+<!-- Motivo de la consulta -->
+<form method="POST" class="{{ TARJETA }} p-4 mt-4 grid sm:grid-cols-[1fr_auto] gap-3 items-end">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="update_reason" value="1">
+    <div>
+        <label class="{{ ROTULO }}" for="campo-reason">Motivo de la consulta</label>
+        <input id="campo-reason" type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="{{ CAMPO }}" aria-label="Añadir motivo de la consulta...">
     </div>
+    <button type="submit" class="{{ BOTON_2 }}">Guardar motivo</button>
+</form>
 
+<div class="{{ TARJETA_FUERTE }} overflow-hidden flex flex-col h-[70vh] mt-4">
     <!-- CONTENEDOR DE MENSAJES -->
     <div class="flex-1 p-4 overflow-y-auto bg-lienzo-seccion space-y-3">
         <!-- COUNTDOWN DE 5 MINUTOS PARA CITAS -->
         {% if chat.appointment and chat.appointment.status == 'in_progress' and chat.appointment.started_at %}
-        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg text-center mb-4">
-            <h3 class="font-semibold text-lg flex items-center justify-center gap-2">
-                <i data-lucide="timer" class="w-5 h-5"></i> Consulta en Curso (10 min)
-            </h3>
-            <p>El paciente tiene 5 minutos para presentarse, de lo contrario la cita se cancelará.</p>
-            <div id="countdown-timer" class="text-4xl font-mono font-semibold mt-2 text-red-600">10:00</div>
-            
+        <div id="appointment-countdown" class="{{ AVISO['revisar'] }}">
+            <p class="font-bold text-sm flex items-center gap-2">
+                <i data-lucide="timer" class="w-4 h-4"></i> Consulta en curso (10 min)
+            </p>
+            <p class="text-sm mt-1">El paciente tiene 5 minutos para presentarse, de lo contrario la cita se cancelará.</p>
+            <p id="countdown-timer" class="text-3xl font-mono font-bold mt-2 tabular-nums">10:00</p>
+
             {% if current_user.role == 'doctor' %}
             <form method="POST" action="/doctor/mark_no_show/{{ chat.appointment.id }}" class="mt-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -60,13 +58,13 @@
             (function() {
                 var startStr = "{{ chat.appointment.started_at|colombia_iso }}";
                 var chatId = "{{ chat.id }}";
-                
+
                 var startedAt = new Date(startStr);
                 var now = new Date();
                 var diff = (now - startedAt) / 1000;
 
-                var noShowLimit = 300; 
-                var consultationLimit = 600; 
+                var noShowLimit = 300;
+                var consultationLimit = 600;
                 var remaining = consultationLimit - diff;
 
                 var timerElement = document.getElementById('countdown-timer');
@@ -80,7 +78,7 @@
                         if (!document.getElementById('no-show-warn')) {
                             var warn = document.createElement('div');
                             warn.id = 'no-show-warn';
-                            warn.className = 'bg-critical-border text-red-900 p-2 rounded-lg mt-2 text-sm font-bold';
+                            warn.className = 'border-2 border-critical bg-critical-subtle text-critical-text px-3 py-2 rounded-lg mt-2 text-sm font-bold';
                             warn.textContent = "Quedan pocos segundos para escribir o la cita se marcara como no asistida.";
                             countdownDiv.appendChild(warn);
                         }
@@ -98,62 +96,64 @@
                         var mins = Math.floor(remaining / 60);
                         var secs = Math.floor(remaining % 60);
                         timerElement.innerHTML = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
-                        if (remaining < 60) { timerElement.classList.add('animate-pulse'); }
+                        if (remaining < 60) { timerElement.classList.add('text-critical'); }
                     }
                 }, 1000);
             })();
         </script>
         {% endif %}
-        
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                <div class="bg-critical-subtle text-red-800 p-3 rounded-lg text-sm font-bold text-center animate-pulse border border-critical-border">
-                    {{ message }}
-                </div>
+                {% call aviso('revisar') %}{{ message }}{% endcall %}
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
         {% for msg in messages %}
         <div class="{% if msg.sender_id == current_user.id %}flex justify-end{% else %}flex justify-start{% endif %}">
-            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-lg rounded-tr-sm{% else %}bg-white border border-linea text-slate-800 rounded-lg rounded-tl-sm{% endif %} p-4 max-w-[85%] relative group">
-                <p class="text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
-                
+            <div class="{% if msg.sender_id == current_user.id %}bg-slate-700 text-white{% else %}bg-white border border-linea text-slate-900{% endif %} rounded-lg px-4 py-3 max-w-[85%] relative group">
+                <p class="text-sm leading-relaxed">{{ msg.content }}</p>
+
                 {% if msg.file_path %}
                     {% if msg.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')) %}
-                        <img src="/uploads/{{ msg.file_path }}" class="mt-2 rounded-lg max-w-[200px] cursor-pointer border border-black/10" onclick="window.open(this.src)" alt="">
+                        <img src="/uploads/{{ msg.file_path }}" class="mt-2 rounded-lg max-w-[200px] cursor-pointer border border-linea" onclick="window.open(this.src)" alt="">
                     {% else %}
-                        <a href="/uploads/{{ msg.file_path }}" target="_blank" class="block mt-2 underline text-blue-200 flex items-center gap-1" rel="noopener noreferrer">
+                        <a href="/uploads/{{ msg.file_path }}" target="_blank" class="mt-2 inline-flex items-center gap-2 px-2 py-1.5 rounded-lg border text-sm font-semibold {% if msg.sender_id == current_user.id %}border-white/40 text-white{% else %}border-linea text-accent{% endif %}" rel="noopener noreferrer">
                             <i data-lucide="file-text" class="w-4 h-4"></i> Ver PDF
                         </a>
                     {% endif %}
                 {% endif %}
 
-                <div class="flex justify-end items-center gap-1 mt-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-gray-600{% endif %}">
+                <div class="flex justify-end items-center gap-1 mt-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-slate-500{% endif %}">
                     <span class="text-xs">{{ msg.timestamp|colombia_time }}</span>
                     {% if msg.sender_id == current_user.id %}
                         {% if msg.is_read %}
-                            <i data-lucide="check-check" class="w-3.5 h-3.5 text-slate-500" aria-label="Leido"></i>
+                            <i data-lucide="check-check" class="w-3.5 h-3.5" aria-label="Leido"></i>
                         {% else %}
                             <i data-lucide="check" class="w-3.5 h-3.5" aria-label="Enviado"></i>
                         {% endif %}
                     {% endif %}
                 </div>
-                
+
                 {% if msg.is_flow_question and msg.sender_id != current_user.id %}
-                <div class="mt-3 border-t pt-2 border-linea">
+                <div class="mt-3 border-t pt-3 border-linea-suave">
                     {% if msg.flow_input_type == 'open' %}
-                    <form method="POST" action="/patient/chat/{{ chat.id }}" class="flex gap-2">
+                    <form method="POST" action="/patient/chat/{{ chat.id }}" class="flex gap-2 items-end">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <input type="text" name="flow_response_open" required class="{{ CAMPO }} flex-1" placeholder="Tu respuesta..." aria-label="Tu respuesta...">
+                        <div class="flex-1">
+                            <label class="{{ ROTULO }}" for="campo-flow_response_open-{{ msg.id }}">Tu respuesta <span class="text-critical" aria-hidden="true">*</span></label>
+                            <input id="campo-flow_response_open-{{ msg.id }}" type="text" name="flow_response_open" required class="{{ CAMPO }}" placeholder="Tu respuesta..." aria-label="Tu respuesta...">
+                        </div>
                         <button type="submit" class="{{ BOTON }}">Enviar</button>
                     </form>
                     {% elif msg.parsed_flow_options %}
                     <form method="POST" action="/patient/chat/{{ chat.id }}" class="space-y-2">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <p class="{{ ROTULO }}">Elija una opción</p>
                         {% for key, val in msg.parsed_flow_options.items() %}
-                        <button type="submit" name="flow_response" value="{{ key }}" class="{{ BOTON_2 }}">
+                        <button type="submit" name="flow_response" value="{{ key }}" class="{{ BOTON_2 }} w-full justify-start">
                             {{ key }}. {{ val['text'] }}
                         </button>
                         {% endfor %}
@@ -167,18 +167,18 @@
     </div>
 
     <!-- ZONA INFERIOR -->
-    <div class="border-t">
+    <div class="border-t border-linea">
         {% if chat.status == 'closed' %}
-            <div class="p-4 bg-slate-100">
+            <div class="p-4 bg-white">
                 {% if can_rate %}
-                    <form action="/patient/rate_chat/{{ chat.id }}" method="POST" class="space-y-3 text-left p-4 bg-caution-subtle border-l-4 border-caution rounded-r-lg">
+                    <form action="/patient/rate_chat/{{ chat.id }}" method="POST" class="space-y-4">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <h3 class="font-bold text-lg text-yellow-800 flex items-center gap-2">
-                            <i data-lucide="star" class="w-5 h-5"></i> Califique su consulta
-                        </h3>
-                        <div class="flex gap-2 items-center">
-                            <label class="font-bold text-sm">Estrellas:</label>
-                            <select name="stars" class="{{ CAMPO }}" aria-label="Calificación">
+                        <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+                            <i data-lucide="star" class="w-4 h-4 text-slate-500"></i> Califique su consulta
+                        </h2>
+                        <div class="sm:max-w-xs">
+                            <label class="{{ ROTULO }}" for="campo-stars">Estrellas</label>
+                            <select id="campo-stars" name="stars" class="{{ CAMPO }}" aria-label="Calificación">
                                 <option value="5">5 - Excelente</option>
                                 <option value="4">4 - Buena</option>
                                 <option value="3">3 - Aceptable</option>
@@ -186,59 +186,69 @@
                                 <option value="1">1 - Muy deficiente</option>
                             </select>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            {% for tag in ["Puntual", "Explicación clara", "Buena comunicación", "Sin espera", "Muy amable"] %}
-                            <label class="flex items-center gap-1 bg-white border px-3 py-1 rounded-full cursor-pointer hover:bg-caution-subtle text-sm">
-                                <input type="checkbox" name="tags" value="{{ tag }}" class="w-3 h-3" aria-label="Tags"> {{ tag }}
-                            </label>
-                            {% endfor %}
+                        <div>
+                            <span class="{{ ROTULO }}">¿Qué destacaría? (opcional)</span>
+                            <div class="flex flex-wrap gap-2">
+                                {% for tag in ["Puntual", "Explicación clara", "Buena comunicación", "Sin espera", "Muy amable"] %}
+                                <label class="inline-flex items-center gap-2 bg-white border border-linea px-3 py-2 rounded-lg cursor-pointer text-sm font-medium text-slate-700">
+                                    <input type="checkbox" name="tags" value="{{ tag }}" class="w-4 h-4 accent-accent" aria-label="Tags"> {{ tag }}
+                                </label>
+                                {% endfor %}
+                            </div>
                         </div>
-                        <textarea name="comment" rows="2" class="{{ CAMPO }} w-full" placeholder="Cuéntale a otros pacientes tu experiencia..." aria-label="Cuéntale a otros pacientes tu experiencia..."></textarea>
+                        <div>
+                            <label class="{{ ROTULO }}" for="campo-comment">Comentario para otros pacientes</label>
+                            <textarea id="campo-comment" name="comment" rows="2" class="{{ CAMPO }}" placeholder="Cuéntale a otros pacientes tu experiencia..." aria-label="Cuéntale a otros pacientes tu experiencia..."></textarea>
+                        </div>
                         <button type="submit" class="{{ BOTON }}">
-                            Publicar Reseña
+                            Publicar reseña
                         </button>
                     </form>
                 {% elif chat.closed_by == 'patient' %}
-                    <p class="text-sm text-red-500 text-center font-bold py-2">Cerraste la consulta.</p>
+                    {{ vacio('Cerraste la consulta.') }}
                 {% else %}
-                    <p class="text-sm text-gray-500 text-center font-bold py-2">Consulta finalizada.</p>
+                    {{ vacio('Consulta finalizada.') }}
                 {% endif %}
             </div>
 
         {% elif not is_on_duty %}
-            <div class="p-4 bg-lienzo-seccion text-center text-gray-600">
-                <p class="font-bold flex items-center justify-center gap-2">
-                    <i data-lucide="moon" class="w-5 h-5"></i> Fuera de horario de atención
+            <div class="p-4 bg-lienzo-seccion text-center">
+                <p class="text-sm font-bold text-slate-900 flex items-center justify-center gap-2">
+                    <i data-lucide="moon" class="w-4 h-4 text-slate-500"></i> Fuera de horario de atención
                 </p>
-                <p class="text-xs text-gray-500">{% if doctor.role != 'doctor' %}El personal está fuera de su horario laboral.{% else %}El doctor no atiende en este momento.{% endif %}</p>
+                <p class="text-xs text-slate-500 mt-1">{% if doctor.role != 'doctor' %}El personal está fuera de su horario laboral.{% else %}El doctor no atiende en este momento.{% endif %}</p>
             </div>
 
         {% elif is_doctor_busy_elsewhere %}
-            <div class="p-4 bg-caution-subtle text-center text-yellow-800 border-t-2 border-caution-border">
-                <p class="font-bold flex items-center gap-2">
-                    <i data-lucide="user-check" class="w-5 h-5"></i> Doctor en consulta
-                </p>
-                <p class="text-xs">El profesional está atendiendo a otro paciente. Su conversación se reanudará en breve.</p>
+            <div class="p-4">
+                {% call aviso('revisar', 'Doctor en consulta', 'user-check') %}
+                    El profesional está atendiendo a otro paciente. Su conversación se reanudará en breve.
+                {% endcall %}
             </div>
 
         {% elif is_read_only %}
-            <div class="p-4 bg-blue-50 text-center text-blue-800 border-t-2 border-blue-200">
-                <p class="font-bold flex items-center gap-2">
-                    <i data-lucide="eye" class="w-5 h-5"></i> Modo Solo Lectura
-                </p>
-                <p class="text-xs">El profesional está revisando su historia clínica. Por ahora no puede enviar mensajes.</p>
+            <div class="p-4">
+                {% call aviso('info', 'Modo solo lectura', 'eye') %}
+                    El profesional está revisando su historia clínica. Por ahora no puede enviar mensajes.
+                {% endcall %}
             </div>
 
         {% elif can_send %}
-            <form method="POST" enctype="multipart/form-data" class="p-4 sm:p-5 bg-white flex gap-3 items-center relative" data-offline-chat-form data-chat-id="{{ chat.id }}" data-doctor-name="{{ doctor.name }}">
+            <form method="POST" enctype="multipart/form-data" class="p-4 bg-white flex gap-3 items-end" data-offline-chat-form data-chat-id="{{ chat.id }}" data-doctor-name="{{ doctor.name }}">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <label class="p-3.5 bg-lienzo-seccion hover:bg-slate-100 rounded-full cursor-pointer transition text-slate-600 hover:text-primary border border-linea shrink-0">
-                    <i data-lucide="paperclip" class="w-5 h-5"></i>
-                    <input type="file" name="file" accept="image/*,.pdf" hidden aria-label="Archivo">
-                </label>
-                <input type="text" name="content" placeholder="Escribe tu mensaje aquí..." class="{{ CAMPO }} flex-1" aria-label="Escribe tu mensaje aquí...">
+                <div>
+                    <span class="{{ ROTULO }}">Adjuntar</span>
+                    <label class="{{ BOTON_2 }} cursor-pointer" aria-label="Adjuntar archivo">
+                        <i data-lucide="paperclip" class="w-4 h-4"></i>
+                        <input type="file" name="file" accept="image/*,.pdf" hidden aria-label="Archivo">
+                    </label>
+                </div>
+                <div class="flex-1">
+                    <label class="{{ ROTULO }}" for="campo-content">Tu mensaje</label>
+                    <input id="campo-content" type="text" name="content" placeholder="Escribe tu mensaje aquí..." class="{{ CAMPO }}" aria-label="Escribe tu mensaje aquí...">
+                </div>
                 <button type="submit" class="{{ BOTON }}">
-                    <i data-lucide="send" class="w-5 h-5 ml-1"></i>
+                    <i data-lucide="send" class="w-4 h-4"></i> Enviar
                 </button>
             </form>
         {% endif %}
@@ -246,26 +256,24 @@
 </div>
 
 {% if chat.status == 'open' and can_send %}
-<form method="POST" action="/patient/close_chat/{{ chat.id }}" class="mt-2 text-right">
+<form method="POST" action="/patient/close_chat/{{ chat.id }}" class="mt-4 flex justify-end">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="text-red-500 text-sm font-bold hover:underline flex items-center gap-1 ml-auto">
+    <button type="submit" class="{{ BOTON_PELIGRO }}">
         <i data-lucide="x-circle" class="w-4 h-4"></i> Cerrar consulta
     </button>
 </form>
 {% endif %}
 
-<div id="video-call-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg overflow-hidden w-full max-w-2xl h-[500px] relative">
-        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="{{ BOTON_PELIGRO }}">
-            <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-        <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone" width="100%" height="100%"></iframe>
+<div id="video-call-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg overflow-hidden w-full max-w-2xl h-[500px] flex flex-col">
+        <div class="flex items-center justify-between gap-3 px-4 py-2 border-b border-linea shrink-0">
+            <h2 class="{{ TITULO_SECCION }}">Videollamada</h2>
+            <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="{{ BOTON_MINI_2 }}" aria-label="Cerrar videollamada">
+                <i data-lucide="x" class="w-4 h-4"></i> Cerrar
+            </button>
+        </div>
+        <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone" width="100%" height="100%" class="flex-1"></iframe>
     </div>
 </div>
 
-<div class="mt-6">
-    <a href="/patient/dashboard" class="{{ BOTON_2 }}">
-        <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver al panel
-    </a>
-</div>
 {% endblock %}

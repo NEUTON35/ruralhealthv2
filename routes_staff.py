@@ -898,4 +898,8 @@ def envios():
         'staff_envios.html',
         shipments=shipments,
         pharmacies=pharmacies,
+        # La pantalla marca en rojo el cargamento cuya fecha estimada ya paso.
+        # Sin esta fecha la plantilla reventaba con UndefinedError: un 500 en
+        # la cara del personal, y sin rastro de por que.
+        today_str=colombia_now().strftime('%Y-%m-%d'),
     )

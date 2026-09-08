@@ -1028,9 +1028,20 @@ def chat(chat_id):
             flash('Motivo actualizado')
         elif action == 'send_message':
             content = (request.form.get('content') or '').strip()[:5000]
-            if content: 
+            if content:
                 msg = Message(clinic_id=current_user.clinic_id, chat_id=chat_obj.id, sender_id=current_user.id, content=content)
                 db.session.add(msg)
+            else:
+                flash('El mensaje estaba vacio: no se envio nada.')
+        elif not action and (request.form.get('content') or '').strip():
+            # Un envio sin `action` con contenido dentro es un mensaje que se
+            # habria perdido en silencio: la rama no existia, la respuesta era
+            # 200 y el profesional creia haber escrito. La ruta del paciente
+            # trata la ausencia de `action` como mensaje; esta no lo hacia.
+            content = (request.form.get('content') or '').strip()[:5000]
+            db.session.add(Message(clinic_id=current_user.clinic_id,
+                                   chat_id=chat_obj.id,
+                                   sender_id=current_user.id, content=content))
         elif action == 'upload_file':
             file = request.files.get('file')
             if file and file.filename != '':

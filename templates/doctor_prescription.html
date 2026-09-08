@@ -1,116 +1,107 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio %}
 {% block content %}
 <div class="max-w-5xl mx-auto">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900 flex items-center gap-3">
-                <div class="bg-positive p-2.5 rounded-lg">
-                    <i data-lucide="file-signature" class="w-7 h-7 text-white"></i>
-                </div>
-                Orden Médica Digital
-            </h1>
-            <p class="text-sm text-slate-500 mt-1">Prescripción con validez legal según la normativa colombiana</p>
-        </div>
-        <a href="{{ url_for('doctor.chat', chat_id=chat_id) if chat_id else url_for('doctor.dashboard') }}" class="border border-linea px-4 py-2.5 rounded-lg font-bold text-slate-700 inline-flex items-center gap-2 hover:border-primary hover:text-primary transition-colors">
+
+    {% call cabecera('Orden médica digital', 'Prescripción con validez legal según la normativa colombiana') %}
+        <a href="{{ url_for('doctor.chat', chat_id=chat_id) if chat_id else url_for('doctor.dashboard') }}" class="{{ BOTON_2 }}">
             <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
         </a>
-    </div>
+    {% endcall %}
 
     <!-- =====================================================================
          SEGURIDAD CLÍNICA DEL PACIENTE
          Se muestra antes del formulario, no después: la información que puede
          cambiar la prescripción tiene que leerse antes de escribirla.
          ===================================================================== -->
-    <section class="mb-5 space-y-3">
 
-        <!-- Alergias -->
-        {% if allergies %}
-        <div class="bg-critical-subtle border-2 border-critical-border rounded-lg p-5">
-            <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3">
-                <i data-lucide="triangle-alert" class="w-5 h-5"></i>
-                Alergias registradas ({{ allergies | length }})
-            </h2>
-            <ul class="space-y-2">
-                {% for allergy in allergies %}
-                <li class="bg-white/70 rounded-lg px-4 py-3 flex items-start justify-between gap-3 flex-wrap">
-                    <div class="min-w-0">
-                        <p class="font-semibold text-rose-900">{{ allergy.substance }}</p>
-                        {% if allergy.reaction %}
-                        <p class="text-sm text-rose-800">Reacción: {{ allergy.reaction }}</p>
-                        {% endif %}
-                    </div>
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 {% if allergy.severity in ('anafilaxia', 'grave') %}bg-critical text-white {% else %}bg-caution-border text-amber-900{% endif %}">
-                        {{ allergy.severity | upper }}
-                    </span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% else %}
-        <div class="bg-slate-100 border border-linea rounded-lg p-4 flex items-start gap-3">
-            <i data-lucide="circle-help" class="w-5 h-5 text-slate-500 mt-0.5 shrink-0"></i>
-            <div class="text-sm text-slate-700 leading-relaxed">
-                <b class="text-slate-900">No hay alergias registradas para este paciente.</b>
-                La verificación solo cubre lo que está en la historia. Pregunte antes
-                de prescribir y
-                <a href="{{ url_for('doctor.patient_history', patient_id=patient.id) }}"
-                   class="text-accent font-semibold underline underline-offset-2">registre lo que informe</a>.
-            </div>
-        </div>
-        {% endif %}
+    <!-- Alergias: lo que puede matar al paciente va primero, a todo el ancho -->
+    {% if allergies %}
+    {% call aviso('riesgo', 'Alergias registradas (' ~ allergies|length ~ ')', 'triangle-alert') %}
+        <ul class="divide-y divide-critical-border -mb-1">
+            {% for allergy in allergies %}
+            <li class="py-2 flex items-start justify-between gap-3 flex-wrap">
+                <div class="min-w-0">
+                    <p class="font-bold">{{ allergy.substance }}</p>
+                    {% if allergy.reaction %}
+                    <p class="text-sm">Reacción: {{ allergy.reaction }}</p>
+                    {% endif %}
+                </div>
+                {% if allergy.severity in ('anafilaxia', 'grave') %}
+                    {{ chip(allergy.severity|upper, 'riesgo') }}
+                {% else %}
+                    {{ chip(allergy.severity|upper, 'revisar') }}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    {% endcall %}
+    {% else %}
+    {% call aviso('neutro', 'No hay alergias registradas para este paciente', 'circle-help') %}
+        La verificación solo cubre lo que está en la historia. Pregunte antes
+        de prescribir y
+        <a href="{{ url_for('doctor.patient_history', patient_id=patient.id) }}"
+           class="text-accent font-semibold underline underline-offset-2">registre lo que informe</a>.
+    {% endcall %}
+    {% endif %}
 
-        <!-- Tratamiento activo -->
-        {% if active_meds %}
-        <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
-            <h2 class="font-semibold text-slate-900 text-sm flex items-center gap-2 mb-2">
-                <i data-lucide="pill" class="w-4 h-4"></i>
-                Tratamiento activo (últimos 90 días)
-            </h2>
-            <p class="text-sm text-sky-900">{{ active_meds | join(' · ') }}</p>
-        </div>
-        {% endif %}
+    <!-- Tira de contexto clínico -->
+    <div class="mt-4">
+    {% call tira(4) %}
+        {{ dato('Paciente', patient.name) }}
+        {{ dato('Documento', patient.cedula) }}
+        {{ dato('Gestación', 'Registrada' if patient.is_pregnant else 'No registrada') }}
+        {{ dato('Alergias en historia', allergies|length) }}
+    {% endcall %}
+    </div>
 
-        <!-- Gestación -->
-        {% if patient.is_pregnant %}
-        <div class="bg-lienzo-seccion border border-slate-700 rounded-lg p-4 flex items-center gap-3">
-            <i data-lucide="baby" class="w-5 h-5 text-slate-500 shrink-0"></i>
-            <p class="text-sm text-slate-900 font-bold">
-                Paciente registrada como gestante. Se verificarán las contraindicaciones en el embarazo.
-            </p>
-        </div>
-        {% endif %}
-    </section>
+    <!-- Tratamiento activo -->
+    {% if active_meds %}
+    <div class="{{ TARJETA }} mt-4 px-4 py-3">
+        <span class="{{ ROTULO_DATO }}">Tratamiento activo (últimos 90 días)</span>
+        <p class="text-sm text-slate-900 mt-1">{{ active_meds | join(' · ') }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Gestación -->
+    {% if patient.is_pregnant %}
+    <div class="mt-4">
+    {% call aviso('revisar', 'Paciente gestante', 'baby') %}
+        Se verificarán las contraindicaciones en el embarazo.
+    {% endcall %}
+    </div>
+    {% endif %}
 
     <!-- Resultado de la verificación tras un intento bloqueado -->
     {% if safety and safety.findings %}
-    <section class="mb-5 bg-white border-2 {% if safety.requires_override %}border-critical{% else %}border-caution-border{% endif %} rounded-lg overflow-hidden">
-        <div class="{% if safety.requires_override %}bg-critical{% else %}bg-caution{% endif %} px-5 py-3 text-white">
-            <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                Verificación de seguridad: {{ safety.summary_line() }}
-            </h2>
-        </div>
-        <ul class="divide-y divide-slate-100">
+    <section class="mt-4 {% if safety.requires_override %}border-2 border-critical bg-critical-subtle{% else %}border-2 border-caution-border bg-caution-subtle{% endif %} rounded-lg">
+        <h2 class="font-bold text-sm flex items-center gap-2 px-4 py-3 {% if safety.requires_override %}text-critical-text{% else %}text-caution-text{% endif %}">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+            Verificación de seguridad: {{ safety.summary_line() }}
+        </h2>
+        <ul class="bg-white border-y border-linea divide-y divide-linea-suave">
             {% for finding in safety.findings %}
-            <li class="p-5">
-                <div class="flex items-start gap-3">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 mt-0.5 {% if finding.severity == 'block' %}bg-critical text-white {% elif finding.severity == 'warn' %}bg-caution text-white {% else %}bg-slate-300 text-slate-800{% endif %}">
-                        {{ finding.severity_label | upper }}
-                    </span>
-                    <div class="min-w-0">
-                        <p class="font-semibold text-slate-900">{{ finding.title }}</p>
-                        <p class="text-sm text-slate-700 mt-1 leading-relaxed">{{ finding.detail }}</p>
-                        {% if finding.recommendation %}
-                        <p class="text-sm text-slate-800 mt-2 bg-lienzo-seccion border-l-4 border-linea pl-3 py-2 rounded-r leading-relaxed">
-                            <b>Conducta sugerida:</b> {{ finding.recommendation }}
-                        </p>
-                        {% endif %}
-                    </div>
+            <li class="p-4 flex items-start gap-3">
+                {% if finding.severity == 'block' %}
+                    {{ chip(finding.severity_label|upper, 'riesgo') }}
+                {% elif finding.severity == 'warn' %}
+                    {{ chip(finding.severity_label|upper, 'revisar') }}
+                {% else %}
+                    {{ chip(finding.severity_label|upper, 'neutro') }}
+                {% endif %}
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-900">{{ finding.title }}</p>
+                    <p class="text-sm text-slate-700 mt-1 leading-relaxed">{{ finding.detail }}</p>
+                    {% if finding.recommendation %}
+                    <p class="text-sm text-slate-800 mt-2 bg-lienzo-seccion border-l-2 border-linea pl-3 py-2 leading-relaxed">
+                        <b>Conducta sugerida:</b> {{ finding.recommendation }}
+                    </p>
+                    {% endif %}
                 </div>
             </li>
             {% endfor %}
         </ul>
-        <p class="px-5 py-3 bg-lienzo-seccion text-xs text-slate-500 border-t border-linea">
+        <p class="px-4 py-3 text-xs text-slate-600">
             Verificación con base de conocimiento {{ safety.knowledge_base_version }}.
             Es una ayuda a la decisión, no un sustituto del criterio clínico:
             la ausencia de hallazgos no garantiza que la prescripción sea segura.
@@ -118,17 +109,17 @@
     </section>
     {% endif %}
 
-    <form method="POST" id="prescription-form" class="space-y-5">
+    <form method="POST" id="prescription-form" class="space-y-4 mt-6">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         {% if chat_id %}<input type="hidden" name="chat_id" value="{{ chat_id }}">{% endif %}
 
         <!-- Justificación para continuar pese a una alerta bloqueante -->
         {% if safety and safety.requires_override %}
-        <div class="bg-critical-subtle border-2 border-critical rounded-lg p-5">
-            <label for="safety_override_reason" class="font-semibold text-rose-900 block mb-2">
-                Justificación clínica para continuar
+        <div class="border-2 border-critical bg-critical-subtle rounded-lg p-4">
+            <label for="safety_override_reason" class="block font-bold text-sm text-critical-text mb-1.5">
+                Justificación clínica para continuar <span class="text-critical" aria-hidden="true">*</span>
             </label>
-            <p class="text-sm text-rose-900 mb-3 leading-relaxed">
+            <p class="text-sm text-critical-text mb-3 leading-relaxed">
                 La decisión sigue siendo suya. Para firmar pese a estas alertas debe
                 dejar por escrito el razonamiento: quedará guardado en la orden y en el
                 registro de auditoría, con su nombre y la fecha.
@@ -136,56 +127,47 @@
             <textarea id="safety_override_reason" name="safety_override_reason" rows="3"
                 required minlength="20" maxlength="1000"
                 placeholder="Por ejemplo: la reacción previa fue un exantema leve no inmediato hace 15 años; riesgo de anafilaxia bajo; se indica observación durante 30 minutos tras la primera dosis."
-                class="{{ CAMPO }} w-full">{{ request.form.get('safety_override_reason', '') }}</textarea>
+                class="{{ CAMPO }}">{{ request.form.get('safety_override_reason', '') }}</textarea>
+            <p class="{{ PISTA }}">Mínimo 20 caracteres.</p>
         </div>
         {% endif %}
 
         <!-- SECCIÓN 1: Datos de la Institución (auto) -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-lienzo-seccion border-b border-linea px-5 py-3">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="building-2" class="w-4 h-4"></i> Datos de la Institución
-                </h2>
-            </div>
-            <div class="p-5 grid sm:grid-cols-3 gap-4 bg-sky-50/30">
+        {% call panel('Datos de la institución', 'building-2') %}
+            <div class="grid sm:grid-cols-3 gap-4">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Entidad</span>
-                    <p class="font-bold text-slate-800">{{ current_user.clinic.name if current_user.clinic else 'N/A' }}</p>
+                    <span class="{{ ROTULO_DATO }}">Entidad</span>
+                    <span class="{{ VALOR_DATO }} mt-1">{{ current_user.clinic.name if current_user.clinic else 'N/A' }}</span>
                 </div>
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">NIT</span>
-                    <p class="font-bold text-slate-800">{{ current_user.clinic.nit if current_user.clinic and current_user.clinic.nit else 'No registrado' }}</p>
+                    <span class="{{ ROTULO_DATO }}">NIT</span>
+                    <span class="{{ VALOR_DATO }} mt-1">{{ current_user.clinic.nit if current_user.clinic and current_user.clinic.nit else 'No registrado' }}</span>
                 </div>
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Dirección</span>
-                    <p class="font-bold text-slate-800">{{ current_user.clinic.location if current_user.clinic and current_user.clinic.location else 'No registrada' }}</p>
+                    <span class="{{ ROTULO_DATO }}">Dirección</span>
+                    <span class="{{ VALOR_DATO }} mt-1">{{ current_user.clinic.location if current_user.clinic and current_user.clinic.location else 'No registrada' }}</span>
                 </div>
             </div>
-        </div>
+        {% endcall %}
 
         <!-- SECCIÓN 2: Datos del Paciente -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-accent px-5 py-3 text-white">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="user" class="w-4 h-4"></i> Datos Básicos del Paciente
-                </h2>
-            </div>
-            <div class="p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% call panel('Datos básicos del paciente', 'user') %}
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Paciente</span>
-                    <p class="font-bold text-slate-800">{{ patient.name }}</p>
+                    <span class="{{ ROTULO_DATO }}">Paciente</span>
+                    <span class="{{ VALOR_DATO }} mt-1">{{ patient.name }}</span>
                 </div>
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Documento</span>
-                    <p class="font-bold text-slate-800">{{ patient.cedula }}</p>
+                    <span class="{{ ROTULO_DATO }}">Documento</span>
+                    <span class="{{ VALOR_DATO }} mt-1">{{ patient.cedula }}</span>
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Edad</label>
-                    <input type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="{{ CAMPO }} w-full" aria-label="Edad del paciente">
+                    <label class="{{ ROTULO }}" for="campo-patient_age">Edad</label>
+                    <input id="campo-patient_age" type="text" name="patient_age" placeholder="Ej: 45 años, 2 meses, 5 días" class="{{ CAMPO }}" aria-label="Edad del paciente">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Nivel</label>
-                    <select name="patient_level" class="{{ CAMPO }} w-full" aria-label="Nivel del paciente">
+                    <label class="{{ ROTULO }}" for="campo-patient_level">Nivel de atención</label>
+                    <select id="campo-patient_level" name="patient_level" class="{{ CAMPO }}" aria-label="Nivel del paciente">
                         <option value="1">Nivel 1</option>
                         <option value="2">Nivel 2</option>
                         <option value="3">Nivel 3</option>
@@ -193,27 +175,22 @@
                     </select>
                 </div>
             </div>
-        </div>
+        {% endcall %}
 
         <!-- SECCIÓN 3: Aseguramiento -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-lienzo-seccion border-b border-linea px-5 py-3">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i> Cliente / Aseguramiento
-                </h2>
-            </div>
-            <div class="p-5 grid sm:grid-cols-3 gap-4">
+        {% call panel('Cliente y aseguramiento', 'shield-check') %}
+            <div class="grid sm:grid-cols-3 gap-4">
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">EPS / Aseguradora</label>
-                    <input type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="{{ CAMPO }} w-full" aria-label="Entidad aseguradora">
+                    <label class="{{ ROTULO }}" for="campo-insurance_name">EPS / aseguradora</label>
+                    <input id="campo-insurance_name" type="text" name="insurance_name" placeholder="Ej: Sura, Sanitas, Comfenalco..." class="{{ CAMPO }}" aria-label="Entidad aseguradora">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Plan</label>
-                    <input type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="{{ CAMPO }} w-full" aria-label="Plan de aseguramiento">
+                    <label class="{{ ROTULO }}" for="campo-insurance_plan">Plan</label>
+                    <input id="campo-insurance_plan" type="text" name="insurance_plan" placeholder="Ej: Plan Complementario" class="{{ CAMPO }}" aria-label="Plan de aseguramiento">
                 </div>
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Régimen</label>
-                    <select name="insurance_regime" class="{{ CAMPO }} w-full" aria-label="Regimen">
+                    <label class="{{ ROTULO }}" for="campo-insurance_regime">Régimen</label>
+                    <select id="campo-insurance_regime" name="insurance_regime" class="{{ CAMPO }}" aria-label="Regimen">
                         <option value="">Seleccionar</option>
                         <option value="Contributivo">Contributivo</option>
                         <option value="Subsidiado">Subsidiado</option>
@@ -223,38 +200,43 @@
                     </select>
                 </div>
             </div>
-        </div>
+        {% endcall %}
 
         <!-- SECCIÓN 4: Diagnósticos CIE-10 -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-caution px-5 py-3 text-white flex items-center justify-between">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="clipboard-list" class="w-4 h-4"></i> Diagnósticos
+        <section class="{{ TARJETA }}">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-linea-suave">
+                <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-slate-500"></i> Diagnósticos
                 </h2>
-                <button type="button" onclick="addDiagnosisRow()" class="border border-linea text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-lienzo-seccion transition-colors">
-                    <i data-lucide="plus" class="w-3 h-3 inline"></i> Agregar
+                <button type="button" onclick="addDiagnosisRow()" class="{{ BOTON_MINI_2 }}">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar
                 </button>
             </div>
-            <div class="p-5" id="diagnosis-rows">
-                <div class="grid sm:grid-cols-4 gap-2 diagnosis-row mb-2">
-                    <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="{{ CAMPO }}" required aria-label="Código CIE-10 (Ej: E119)">
-                    <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="{{ CAMPO }}" required aria-label="Descripción del diagnóstico">
+            <div class="p-4 space-y-3" id="diagnosis-rows">
+                <div class="grid sm:grid-cols-[10rem_1fr_auto] gap-3 items-end diagnosis-row">
+                    <label class="block">
+                        <span class="{{ ROTULO }}">Código CIE-10 <span class="text-critical" aria-hidden="true">*</span></span>
+                        <input type="text" name="dx_code" placeholder="Código CIE-10 (Ej: E119)" class="{{ CAMPO }}" required aria-label="Código CIE-10 (Ej: E119)">
+                    </label>
+                    <label class="block">
+                        <span class="{{ ROTULO }}">Descripción del diagnóstico <span class="text-critical" aria-hidden="true">*</span></span>
+                        <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="{{ CAMPO }}" required aria-label="Descripción del diagnóstico">
+                    </label>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- SECCIÓN 5: Medicamentos (tabla legal completa) -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-accent px-5 py-3 text-white flex items-center justify-between">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="pill" class="w-4 h-4"></i> Medicamentos
+        <section class="{{ TARJETA }}">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-linea-suave">
+                <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+                    <i data-lucide="pill" class="w-4 h-4 text-slate-500"></i> Medicamentos
                 </h2>
-                <button type="button" onclick="addMedicationRow()"
-                    class="bg-white/15 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-white/25 transition-colors">
-                    <i data-lucide="plus" class="w-3 h-3 inline"></i> Agregar
+                <button type="button" onclick="addMedicationRow()" class="{{ BOTON_MINI_2 }}">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar
                 </button>
             </div>
-            <div class="p-5">
+            <div class="p-4">
                 <p class="text-xs text-slate-600 mb-4 leading-relaxed">
                     La Resoluci&oacute;n 1403 de 2007 exige que cada rengl&oacute;n indique
                     principio activo, concentraci&oacute;n, forma farmac&eacute;utica, v&iacute;a,
@@ -268,199 +250,188 @@
                     {% endfor %}
                 </datalist>
 
+                {#
+                  Ojo: `addMedicationRow()` clona esta fila. Nada dentro de
+                  `.medication-row` puede llevar `id=`, o el clon repetiría el
+                  identificador y las etiquetas apuntarían a la primera fila.
+                  Por eso cada rótulo envuelve a su campo en lugar de usar `for=`.
+                #}
                 <div class="space-y-4" id="medication-rows">
                     {% for _ in range(1) %}
-                    <fieldset class="medication-row border border-linea rounded-lg p-4 bg-lienzo-seccion/60">
-                    <legend class="sr-only">Medicamento</legend>
+                    <fieldset class="medication-row border border-linea rounded-lg p-4">
+                        <legend class="sr-only">Medicamento</legend>
 
-                    <div class="grid sm:grid-cols-12 gap-3">
-                        <div class="sm:col-span-5">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Principio activo (DCI) <span class="text-critical">*</span>
-                                <input name="generic_name" required list="lista-medicamentos"
-                                placeholder="Paracetamol"
-                                class="{{ CAMPO }} w-full">
-                            <p class="text-xs text-slate-500 mt-1">
-                                La norma exige prescribir por nombre gen&eacute;rico.
-                            </p>
-                        </div>
+                        <div class="grid sm:grid-cols-12 gap-3">
+                            <div class="sm:col-span-5">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Principio activo (DCI) <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <input name="generic_name" required list="lista-medicamentos"
+                                        placeholder="Paracetamol" class="{{ CAMPO }}">
+                                </label>
+                                <p class="{{ PISTA }}">La norma exige prescribir por nombre gen&eacute;rico.</p>
+                            </div>
 
-                        <div class="sm:col-span-4">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Nombre comercial
-                                <input name="med_name"
-                                placeholder="Solo si es indispensable"
-                                class="{{ CAMPO }} w-full">
-                        </div>
+                            <div class="sm:col-span-4">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Nombre comercial</span>
+                                    <input name="med_name" placeholder="Solo si es indispensable"
+                                        class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Concentraci&oacute;n <span class="text-critical">*</span>
-                                <input name="concentration" required placeholder="500 mg"
-                                class="{{ CAMPO }} w-full">
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Concentraci&oacute;n <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <input name="concentration" required placeholder="500 mg"
+                                        class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Forma farmac&eacute;utica <span class="text-critical">*</span>
-                                <select name="dosage_form" required
-                                class="{{ CAMPO }} w-full">
-                                <option value="">Seleccionar</option>
-                                {% for forma in dosage_forms %}
-                                <option value="{{ forma }}">{{ forma|capitalize }}</option>
-                                {% endfor %}
-                            </select>
-                            </label>
-                            </label>
-                            </label>
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Forma farmac&eacute;utica <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <select name="dosage_form" required class="{{ CAMPO }}">
+                                        <option value="">Seleccionar</option>
+                                        {% for forma in dosage_forms %}
+                                        <option value="{{ forma }}">{{ forma|capitalize }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                V&iacute;a <span class="text-critical">*</span>
-                                <select name="route" required
-                                class="{{ CAMPO }} w-full">
-                                {% for via in administration_routes %}
-                                <option value="{{ via }}" {% if via == 'oral' %}selected{% endif %}>{{ via|capitalize }}</option>
-                                {% endfor %}
-                            </select>
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">V&iacute;a de administraci&oacute;n <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <select name="route" required class="{{ CAMPO }}">
+                                        {% for via in administration_routes %}
+                                        <option value="{{ via }}" {% if via == 'oral' %}selected{% endif %}>{{ via|capitalize }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Dosis <span class="text-critical">*</span>
-                                <input name="dosage" required placeholder="1 tableta"
-                                class="{{ CAMPO }} w-full">
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Dosis <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <input name="dosage" required placeholder="1 tableta" class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Frecuencia <span class="text-critical">*</span>
-                                <input name="frequency" required placeholder="cada 8 horas"
-                                class="{{ CAMPO }} w-full">
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Frecuencia <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <input name="frequency" required placeholder="cada 8 horas" class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Duraci&oacute;n (d&iacute;as) <span class="text-critical">*</span>
-                                <input type="number" name="duration_days" required min="1" max="365"
-                                placeholder="7"
-                                class="{{ CAMPO }} w-full">
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Duraci&oacute;n (d&iacute;as) <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <input type="number" name="duration_days" required min="1" max="365"
+                                        placeholder="7" class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Cantidad total <span class="text-critical">*</span>
-                                <input type="number" name="quantity" required min="1"
-                                class="{{ CAMPO }} w-full">
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Cantidad total <span class="text-critical" aria-hidden="true">*</span></span>
+                                    <input type="number" name="quantity" required min="1" class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Unidad
-                                <input name="unit" value="unidad"
-                                class="{{ CAMPO }} w-full">
-                            </label>
-                        </div>
+                            <div class="sm:col-span-3">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Unidad</span>
+                                    <input name="unit" value="unidad" class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-9">
-                            <label class="block text-xs font-medium text-slate-600">
-                                Indicaciones al paciente
-                                <input name="instructions" placeholder="Tomar con alimentos"
-                                class="{{ CAMPO }} w-full">
-                            </label>
-                        </div>
+                            <div class="sm:col-span-9">
+                                <label class="block">
+                                    <span class="{{ ROTULO }}">Indicaciones al paciente</span>
+                                    <input name="instructions" placeholder="Tomar con alimentos" class="{{ CAMPO }}">
+                                </label>
+                            </div>
 
-                        <div class="sm:col-span-3 flex items-end">
-                            <button type="button" onclick="this.closest('.medication-row').remove()"
-                                class="w-full border border-linea text-slate-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-critical-subtle hover:text-critical hover:border-critical-border transition-colors inline-flex items-center justify-center gap-1.5">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i> Quitar
-                            </button>
+                            <div class="sm:col-span-3 flex items-end">
+                                <button type="button" onclick="this.closest('.medication-row').remove()"
+                                    class="{{ BOTON_2 }} w-full">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i> Quitar
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </fieldset>
+                    </fieldset>
                     {% endfor %}
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- SECCIÓN 6: Observaciones & Caducidad -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-slate-700 px-5 py-3 text-white">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="message-square-text" class="w-4 h-4"></i> Observaciones y Vigencia
-                </h2>
-            </div>
-            <div class="p-5 space-y-4">
+        {% call panel('Observaciones y vigencia', 'message-square-text') %}
+            <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Observaciones</label>
-                    <textarea name="observations" rows="3" placeholder="Observaciones clínicas, indicaciones especiales, contraindicaciones..." class="{{ CAMPO }} w-full" aria-label="Observaciones clínicas, indicaciones especiales, contraindicaciones..."></textarea>
+                    <label class="{{ ROTULO }}" for="campo-observations">Observaciones</label>
+                    <textarea id="campo-observations" name="observations" rows="3" placeholder="Observaciones clínicas, indicaciones especiales, contraindicaciones..." class="{{ CAMPO }}" aria-label="Observaciones clínicas, indicaciones especiales, contraindicaciones..."></textarea>
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Fecha de Caducidad</label>
-                        <input type="date" name="expires_date" required value="{{ default_expiration }}" class="{{ CAMPO }} w-full" aria-label="Fecha de caducidad">
+                        <label class="{{ ROTULO }}" for="campo-expires_date">Fecha de caducidad <span class="text-critical" aria-hidden="true">*</span></label>
+                        <input id="campo-expires_date" type="date" name="expires_date" required value="{{ default_expiration }}" class="{{ CAMPO }}" aria-label="Fecha de caducidad">
                     </div>
                     <div>
-                        <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Hora de Caducidad</label>
-                        <input type="time" name="expires_time" required value="23:59" class="{{ CAMPO }} w-full" aria-label="Hora de caducidad">
+                        <label class="{{ ROTULO }}" for="campo-expires_time">Hora de caducidad <span class="text-critical" aria-hidden="true">*</span></label>
+                        <input id="campo-expires_time" type="time" name="expires_time" required value="23:59" class="{{ CAMPO }}" aria-label="Hora de caducidad">
                     </div>
                 </div>
             </div>
-        </div>
+        {% endcall %}
 
         <!-- SECCIÓN 7: Firma Digital del Médico -->
-        <div class="bg-white border border-linea rounded-lg overflow-hidden">
-            <div class="bg-lienzo-seccion border-b border-linea px-5 py-3 flex items-center justify-between">
-                <h2 class="font-semibold text-sm uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="pen-line" class="w-4 h-4"></i> Firma del Profesional
+        <section class="{{ TARJETA }}">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-linea-suave">
+                <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+                    <i data-lucide="pen-line" class="w-4 h-4 text-slate-500"></i> Firma del profesional
                 </h2>
-                <button type="button" onclick="clearSignature()" class="border border-linea text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-lienzo-seccion transition-colors">Limpiar</button>
+                <button type="button" onclick="clearSignature()" class="{{ BOTON_MINI_2 }}">Limpiar</button>
             </div>
-            <div class="p-5">
-                <div class="grid sm:grid-cols-2 gap-4 mb-4">
+            <div class="p-4">
+                <div class="grid sm:grid-cols-3 gap-4 mb-4">
                     <div>
-                        <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Nombre del Profesional</span>
-                        <p class="font-bold text-slate-800 text-lg">{{ current_user.name }}</p>
+                        <span class="{{ ROTULO_DATO }}">Nombre del profesional</span>
+                        <span class="{{ VALOR_DATO }} mt-1">{{ current_user.name }}</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Reg. Médico</span>
-                            <p class="font-bold text-slate-800">{{ current_user.medical_registration or 'No registrado' }}</p>
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold uppercase tracking-widest text-slate-600">Especialidad</span>
-                            <p class="font-bold text-slate-800">{{ current_user.specialty or 'Medicina General' }}</p>
-                        </div>
+                    <div>
+                        <span class="{{ ROTULO_DATO }}">Registro médico</span>
+                        <span class="{{ VALOR_DATO }} mt-1">{{ current_user.medical_registration or 'No registrado' }}</span>
+                    </div>
+                    <div>
+                        <span class="{{ ROTULO_DATO }}">Especialidad</span>
+                        <span class="{{ VALOR_DATO }} mt-1">{{ current_user.specialty or 'Medicina General' }}</span>
                     </div>
                 </div>
-                <div class="border border-dashed border-linea rounded-lg bg-lienzo-seccion/30 relative" style="touch-action: none;">
+                <span class="{{ ROTULO }}">Firma manuscrita</span>
+                <div class="border border-dashed border-linea rounded-lg relative" style="touch-action: none;">
                     <canvas id="signature-canvas" width="700" height="160" class="w-full rounded-lg cursor-crosshair" style="height:160px;"></canvas>
-                    <p class="absolute bottom-2 right-3 text-xs text-slate-500 font-bold pointer-events-none">Firme aquí con el mouse o dedo</p>
+                    <p class="absolute bottom-2 right-3 text-xs text-slate-500 pointer-events-none">Firme aquí con el mouse o dedo</p>
                 </div>
                 <input type="hidden" name="signature_data" id="signature-data">
                 {% if not current_user.medical_registration %}
-                <p class="text-xs text-amber-600 font-bold mt-2 flex items-center gap-1">
-                    <i data-lucide="alert-triangle" class="w-3 h-3"></i>
-                    Registre su número de Reg. Médico en Ajustes para que aparezca en los documentos.
-                </p>
+                <div class="mt-3">
+                    {% call aviso('revisar', 'Falta el registro médico', 'alert-triangle') %}
+                        Registre su número de Reg. Médico en Ajustes para que aparezca en los documentos.
+                    {% endcall %}
+                </div>
                 {% endif %}
             </div>
-        </div>
+        </section>
 
         <!-- Verificación en vivo: se rellena a medida que se escriben medicamentos -->
         <div id="live-safety" class="hidden"></div>
 
         <!-- BOTÓN DE ENVÍO -->
-        <button type="submit" class="{{ BOTON }}">
-            <i data-lucide="shield-check" class="w-6 h-6"></i>
-            Firmar y Emitir Orden Médica
+        <button type="submit" class="{{ BOTON }} w-full sm:w-auto">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            Firmar y emitir orden médica
         </button>
     </form>
 
@@ -499,10 +470,14 @@
         return meds;
     }
 
+    // Mismo vocabulario que el resto del sistema: chip con contorno, nunca
+    // relleno solido. Las cadenas salen de `ui.py`, asi que el CSS ya las tiene.
+    const CHIP_BASE = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md '
+        + 'border text-xs font-semibold whitespace-nowrap shrink-0 mt-0.5 ';
     const SEVERITY_STYLES = {
-        block: { chip: 'bg-critical text-white', box: 'border-critical', label: 'BLOQUEANTE' },
-        warn:  { chip: 'bg-caution text-white', box: 'border-caution-border', label: 'ADVERTENCIA' },
-        info:  { chip: 'bg-slate-300 text-slate-800', box: 'border-linea', label: 'INFORMATIVO' }
+        block: { chip: CHIP_BASE + 'border-critical-border text-critical bg-critical-subtle', label: 'BLOQUEANTE' },
+        warn:  { chip: CHIP_BASE + 'border-caution-border text-caution bg-caution-subtle', label: 'ADVERTENCIA' },
+        info:  { chip: CHIP_BASE + 'border-linea text-slate-600 bg-white', label: 'INFORMATIVO' }
     };
 
     function render(report) {
@@ -512,19 +487,20 @@
             return;
         }
 
-        const style = report.requires_override ? SEVERITY_STYLES.block : SEVERITY_STYLES.warn;
-        panel.className = 'bg-white border-2 rounded-lg overflow-hidden ' + style.box;
+        panel.className = 'rounded-lg border-2 ' + (report.requires_override
+            ? 'border-critical bg-critical-subtle'
+            : 'border-caution-border bg-caution-subtle');
 
-        const header = document.createElement('div');
-        header.className = (report.requires_override ? 'bg-critical' : 'bg-caution')
-            + ' px-5 py-3 text-white font-semibold text-sm uppercase tracking-widest';
+        const header = document.createElement('h2');
+        header.className = 'font-bold text-sm flex items-center gap-2 px-4 py-3 '
+            + (report.requires_override ? 'text-critical-text' : 'text-caution-text');
         header.textContent = report.requires_override
             ? 'Revise antes de firmar: hay alertas bloqueantes'
             : 'Revise antes de firmar';
         panel.appendChild(header);
 
         const list = document.createElement('ul');
-        list.className = 'divide-y divide-slate-100';
+        list.className = 'bg-white border-y border-linea divide-y divide-linea-suave';
 
         report.findings.forEach(function (finding) {
             const item = document.createElement('li');
@@ -532,8 +508,7 @@
 
             const chip = document.createElement('span');
             const chipStyle = SEVERITY_STYLES[finding.severity] || SEVERITY_STYLES.info;
-            chip.className = 'px-2 py-0.5 rounded-full text-xs font-semibold shrink-0 mt-0.5 '
-                + chipStyle.chip;
+            chip.className = chipStyle.chip;
             chip.textContent = chipStyle.label;
             item.appendChild(chip);
 
@@ -541,7 +516,7 @@
             body.className = 'min-w-0';
 
             const title = document.createElement('p');
-            title.className = 'font-semibold text-slate-900';
+            title.className = 'font-bold text-slate-900';
             // textContent, no innerHTML: el contenido incluye nombres escritos
             // por el usuario y no debe interpretarse como marcado.
             title.textContent = finding.title;
@@ -554,8 +529,8 @@
 
             if (finding.recommendation) {
                 const advice = document.createElement('p');
-                advice.className = 'text-sm text-slate-800 mt-2 bg-lienzo-seccion border-l-4 '
-                    + 'border-linea pl-3 py-2 rounded-r leading-relaxed';
+                advice.className = 'text-sm text-slate-800 mt-2 bg-lienzo-seccion border-l-2 '
+                    + 'border-linea pl-3 py-2 leading-relaxed';
                 advice.textContent = 'Conducta sugerida: ' + finding.recommendation;
                 body.appendChild(advice);
             }
@@ -614,13 +589,19 @@
 function addDiagnosisRow() {
     const container = document.getElementById('diagnosis-rows');
     const row = document.createElement('div');
-    row.className = 'grid sm:grid-cols-4 gap-2 diagnosis-row mb-2';
+    row.className = 'grid sm:grid-cols-[10rem_1fr_auto] gap-3 items-end diagnosis-row';
     row.innerHTML = `
-        <input type="text" name="dx_code" placeholder="Código CIE-10" class="{{ CAMPO }}" aria-label="Código CIE-10">
-        <div class="sm:col-span-2 flex gap-2">
-            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="{{ CAMPO }} flex-1" aria-label="Descripción del diagnóstico">
-        </div>
-        <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="text-critical hover:text-critical-hover transition text-sm font-bold">Eliminar</button>
+        <label class="block">
+            <span class="{{ ROTULO }}">Código CIE-10</span>
+            <input type="text" name="dx_code" placeholder="Código CIE-10" class="{{ CAMPO }}" aria-label="Código CIE-10">
+        </label>
+        <label class="block">
+            <span class="{{ ROTULO }}">Descripción del diagnóstico</span>
+            <input type="text" name="dx_description" placeholder="Descripción del diagnóstico" class="{{ CAMPO }}" aria-label="Descripción del diagnóstico">
+        </label>
+        <button type="button" onclick="this.closest('.diagnosis-row').remove()" class="{{ BOTON_2 }}">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> Quitar
+        </button>
     `;
     container.appendChild(row);
     if (window.lucide) lucide.createIcons();

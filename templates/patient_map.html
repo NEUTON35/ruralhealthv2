@@ -1,67 +1,79 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet.css') }}">
 
-<div class="max-w-6xl mx-auto space-y-4">
-    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Mapa de atención</h1>
-            <p class="text-sm text-slate-500">Farmacias y consultorios cercanos a su ubicación registrada.</p>
-        </div>
+<div class="max-w-6xl mx-auto">
+
+    {% call cabecera('Mapa de atención', 'Farmacias y consultorios cercanos a su ubicación registrada.') %}
         <a href="{{ url_for('patient.dashboard', near=1) }}" class="{{ BOTON }}">
-            <i data-lucide="stethoscope" class="w-5 h-5"></i>
+            <i data-lucide="stethoscope" class="w-4 h-4"></i>
             Doctores cerca de mi
         </a>
-    </div>
+    {% endcall %}
 
-    <section class="bg-white border border-linea rounded-lg p-4">
-        <form method="POST" action="{{ url_for('patient.update_location') }}" class="grid lg:grid-cols-8 gap-2 items-end">
+    <!-- Ubicación registrada del paciente -->
+    <section class="{{ TARJETA }}">
+        <div class="px-4 py-3 border-b border-linea-suave">
+            <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4 text-slate-500"></i> Mi ubicación
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Sirve para calcular la distancia a farmacias y consultorios.</p>
+        </div>
+        <form method="POST" action="{{ url_for('patient.update_location') }}" class="p-4 grid lg:grid-cols-8 gap-3 items-end">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="lg:col-span-3">
-                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Dirección</label>
-                <input name="address" value="{{ current_user.address or '' }}" placeholder="Dirección o vereda" class="{{ CAMPO }} w-full" aria-label="Dirección o vereda">
+                <label class="{{ ROTULO }}" for="campo-address">Dirección o vereda</label>
+                <input id="campo-address" name="address" value="{{ current_user.address or '' }}" placeholder="Dirección o vereda" class="{{ CAMPO }}" aria-label="Dirección o vereda">
             </div>
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Latitud</label>
-                <input id="patient-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" class="{{ CAMPO }} w-full" aria-label="Latitud">
+                <label class="{{ ROTULO }}" for="patient-lat">Latitud</label>
+                <input id="patient-lat" type="number" step="any" name="latitude" value="{{ current_user.latitude if current_user.latitude is not none else '' }}" class="{{ CAMPO }}" aria-label="Latitud">
             </div>
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Longitud</label>
-                <input id="patient-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" class="{{ CAMPO }} w-full" aria-label="Longitud">
+                <label class="{{ ROTULO }}" for="patient-lng">Longitud</label>
+                <input id="patient-lng" type="number" step="any" name="longitude" value="{{ current_user.longitude if current_user.longitude is not none else '' }}" class="{{ CAMPO }}" aria-label="Longitud">
             </div>
-            <label class="lg:col-span-2 flex items-start gap-2 text-xs text-slate-600 border border-linea rounded-lg p-3">
-                <input type="checkbox" name="accept_location" required class="mt-1 accent-emerald-600" aria-label="Accept location">
-                <span>Autorizo usar mi ubicación para calcular cercania y orientar mi atención.</span>
-            </label>
-            <div class="flex gap-2 lg:col-span-1">
-                <button type="button" data-use-browser-location class="border border-linea px-3 py-3 rounded-lg font-bold text-slate-700" title="Usar GPS del navegador">
-                    <i data-lucide="crosshair" class="w-5 h-5"></i>
-                </button>
-                <button class="{{ BOTON }}">Guardar</button>
+            <div class="lg:col-span-3">
+                <span class="{{ ROTULO }}">Autorización de uso <span class="text-critical" aria-hidden="true">*</span></span>
+                <label class="flex items-start gap-2 text-xs text-slate-700 border border-linea rounded-lg p-3">
+                    <input type="checkbox" name="accept_location" required class="mt-0.5 w-4 h-4 accent-accent" aria-label="Accept location">
+                    <span>Autorizo usar mi ubicación para calcular cercania y orientar mi atención.</span>
+                </label>
             </div>
             <div class="lg:col-span-8 h-72 rounded-lg overflow-hidden border border-linea" data-location-picker data-lat-input="#patient-lat" data-lng-input="#patient-lng"></div>
+            <div class="lg:col-span-8 flex flex-wrap gap-2">
+                <button class="{{ BOTON }}">Guardar ubicación</button>
+                <button type="button" data-use-browser-location class="{{ BOTON_2 }}" title="Usar GPS del navegador">
+                    <i data-lucide="crosshair" class="w-4 h-4"></i> Usar GPS
+                </button>
+            </div>
         </form>
     </section>
 
-    <section class="bg-white border border-linea rounded-lg overflow-hidden">
-        <div id="care-map" class="h-[520px] bg-slate-100"></div>
+    <section class="{{ TARJETA }} overflow-hidden mt-4">
+        <div id="care-map" class="h-[520px] bg-lienzo-seccion"></div>
     </section>
 
-    <div class="grid lg:grid-cols-3 gap-4">
-        <section class="bg-white border border-linea rounded-lg p-4">
-            <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="building-2" class="w-5 h-5 text-slate-500"></i> Clínicas</h2>
+    <div class="grid lg:grid-cols-3 gap-4 mt-4">
+        {% call panel('Clínicas', 'building-2') %}
             <div id="clinic-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
-        </section>
-        <section class="bg-white border border-linea rounded-lg p-4">
-            <h2 class="font-semibold text-slate-900 flex items-center gap-2 mb-3"><i data-lucide="pill" class="w-5 h-5 text-slate-500"></i> Farmacias</h2>
+        {% endcall %}
+
+        {% call panel('Farmacias', 'pill') %}
             <div id="pharmacy-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
-        </section>
-        <section class="bg-white border border-linea rounded-lg p-4">
-            <div class="flex items-center justify-between gap-3 mb-3">
-                <h2 class="font-semibold text-slate-900 flex items-center gap-2"><i data-lucide="map" class="w-5 h-5 text-slate-500"></i> Consultorios</h2>
-                <button id="cache-map-points" class="{{ BOTON_MINI }}">Guardar puntos offline</button>
+        {% endcall %}
+
+        <section class="{{ TARJETA }}">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-linea-suave">
+                <h2 class="{{ TITULO_SECCION }} flex items-center gap-2">
+                    <i data-lucide="map" class="w-4 h-4 text-slate-500"></i> Consultorios
+                </h2>
+                <button id="cache-map-points" class="{{ BOTON_MINI_2 }}">Guardar offline</button>
             </div>
-            <div id="doctor-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            <div class="p-4">
+                <div id="doctor-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            </div>
         </section>
     </div>
 </div>
@@ -82,8 +94,26 @@
     const pharmacyList = document.getElementById('pharmacy-list');
     const doctorList = document.getElementById('doctor-list');
 
+    // Chips con el mismo vocabulario del resto del sistema: contorno del color
+    // funcional, nunca relleno solido.
+    const CHIP_BASE = 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md '
+        + 'border text-xs font-semibold whitespace-nowrap shrink-0 ';
+    const CHIP = {
+        neutro: CHIP_BASE + 'border-linea text-slate-600 bg-white',
+        completado: CHIP_BASE + 'border-positive-border text-positive bg-positive-subtle',
+        riesgo: CHIP_BASE + 'border-critical-border text-critical bg-critical-subtle'
+    };
+    const FILA = 'border border-linea rounded-lg px-3 py-2';
+    const VACIO = '<p class="text-sm text-slate-600 text-center py-6">Sin puntos registrados cerca.</p>';
+
     function markerIcon(kind, status) {
-        const color = kind === 'patient' ? '#2563eb' : kind === 'doctor' ? '#7c3aed' : kind === 'clinic' ? '#0f766e' : (status ? '#059669' : '#dc2626');
+        // El color del marcador solo distingue el tipo de punto; el unico que
+        // comunica un estado es la farmacia, y ahi verde y rojo significan
+        // "tiene el medicamento" y "no lo tiene".
+        const color = kind === 'patient' ? '#0369A1'
+            : kind === 'doctor' ? '#64748B'
+            : kind === 'clinic' ? '#334155'
+            : (status ? '#047857' : '#B91C1C');
         const symbol = kind === 'patient' ? 'U' : kind === 'doctor' ? 'D' : kind === 'clinic' ? 'C' : 'F';
         return L.divIcon({
             className: '',
@@ -118,28 +148,28 @@
             addPoint(clinic, markerIcon('clinic'), `<b>${clinic.name}</b><br>${clinic.address || ''}<br>${clinic.opening_hours || 'Horario no publicado'}<br>${distanceText(clinic.distance_km)}<br>${clinic.locked ? 'Acceso bloqueado' : 'Acceso disponible'}`);
             if (clinic.lat !== null && clinic.lng !== null) bounds.push([clinic.lat, clinic.lng]);
             clinicList.insertAdjacentHTML('beforeend', `
-                <div class="border border-linea rounded-lg p-3 ${clinic.locked ? 'bg-lienzo-seccion' : 'bg-blue-50 border-blue-100'}">
-                    <div class="flex justify-between gap-3">
-                        <p class="font-semibold text-slate-900">${clinic.name}</p>
-                        <span class="text-xs font-semibold ${clinic.locked ? 'text-slate-600' : 'text-blue-700'}">${clinic.locked ? 'Bloqueada' : 'Disponible'}</span>
+                <div class="${FILA}">
+                    <div class="flex justify-between items-start gap-3">
+                        <p class="text-sm font-bold text-slate-900">${clinic.name}</p>
+                        <span class="${clinic.locked ? CHIP.neutro : CHIP.completado}">${clinic.locked ? 'Bloqueada' : 'Disponible'}</span>
                     </div>
-                    <p class="text-xs text-slate-500">${distanceText(clinic.distance_km)} · ${clinic.address || '-'}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">${distanceText(clinic.distance_km)} · ${clinic.address || '-'}</p>
                     <p class="text-xs text-slate-500">${clinic.opening_hours || 'Horario no publicado'}</p>
                 </div>
             `);
         });
 
-        data.pharmacies.sort((a, b) => (a.distance_km ?? 999999) - (b.distance_km ?? 999999)).forEach((pharmacy, index) => {
+        data.pharmacies.sort((a, b) => (a.distance_km ?? 999999) - (b.distance_km ?? 999999)).forEach((pharmacy) => {
             const stockText = pharmacy.stock.length ? pharmacy.stock.map((item) => `${item.name}: ${item.available} ${item.unit}`).join('<br>') : 'Sin stock disponible registrado';
             addPoint(pharmacy, markerIcon('pharmacy', pharmacy.has_stock), `<b>${pharmacy.name}</b><br>${pharmacy.address || ''}<br>${distanceText(pharmacy.distance_km)}<hr>${stockText}`);
             if (pharmacy.lat !== null && pharmacy.lng !== null) bounds.push([pharmacy.lat, pharmacy.lng]);
             pharmacyList.insertAdjacentHTML('beforeend', `
-                <div class="border border-linea rounded-lg p-3 ${index === 0 ? 'bg-positive-subtle border-positive-subtle' : 'bg-white'}">
-                    <div class="flex justify-between gap-3">
-                        <p class="font-semibold text-slate-900">${pharmacy.name}</p>
-                        <span class="text-xs font-semibold ${pharmacy.has_stock ? 'text-emerald-700' : 'text-red-600'}">${pharmacy.has_stock ? 'Con stock' : 'Sin stock'}</span>
+                <div class="${FILA}">
+                    <div class="flex justify-between items-start gap-3">
+                        <p class="text-sm font-bold text-slate-900">${pharmacy.name}</p>
+                        <span class="${pharmacy.has_stock ? CHIP.completado : CHIP.riesgo}">${pharmacy.has_stock ? 'Con stock' : 'Sin stock'}</span>
                     </div>
-                    <p class="text-xs text-slate-500">${distanceText(pharmacy.distance_km)} · ${pharmacy.address || '-'}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">${distanceText(pharmacy.distance_km)} · ${pharmacy.address || '-'}</p>
                 </div>
             `);
         });
@@ -148,16 +178,22 @@
             addPoint(doctor, markerIcon('doctor'), `<b>Dr. ${doctor.name}</b><br>${doctor.specialty}<br>${doctor.affiliation}<br>${doctor.schedule || 'Horario no publicado'}<br>${distanceText(doctor.distance_km)}`);
             if (doctor.lat !== null && doctor.lng !== null) bounds.push([doctor.lat, doctor.lng]);
             doctorList.insertAdjacentHTML('beforeend', `
-                <div class="border border-linea rounded-lg p-3">
-                    <div class="flex justify-between gap-3">
-                        <p class="font-semibold text-slate-900">Dr. ${doctor.name}</p>
-                        <span class="text-xs font-semibold ${doctor.available ? 'text-emerald-700' : 'text-slate-600'}">${doctor.available ? 'Disponible' : 'No disponible'}</span>
+                <div class="${FILA}">
+                    <div class="flex justify-between items-start gap-3">
+                        <p class="text-sm font-bold text-slate-900">Dr. ${doctor.name}</p>
+                        <span class="${doctor.available ? CHIP.completado : CHIP.neutro}">${doctor.available ? 'Disponible' : 'No disponible'}</span>
                     </div>
-                    <p class="text-xs text-slate-500">${doctor.specialty} · ${doctor.affiliation}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">${doctor.specialty} · ${doctor.affiliation}</p>
                     <p class="text-xs text-slate-500">${doctor.schedule || 'Horario no publicado'}</p>
-                    <p class="text-xs text-blue-700 font-bold">${distanceText(doctor.distance_km)}</p>
+                    <p class="text-xs font-semibold text-slate-900 mt-0.5">${distanceText(doctor.distance_km)}</p>
                 </div>
             `);
+        });
+
+        // Un panel en blanco parece un fallo de carga: decir que no hay nada
+        // tambien es informacion.
+        [clinicList, pharmacyList, doctorList].forEach((lista) => {
+            if (!lista.children.length) lista.innerHTML = VACIO;
         });
 
         if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
@@ -182,6 +218,9 @@
     loadPoints();
 </script>
 <style>
+    /* Sin sombra: en una pantalla barata a plena luz no da profundidad, solo
+       ensucia el borde. El contorno blanco basta para despegar el marcador
+       del mapa. */
     .map-pin {
         width: 30px;
         height: 30px;
@@ -190,9 +229,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 900;
+        font-weight: 700;
         border: 3px solid white;
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.25);
+        outline: 1px solid #334155;
     }
 </style>
 {% endblock %}

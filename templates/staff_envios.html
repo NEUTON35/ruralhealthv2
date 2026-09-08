@@ -1,39 +1,28 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso,
+                          vacio, tabla %}
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="max-w-7xl mx-auto space-y-6">
 
-  <!-- Header -->
-  <div class="bg-white border border-linea rounded-lg p-6">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <p class="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-1">Logística</p>
-        <h1 class="text-2xl font-semibold tracking-tight">Cargamentos en Camino</h1>
-        <p class="text-slate-600 text-sm mt-1">Registra envíos entrantes y confirma recepciones para activar stock automáticamente.</p>
-      </div>
-      <div class="flex gap-2">
-        <a href="{{ url_for('staff.pendientes') }}" class="inline-flex items-center gap-2 border border-linea text-slate-700 hover:bg-lienzo-seccion px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
-          <i data-lucide="clock" class="w-4 h-4"></i> Pendientes
-        </a>
-        <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center gap-2 border border-linea text-slate-700 hover:bg-lienzo-seccion px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
-        </a>
-      </div>
-    </div>
-  </div>
+  {% call cabecera('Cargamentos en camino', 'Registre envíos entrantes y confirme recepciones para activar stock automáticamente.') %}
+    <a href="{{ url_for('staff.pendientes') }}" class="{{ BOTON_2 }}">
+      <i data-lucide="clock" class="w-4 h-4"></i> Pendientes
+    </a>
+    <a href="{{ url_for('staff.dashboard') }}" class="{{ BOTON_2 }}">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
+    </a>
+  {% endcall %}
 
-  <!-- Create new shipment form -->
-  <section class="bg-white border border-linea rounded-lg p-6">
-    <h2 class="font-semibold text-slate-900 text-lg mb-4 flex items-center gap-2">
-      <i data-lucide="plus-circle" class="w-5 h-5 text-slate-500"></i>
-      Registrar Nuevo Cargamento
-    </h2>
-    <form method="POST" id="shipment-form">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+  <!-- Registrar cargamento -->
+  {% call panel('Registrar nuevo cargamento', 'plus-circle') %}
+    <form method="POST" id="shipment-form" class="space-y-4">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="action" value="create_shipment">
-      <div class="grid sm:grid-cols-2 gap-4 mb-4">
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Farmacia Destino *</label>
-          <select name="pharmacy_id" required class="{{ CAMPO }} w-full" aria-label="Farmacia">
+          <label class="{{ ROTULO }}" for="envio-farmacia">Farmacia destino <span class="text-critical" aria-hidden="true">*</span></label>
+          <select id="envio-farmacia" name="pharmacy_id" required class="{{ CAMPO }}" aria-label="Farmacia">
             <option value="">Seleccionar farmacia...</option>
             {% for pharmacy in pharmacies %}
             <option value="{{ pharmacy.id }}">{{ pharmacy.name }}</option>
@@ -41,25 +30,25 @@
           </select>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Fecha Estimada de Llegada *</label>
-          <input type="date" name="expected_date" required class="{{ CAMPO }} w-full" aria-label="Fecha estimada de llegada">
+          <label class="{{ ROTULO }}" for="envio-fecha">Fecha estimada de llegada <span class="text-critical" aria-hidden="true">*</span></label>
+          <input id="envio-fecha" type="date" name="expected_date" required class="{{ CAMPO }}" aria-label="Fecha estimada de llegada">
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Proveedor / Distribuidor</label>
-          <input type="text" name="supplier_name" placeholder="Ej: Farmacias del Norte S.A." class="{{ CAMPO }} w-full" aria-label="Proveedor">
+          <label class="{{ ROTULO }}" for="envio-proveedor">Proveedor o distribuidor</label>
+          <input id="envio-proveedor" type="text" name="supplier_name" placeholder="Farmacias del Norte S.A." class="{{ CAMPO }}" aria-label="Proveedor">
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1.5">Notas</label>
-          <input type="text" name="note" placeholder="Número de guía, observaciones..." class="{{ CAMPO }} w-full" aria-label="Número de guía, observaciones...">
+          <label class="{{ ROTULO }}" for="envio-nota">Notas</label>
+          <input id="envio-nota" type="text" name="note" placeholder="Número de guía, observaciones" class="{{ CAMPO }}" aria-label="Número de guía, observaciones...">
         </div>
       </div>
 
-      <!-- Dynamic medication items -->
-      <div class="mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <label class="text-xs font-semibold uppercase tracking-widest text-slate-600">Medicamentos del Cargamento *</label>
-          <button type="button" onclick="addMedRow()" class="text-xs text-blue-600 font-semibold flex items-center gap-1 hover:text-blue-800 transition">
-            <i data-lucide="plus" class="w-3 h-3"></i> Agregar medicamento
+      <!-- Medicamentos del cargamento -->
+      <div class="border-t border-linea pt-4">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <span class="{{ ROTULO }} mb-0">Medicamentos del cargamento <span class="text-critical" aria-hidden="true">*</span></span>
+          <button type="button" onclick="addMedRow()" class="{{ BOTON_MINI_2 }}">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar medicamento
           </button>
         </div>
         <div id="med-rows" class="space-y-2">
@@ -68,92 +57,80 @@
             <input type="number" name="quantity[]" min="1" value="1" placeholder="Cant." class="{{ CAMPO }}" aria-label="Cant.">
           </div>
         </div>
+        <p class="{{ PISTA }}">Primera casilla: nombre del medicamento. Segunda: cantidad que llega.</p>
       </div>
 
-      <button type="submit" class="w-full bg-accent text-white py-3.5 rounded-lg font-semibold text-base inline-flex items-center justify-center gap-2 hover:bg-accent-hover transition">
-        <i data-lucide="truck" class="w-5 h-5"></i>
-        Registrar Cargamento
+      <button type="submit" class="{{ BOTON }}">
+        <i data-lucide="truck" class="w-4 h-4"></i> Registrar cargamento
       </button>
     </form>
-  </section>
+  {% endcall %}
 
-  <!-- Shipments list -->
-  <section class="bg-white border border-linea rounded-lg overflow-hidden">
-    <div class="p-5 border-b border-linea">
-      <h2 class="font-semibold text-slate-900 flex items-center gap-2">
-        <i data-lucide="list" class="w-5 h-5 text-slate-500"></i>
-        Historial de Cargamentos
-      </h2>
-    </div>
+  <!-- Historial -->
+  {% call panel('Historial de cargamentos', 'list') %}
     {% if shipments %}
-    <div class="divide-y divide-slate-100">
+    {% call tabla(['Farmacia', 'Estado', 'Llegada estimada', 'Proveedor', 'Contenido', 'Acciones']) %}
       {% for shipment in shipments %}
       {% set status_cfg = {
-        'en_camino': ('bg-blue-100 text-blue-800 border-blue-200', 'truck', 'En camino'),
-        'recibido':  ('bg-positive-subtle text-emerald-800 border-positive-border', 'package-check', 'Recibido'),
-        'cancelado': ('bg-slate-100 text-slate-500 border-linea', 'x-circle', 'Cancelado'),
+        'en_camino': ('accion', 'truck', 'En camino'),
+        'recibido':  ('completado', 'package-check', 'Recibido'),
+        'cancelado': ('neutro', 'x-circle', 'Cancelado'),
       } %}
-      {% set cfg = status_cfg.get(shipment.status, ('bg-slate-100 text-slate-600 border-linea', 'circle', shipment.status)) %}
-      <div class="p-4">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 flex-wrap mb-1">
-              <span class="font-semibold text-slate-900">{{ shipment.pharmacy.name }}</span>
-              <span class="inline-flex items-center gap-1 border px-2 py-0.5 rounded-full text-xs font-bold {{ cfg[0] }}">
-                <i data-lucide="{{ cfg[1] }}" class="w-3 h-3"></i> {{ cfg[2] }}
-              </span>
-              {% if shipment.expected_date <= today_str and shipment.status == 'en_camino' %}
-              <span class="bg-caution-subtle text-amber-700 border border-caution-border px-2 py-0.5 rounded-full text-xs font-bold">Hoy o vencido</span>
-              {% endif %}
-            </div>
-            <p class="text-xs text-slate-500">
-              Llegada estimada: <span class="font-bold text-slate-700">{{ shipment.expected_date }}</span>
-              {% if shipment.supplier_name %} · {{ shipment.supplier_name }}{% endif %}
-              {% if shipment.received_at %} · Recibido: {{ shipment.received_at|colombia_date }} {{ shipment.received_at|colombia_time }}{% endif %}
-            </p>
-            <div class="flex flex-wrap gap-1.5 mt-2">
-              {% for item in shipment.items %}
-              <span class="bg-lienzo-seccion border border-linea text-slate-700 text-xs px-2 py-0.5 rounded-lg font-medium">
-                {{ item.med_name }} ×{{ item.quantity_incoming }}
-              </span>
-              {% endfor %}
-            </div>
-            {% if shipment.note %}
-            <p class="text-xs text-slate-600 mt-1 italic">{{ shipment.note }}</p>
+      {% set cfg = status_cfg.get(shipment.status, ('neutro', 'circle', shipment.status)) %}
+      <tr>
+        <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ shipment.pharmacy.name }}</td>
+        <td class="{{ TABLA_TD }}">
+          <div class="flex flex-wrap gap-1">
+            {{ chip(cfg[2], cfg[0], cfg[1]) }}
+            {% if shipment.expected_date <= today_str and shipment.status == 'en_camino' %}
+            {{ chip('Hoy o vencido', 'revisar') }}
             {% endif %}
           </div>
+        </td>
+        <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">
+          {{ shipment.expected_date }}
+          {% if shipment.received_at %}
+          <span class="block text-xs text-slate-500">Recibido: {{ shipment.received_at|colombia_date }} {{ shipment.received_at|colombia_time }}</span>
+          {% endif %}
+        </td>
+        <td class="{{ TABLA_TD }} text-slate-600">
+          {% if shipment.supplier_name %}{{ shipment.supplier_name }}{% else %}—{% endif %}
+          {% if shipment.note %}<span class="block text-xs text-slate-500">{{ shipment.note }}</span>{% endif %}
+        </td>
+        <td class="{{ TABLA_TD }}">
+          <div class="flex flex-wrap gap-1">
+            {% for item in shipment.items %}
+            {{ chip(item.med_name ~ ' ×' ~ item.quantity_incoming, 'neutro') }}
+            {% endfor %}
+          </div>
+        </td>
+        <td class="{{ TABLA_TD }}">
           {% if shipment.status == 'en_camino' %}
-          <div class="flex flex-col gap-2 shrink-0">
+          <div class="flex flex-wrap gap-2">
             <form method="POST">
               <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="receive_shipment">
               <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
-              <button type="submit" class="{{ BOTON }}">
-                <i data-lucide="package-check" class="w-4 h-4"></i>
-                Confirmar Recepción
+              <button type="submit" class="{{ BOTON_MINI }} whitespace-nowrap">
+                <i data-lucide="package-check" class="w-3.5 h-3.5"></i> Confirmar recepción
               </button>
             </form>
-            <form method="POST" class="space-y-3">
+            <form method="POST">
               <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="cancel_shipment">
               <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
-              <button type="submit" class="w-full border border-linea text-slate-500 px-4 py-2 rounded-lg font-bold text-sm inline-flex items-center justify-center gap-1.5 hover:bg-lienzo-seccion transition text-xs">
-                Cancelar
-              </button>
+              <button type="submit" class="{{ BOTON_MINI_2 }}">Cancelar</button>
             </form>
           </div>
           {% endif %}
-        </div>
-      </div>
+        </td>
+      </tr>
       {% endfor %}
-    </div>
+    {% endcall %}
     {% else %}
-    <div class="p-12 text-center">
-      <i data-lucide="truck" class="w-10 h-10 text-slate-500 mx-auto mb-3"></i>
-      <p class="text-slate-600 font-bold">Sin cargamentos registrados aún.</p>
-    </div>
+    {{ vacio('Sin cargamentos registrados aún.', 'Registre el primero con el formulario de arriba.') }}
     {% endif %}
-  </section>
+  {% endcall %}
 </div>
 
 <script>

@@ -1,108 +1,129 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio %}
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-    <div>
-        <h1 class="text-3xl font-bold">Inventario</h1>
-        <p class="text-sm text-slate-500">Existencias por farmacia de la clínica. «Reponer a» es el punto de reposición de esa sede; en cero, el sistema solo avisa cuando el medicamento se agota.</p>
-    </div>
-    <a href="{{ url_for('staff.dashboard') }}" class="inline-flex items-center justify-center gap-2 border border-linea px-4 py-3 rounded-lg font-bold text-slate-700">
-        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-        Órdenes
+<div class="max-w-7xl mx-auto space-y-6">
+
+  {% call cabecera('Inventario', 'Existencias por farmacia de la clínica') %}
+    <a href="{{ url_for('staff.dashboard') }}" class="{{ BOTON_2 }}">
+      <i data-lucide="clipboard-list" class="w-4 h-4"></i> Órdenes
     </a>
-</div>
+  {% endcall %}
 
-<section class="bg-white border border-linea rounded-lg p-4 mb-5">
-    <h2 class="text-lg font-semibold mb-3">Agregar medicamento</h2>
-    <form method="POST" class="grid md:grid-cols-7 gap-2 items-end">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-600" for="alta-farmacia">Farmacia</label>
-            <select id="alta-farmacia" name="pharmacy_id" class="{{ CAMPO }} w-full">
-                {% for pharmacy in pharmacies %}
-                <option value="{{ pharmacy.id }}" {% if default_pharmacy and pharmacy.id == default_pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="space-y-1 md:col-span-2">
-            <label class="text-xs font-semibold text-slate-600" for="alta-medicamento">Medicamento</label>
-            <input id="alta-medicamento" name="nombre_med" required placeholder="Medicamento" class="{{ CAMPO }} w-full">
-        </div>
-        <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-600" for="alta-cantidad">Cantidad</label>
-            <input id="alta-cantidad" type="number" name="cantidad" min="0" value="0" class="{{ CAMPO }} w-full">
-        </div>
-        <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-600" for="alta-unidad">Unidad</label>
-            <input id="alta-unidad" name="unidad" value="unidad" class="{{ CAMPO }} w-full">
-        </div>
-        <div class="space-y-1">
-            <label class="text-xs font-semibold text-slate-600" for="alta-minimo">Reponer a</label>
-            <input id="alta-minimo" type="number" name="cantidad_minima" min="0" value="0" class="{{ CAMPO }} w-full">
-        </div>
-        <button class="{{ BOTON }}">
-            <i data-lucide="plus" class="w-5 h-5"></i>
-            Guardar
-        </button>
+  {% call tira(3) %}
+    {{ dato('Referencias', stock_items|length) }}
+    {{ dato('Agotadas', stock_items|selectattr('estado', 'equalto', 'agotado')|list|length) }}
+    {{ dato('En punto de reposición', stock_items|selectattr('estado', 'equalto', 'bajo')|list|length) }}
+  {% endcall %}
+
+  {% call panel('Agregar medicamento', 'plus') %}
+    <form method="POST" class="grid md:grid-cols-7 gap-3 items-end">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <div>
+        <label class="{{ ROTULO }}" for="alta-farmacia">Farmacia</label>
+        <select id="alta-farmacia" name="pharmacy_id" class="{{ CAMPO }}">
+          {% for pharmacy in pharmacies %}
+          <option value="{{ pharmacy.id }}" {% if default_pharmacy and pharmacy.id == default_pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label class="{{ ROTULO }}" for="alta-medicamento">Medicamento <span class="text-critical" aria-hidden="true">*</span></label>
+        <input id="alta-medicamento" name="nombre_med" required placeholder="Nombre del medicamento" class="{{ CAMPO }}">
+      </div>
+      <div>
+        <label class="{{ ROTULO }}" for="alta-cantidad">Cantidad</label>
+        <input id="alta-cantidad" type="number" name="cantidad" min="0" value="0" class="{{ CAMPO }}">
+      </div>
+      <div>
+        <label class="{{ ROTULO }}" for="alta-unidad">Unidad</label>
+        <input id="alta-unidad" name="unidad" value="unidad" class="{{ CAMPO }}">
+      </div>
+      <div>
+        <label class="{{ ROTULO }}" for="alta-minimo">Reponer a</label>
+        <input id="alta-minimo" type="number" name="cantidad_minima" min="0" value="0" class="{{ CAMPO }}">
+      </div>
+      <button class="{{ BOTON }}">
+        <i data-lucide="plus" class="w-4 h-4"></i> Guardar
+      </button>
     </form>
-</section>
+    <p class="{{ PISTA }}">
+      «Reponer a» es el punto de reposición de esa sede; en cero, el sistema
+      solo avisa cuando el medicamento se agota.
+    </p>
+  {% endcall %}
 
-<section class="bg-white border border-linea rounded-lg overflow-hidden">
+  <section class="{{ TARJETA }}">
+    {# El formulario de cada fila cuelga directamente del tr: es marcado
+       invalido que el analizador HTML5 tolera —expulsa el elemento pero
+       conserva el puntero de formulario, asi que cada campo de las celdas
+       sigue asociado a el. La ruta de actualizacion depende de eso; la
+       estructura de la fila no se reorganiza. #}
     <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="text-left text-xs uppercase tracking-widest text-slate-600 bg-lienzo-seccion">
-                <tr><th class="p-3">Farmacia</th><th class="p-3">Medicamento</th><th class="p-3">Cantidad</th><th class="p-3">Comprometido</th><th class="p-3">Unidad</th><th class="p-3">Reponer a</th><th class="p-3">Estado</th><th class="p-3">Actualizar</th></tr>
-            </thead>
-            <tbody>
-                {% for fila in stock_items %}
-                {% set item = fila.stock %}
-                <tr class="border-t align-middle">
-                    <form method="POST">
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="stock_id" value="{{ item.id }}">
-                        <td class="p-3">
-                            <select name="pharmacy_id" class="{{ CAMPO }} w-40" aria-label="Farmacia">
-                                {% for pharmacy in pharmacies %}
-                                <option value="{{ pharmacy.id }}" {% if item.pharmacy_id == pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td class="p-3">
-                            <input name="nombre_med" value="{{ item.nombre_med }}" class="{{ CAMPO }} w-full" aria-label="Medicamento">
-                        </td>
-                        <td class="p-3">
-                            <input type="number" name="cantidad" min="0" value="{{ item.cantidad }}" class="{{ CAMPO }} w-28" aria-label="Cantidad">
-                        </td>
-                        <td class="p-3 text-sm text-slate-700 font-bold">{{ item.cantidad_comprometida or 0 }}</td>
-                        <td class="p-3">
-                            <input name="unidad" value="{{ item.unidad }}" class="{{ CAMPO }} w-28" aria-label="Unidad">
-                        </td>
-                        <td class="p-3">
-                            <input type="number" name="cantidad_minima" min="0" value="{{ item.cantidad_minima or 0 }}" class="{{ CAMPO }} w-24" aria-label="Punto de reposición">
-                        </td>
-                        <td class="p-3 text-xs font-semibold">
-                            {% if fila.estado == 'agotado' %}
-                            <span class="text-critical">Agotado</span>
-                            {% elif fila.estado == 'bajo' %}
-                            <span class="text-caution">En el punto de reposición</span>
-                            {% elif fila.estado == 'sin_umbral' %}
-                            <span class="text-slate-500">Sin punto de reposición</span>
-                            {% else %}
-                            <span class="text-slate-600">{{ fila.disponible }} disponibles</span>
-                            {% endif %}
-                        </td>
-                        <td class="p-3">
-                            <button class="{{ BOTON }}">
-                                <i data-lucide="save" class="w-4 h-4"></i>
-                                Guardar
-                            </button>
-                        </td>
-                    </form>
-                </tr>
+      <table class="{{ TABLA }}">
+        <thead class="{{ TABLA_CABECERA }}">
+          <tr>
+            <th scope="col" class="{{ TABLA_TH }}">Farmacia</th>
+            <th scope="col" class="{{ TABLA_TH }}">Medicamento</th>
+            <th scope="col" class="{{ TABLA_TH }}">Cantidad</th>
+            <th scope="col" class="{{ TABLA_TH }}">Comprometido</th>
+            <th scope="col" class="{{ TABLA_TH }}">Unidad</th>
+            <th scope="col" class="{{ TABLA_TH }}">Reponer a</th>
+            <th scope="col" class="{{ TABLA_TH }}">Estado</th>
+            <th scope="col" class="{{ TABLA_TH }}">Actualizar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in stock_items %}
+          {% set item = fila.stock %}
+          <tr>
+            <form method="POST">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="stock_id" value="{{ item.id }}">
+              <td class="{{ TABLA_TD }}">
+                <select name="pharmacy_id" class="{{ CAMPO }} w-40" aria-label="Farmacia">
+                  {% for pharmacy in pharmacies %}
+                  <option value="{{ pharmacy.id }}" {% if item.pharmacy_id == pharmacy.id %}selected{% endif %}>{{ pharmacy.name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td class="{{ TABLA_TD }}">
+                <input name="nombre_med" value="{{ item.nombre_med }}" class="{{ CAMPO }} min-w-[12rem]" aria-label="Medicamento">
+              </td>
+              <td class="{{ TABLA_TD }}">
+                <input type="number" name="cantidad" min="0" value="{{ item.cantidad }}" class="{{ CAMPO }} w-24" aria-label="Cantidad">
+              </td>
+              <td class="{{ TABLA_TD }} tabular-nums font-semibold text-slate-700">{{ item.cantidad_comprometida or 0 }}</td>
+              <td class="{{ TABLA_TD }}">
+                <input name="unidad" value="{{ item.unidad }}" class="{{ CAMPO }} w-24" aria-label="Unidad">
+              </td>
+              <td class="{{ TABLA_TD }}">
+                <input type="number" name="cantidad_minima" min="0" value="{{ item.cantidad_minima or 0 }}" class="{{ CAMPO }} w-24" aria-label="Punto de reposición">
+              </td>
+              <td class="{{ TABLA_TD }}">
+                {% if fila.estado == 'agotado' %}
+                {{ chip('Agotado', 'riesgo') }}
+                {% elif fila.estado == 'bajo' %}
+                {{ chip('En punto de reposición', 'revisar') }}
+                {% elif fila.estado == 'sin_umbral' %}
+                {{ chip('Sin punto definido', 'neutro') }}
                 {% else %}
-                <tr><td colspan="8" class="p-6 text-center text-slate-600">Sin stock registrado.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                {{ chip(fila.disponible ~ ' disponibles', 'neutro') }}
+                {% endif %}
+              </td>
+              <td class="{{ TABLA_TD }}">
+                <button class="{{ BOTON_MINI_2 }}">
+                  <i data-lucide="save" class="w-3.5 h-3.5"></i> Guardar
+                </button>
+              </td>
+            </form>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="{{ TABLA_TD }}">{{ vacio('Sin stock registrado.', 'Agregue el primer medicamento con el formulario de arriba.') }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-</section>
+  </section>
+
+</div>
 {% endblock %}

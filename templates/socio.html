@@ -1,26 +1,46 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, panel %}
 {% block content %}
 <div class="max-w-3xl mx-auto">
-    <section class="bg-white border border-linea rounded-lg p-6">
-        <div class="mb-6">
-            <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600">RuralHealth para instituciones</p>
-            <h1 class="text-2xl font-semibold text-slate-900 mt-1">Sea socio</h1>
-            <p class="text-slate-500 mt-2">Dejenos sus datos y nos comunicaremos con usted para activar su clínica en el sistema.</p>
-        </div>
 
-        <form method="POST" class="grid sm:grid-cols-2 gap-3">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input name="nombre" required placeholder="Nombre completo" class="{{ CAMPO }}" aria-label="Nombre completo">
-            <input name="institucion" placeholder="Institución" class="{{ CAMPO }}" aria-label="Institución">
-            <input name="telefono" placeholder="Teléfono" class="{{ CAMPO }}" aria-label="Teléfono">
-            <input name="email" type="email" placeholder="Email" class="{{ CAMPO }}" aria-label="Email">
-            <input name="ciudad" placeholder="Ciudad" class="{{ CAMPO }}" aria-label="Ciudad">
-            <textarea name="mensaje" rows="5" placeholder="Mensaje o necesidades de la institución" class="{{ CAMPO }}" aria-label="Mensaje o necesidades de la institución"></textarea>
-            <button class="{{ BOTON }}">
-                <i data-lucide="send" class="w-5 h-5"></i>
-                Enviar solicitud
-            </button>
-        </form>
-    </section>
+  {{ cabecera('Sea socio',
+              'RuralHealth para instituciones. Déjenos sus datos y nos comunicaremos con usted para activar su clínica en el sistema.') }}
+
+  <section class="{{ TARJETA }} p-4 sm:p-6">
+    <form method="POST" class="grid sm:grid-cols-2 gap-4">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <label class="{{ ROTULO }}" for="socio-nombre">Nombre completo <span class="text-critical" aria-hidden="true">*</span></label>
+        <input id="socio-nombre" name="nombre" required class="{{ CAMPO }}" aria-label="Nombre completo">
+      </div>
+      <div>
+        <label class="{{ ROTULO }}" for="socio-institucion">Institución</label>
+        <input id="socio-institucion" name="institucion" class="{{ CAMPO }}" aria-label="Institución">
+      </div>
+      <div>
+        <label class="{{ ROTULO }}" for="socio-telefono">Teléfono</label>
+        <input id="socio-telefono" name="telefono" class="{{ CAMPO }}" aria-label="Teléfono">
+      </div>
+      <div>
+        <label class="{{ ROTULO }}" for="socio-email">Correo electrónico</label>
+        <input id="socio-email" name="email" type="email" class="{{ CAMPO }}" aria-label="Email">
+      </div>
+      <div class="sm:col-span-2">
+        <label class="{{ ROTULO }}" for="socio-ciudad">Ciudad</label>
+        <input id="socio-ciudad" name="ciudad" class="{{ CAMPO }}" aria-label="Ciudad">
+      </div>
+      <div class="sm:col-span-2">
+        <label class="{{ ROTULO }}" for="socio-mensaje">Mensaje o necesidades de la institución</label>
+        <textarea id="socio-mensaje" name="mensaje" rows="5" class="{{ CAMPO }}"
+                  aria-label="Mensaje o necesidades de la institución"></textarea>
+      </div>
+      <div class="sm:col-span-2">
+        <button class="{{ BOTON }}">
+          <i data-lucide="send" class="w-4 h-4"></i> Enviar solicitud
+        </button>
+      </div>
+    </form>
+  </section>
 </div>
 {% endblock %}

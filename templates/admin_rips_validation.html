@@ -1,128 +1,110 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso,
+                          vacio, tabla %}
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
-    <header>
-        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-3">
-            <i data-lucide="file-check-2" class="w-8 h-8 text-primary"></i>
-            Validación del RIPS
-        </h1>
-        <p class="text-slate-500 mt-2 font-medium">
-            Periodo del {{ start_date | colombia_date }} al {{ end_date | colombia_date }}
-        </p>
-    </header>
-
-    {% if issues %}
-    <div class="bg-critical-subtle border-2 border-critical-border rounded-lg p-6">
-        <h2 class="font-semibold text-slate-900 text-lg flex items-center gap-2 mb-3">
-            <i data-lucide="octagon-alert" class="w-6 h-6"></i>
-            No se puede generar el RIPS
-        </h2>
-        <p class="text-sm text-rose-900 leading-relaxed mb-2">
-            Faltan <b>{{ issues | length }}</b> dato(s) obligatorio(s). La exportación
-            se detuvo a propósito.
-        </p>
-        <p class="text-sm text-rose-800 leading-relaxed">
-            Un RIPS es una declaración ante el sistema de salud: rellenar los huecos
-            con valores supuestos sería reportar información falsa. Además, estos
-            datos alimentan las estadísticas con las que se planifica la salud del
-            territorio, así que un dato inventado aquí distorsiona decisiones reales.
-            Complete lo que falta y vuelva a intentarlo.
-        </p>
-    </div>
-
-    {% set grouped = {} %}
-    {% for issue in issues %}
-        {% set _ = grouped.setdefault(issue.scope, []).append(issue) %}
-    {% endfor %}
-
-    {% for scope, scope_issues in grouped.items() %}
-    <section class="bg-white rounded-lg border border-linea overflow-hidden">
-        <div class="px-6 py-4 border-b border-linea bg-lienzo-seccion">
-            <h2 class="font-semibold text-slate-800 capitalize">
-                {{ scope|capitalize }}: {{ scope_issues | length }} problema(s)
-            </h2>
-            {% if scope == 'prestador' %}
-            <p class="text-xs text-slate-500 mt-1">
-                Se corrige en Ajustes → Identificación del prestador.
-            </p>
-            {% elif scope == 'paciente' %}
-            <p class="text-xs text-slate-500 mt-1">
-                Se corrige en la ficha de cada paciente.
-            </p>
-            {% elif scope == 'atencion' %}
-            <p class="text-xs text-slate-500 mt-1">
-                Requiere que el profesional complete el registro de la atención.
-            </p>
-            {% endif %}
-        </div>
-        <ul class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
-            {% for issue in scope_issues %}
-            <li class="px-6 py-3 flex items-start gap-3 text-sm">
-                <i data-lucide="alert-circle" class="w-4 h-4 text-critical mt-0.5 shrink-0"></i>
-                <div class="min-w-0">
-                    <p class="font-bold text-slate-800">{{ issue.entity }}</p>
-                    <p class="text-slate-600">{{ issue.message }}</p>
-                    <p class="text-xs text-slate-600 font-mono mt-0.5">campo: {{ issue.field }}</p>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </section>
-    {% endfor %}
-
-    {% else %}
-    <div class="bg-positive-subtle border-2 border-positive-border rounded-lg p-6">
-        <h2 class="font-semibold text-slate-900 text-lg flex items-center gap-2 mb-2">
-            <i data-lucide="circle-check-big" class="w-6 h-6"></i>
-            Listo para exportar
-        </h2>
-        {% if summary %}
-        <p class="text-sm text-emerald-900 leading-relaxed">
-            {{ summary.total_records }} atención(es) de {{ summary.total_patients }}
-            paciente(s), con todos los datos obligatorios completos.
-        </p>
-        {% endif %}
-    </div>
-
-    <form method="GET" action="{{ url_for('admin.export_rips') }}"
-          class="bg-white rounded-lg border border-linea p-6 space-y-4">
-        <input type="hidden" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') }}">
-        <input type="hidden" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') }}">
-
-        <div>
-            <label for="invoice" class="text-sm font-bold text-slate-700">
-                Número de factura electrónica
-            </label>
-            <input type="text" id="invoice" name="invoice" maxlength="40"
-                placeholder="Por ejemplo: FE-2026-00123"
-                class="{{ CAMPO }} w-full">
-            <p class="text-xs text-slate-500 mt-2 leading-relaxed">
-                Si se deja vacío, el archivo llevará un marcador provisional que
-                deberá reemplazarse antes de radicar. La norma no admite un número
-                supuesto.
-            </p>
-        </div>
-
-        <button type="submit"
-            class="{{ BOTON }}">
-            <i data-lucide="download" class="w-5 h-5"></i>
-            Generar y descargar RIPS
-        </button>
-    </form>
-    {% endif %}
-
-    <div class="bg-lienzo-seccion border border-linea rounded-lg p-5 text-sm text-slate-600 leading-relaxed">
-        <b class="text-slate-800">Antes de radicar.</b> Este paquete cubre los
-        archivos planos CT, AF, US y AC. La radicación vigente bajo la Resolución
-        2275 de 2023 exige además la factura electrónica validada por la DIAN y el
-        envío en el canal del MinSalud, que se tramitan con el operador de
-        facturación del prestador.
-    </div>
-
-    <a href="{{ url_for('admin.dashboard') }}"
-       class="inline-flex items-center gap-2 text-primary font-bold hover:underline">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel
+  {% call cabecera('Validación del RIPS',
+                   'Periodo del ' ~ (start_date | colombia_date) ~ ' al ' ~ (end_date | colombia_date)) %}
+    <a href="{{ url_for('admin.dashboard') }}" class="{{ BOTON_2 }}">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel
     </a>
+  {% endcall %}
+
+  {% if issues %}
+  {% call aviso('riesgo', 'No se puede generar el RIPS', 'octagon-alert') %}
+    <p class="leading-relaxed mb-2">
+      Faltan <b>{{ issues | length }}</b> dato(s) obligatorio(s). La exportación
+      se detuvo a propósito.
+    </p>
+    <p class="leading-relaxed">
+      Un RIPS es una declaración ante el sistema de salud: rellenar los huecos
+      con valores supuestos sería reportar información falsa. Además, estos
+      datos alimentan las estadísticas con las que se planifica la salud del
+      territorio, así que un dato inventado aquí distorsiona decisiones reales.
+      Complete lo que falta y vuelva a intentarlo.
+    </p>
+  {% endcall %}
+
+  {% set grouped = {} %}
+  {% for issue in issues %}
+      {% set _ = grouped.setdefault(issue.scope, []).append(issue) %}
+  {% endfor %}
+
+  {% for scope, scope_issues in grouped.items() %}
+  <section class="{{ TARJETA }}">
+    <div class="px-4 py-3 border-b border-linea-suave">
+      <h2 class="{{ TITULO_SECCION }} capitalize">
+        {{ scope|capitalize }}: {{ scope_issues | length }} problema(s)
+      </h2>
+      {% if scope == 'prestador' %}
+      <p class="{{ PISTA }}">Se corrige en Ajustes → Identificación del prestador.</p>
+      {% elif scope == 'paciente' %}
+      <p class="{{ PISTA }}">Se corrige en la ficha de cada paciente.</p>
+      {% elif scope == 'atencion' %}
+      <p class="{{ PISTA }}">Requiere que el profesional complete el registro de la atención.</p>
+      {% endif %}
+    </div>
+    <div class="max-h-96 overflow-y-auto">
+      <table class="{{ TABLA }}">
+        <thead class="{{ TABLA_CABECERA }}">
+          <tr>
+            <th scope="col" class="{{ TABLA_TH }}">Registro</th>
+            <th scope="col" class="{{ TABLA_TH }}">Qué falta</th>
+            <th scope="col" class="{{ TABLA_TH }}">Campo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in scope_issues %}
+          <tr>
+            <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ issue.entity }}</td>
+            <td class="{{ TABLA_TD }} text-slate-700">{{ issue.message }}</td>
+            <td class="{{ TABLA_TD }} font-mono text-xs text-slate-600">{{ issue.field }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endfor %}
+
+  {% else %}
+  {% call aviso('completado', 'Listo para exportar', 'circle-check-big') %}
+    {% if summary %}
+    {{ summary.total_records }} atención(es) de {{ summary.total_patients }}
+    paciente(s), con todos los datos obligatorios completos.
+    {% endif %}
+  {% endcall %}
+
+  {% call panel('Generar el archivo', 'download') %}
+    <form method="GET" action="{{ url_for('admin.export_rips') }}" class="space-y-4 max-w-xl">
+      <input type="hidden" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') }}">
+      <input type="hidden" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') }}">
+
+      <div>
+        <label for="invoice" class="{{ ROTULO }}">Número de factura electrónica</label>
+        <input type="text" id="invoice" name="invoice" maxlength="40"
+               placeholder="FE-2026-00123" class="{{ CAMPO }}">
+        <p class="{{ PISTA }} leading-relaxed">
+          Si se deja vacío, el archivo llevará un marcador provisional que
+          deberá reemplazarse antes de radicar. La norma no admite un número
+          supuesto.
+        </p>
+      </div>
+
+      <button type="submit" class="{{ BOTON }}">
+        <i data-lucide="download" class="w-4 h-4"></i> Generar y descargar RIPS
+      </button>
+    </form>
+  {% endcall %}
+  {% endif %}
+
+  <div class="border border-linea {{ BANDA }} rounded-lg p-4 text-sm text-slate-700 leading-relaxed">
+    <b class="text-slate-900">Antes de radicar.</b> Este paquete cubre los
+    archivos planos CT, AF, US y AC. La radicación vigente bajo la Resolución
+    2275 de 2023 exige además la factura electrónica validada por la DIAN y el
+    envío en el canal del MinSalud, que se tramitan con el operador de
+    facturación del prestador.
+  </div>
 </div>
 {% endblock %}

@@ -1,69 +1,67 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso,
+                          vacio, tabla %}
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white border border-linea rounded-lg p-6 print:shadow-none print:border-0">
-    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-linea pb-4 mb-4">
-        <div>
-            <p class="text-xs font-semibold uppercase tracking-widest text-emerald-600">Ticket de recogida</p>
-            <h1 class="text-2xl font-semibold text-slate-900">{{ ticket.pickup_code }}</h1>
-            <p class="text-sm text-slate-500">Paciente: {{ ticket.patient.name }}</p>
-        </div>
-        <div class="text-left sm:text-right">
-            <p class="text-sm font-bold text-slate-700">{{ ticket.pickup_date }} {{ ticket.pickup_time }}</p>
-            <p class="text-sm font-bold text-slate-700">{{ ticket.pharmacy.name if ticket.pharmacy else 'Farmacia' }}</p>
-            <p class="text-xs text-slate-500">{{ ticket.pickup_location or current_user.clinic.name }}</p>
-            <span class="inline-block mt-2 bg-positive-subtle text-emerald-700 px-2 py-1 rounded-full text-xs font-semibold">{{ ticket.status|estado }}</span>
-        </div>
-    </div>
+<div class="max-w-3xl mx-auto {{ TARJETA }} p-6 print:border-0">
 
-    <div class="grid sm:grid-cols-2 gap-4 mb-5">
-        <div class="bg-lienzo-seccion border border-linea rounded-lg p-3">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-600 mb-1">Hash de entrega</p>
-            <p class="text-xs font-mono break-all text-slate-700">{{ ticket.pickup_hash }}</p>
-        </div>
-        <div class="bg-caution-subtle border border-caution-subtle rounded-lg p-3">
-            <p class="text-xs font-semibold uppercase tracking-widest text-amber-700 mb-1">Nota</p>
-            <p class="text-sm text-amber-900">{{ ticket.note }}</p>
-        </div>
+  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-linea pb-4 mb-4">
+    <div>
+      <span class="{{ ROTULO_DATO }}">Ticket de recogida</span>
+      <p class="text-3xl font-bold text-slate-900 font-mono tracking-tight mt-1">{{ ticket.pickup_code }}</p>
+      <div class="mt-2">{{ chip(ticket.status|estado, 'completado') }}</div>
     </div>
-
-    {% if related_tickets and related_tickets|length > 1 %}
-    <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-5">
-        <p class="text-xs font-semibold uppercase tracking-widest text-blue-700 mb-2">Tickets de esta orden</p>
-        <div class="space-y-2">
-            {% for related in related_tickets %}
-            <div class="bg-white border border-blue-100 rounded-lg p-2">
-                <p class="font-semibold text-blue-900">{{ related.pickup_code }} - {{ related.pharmacy.name if related.pharmacy else 'Farmacia' }}</p>
-                <p class="text-xs font-mono break-all text-blue-700">{{ related.pickup_hash }}</p>
-            </div>
-            {% endfor %}
-        </div>
+    <div class="text-left sm:text-right">
+      <p class="text-sm font-bold text-slate-900">{{ ticket.pickup_date }} {{ ticket.pickup_time }}</p>
+      <p class="text-sm font-bold text-slate-900">{{ ticket.pharmacy.name if ticket.pharmacy else 'Farmacia' }}</p>
+      <p class="text-xs text-slate-500">{{ ticket.pickup_location or current_user.clinic.name }}</p>
     </div>
-    {% endif %}
+  </div>
 
-    <table class="w-full text-sm mb-5">
-        <thead class="text-left text-xs uppercase tracking-widest text-slate-600">
-            <tr><th class="py-2">Medicamento</th><th class="py-2">Cantidad</th><th class="py-2">Instrucciones</th></tr>
-        </thead>
-        <tbody>
-            {% for med in meds %}
-            <tr class="border-t">
-                <td class="py-2 font-bold">{{ med.nombre_med }}</td>
-                <td class="py-2">{{ med.cantidad }} {{ med.unidad }}</td>
-                <td class="py-2 text-slate-500">{{ med.instrucciones or '-' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  {% call tira(2) %}
+    {{ dato('Paciente', ticket.patient.name) }}
+    {{ dato('Nota', ticket.note) }}
+  {% endcall %}
 
-    <div class="flex flex-col sm:flex-row gap-2 print:hidden">
-        <button onclick="window.print()" class="{{ BOTON }}">
-            <i data-lucide="printer" class="w-5 h-5"></i>
-            Imprimir / guardar PDF
-        </button>
-        <a href="{{ url_for('staff.dashboard') }}" class="border border-linea px-4 py-3 rounded-lg font-bold text-slate-700 inline-flex items-center justify-center gap-2">
-            <i data-lucide="arrow-left" class="w-5 h-5"></i>
-            Volver
-        </a>
-    </div>
+  <div class="border border-linea {{ BANDA }} rounded-lg p-3 my-4">
+    <span class="{{ ROTULO_DATO }}">Hash de entrega</span>
+    <p class="text-xs font-mono break-all text-slate-700 mt-1">{{ ticket.pickup_hash }}</p>
+  </div>
+
+  {% if related_tickets and related_tickets|length > 1 %}
+  <div class="mb-4">
+    {{ seccion('Tickets de esta orden') }}
+    {% call tabla(['Código', 'Farmacia', 'Hash']) %}
+      {% for related in related_tickets %}
+      <tr>
+        <td class="{{ TABLA_TD }} font-mono font-semibold text-slate-900 whitespace-nowrap">{{ related.pickup_code }}</td>
+        <td class="{{ TABLA_TD }}">{{ related.pharmacy.name if related.pharmacy else 'Farmacia' }}</td>
+        <td class="{{ TABLA_TD }} font-mono text-xs text-slate-500 break-all">{{ related.pickup_hash }}</td>
+      </tr>
+      {% endfor %}
+    {% endcall %}
+  </div>
+  {% endif %}
+
+  <div class="mb-5">
+    {{ seccion('Medicamentos') }}
+    {% call tabla(['Medicamento', 'Cantidad', 'Instrucciones']) %}
+      {% for med in meds %}
+      <tr>
+        <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ med.nombre_med }}</td>
+        <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">{{ med.cantidad }} {{ med.unidad }}</td>
+        <td class="{{ TABLA_TD }} text-slate-600">{{ med.instrucciones or '—' }}</td>
+      </tr>
+      {% endfor %}
+    {% endcall %}
+  </div>
+
+  <div class="flex flex-col sm:flex-row gap-2 print:hidden">
+    <button onclick="window.print()" class="{{ BOTON }}">
+      <i data-lucide="printer" class="w-4 h-4"></i> Imprimir o guardar PDF
+    </button>
+    <a href="{{ url_for('staff.dashboard') }}" class="{{ BOTON_2 }}">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
+    </a>
+  </div>
 </div>
 {% endblock %}

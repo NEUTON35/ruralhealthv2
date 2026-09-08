@@ -1,169 +1,137 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso %}
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto space-y-6">
 
-    {# --- Consentimiento pendiente -----------------------------------------
-       Cuando el paciente llega aquí porque debe autorizar el tratamiento de
-       datos sensibles, la acción va arriba: es lo que vino a hacer. #}
-    {% if consent_required %}
-    <div class="border border-caution-border bg-caution-subtle rounded-lg p-5 mb-6">
-        <h2 class="font-semibold text-caution-text flex items-center gap-2 mb-2">
-            <i data-lucide="shield-alert" class="w-5 h-5"></i>
-            Autorización pendiente
-        </h2>
-        <p class="text-sm text-caution-text leading-relaxed mb-4">
-            Para usar el chat clínico, agendar consultas y recibir seguimiento
-            se requiere su autorización expresa para tratar sus datos de salud.
-            Son datos sensibles y la ley exige que se otorgue por separado.
-        </p>
-        <p class="text-sm text-caution-text leading-relaxed mb-4">
-            Puede negarse. En ese caso conservará su cuenta y el acceso a su
-            información, pero no será posible prestarle atención clínica por esta
-            plataforma, ya que dicha atención no puede darse sin tratar esos datos.
-        </p>
-
-        <form method="POST" action="{{ url_for('patient.consent') }}" class="space-y-3">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <label class="flex items-start gap-3 text-sm text-caution-text cursor-pointer">
-                <input type="checkbox" name="accept_sensitive_data" required
-                       class="mt-0.5 w-4 h-4 rounded border-caution-border shrink-0">
-                <span>
-                    Autorizo el tratamiento de mis datos de salud en los términos
-                    de la Política de Tratamiento de Datos
-                    {% if documents.privacy %}(versión {{ documents.privacy.version }}){% endif %}.
-                </span>
-            </label>
-            <button type="submit"
-                class="{{ BOTON }}">
-                Autorizar y continuar
-            </button>
-        </form>
-    </div>
-    {% endif %}
-
-    {# --- Aviso de configuración pendiente ---------------------------------
-       Solo para administradores. Un documento legal con datos sin completar no
-       es publicable, y quien puede completarlos debe saberlo. #}
-    {% if pending_config and current_user.is_authenticated and current_user.role in ('admin', 'super') %}
-    <div class="border border-critical-border bg-critical-subtle rounded-lg p-5 mb-6 no-print">
-        <h2 class="font-semibold text-critical-text flex items-center gap-2 mb-2">
-            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-            Estos documentos no están listos para publicarse
-        </h2>
-        <p class="text-sm text-critical-text leading-relaxed mb-3">
-            Faltan datos obligatorios del prestador. Mientras no se completen, los
-            textos muestran marcadores en lugar de la información legal y no
-            cumplen los requisitos del artículo 13 del Decreto 1377 de 2013.
-        </p>
-        <ul class="text-sm text-critical-text space-y-1 mb-4">
-            {% for doc_key, missing in pending_config.items() %}
-            <li><b>{{ documents[doc_key].title if doc_key in documents else doc_key }}:</b>
-                {{ missing | join(', ') }}</li>
-            {% endfor %}
-        </ul>
-        <a href="{{ url_for('settings.index') }}#legal"
-           class="inline-flex items-center gap-2 text-critical font-medium text-sm hover:underline">
-            <i data-lucide="settings" class="w-4 h-4"></i> Completar en Ajustes
-        </a>
-    </div>
-    {% endif %}
-
-    <header class="mb-6">
-        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
-            Documentos legales
-        </h1>
-        <p class="text-slate-600 mt-1.5 text-sm leading-relaxed">
-            Cada documento indica su versión y su fecha de entrada en vigencia.
-            Las versiones anteriores quedan archivadas: de una aceptación pasada
-            puede acreditarse exactamente qué texto se aceptó.
-        </p>
-    </header>
-
-    {# --- Pestañas --------------------------------------------------------- #}
-    <nav class="border-b border-linea mb-6 no-print" aria-label="Documentos legales">
-        <ul class="flex flex-wrap gap-x-6 -mb-px text-sm">
-            {% for key, label, href in tabs %}
-            <li>
-                <a href="{{ href }}"
-                   class="inline-block py-3 border-b-2 font-medium transition-colors {% if active_tab == key %}border-accent text-accent {% else %}border-transparent text-slate-600 hover:text-slate-900 hover:border-linea{% endif %}"
-                   {% if active_tab == key %}aria-current="page"{% endif %}>
-                    {{ label }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-    </nav>
-
-    {# --- Documento -------------------------------------------------------- #}
-    {% set doc = documents.get(active_tab) %}
-    {% if doc %}
-    <article class="bg-white border border-linea rounded-lg">
-
-        <div class="px-6 py-5 border-b border-linea bg-lienzo-seccion rounded-t-lg">
-            <h2 class="text-lg font-semibold text-slate-900">{{ doc.title }}</h2>
-            <p class="text-sm text-slate-600 mt-1 leading-relaxed">{{ doc.summary }}</p>
-            <dl class="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-xs text-slate-600">
-                <div class="flex gap-1.5">
-                    <dt class="font-medium">Versión:</dt>
-                    <dd class="font-mono">{{ doc.version }}</dd>
-                </div>
-                <div class="flex gap-1.5">
-                    <dt class="font-medium">Vigente desde:</dt>
-                    <dd>{{ doc.effective_date.strftime('%d/%m/%Y') }}</dd>
-                </div>
-                <div class="flex gap-1.5">
-                    <dt class="font-medium">Huella:</dt>
-                    <dd class="font-mono" title="Identifica esta versión exacta del texto">
-                        {{ doc.content_hash[:16] }}
-                    </dd>
-                </div>
-            </dl>
-        </div>
-
-        <div class="px-6 py-6 space-y-7">
-            {% for title, body in doc.sections %}
-            <section>
-                <h3 class="font-semibold text-slate-900 mb-2">{{ title }}</h3>
-                <div class="text-sm text-slate-700 leading-relaxed space-y-3 legal-body">
-                    {{ body | legal_markup }}
-                </div>
-            </section>
-            {% endfor %}
-        </div>
-
-        {% if doc.legal_basis %}
-        <div class="px-6 py-4 border-t border-linea bg-lienzo-seccion rounded-b-lg">
-            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-2">
-                Normativa aplicable
-            </h3>
-            <ul class="text-xs text-slate-600 space-y-0.5">
-                {% for norma in doc.legal_basis %}
-                <li>{{ norma }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-    </article>
-
-    <div class="mt-5 flex flex-wrap gap-3 items-center no-print">
-        <button type="button" onclick="window.print()"
-            class="inline-flex items-center gap-2 border border-linea text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-lienzo-seccion transition-colors">
-            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir o guardar en PDF
-        </button>
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('privacy.index') }}"
-           class="inline-flex items-center gap-2 text-accent font-medium text-sm hover:underline">
-            <i data-lucide="shield" class="w-4 h-4"></i> Ver y gestionar mis datos
-        </a>
-        {% endif %}
-    </div>
-
-    <p class="text-xs text-slate-600 mt-6 leading-relaxed">
-        Este documento no sustituye asesoría jurídica ni el consentimiento
-        informado específico que el profesional debe explicarle antes de un
-        procedimiento concreto.
+  {# --- Consentimiento pendiente -----------------------------------------
+     Cuando el paciente llega aquí porque debe autorizar el tratamiento de
+     datos sensibles, la acción va arriba: es lo que vino a hacer. #}
+  {% if consent_required %}
+  {% call aviso('revisar', 'Autorización pendiente', 'shield-alert') %}
+    <p class="leading-relaxed mb-3">
+      Para usar el chat clínico, agendar consultas y recibir seguimiento
+      se requiere su autorización expresa para tratar sus datos de salud.
+      Son datos sensibles y la ley exige que se otorgue por separado.
     </p>
+    <p class="leading-relaxed mb-3">
+      Puede negarse. En ese caso conservará su cuenta y el acceso a su
+      información, pero no será posible prestarle atención clínica por esta
+      plataforma, ya que dicha atención no puede darse sin tratar esos datos.
+    </p>
+
+    <form method="POST" action="{{ url_for('patient.consent') }}" class="space-y-3">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input type="checkbox" name="accept_sensitive_data" required
+               class="mt-0.5 w-4 h-4 rounded border-caution-border shrink-0">
+        <span>
+          Autorizo el tratamiento de mis datos de salud en los términos
+          de la Política de Tratamiento de Datos
+          {% if documents.privacy %}(versión {{ documents.privacy.version }}){% endif %}.
+        </span>
+      </label>
+      <button type="submit" class="{{ BOTON }}">Autorizar y continuar</button>
+    </form>
+  {% endcall %}
+  {% endif %}
+
+  {# --- Aviso de configuración pendiente ---------------------------------
+     Solo para administradores. Un documento legal con datos sin completar no
+     es publicable, y quien puede completarlos debe saberlo. #}
+  {% if pending_config and current_user.is_authenticated and current_user.role in ('admin', 'super') %}
+  <div class="no-print">
+    {% call aviso('riesgo', 'Estos documentos no están listos para publicarse', 'alert-triangle') %}
+      <p class="leading-relaxed mb-3">
+        Faltan datos obligatorios del prestador. Mientras no se completen, los
+        textos muestran marcadores en lugar de la información legal y no
+        cumplen los requisitos del artículo 13 del Decreto 1377 de 2013.
+      </p>
+      <ul class="space-y-1 mb-3 list-disc list-inside">
+        {% for doc_key, missing in pending_config.items() %}
+        <li><b>{{ documents[doc_key].title if doc_key in documents else doc_key }}:</b>
+            {{ missing | join(', ') }}</li>
+        {% endfor %}
+      </ul>
+      <a href="{{ url_for('settings.index') }}#legal" class="{{ BOTON_2 }}">
+        <i data-lucide="settings" class="w-4 h-4"></i> Completar en Ajustes
+      </a>
+    {% endcall %}
+  </div>
+  {% endif %}
+
+  {{ cabecera('Documentos legales',
+              'Cada documento indica su versión y su fecha de entrada en vigencia. Las versiones anteriores quedan archivadas: de una aceptación pasada puede acreditarse exactamente qué texto se aceptó.') }}
+
+  {# --- Pestañas --------------------------------------------------------- #}
+  <nav class="border-b border-linea no-print" aria-label="Documentos legales">
+    <ul class="flex flex-wrap gap-x-6 -mb-px text-sm">
+      {% for key, label, href in tabs %}
+      <li>
+        <a href="{{ href }}"
+           class="inline-block py-3 border-b-2 transition-colors {% if active_tab == key %}border-slate-900 text-slate-900 font-bold{% else %}border-transparent text-slate-600 font-medium hover:text-slate-900 hover:border-linea{% endif %}"
+           {% if active_tab == key %}aria-current="page"{% endif %}>
+          {{ label }}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {# --- Documento -------------------------------------------------------- #}
+  {% set doc = documents.get(active_tab) %}
+  {% if doc %}
+  <div>
+    <h2 class="{{ TITULO_SECCION }}">{{ doc.title }}</h2>
+    <p class="{{ SUBTITULO }} mt-1 leading-relaxed">{{ doc.summary }}</p>
+  </div>
+
+  {% call tira(3) %}
+    {{ dato('Versión', doc.version) }}
+    {{ dato('Vigente desde', doc.effective_date.strftime('%d/%m/%Y')) }}
+    {{ dato('Huella', doc.content_hash[:16], 'Identifica esta versión exacta del texto') }}
+  {% endcall %}
+
+  <article class="{{ TARJETA }}">
+    <div class="px-4 py-4 space-y-6">
+      {% for title, body in doc.sections %}
+      <section>
+        <h3 class="font-bold text-slate-900 mb-2">{{ title }}</h3>
+        <div class="text-sm text-slate-700 leading-relaxed space-y-3 legal-body">
+          {{ body | legal_markup }}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+
+    {% if doc.legal_basis %}
+    <div class="px-4 py-3 border-t border-linea-suave {{ BANDA }} rounded-b-lg">
+      <span class="{{ ROTULO_DATO }}">Normativa aplicable</span>
+      <ul class="text-xs text-slate-600 space-y-0.5 mt-1">
+        {% for norma in doc.legal_basis %}
+        <li>{{ norma }}</li>
+        {% endfor %}
+      </ul>
+    </div>
     {% endif %}
+  </article>
+
+  <div class="flex flex-wrap gap-2 items-center no-print">
+    <button type="button" onclick="window.print()" class="{{ BOTON_2 }}">
+      <i data-lucide="printer" class="w-4 h-4"></i> Imprimir o guardar en PDF
+    </button>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('privacy.index') }}" class="{{ BOTON_2 }}">
+      <i data-lucide="shield" class="w-4 h-4"></i> Ver y gestionar mis datos
+    </a>
+    {% endif %}
+  </div>
+
+  <p class="text-xs text-slate-500 leading-relaxed">
+    Este documento no sustituye asesoría jurídica ni el consentimiento
+    informado específico que el profesional debe explicarle antes de un
+    procedimiento concreto.
+  </p>
+  {% endif %}
 </div>
 
 <style>

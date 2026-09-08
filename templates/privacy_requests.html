@@ -1,148 +1,118 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso,
+                          vacio, tabla %}
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="max-w-7xl mx-auto space-y-6">
 
-    <header class="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-3">
-                <i data-lucide="inbox" class="w-8 h-8 text-primary"></i>
-                Solicitudes de datos personales
-            </h1>
-            <p class="text-slate-500 mt-2 font-medium">
-                Peticiones de los titulares sobre sus datos, con su plazo legal de respuesta.
+  {{ cabecera('Solicitudes de datos personales',
+              'Peticiones de los titulares sobre sus datos, con su plazo legal de respuesta.') }}
+
+  {% if overdue_count %}
+  {% call aviso('riesgo', overdue_count ~ ' solicitud(es) fuera de plazo', 'alert-triangle') %}
+    Superar el plazo es una infracción sancionable, aunque la respuesta final
+    sea negativa. Están marcadas en la lista de pendientes.
+  {% endcall %}
+  {% endif %}
+
+  <div class="border border-linea {{ BANDA }} rounded-lg p-3 text-sm text-slate-700 leading-relaxed">
+    <b class="text-slate-900">Plazos.</b> El Decreto 1377 de 2013 da 10 días hábiles para atender una
+    consulta y 15 para un reclamo. Superarlos es una infracción sancionable por
+    la Superintendencia de Industria y Comercio, con independencia de que la
+    respuesta final sea afirmativa o negativa.
+  </div>
+
+  <!-- Pendientes -->
+  {% call panel('Pendientes (' ~ (pending | length) ~ ')', 'inbox') %}
+    {% if pending %}
+    <ul class="space-y-3">
+      {% for item in pending %}
+      <li class="border {% if item.is_overdue %}border-critical{% else %}border-linea{% endif %} rounded-lg p-4">
+        <div class="flex items-start justify-between gap-3 flex-wrap mb-3">
+          <div>
+            <p class="font-semibold text-slate-900">
+              {{ request_labels.get(item.request_type, item.request_type) }}
+              <span class="text-slate-500 font-normal text-sm">· #{{ item.id }}</span>
             </p>
+            <p class="text-sm text-slate-500 mt-0.5">
+              {{ item.user.name if item.user else 'Titular desconocido' }}
+              · recibida el {{ item.requested_at | colombia_date }}
+            </p>
+          </div>
+          {% if item.is_overdue %}
+          {{ chip('Vencida el ' ~ (item.due_at | colombia_date), 'riesgo', 'alert-triangle') }}
+          {% elif item.due_at %}
+          {{ chip('Vence el ' ~ (item.due_at | colombia_date), 'revisar', 'clock') }}
+          {% endif %}
         </div>
-        {% if overdue_count %}
-        <div class="bg-critical-subtle border-2 border-critical-border rounded-lg px-5 py-3 text-center">
-            <p class="text-2xl font-semibold text-rose-600">{{ overdue_count }}</p>
-            <p class="text-xs font-bold text-rose-700 uppercase tracking-wide">Fuera de plazo</p>
-        </div>
+
+        {% if item.detail %}
+        <blockquote class="text-sm text-slate-700 {{ BANDA }} border-l-2 border-linea pl-3 py-2 mb-4 leading-relaxed">
+          {{ item.detail }}
+        </blockquote>
         {% endif %}
-    </header>
 
-    <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 text-sm text-sky-900 leading-relaxed">
-        <b>Plazos.</b> El Decreto 1377 de 2013 da 10 días hábiles para atender una
-        consulta y 15 para un reclamo. Superarlos es una infracción sancionable por
-        la Superintendencia de Industria y Comercio, con independencia de que la
-        respuesta final sea afirmativa o negativa.
-    </div>
+        <form method="POST" action="{{ url_for('privacy.resolve_request', request_id=item.id) }}"
+              class="space-y-3">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <div>
+            <label class="{{ ROTULO }}" for="respuesta-{{ item.id }}">
+              Respuesta entregada al titular <span class="text-critical" aria-hidden="true">*</span>
+            </label>
+            <textarea id="respuesta-{{ item.id }}" name="resolution_note" rows="2" required
+                      minlength="10" maxlength="2000"
+                      class="{{ CAMPO }}" aria-label="Respuesta entregada al titular…"></textarea>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="submit" name="outcome" value="atendida" class="{{ BOTON }}">
+              <i data-lucide="check" class="w-4 h-4"></i> Marcar atendida
+            </button>
+            <button type="submit" name="outcome" value="rechazada" class="{{ BOTON_2 }}">
+              <i data-lucide="x" class="w-4 h-4"></i> Rechazar con motivo
+            </button>
+          </div>
+        </form>
 
-    <!-- Pendientes -->
-    <section class="bg-white rounded-lg border border-linea overflow-hidden">
-        <div class="px-6 py-4 border-b border-linea bg-lienzo-seccion">
-            <h2 class="font-semibold text-slate-800">Pendientes ({{ pending | length }})</h2>
-        </div>
-
-        {% if pending %}
-        <ul class="divide-y divide-slate-100">
-            {% for item in pending %}
-            <li class="p-6 {% if item.is_overdue %}bg-critical-subtle/50{% endif %}">
-                <div class="flex items-start justify-between gap-4 flex-wrap mb-3">
-                    <div>
-                        <p class="font-semibold text-slate-900">
-                            {{ request_labels.get(item.request_type, item.request_type) }}
-                            <span class="text-slate-600 font-medium text-sm">· #{{ item.id }}</span>
-                        </p>
-                        <p class="text-sm text-slate-500 mt-0.5">
-                            {{ item.user.name if item.user else 'Titular desconocido' }}
-                            · recibida el {{ item.requested_at | colombia_date }}
-                        </p>
-                    </div>
-                    {% if item.is_overdue %}
-                    <span class="bg-critical text-white px-3 py-1 rounded-full text-xs font-semibold shrink-0">
-                        VENCIDA {{ item.due_at | colombia_date }}
-                    </span>
-                    {% elif item.due_at %}
-                    <span class="bg-caution-subtle text-amber-800 px-3 py-1 rounded-full text-xs font-bold shrink-0">
-                        Vence {{ item.due_at | colombia_date }}
-                    </span>
-                    {% endif %}
-                </div>
-
-                {% if item.detail %}
-                <blockquote class="text-sm text-slate-700 bg-lienzo-seccion border-l-4 border-linea pl-4 py-3 rounded-r-lg mb-4 leading-relaxed">
-                    {{ item.detail }}
-                </blockquote>
-                {% endif %}
-
-                <form method="POST" action="{{ url_for('privacy.resolve_request', request_id=item.id) }}"
-                      class="space-y-3">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <textarea name="resolution_note" rows="2" required minlength="10" maxlength="2000"
-                        placeholder="Respuesta entregada al titular"
-                        class="{{ CAMPO }} w-full" aria-label="Respuesta entregada al titular…"></textarea>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="submit" name="outcome" value="atendida"
-                            class="{{ BOTON }}">
-                            <i data-lucide="check" class="w-4 h-4"></i> Marcar atendida
-                        </button>
-                        <button type="submit" name="outcome" value="rechazada"
-                            class="border border-linea text-slate-600 px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-lienzo-seccion transition-colors inline-flex items-center gap-2">
-                            <i data-lucide="x" class="w-4 h-4"></i> Rechazar con motivo
-                        </button>
-                    </div>
-                </form>
-
-                {% if item.request_type == 'supresion' %}
-                <form method="POST" action="{{ url_for('privacy.deactivate_account', request_id=item.id) }}"
-                      class="mt-3 pt-3 border-t border-linea"
-                      onsubmit="return confirm('Se desactivará la cuenta del titular. La historia clínica se conserva por obligación legal (15 años). ¿Continuar?');">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit"
-                        class="text-rose-600 border-2 border-critical-border px-5 py-2 rounded-lg font-bold text-sm hover:bg-critical-subtle transition-colors inline-flex items-center gap-2">
-                        <i data-lucide="user-x" class="w-4 h-4"></i>
-                        Desactivar cuenta del titular
-                    </button>
-                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">
-                        La historia clínica no se elimina: se conserva el plazo legal
-                        de 15 años. Esto solo cierra la cuenta y detiene los usos no
-                        obligatorios de sus datos.
-                    </p>
-                </form>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="p-6 text-slate-500 text-sm">No hay solicitudes pendientes.</p>
+        {% if item.request_type == 'supresion' %}
+        <form method="POST" action="{{ url_for('privacy.deactivate_account', request_id=item.id) }}"
+              class="mt-3 pt-3 border-t border-linea"
+              onsubmit="return confirm('Se desactivará la cuenta del titular. La historia clínica se conserva por obligación legal (15 años). ¿Continuar?');">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="{{ BOTON_PELIGRO }}">
+            <i data-lucide="user-x" class="w-4 h-4"></i>
+            Desactivar cuenta del titular
+          </button>
+          <p class="{{ PISTA }} leading-relaxed">
+            La historia clínica no se elimina: se conserva el plazo legal
+            de 15 años. Esto solo cierra la cuenta y detiene los usos no
+            obligatorios de sus datos.
+          </p>
+        </form>
         {% endif %}
-    </section>
-
-    <!-- Resueltas -->
-    {% if resolved %}
-    <section class="bg-white rounded-lg border border-linea overflow-hidden">
-        <div class="px-6 py-4 border-b border-linea bg-lienzo-seccion">
-            <h2 class="font-semibold text-slate-800">Resueltas recientemente</h2>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-left text-xs uppercase text-slate-600 border-b border-linea">
-                        <th class="px-6 py-3 font-bold">#</th>
-                        <th class="px-6 py-3 font-bold">Titular</th>
-                        <th class="px-6 py-3 font-bold">Tipo</th>
-                        <th class="px-6 py-3 font-bold">Resultado</th>
-                        <th class="px-6 py-3 font-bold">Cerrada</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    {% for item in resolved %}
-                    <tr>
-                        <td class="px-6 py-3 text-slate-600 font-mono text-xs">{{ item.id }}</td>
-                        <td class="px-6 py-3 text-slate-800">{{ item.user.name if item.user else 'Titular no disponible' }}</td>
-                        <td class="px-6 py-3 text-slate-600">{{ request_labels.get(item.request_type, item.request_type) }}</td>
-                        <td class="px-6 py-3">
-                            <span class="px-2 py-0.5 rounded-full text-xs font-bold {% if item.status == 'atendida' %}bg-positive-subtle text-emerald-800 {% else %}bg-slate-100 text-slate-600{% endif %}">
-                                {{ item.status|estado }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-3 text-slate-500">{{ item.resolved_at | colombia_date }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    {{ vacio('No hay solicitudes pendientes.') }}
     {% endif %}
+  {% endcall %}
+
+  <!-- Resueltas -->
+  {% if resolved %}
+  {% call panel('Resueltas recientemente', 'history') %}
+    {% call tabla(['#', 'Titular', 'Tipo', 'Resultado', 'Cerrada']) %}
+      {% for item in resolved %}
+      <tr>
+        <td class="{{ TABLA_TD }} font-mono text-xs text-slate-500">{{ item.id }}</td>
+        <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ item.user.name if item.user else 'Titular no disponible' }}</td>
+        <td class="{{ TABLA_TD }} text-slate-600">{{ request_labels.get(item.request_type, item.request_type) }}</td>
+        <td class="{{ TABLA_TD }}">
+          {{ chip(item.status|estado, 'completado' if item.status == 'atendida' else 'neutro') }}
+        </td>
+        <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">{{ item.resolved_at | colombia_date }}</td>
+      </tr>
+      {% endfor %}
+    {% endcall %}
+  {% endcall %}
+  {% endif %}
 </div>
 {% endblock %}

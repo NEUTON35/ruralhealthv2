@@ -1,48 +1,47 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio %}
 {% block content %}
-<div class="bg-white rounded-lg border border-linea overflow-hidden flex flex-col h-[80vh] relative">
-    <!-- CABECERA DEL DOCTOR -->
-    <div class="bg-white border-b border-linea p-5 sm:p-6 shrink-0">
-        <div class="flex justify-between items-start mb-3 relative z-10">
-            <div>
-                <h2 class="text-xl font-semibold tracking-tight">{{ chat.patient.name }}</h2>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="border border-linea text-slate-700 px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider">
-                        {{ chat.status|estado }}
-                    </span>
-                    <span class="text-sm text-slate-600 flex items-center gap-1 font-medium bg-slate-100 px-2 py-1 rounded-lg">
-                        <i data-lucide="clock" class="w-3.5 h-3.5"></i> Mi horario: {{ current_user.schedule or 'No definido' }}
-                    </span>
-                </div>
-            </div>
-            <div class="flex gap-2 items-center">
-                <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="border border-linea text-slate-700 p-2.5 rounded-lg hover:bg-lienzo-seccion transition-colors" title="Videollamada">
-                    <i data-lucide="video" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
 
-        <!-- Barra de Motivo de Consulta -->
-        <form method="POST" class="flex gap-2 items-center bg-lienzo-seccion p-2 rounded-lg mt-3 border border-linea">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="update_reason" value="1">
-            <i data-lucide="tag" class="w-4 h-4 text-slate-500 ml-2"></i>
-            <input type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="flex-1 bg-transparent text-slate-800 placeholder-slate-400 text-sm focus:outline-none px-2 font-medium" aria-label="Añadir motivo de la consulta...">
-            <button type="submit" class="{{ BOTON_MINI }}">Guardar</button>
-        </form>
+{% call cabecera(chat.patient.name, 'Consulta por chat') %}
+    <button onclick="document.getElementById('video-call-modal').classList.remove('hidden')" class="{{ BOTON_2 }}" title="Videollamada">
+        <i data-lucide="video" class="w-4 h-4"></i> Videollamada
+    </button>
+    <a href="/doctor/dashboard" class="{{ BOTON_2 }}">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver
+    </a>
+{% endcall %}
+
+<!-- Contexto de la consulta -->
+{% call tira(3) %}
+    {{ dato('Estado del chat', chat.status|estado) }}
+    {{ dato('Modo', 'Atendiendo' if chat.mode == 'consultation' else ('Solo ver' if chat.mode == 'read-only' else 'Triaje')) }}
+    {{ dato('Mi horario', current_user.schedule or 'No definido') }}
+{% endcall %}
+
+<!-- Motivo de la consulta -->
+<form method="POST" class="{{ TARJETA }} p-4 mt-4 grid sm:grid-cols-[1fr_auto] gap-3 items-end">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="update_reason" value="1">
+    <div>
+        <label class="{{ ROTULO }}" for="campo-reason">Motivo de la consulta</label>
+        <input id="campo-reason" type="text" name="reason" value="{{ chat.reason or '' }}" placeholder="Añadir motivo de la consulta..." class="{{ CAMPO }}" aria-label="Añadir motivo de la consulta...">
     </div>
+    <button type="submit" class="{{ BOTON_2 }}">Guardar motivo</button>
+</form>
 
+<!-- Conversación -->
+<div class="{{ TARJETA_FUERTE }} overflow-hidden flex flex-col h-[70vh] mt-4">
     <!-- CONTENEDOR DE MENSAJES -->
     <div class="flex-1 p-4 overflow-y-auto bg-lienzo-seccion space-y-3">
         <!-- COUNTDOWN DE 10 MINUTOS PARA CITAS -->
         {% if chat.appointment and chat.appointment.status == 'in_progress' and chat.appointment.started_at %}
-        <div id="appointment-countdown" class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg text-center mb-4">
-            <h3 class="font-semibold text-lg flex items-center justify-center gap-2">
-                <i data-lucide="timer" class="w-5 h-5"></i> Consulta en Curso (10 min)
-            </h3>
-            <p>El paciente tiene 5 minutos para presentarse, de lo contrario la cita se cancelará.</p>
-            <div id="countdown-timer" class="text-4xl font-mono font-semibold mt-2 text-red-600">10:00</div>
-            
+        <div id="appointment-countdown" class="{{ AVISO['revisar'] }}">
+            <p class="font-bold text-sm flex items-center gap-2">
+                <i data-lucide="timer" class="w-4 h-4"></i> Consulta en curso (10 min)
+            </p>
+            <p class="text-sm mt-1">El paciente tiene 5 minutos para presentarse, de lo contrario la cita se cancelará.</p>
+            <p id="countdown-timer" class="text-3xl font-mono font-bold mt-2 tabular-nums">10:00</p>
+
             <form method="POST" action="/doctor/mark_no_show/{{ chat.appointment.id }}" class="mt-3">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="{{ BOTON_PELIGRO }}">
@@ -55,7 +54,7 @@
             (function() {
                 var startStr = "{{ chat.appointment.started_at|colombia_iso }}";
                 var chatId = "{{ chat.id }}";
-                
+
                 var startedAt = new Date(startStr);
                 var now = new Date();
                 var diff = (now - startedAt) / 1000;
@@ -75,7 +74,7 @@
                         if (!document.getElementById('no-show-warn')) {
                             var warn = document.createElement('div');
                             warn.id = 'no-show-warn';
-                            warn.className = 'bg-critical-border text-red-900 p-2 rounded-lg mt-2 text-sm font-bold';
+                            warn.className = 'border-2 border-critical bg-critical-subtle text-critical-text px-3 py-2 rounded-lg mt-2 text-sm font-bold';
                             warn.textContent = "El paciente no ha respondido en 5 minutos. Considere marcarla como no asistida.";
                             countdownDiv.appendChild(warn);
                         }
@@ -95,7 +94,7 @@
                         var secs = Math.floor(remaining % 60);
                         timerElement.innerHTML = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
                         if (remaining < 60) {
-                            timerElement.classList.add('animate-pulse');
+                            timerElement.classList.add('text-critical');
                         }
                     }
                 }, 1000);
@@ -105,22 +104,20 @@
 
         <!-- MENSAJES FLASH -->
         {% for message in get_flashed_messages() %}
-        <div class="bg-blue-100 text-blue-800 p-3 rounded-lg text-sm font-bold text-center animate-pulse">
-            {{ message }}
-        </div>
+        {% call aviso('info') %}{{ message }}{% endcall %}
         {% endfor %}
 
         {% for msg in messages %}
         <div class="{% if msg.sender_id == current_user.id %}flex justify-end{% else %}flex justify-start{% endif %}">
-            <div class="{% if msg.sender_id == current_user.id %}bg-primary text-white rounded-lg rounded-tr-sm{% else %}bg-white border border-linea text-slate-800 rounded-lg rounded-tl-sm{% endif %} p-4 max-w-[85%] relative group">
-                <p class="text-[15px] leading-relaxed font-medium">{{ msg.content }}</p>
-                
+            <div class="{% if msg.sender_id == current_user.id %}bg-slate-700 text-white{% else %}bg-white border border-linea text-slate-900{% endif %} rounded-lg px-4 py-3 max-w-[85%] relative group">
+                <p class="text-sm leading-relaxed">{{ msg.content }}</p>
+
                 {% if msg.file_path %}
                 <div class="mt-2">
                     {% if msg.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')) %}
-                    <img src="/uploads/{{ msg.file_path }}" class="rounded-lg max-w-full h-auto cursor-pointer border border-black/10" onclick="window.open(this.src)" alt="">
+                    <img src="/uploads/{{ msg.file_path }}" class="rounded-lg max-w-full h-auto cursor-pointer border border-linea" onclick="window.open(this.src)" alt="">
                     {% else %}
-                    <a href="/uploads/{{ msg.file_path }}" target="_blank" class="inline-flex items-center gap-2 p-2 bg-black/5 rounded border text-sm {% if msg.sender_id == current_user.id %}text-blue-100 border-white/20{% else %}text-blue-600 border-blue-100{% endif %}" rel="noopener noreferrer">
+                    <a href="/uploads/{{ msg.file_path }}" target="_blank" class="inline-flex items-center gap-2 px-2 py-1.5 rounded-lg border text-sm font-semibold {% if msg.sender_id == current_user.id %}border-white/40 text-white{% else %}border-linea text-accent{% endif %}" rel="noopener noreferrer">
                         <i data-lucide="file-text" class="w-4 h-4"></i> Ver Documento
                     </a>
                     {% endif %}
@@ -128,14 +125,14 @@
                 {% endif %}
 
                 {% if msg.is_flow_question and msg.sender_id == current_user.id %}
-                <div class="mt-2 pt-2 border-t {% if msg.sender_id == current_user.id %}border-white/20{% else %}border-linea{% endif %}">
-                    <p class="text-xs uppercase font-bold mb-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-slate-600{% endif %}">
+                <div class="mt-2 pt-2 border-t {% if msg.sender_id == current_user.id %}border-white/30{% else %}border-linea-suave{% endif %}">
+                    <p class="text-xs uppercase font-semibold tracking-wider mb-1 {% if msg.sender_id == current_user.id %}text-white/80{% else %}text-slate-500{% endif %}">
                         Opciones enviadas al paciente:
                     </p>
                     <div class="flex flex-wrap gap-1">
                         {% if msg.parsed_flow_options %}
                         {% for key, val in msg.parsed_flow_options.items() %}
-                        <span class="text-xs px-2 py-0.5 rounded {% if msg.sender_id == current_user.id %}bg-white/20 text-white{% else %}bg-slate-100 text-slate-700{% endif %} font-semibold">
+                        <span class="text-xs px-2 py-0.5 rounded-md border font-semibold {% if msg.sender_id == current_user.id %}border-white/40 text-white{% else %}border-linea text-slate-700{% endif %}">
                             {{ key }}. {{ val.text if val is mapping else val }}
                         </span>
                         {% endfor %}
@@ -144,11 +141,11 @@
                 </div>
                 {% endif %}
 
-                <div class="flex justify-end items-center gap-1 mt-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-gray-600{% endif %}">
+                <div class="flex justify-end items-center gap-1 mt-1 {% if msg.sender_id == current_user.id %}text-white/70{% else %}text-slate-500{% endif %}">
                     <span class="text-xs">{{ msg.timestamp|colombia_time }}</span>
                     {% if msg.sender_id == current_user.id %}
                         {% if msg.is_read %}
-                        <i data-lucide="check-check" class="w-3.5 h-3.5 text-slate-500" aria-label="Leido"></i>
+                        <i data-lucide="check-check" class="w-3.5 h-3.5" aria-label="Leido"></i>
                         {% else %}
                         <i data-lucide="check" class="w-3.5 h-3.5" aria-label="Enviado"></i>
                         {% endif %}
@@ -161,224 +158,237 @@
 
     <!-- INPUT DE RESPUESTA -->
     {% if chat.status == 'open' and chat.mode != 'read-only' %}
-    <form method="POST" class="p-4 sm:p-5 bg-white flex gap-3 items-center relative">
+    <form method="POST" class="p-4 bg-white border-t border-linea flex gap-3 items-end">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="send_message">
-        <input type="text" name="content" placeholder="Responder al paciente..." class="{{ CAMPO }} flex-1" aria-label="Responder al paciente...">
+        <div class="flex-1">
+            <label class="{{ ROTULO }}" for="campo-content">Respuesta al paciente</label>
+            <input id="campo-content" type="text" name="content" placeholder="Responder al paciente..." class="{{ CAMPO }}" aria-label="Responder al paciente...">
+        </div>
         <button type="submit" class="{{ BOTON }}">
-            <i data-lucide="send" class="w-5 h-5 ml-1"></i>
+            <i data-lucide="send" class="w-4 h-4"></i> Enviar
         </button>
     </form>
     {% elif chat.mode == 'read-only' %}
-    <div class="p-4 bg-lienzo-seccion border-t border-linea text-center text-slate-500 font-medium">
-        <i data-lucide="eye-off" class="w-4 h-4 inline mr-1 text-slate-500"></i> Modo <span class="font-bold text-slate-700">"Solo Ver"</span> activo. Cambia el modo a "Atender" en el panel inferior.
+    <div class="p-4 bg-lienzo-seccion border-t border-linea text-center text-sm text-slate-600">
+        <i data-lucide="eye-off" class="w-4 h-4 inline mr-1 text-slate-500"></i> Modo <span class="font-bold text-slate-900">"Solo Ver"</span> activo. Cambia el modo a "Atender" en el panel inferior.
     </div>
     {% endif %}
 </div>
 
 {% if chat.status == 'open' %}
-<div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-    <!-- 0. Registro de Historia Clinica (NUEVO) -->
-    <div class="md:col-span-2 bg-white p-4 rounded-lg border-2 border-caution-border">
-        <h3 class="font-bold text-slate-900 text-xs mb-3 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="clipboard-list" class="w-4 h-4"></i> Registro de Historia Clínica
-        </h3>
-        <form method="POST" class="space-y-3">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="save_history">
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="text-xs font-bold text-slate-600 uppercase">Código CIE-10 (Diag.)</label>
-                    <input type="text" name="cie10_code" placeholder="Ej: Z000" class="{{ CAMPO }} w-full" required aria-label="Código CIE-10">
+<div class="grid lg:grid-cols-3 gap-6 mt-6">
+    <!-- 0. Registro de Historia Clinica -->
+    <div class="lg:col-span-2">
+        {% call panel('Registro de historia clínica', 'clipboard-list') %}
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="save_history">
+                <div class="grid sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="{{ ROTULO }}" for="cie10_code">Código CIE-10 (diagnóstico) <span class="text-critical" aria-hidden="true">*</span></label>
+                        <input id="cie10_code" type="text" name="cie10_code" placeholder="Ej: Z000" class="{{ CAMPO }}" required aria-label="Código CIE-10">
+                    </div>
+                    <div>
+                        <label class="{{ ROTULO }}" for="cups_code">Código CUPS (procedimiento) <span class="text-critical" aria-hidden="true">*</span></label>
+                        <input id="cups_code" type="text" name="cups_code" placeholder="Ej: 890201" class="{{ CAMPO }}" required aria-label="Código CUPS">
+                    </div>
+                </div>
+                {# Causa externa y finalidad. Antes el reporte los inventaba: toda
+                   atencion salia como "enfermedad general", lo que traslada al
+                   pagador equivocado un accidente de trabajo o de transito y borra
+                   del reporte las lesiones por agresion. Ahora los determina quien
+                   atiende, que es el unico que puede saberlo. #}
+                <div class="grid sm:grid-cols-3 gap-3">
+                    <div>
+                        <label for="external_cause" class="{{ ROTULO }}">Causa externa <span class="text-critical" aria-hidden="true">*</span></label>
+                        <select id="external_cause" name="external_cause" required class="{{ CAMPO }}">
+                            <option value="">Seleccione…</option>
+                            {% for codigo, etiqueta in causas_externas %}
+                            <option value="{{ codigo }}">{{ etiqueta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="consultation_purpose" class="{{ ROTULO }}">Finalidad <span class="text-critical" aria-hidden="true">*</span></label>
+                        <select id="consultation_purpose" name="consultation_purpose" required class="{{ CAMPO }}">
+                            <option value="">Seleccione…</option>
+                            {% for codigo, etiqueta in finalidades %}
+                            <option value="{{ codigo }}">{{ etiqueta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="care_modality" class="{{ ROTULO }}">Modalidad de atención <span class="text-critical" aria-hidden="true">*</span></label>
+                        <select id="care_modality" name="care_modality" required class="{{ CAMPO }}">
+                            {% for codigo, etiqueta in modalidades %}
+                            <option value="{{ codigo }}" {% if codigo == modalidad_sugerida %}selected{% endif %}>{{ etiqueta }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-600 uppercase">Código CUPS (Proc.)</label>
-                    <input type="text" name="cups_code" placeholder="Ej: 890201" class="{{ CAMPO }} w-full" required aria-label="Código CUPS">
-                </div>
-            </div>
-            {# Causa externa y finalidad. Antes el reporte los inventaba: toda
-               atencion salia como "enfermedad general", lo que traslada al
-               pagador equivocado un accidente de trabajo o de transito y borra
-               del reporte las lesiones por agresion. Ahora los determina quien
-               atiende, que es el unico que puede saberlo. #}
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label for="external_cause" class="text-xs font-bold text-slate-600 uppercase">Causa externa</label>
-                    <select id="external_cause" name="external_cause" required
-                            class="{{ CAMPO }} w-full">
-                        <option value="">Seleccione…</option>
-                        {% for codigo, etiqueta in causas_externas %}
-                        <option value="{{ codigo }}">{{ etiqueta }}</option>
-                        {% endfor %}
-                    </select>
+                    <label class="{{ ROTULO }}" for="campo-diagnosis">Diagnóstico detallado <span class="text-critical" aria-hidden="true">*</span></label>
+                    <textarea id="campo-diagnosis" name="diagnosis" rows="3" placeholder="Diagnóstico detallado..." class="{{ CAMPO }}" required aria-label="Diagnóstico detallado..."></textarea>
                 </div>
                 <div>
-                    <label for="consultation_purpose" class="text-xs font-bold text-slate-600 uppercase">Finalidad</label>
-                    <select id="consultation_purpose" name="consultation_purpose" required
-                            class="{{ CAMPO }} w-full">
-                        <option value="">Seleccione…</option>
-                        {% for codigo, etiqueta in finalidades %}
-                        <option value="{{ codigo }}">{{ etiqueta }}</option>
-                        {% endfor %}
-                    </select>
+                    <label class="{{ ROTULO }}" for="campo-treatment">Plan de tratamiento / conducta <span class="text-critical" aria-hidden="true">*</span></label>
+                    <textarea id="campo-treatment" name="treatment" rows="3" placeholder="Plan de tratamiento / Conducta..." class="{{ CAMPO }}" required aria-label="Plan de tratamiento / Conducta..."></textarea>
                 </div>
-            </div>
-            <div>
-                <label for="care_modality" class="text-xs font-bold text-slate-600 uppercase">Modalidad de atención</label>
-                <select id="care_modality" name="care_modality" required
-                        class="{{ CAMPO }} w-full">
-                    {% for codigo, etiqueta in modalidades %}
-                    <option value="{{ codigo }}" {% if codigo == modalidad_sugerida %}selected{% endif %}>{{ etiqueta }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <textarea name="diagnosis" placeholder="Diagnóstico detallado..." class="{{ CAMPO }} w-full" required aria-label="Diagnóstico detallado..."></textarea>
-            <textarea name="treatment" placeholder="Plan de tratamiento / Conducta..." class="{{ CAMPO }} w-full" required aria-label="Plan de tratamiento / Conducta..."></textarea>
-            <button type="submit" class="{{ BOTON_MINI }}">
-                <i data-lucide="save" class="w-4 h-4"></i> Guardar Historia Clínica
-            </button>
-        </form>
+                <button type="submit" class="{{ BOTON }}">
+                    <i data-lucide="save" class="w-4 h-4"></i> Guardar historia clínica
+                </button>
+            </form>
+        {% endcall %}
     </div>
 
-    <!-- 1. Gestión de Modos -->
-    <div class="bg-white p-3 rounded-lg border border-linea flex flex-col justify-between">
-        <h3 class="font-bold text-slate-700 text-xs mb-2 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="settings" class="w-4 h-4"></i> Estado del Chat
-        </h3>
-        {% if chat.mode == 'consultation' %}
-            <div class="bg-positive-subtle text-green-800 p-2 rounded-lg text-xs font-bold text-center mb-2 flex items-center justify-center gap-1 border border-positive-border">
-                <i data-lucide="activity" class="w-3 h-3 animate-pulse"></i> ATENDIENDO...
-            </div>
-            <form method="POST" action="/doctor/end_consultation/{{ chat.id }}">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="{{ BOTON_PELIGRO }}">
-                    <i data-lucide="phone-off" class="w-4 h-4"></i> Salir de atención
-                </button>
-            </form>
-        {% else %}
-            <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/consultation" class="mb-2">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="{{ BOTON }}">
-                    <i data-lucide="stethoscope" class="w-4 h-4"></i> Atender
-                </button>
-            </form>
-            {% if chat.mode == 'read-only' %}
-                <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/triage">
+    <div class="space-y-6">
+        <!-- 1. Gestión de Modos -->
+        {% call panel('Estado del chat', 'settings') %}
+            {% if chat.mode == 'consultation' %}
+                <p class="mb-3">{{ chip('Atendiendo', 'completado', 'activity') }}</p>
+                <form method="POST" action="/doctor/end_consultation/{{ chat.id }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-blue-50 text-blue-700 p-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-blue-100 transition border border-blue-200">
-                        Volver a Triaje
+                    <button type="submit" class="{{ BOTON_PELIGRO }} w-full">
+                        <i data-lucide="phone-off" class="w-4 h-4"></i> Salir de atención
                     </button>
                 </form>
             {% else %}
-                <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/read-only">
+                <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/consultation" class="mb-2">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="w-full bg-slate-100 text-slate-600 p-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-slate-200 transition">
-                        <i data-lucide="eye" class="w-3 h-3"></i> Solo Ver
+                    <button type="submit" class="{{ BOTON }} w-full">
+                        <i data-lucide="stethoscope" class="w-4 h-4"></i> Atender
                     </button>
                 </form>
+                {% if chat.mode == 'read-only' %}
+                    <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/triage">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="{{ BOTON_2 }} w-full">
+                            Volver a triaje
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="/doctor/set_chat_mode/{{ chat.id }}/read-only">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="{{ BOTON_2 }} w-full">
+                            <i data-lucide="eye" class="w-4 h-4"></i> Solo ver
+                        </button>
+                    </form>
+                {% endif %}
             {% endif %}
+        {% endcall %}
+
+        <!-- 2 y 3. Acciones sobre el caso -->
+        {% call panel('Acciones del caso', 'list-checks') %}
+            <ul class="divide-y divide-linea-suave -my-1">
+                <li class="py-3 flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-slate-900">Agendar cita</p>
+                        <p class="text-xs text-slate-500">Registrar cita formal en el calendario del hospital.</p>
+                    </div>
+                    <a href="/doctor/book_appointment/{{ chat.patient.id }}" class="{{ BOTON_MINI_2 }} shrink-0">Calendario</a>
+                </li>
+                <li class="py-3 flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-slate-900">Orden médica</p>
+                        <p class="text-xs text-slate-500">Firmar receta digital con hash de seguridad.</p>
+                    </div>
+                    <a href="{{ url_for('doctor.prescription', patient_id=chat.patient.id, chat_id=chat.id) }}" class="{{ BOTON_MINI }} shrink-0">Crear orden</a>
+                </li>
+            </ul>
+        {% endcall %}
+
+        <!-- Formularios y adjuntos -->
+        {% call panel('Formularios y archivos', 'paperclip') %}
+            <form method="POST" class="space-y-2">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="start_flow">
+                <div>
+                    <label class="{{ ROTULO }}" for="campo-flow_id">Flujo a enviar</label>
+                    <select id="campo-flow_id" name="flow_id" class="{{ CAMPO }}" aria-label="Flow id">
+                        {% for flow in flows %}<option value="{{ flow.id }}">{{ flow.title }}</option>{% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="{{ BOTON_2 }} w-full">Enviar formulario</button>
+            </form>
+            <form method="POST" enctype="multipart/form-data" class="space-y-2 mt-4 pt-4 border-t border-linea-suave">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="upload_file">
+                <div>
+                    <label class="{{ ROTULO }}" for="campo-file">Adjuntar receta o PDF <span class="text-critical" aria-hidden="true">*</span></label>
+                    <input id="campo-file" type="file" name="file" accept="image/*,.pdf" required class="{{ CAMPO }}" aria-label="Archivo">
+                    <p class="{{ PISTA }}">Imagen o PDF.</p>
+                </div>
+                <button type="submit" class="{{ BOTON_2 }} w-full">Adjuntar</button>
+            </form>
+        {% endcall %}
+
+        {% if nearby_doctors %}
+        {% call panel('Remitir a un colega cercano', 'route') %}
+            <form method="POST" action="{{ url_for('doctor.refer_patient', chat_id=chat.id) }}" class="space-y-2">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label class="{{ ROTULO }}" for="campo-target_doctor_id">Profesional que recibe</label>
+                    <select id="campo-target_doctor_id" name="target_doctor_id" class="{{ CAMPO }}" aria-label="Target doctor id">
+                        {% for item in nearby_doctors %}
+                        <option value="{{ item.doctor.id }}">
+                            Dr. {{ item.doctor.name }}{% if item.distance_km is not none %} - {{ item.distance_km }} km{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="{{ ROTULO }}" for="campo-refer-reason">Motivo de la remisión</label>
+                    <input id="campo-refer-reason" name="reason" value="{{ chat.reason or '' }}" class="{{ CAMPO }}" placeholder="Motivo" aria-label="Motivo">
+                </div>
+                <button class="{{ BOTON }} w-full">Remitir</button>
+            </form>
+        {% endcall %}
         {% endif %}
+
+        <!-- 4. Finalizar el caso -->
+        {% call panel('Finalizar el caso', 'power') %}
+            <form method="POST">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="close_chat">
+                <p class="text-xs text-slate-500 mb-3">Cierra la consulta y habilita la calificación del paciente. No tiene vuelta atrás.</p>
+                <button type="submit" class="{{ BOTON_PELIGRO }} w-full">Cerrar consulta</button>
+            </form>
+        {% endcall %}
     </div>
-
-    <!-- 2. Agendar Cita -->
-    <a href="/doctor/book_appointment/{{ chat.patient.id }}" class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col justify-between hover:border-blue-400 transition group">
-        <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="calendar" class="w-4 h-4"></i> Agendar Cita
-        </h3>
-        <p class="text-xs text-blue-600 mb-2 leading-tight">Registrar cita formal en el calendario del hospital.</p>
-        <div class="bg-accent text-white p-2 rounded-lg font-bold text-sm text-center flex items-center justify-center gap-2 group-hover:bg-accent">
-             Calendario <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        </div>
-    </a>
-
-    <!-- 3. Herramientas Rápidas -->
-    <a href="{{ url_for('doctor.prescription', patient_id=chat.patient.id, chat_id=chat.id) }}" class="bg-positive-subtle p-3 rounded-lg border-2 border-positive-border flex flex-col justify-between hover:border-positive transition group">
-        <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="pill" class="w-4 h-4"></i> Orden médica
-        </h3>
-        <p class="text-xs text-emerald-700 mb-2 leading-tight">Firmar receta digital con hash de seguridad.</p>
-        <div class="bg-accent text-white p-2 rounded-lg font-bold text-sm text-center flex items-center justify-center gap-2 group-hover:bg-accent">
-             Crear orden <i data-lucide="chevron-right" class="w-4 h-4"></i>
-        </div>
-    </a>
-
-    <div class="flex flex-col gap-2">
-        <form method="POST" class="bg-lienzo-seccion p-2 rounded-lg border border-linea">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="start_flow">
-            <select name="flow_id" class="{{ CAMPO }} w-full" aria-label="Flow id">
-                {% for flow in flows %}<option value="{{ flow.id }}">{{ flow.title }}</option>{% endfor %}
-            </select>
-            <button type="submit" class="{{ BOTON_MINI }}">Enviar Formulario</button>
-        </form>
-        <form method="POST" enctype="multipart/form-data" class="bg-caution-subtle p-2 rounded-lg border-2 border-caution-border">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="upload_file">
-            <input type="file" name="file" accept="image/*,.pdf" required class="w-full text-xs mb-1" aria-label="Archivo">
-            <button type="submit" class="{{ BOTON_MINI }}">Adjuntar Receta/PDF</button>
-        </form>
-    </div>
-
-    {% if nearby_doctors %}
-    <form method="POST" action="{{ url_for('doctor.refer_patient', chat_id=chat.id) }}" class="bg-lienzo-seccion p-3 rounded-lg border border-linea flex flex-col justify-between">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <h3 class="font-bold text-slate-900 text-xs mb-1 uppercase tracking-wider flex items-center gap-1">
-            <i data-lucide="route" class="w-4 h-4"></i> Remitir cerca
-        </h3>
-        <select name="target_doctor_id" class="{{ CAMPO }} w-full" aria-label="Target doctor id">
-            {% for item in nearby_doctors %}
-            <option value="{{ item.doctor.id }}">
-                Dr. {{ item.doctor.name }}{% if item.distance_km is not none %} - {{ item.distance_km }} km{% endif %}
-            </option>
-            {% endfor %}
-        </select>
-        <input name="reason" value="{{ chat.reason or '' }}" class="{{ CAMPO }} w-full" placeholder="Motivo" aria-label="Motivo">
-        <button class="{{ BOTON }}">Remitir</button>
-    </form>
-    {% endif %}
-
-    <!-- 4. Salir -->
-    <form method="POST" class="bg-critical-subtle p-3 rounded-lg border-2 border-critical-border flex flex-col justify-between">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="action" value="close_chat">
-        <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-1"><i data-lucide="power" class="w-3 h-3 inline"></i> Finalizar Caso</h3>
-        <p class="text-xs text-red-600/70 mb-2">Cierra la consulta y habilita la calificación del paciente.</p>
-        <button type="submit" class="{{ BOTON_PELIGRO }}">Cerrar Sesión</button>
-    </form>
 </div>
 {% endif %}
 
 {% if file_history %}
-<div class="mt-6 bg-white p-4 rounded-lg border-l-4 border-blue-500">
-    <h3 class="font-bold text-lg mb-3 text-slate-800 flex items-center gap-2"><i data-lucide="folder-open" class="w-5 h-5 text-slate-500"></i> Expediente Digital (Archivos)</h3>
-    <div class="flex flex-wrap gap-2">
-        {% for file in file_history %}
-        <a href="/uploads/{{ file.file_path }}" target="_blank" class="{{ BOTON_2 }}" rel="noopener noreferrer">
-            {% if file.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')) %}
-                <i data-lucide="image" class="w-4 h-4 text-slate-500 group-hover:text-slate-500"></i>
-            {% else %}
-                <i data-lucide="file-text" class="w-4 h-4 text-slate-500 group-hover:text-slate-500"></i>
-            {% endif %}
-            <span class="text-xs text-slate-600 font-medium">{{ file.file_path[:25] }}{% if file.file_path|length > 25 %}...{% endif %}</span>
-        </a>
-        {% endfor %}
-    </div>
+<div class="mt-6">
+    {% call panel('Expediente digital (archivos)', 'folder-open') %}
+        <div class="flex flex-wrap gap-2">
+            {% for file in file_history %}
+            <a href="/uploads/{{ file.file_path }}" target="_blank" class="{{ BOTON_2 }}" rel="noopener noreferrer">
+                {% if file.file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')) %}
+                    <i data-lucide="image" class="w-4 h-4 text-slate-500"></i>
+                {% else %}
+                    <i data-lucide="file-text" class="w-4 h-4 text-slate-500"></i>
+                {% endif %}
+                <span class="text-xs font-medium">{{ file.file_path[:25] }}{% if file.file_path|length > 25 %}...{% endif %}</span>
+            </a>
+            {% endfor %}
+        </div>
+    {% endcall %}
 </div>
 {% endif %}
 
 <!-- Modal Video Llamada -->
 <div id="video-call-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg overflow-hidden w-full max-w-3xl h-[600px] relative">
-        <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="{{ BOTON_PELIGRO }}">
-            <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-        <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone; display-capture" width="100%" height="100%"></iframe>
+    <div class="bg-white rounded-lg overflow-hidden w-full max-w-3xl h-[600px] flex flex-col">
+        <div class="flex items-center justify-between gap-3 px-4 py-2 border-b border-linea shrink-0">
+            <h2 class="{{ TITULO_SECCION }}">Videollamada</h2>
+            <button onclick="document.getElementById('video-call-modal').classList.add('hidden')" class="{{ BOTON_MINI_2 }}" aria-label="Cerrar videollamada">
+                <i data-lucide="x" class="w-4 h-4"></i> Cerrar
+            </button>
+        </div>
+        <iframe src="https://meet.jit.si/RuralHealthRoom{{ chat.id }}" allow="camera; microphone; display-capture" width="100%" height="100%" class="flex-1"></iframe>
     </div>
 </div>
 
-<div class="mt-6">
-    <a href="/doctor/dashboard" class="{{ BOTON_2 }}">
-        <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver a mis pacientes
-    </a>
-</div>
 {% endblock %}

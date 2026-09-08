@@ -1,220 +1,161 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso,
+                          vacio, tabla %}
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
-    <header>
-        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight flex items-center gap-3">
-            <i data-lucide="shield" class="w-8 h-8 text-primary"></i>
-            Mis datos personales
-        </h1>
-        <p class="text-slate-500 mt-2 font-medium leading-relaxed">
-            Consulte qué información se tiene registrada sobre usted, obtenga una
-            copia y ejerza los derechos que le reconoce la Ley 1581 de 2012.
-        </p>
-    </header>
+  {{ cabecera('Mis datos personales',
+              'Consulte qué información se tiene registrada sobre usted, obtenga una copia y ejerza los derechos que le reconoce la Ley 1581 de 2012.') }}
 
-    <!-- Inventario de datos -->
-    <section class="bg-white rounded-lg border border-linea p-6">
-        <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="database" class="w-5 h-5 text-slate-500"></i>
-            Qué información tenemos sobre usted
-        </h2>
-        <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {% for label, count in [
-                ('Citas', inventory.citas),
-                ('Consultas', inventory.consultas),
-                ('Registros clínicos', inventory.historias),
-                ('Órdenes médicas', inventory.ordenes),
-                ('Entregas de medicamentos', inventory.tickets),
-                ('Alergias registradas', inventory.alergias)
-            ] %}
-            <div class="bg-lienzo-seccion rounded-lg p-4 border border-linea">
-                <dd class="text-xl font-semibold text-slate-900">{{ count }}</dd>
-                <dt class="text-xs text-slate-500 font-semibold mt-1">{{ label }}</dt>
-            </div>
-            {% endfor %}
-        </dl>
-    </section>
+  <!-- Inventario de datos -->
+  <div>
+    {{ seccion('Qué información tenemos sobre usted', 'database') }}
+    {% call tira(3) %}
+      {% for label, count in [
+          ('Citas', inventory.citas),
+          ('Consultas', inventory.consultas),
+          ('Registros clínicos', inventory.historias),
+          ('Órdenes médicas', inventory.ordenes),
+          ('Entregas de medicamentos', inventory.tickets),
+          ('Alergias registradas', inventory.alergias)
+      ] %}
+      {{ dato(label, count) }}
+      {% endfor %}
+    {% endcall %}
+  </div>
 
-    <!-- Descarga -->
-    <section class="bg-white rounded-lg border border-linea p-6">
-        <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
-            <i data-lucide="download" class="w-5 h-5 text-slate-500"></i>
-            Descargar una copia
-        </h2>
-        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-            Recibirá un archivo comprimido con su información en formato de hoja
-            de cálculo: perfil, citas, consultas, historia clínica, órdenes médicas,
-            alergias, entregas de medicamentos y consentimientos otorgados.
-        </p>
-        <div class="bg-caution-subtle border border-caution-border rounded-lg p-3 mb-4 text-sm text-amber-900">
-            El archivo contiene información de salud. Consérvelo en un lugar seguro
-            y tenga precaución al compartirlo.
-        </div>
-        <form method="POST" action="{{ url_for('privacy.export_my_data') }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button type="submit"
-                class="{{ BOTON }}">
-                <i data-lucide="file-down" class="w-5 h-5"></i>
-                Descargar mis datos
-            </button>
-        </form>
-    </section>
-
-    <!-- Consentimientos -->
-    <section class="bg-white rounded-lg border border-linea p-6">
-        <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="file-signature" class="w-5 h-5 text-slate-500"></i>
-            Autorizaciones que has dado
-        </h2>
-
-        {% if consents %}
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-left text-xs uppercase text-slate-600 border-b border-linea">
-                        <th class="pb-2 font-bold">Fecha</th>
-                        <th class="pb-2 font-bold">Tipo</th>
-                        <th class="pb-2 font-bold">Versión</th>
-                        <th class="pb-2 font-bold">Estado</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    {% for consent in consents %}
-                    <tr>
-                        <td class="py-2 text-slate-600">{{ consent.timestamp | colombia_date }}</td>
-                        <td class="py-2 text-slate-800 font-medium">{{ consent.consent_type }}</td>
-                        <td class="py-2 text-slate-500 font-mono text-xs">{{ consent.document_version or 'Sin versión' }}</td>
-                        <td class="py-2">
-                            {% if consent.granted and not consent.revoked_at %}
-                            <span class="text-emerald-700 bg-positive-subtle px-2 py-0.5 rounded-full text-xs font-bold">Vigente</span>
-                            {% else %}
-                            <span class="text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full text-xs font-bold">Revocada</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-linea"
-              onsubmit="return confirm('Al revocar la autorización no podrá usar el chat clínico ni agendar consultas hasta otorgarla de nuevo. ¿Continuar?');">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="consent_type" value="sensitive_data">
-            <p class="text-sm text-slate-600 mb-3 leading-relaxed">
-                La autorización para tratar datos de salud puede revocarse en
-                cualquier momento. La revocatoria suspende las funcionalidades
-                clínicas. Los registros ya creados se conservan por el término que
-                la ley impone al prestador.
-            </p>
-            <button type="submit"
-                class="text-rose-600 border-2 border-critical-border px-5 py-2.5 rounded-lg font-bold hover:bg-critical-subtle transition-colors inline-flex items-center gap-2">
-                <i data-lucide="x-circle" class="w-4 h-4"></i>
-                Revocar autorización de datos de salud
-            </button>
-        </form>
-        {% else %}
-        <p class="text-sm text-slate-500">No hay autorizaciones registradas todavía.</p>
-        {% endif %}
-    </section>
-
-    <!-- Solicitudes -->
-    <section class="bg-white rounded-lg border border-linea p-6">
-        <h2 class="font-semibold text-lg text-slate-800 mb-2 flex items-center gap-2">
-            <i data-lucide="message-square-warning" class="w-5 h-5 text-caution"></i>
-            Hacer una solicitud
-        </h2>
-        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-            Pide que corrijamos un dato incorrecto, que eliminemos información o que
-            revoquemos una autorización.
-        </p>
-
-        <div class="bg-lienzo-seccion border border-linea rounded-lg p-4 mb-5 text-sm text-slate-700 leading-relaxed">
-            <b class="text-slate-900">Sobre la eliminación de la historia clínica.</b>
-            La historia clínica no puede suprimirse a solicitud del titular. La
-            Resolución 839 de 2017 obliga al prestador a conservarla por un término
-            mínimo de quince años, y ese deber legal prevalece sobre la solicitud de
-            supresión. Sí procede la desactivación de la cuenta y el cese de los
-            tratamientos que no obedezcan a una obligación legal.
-        </div>
-
-        <form method="POST" action="{{ url_for('privacy.create_request') }}" class="space-y-4">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-            <div>
-                <label for="request_type" class="text-sm font-bold text-slate-700">Tipo de solicitud</label>
-                <select id="request_type" name="request_type" required
-                    class="{{ CAMPO }} w-full">
-                    <option value="rectificacion">Corregir un dato incorrecto</option>
-                    <option value="acceso">Consultar cómo se usan mis datos</option>
-                    <option value="supresion">Solicitar eliminación / desactivar mi cuenta</option>
-                    <option value="revocatoria">Revocar una autorización</option>
-                </select>
-            </div>
-
-            <div>
-                <label for="detail" class="text-sm font-bold text-slate-700">Describa su solicitud</label>
-                <textarea id="detail" name="detail" rows="4" required minlength="10" maxlength="2000"
-                    placeholder="Por ejemplo: mi número de teléfono está mal escrito, el correcto es..."
-                    class="{{ CAMPO }} w-full"></textarea>
-            </div>
-
-            <button type="submit"
-                class="{{ BOTON }}">
-                <i data-lucide="send" class="w-4 h-4"></i>
-                Enviar solicitud
-            </button>
-        </form>
-    </section>
-
-    <!-- Historial de solicitudes -->
-    {% if requests_made %}
-    <section class="bg-white rounded-lg border border-linea p-6">
-        <h2 class="font-semibold text-lg text-slate-800 mb-4 flex items-center gap-2">
-            <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
-            Mis solicitudes anteriores
-        </h2>
-        <ul class="space-y-3">
-            {% for item in requests_made %}
-            <li class="border border-linea rounded-lg p-4 bg-lienzo-seccion">
-                <div class="flex items-start justify-between gap-3 flex-wrap">
-                    <div>
-                        <p class="font-bold text-slate-800">
-                            {{ request_labels.get(item.request_type, item.request_type) }}
-                        </p>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            Enviada el {{ item.requested_at | colombia_date }}
-                        </p>
-                    </div>
-                    {% if item.resolved_at %}
-                    <span class="text-emerald-700 bg-positive-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
-                        {{ item.status|estado }}
-                    </span>
-                    {% elif item.is_overdue %}
-                    <span class="text-rose-700 bg-critical-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
-                        Fuera de plazo
-                    </span>
-                    {% else %}
-                    <span class="text-amber-700 bg-caution-subtle px-3 py-1 rounded-full text-xs font-bold shrink-0">
-                        En trámite
-                    </span>
-                    {% endif %}
-                </div>
-                {% if item.resolution_note %}
-                <p class="text-sm text-slate-600 mt-3 pt-3 border-t border-linea leading-relaxed">
-                    <b class="text-slate-700">Respuesta:</b> {{ item.resolution_note }}
-                </p>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-    </section>
-    {% endif %}
-
-    <p class="text-xs text-slate-600 text-center pb-4 leading-relaxed">
-        Estos derechos están reconocidos en el artículo 8 de la Ley 1581 de 2012
-        y reglamentados por el Decreto 1377 de 2013.
+  <!-- Descarga -->
+  {% call panel('Descargar una copia', 'download') %}
+    <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+      Recibirá un archivo comprimido con su información en formato de hoja
+      de cálculo: perfil, citas, consultas, historia clínica, órdenes médicas,
+      alergias, entregas de medicamentos y consentimientos otorgados.
     </p>
+    {% call aviso('revisar', 'El archivo contiene información de salud', 'alert-triangle') %}
+      Consérvelo en un lugar seguro y tenga precaución al compartirlo.
+    {% endcall %}
+    <form method="POST" action="{{ url_for('privacy.export_my_data') }}" class="mt-4">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="{{ BOTON }}">
+        <i data-lucide="file-down" class="w-4 h-4"></i> Descargar mis datos
+      </button>
+    </form>
+  {% endcall %}
+
+  <!-- Consentimientos -->
+  {% call panel('Autorizaciones que ha dado', 'file-signature') %}
+    {% if consents %}
+    {% call tabla(['Fecha', 'Tipo', 'Versión', 'Estado']) %}
+      {% for consent in consents %}
+      <tr>
+        <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">{{ consent.timestamp | colombia_date }}</td>
+        <td class="{{ TABLA_TD }} font-semibold text-slate-900">{{ consent.consent_type }}</td>
+        <td class="{{ TABLA_TD }} font-mono text-xs text-slate-500">{{ consent.document_version or 'Sin versión' }}</td>
+        <td class="{{ TABLA_TD }}">
+          {% if consent.granted and not consent.revoked_at %}
+          {{ chip('Vigente', 'completado') }}
+          {% else %}
+          {{ chip('Revocada', 'neutro') }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    {% endcall %}
+
+    <form method="POST" action="{{ url_for('privacy.revoke_consent') }}" class="mt-5 pt-5 border-t border-linea"
+          onsubmit="return confirm('Al revocar la autorización no podrá usar el chat clínico ni agendar consultas hasta otorgarla de nuevo. ¿Continuar?');">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="consent_type" value="sensitive_data">
+      <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+        La autorización para tratar datos de salud puede revocarse en
+        cualquier momento. La revocatoria suspende las funcionalidades
+        clínicas. Los registros ya creados se conservan por el término que
+        la ley impone al prestador.
+      </p>
+      <button type="submit" class="{{ BOTON_PELIGRO }}">
+        <i data-lucide="x-circle" class="w-4 h-4"></i>
+        Revocar autorización de datos de salud
+      </button>
+    </form>
+    {% else %}
+    {{ vacio('No hay autorizaciones registradas todavía.') }}
+    {% endif %}
+  {% endcall %}
+
+  <!-- Solicitudes -->
+  {% call panel('Hacer una solicitud', 'message-square-warning') %}
+    <p class="text-sm text-slate-600 mb-3 leading-relaxed">
+      Pida que corrijamos un dato incorrecto, que eliminemos información o que
+      revoquemos una autorización.
+    </p>
+
+    <div class="border border-linea {{ BANDA }} rounded-lg p-3 mb-4 text-sm text-slate-700 leading-relaxed">
+      <b class="text-slate-900">Sobre la eliminación de la historia clínica.</b>
+      La historia clínica no puede suprimirse a solicitud del titular. La
+      Resolución 839 de 2017 obliga al prestador a conservarla por un término
+      mínimo de quince años, y ese deber legal prevalece sobre la solicitud de
+      supresión. Sí procede la desactivación de la cuenta y el cese de los
+      tratamientos que no obedezcan a una obligación legal.
+    </div>
+
+    <form method="POST" action="{{ url_for('privacy.create_request') }}" class="space-y-4 max-w-2xl">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <label for="request_type" class="{{ ROTULO }}">Tipo de solicitud <span class="text-critical" aria-hidden="true">*</span></label>
+        <select id="request_type" name="request_type" required class="{{ CAMPO }}">
+          <option value="rectificacion">Corregir un dato incorrecto</option>
+          <option value="acceso">Consultar cómo se usan mis datos</option>
+          <option value="supresion">Solicitar eliminación / desactivar mi cuenta</option>
+          <option value="revocatoria">Revocar una autorización</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="detail" class="{{ ROTULO }}">Describa su solicitud <span class="text-critical" aria-hidden="true">*</span></label>
+        <textarea id="detail" name="detail" rows="4" required minlength="10" maxlength="2000"
+                  placeholder="Por ejemplo: mi número de teléfono está mal escrito, el correcto es..."
+                  class="{{ CAMPO }}"></textarea>
+        <p class="{{ PISTA }}">Entre 10 y 2000 caracteres.</p>
+      </div>
+
+      <button type="submit" class="{{ BOTON }}">
+        <i data-lucide="send" class="w-4 h-4"></i> Enviar solicitud
+      </button>
+    </form>
+  {% endcall %}
+
+  <!-- Historial de solicitudes -->
+  {% if requests_made %}
+  {% call panel('Mis solicitudes anteriores', 'history') %}
+    {% call tabla(['Solicitud', 'Enviada', 'Estado', 'Respuesta']) %}
+      {% for item in requests_made %}
+      <tr>
+        <td class="{{ TABLA_TD }} font-semibold text-slate-900">
+          {{ request_labels.get(item.request_type, item.request_type) }}
+        </td>
+        <td class="{{ TABLA_TD }} tabular-nums whitespace-nowrap">{{ item.requested_at | colombia_date }}</td>
+        <td class="{{ TABLA_TD }}">
+          {% if item.resolved_at %}
+          {{ chip(item.status|estado, 'completado') }}
+          {% elif item.is_overdue %}
+          {{ chip('Fuera de plazo', 'riesgo') }}
+          {% else %}
+          {{ chip('En trámite', 'revisar') }}
+          {% endif %}
+        </td>
+        <td class="{{ TABLA_TD }} text-slate-600">
+          {% if item.resolution_note %}{{ item.resolution_note }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    {% endcall %}
+  {% endcall %}
+  {% endif %}
+
+  <p class="text-xs text-slate-500 text-center pb-4 leading-relaxed">
+    Estos derechos están reconocidos en el artículo 8 de la Ley 1581 de 2012
+    y reglamentados por el Decreto 1377 de 2013.
+  </p>
 </div>
 {% endblock %}

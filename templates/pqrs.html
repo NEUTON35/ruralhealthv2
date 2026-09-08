@@ -1,117 +1,103 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, chip, aviso, vacio, tabla %}
 {% block content %}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-5xl mx-auto space-y-6">
 
-    <header class="mb-6">
-        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
-            Peticiones, quejas y reclamos
-        </h1>
-        <p class="text-slate-600 mt-1.5 text-sm leading-relaxed">
-            Para reclamos sobre la atención recibida. Si su solicitud es sobre
-            el uso de sus datos personales, use
-            <a href="{{ url_for('privacy.index') }}" class="text-accent font-medium underline underline-offset-2">Mis datos</a>.
+  {{ cabecera('Peticiones, quejas y reclamos',
+              'Para reclamos sobre la atención recibida.') }}
+
+  <p class="text-sm text-slate-600 leading-relaxed -mt-2">
+    Si su solicitud es sobre el uso de sus datos personales, use
+    <a href="{{ url_for('privacy.index') }}" class="text-accent font-semibold underline underline-offset-2">Mis datos</a>.
+  </p>
+
+  {% call panel('Radicar una solicitud', 'file-plus') %}
+    <form method="POST" action="{{ url_for('pqrs.create') }}" class="space-y-4 max-w-2xl">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <label for="complaint_type" class="{{ ROTULO }}">
+          Tipo de solicitud <span class="text-critical" aria-hidden="true">*</span>
+        </label>
+        <select id="complaint_type" name="complaint_type" required class="{{ CAMPO }}">
+          {% for tipo in tipos %}
+          <option value="{{ tipo }}">{{ etiquetas[tipo] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label for="subject" class="{{ ROTULO }}">
+          Asunto <span class="text-critical" aria-hidden="true">*</span>
+        </label>
+        <input type="text" id="subject" name="subject" required
+               minlength="5" maxlength="200"
+               placeholder="Resuma en una línea de qué se trata"
+               class="{{ CAMPO }}">
+      </div>
+
+      <div>
+        <label for="detail" class="{{ ROTULO }}">
+          Descripción <span class="text-critical" aria-hidden="true">*</span>
+        </label>
+        <textarea id="detail" name="detail" rows="5" required
+                  minlength="15" maxlength="4000"
+                  placeholder="Cuente qué pasó, cuándo y en qué sede."
+                  class="{{ CAMPO }}"></textarea>
+        <p class="{{ PISTA }}">Entre más concreto, más rápido puede resolverse.</p>
+      </div>
+
+      <div>
+        <button type="submit" class="{{ BOTON }}">Radicar</button>
+        <p class="{{ PISTA }}">
+          Recibirá un número de radicado y respuesta dentro de los quince días hábiles.
         </p>
-    </header>
-
-    <form method="POST" action="{{ url_for('pqrs.create') }}"
-          class="bg-white border border-linea rounded-lg p-6 mb-8 space-y-4">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-
-        <div>
-            <label for="complaint_type" class="block text-sm font-semibold text-slate-700 mb-1">
-                Tipo de solicitud
-            </label>
-            <select id="complaint_type" name="complaint_type" required
-                    class="{{ CAMPO }} w-full">
-                {% for tipo in tipos %}
-                <option value="{{ tipo }}">{{ etiquetas[tipo] }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div>
-            <label for="subject" class="block text-sm font-semibold text-slate-700 mb-1">
-                Asunto
-            </label>
-            <input type="text" id="subject" name="subject" required
-                   minlength="5" maxlength="200"
-                   placeholder="Resuma en una línea de qué se trata"
-                   class="{{ CAMPO }} w-full">
-        </div>
-
-        <div>
-            <label for="detail" class="block text-sm font-semibold text-slate-700 mb-1">
-                Descripción
-            </label>
-            <textarea id="detail" name="detail" rows="5" required
-                      minlength="15" maxlength="4000"
-                      placeholder="Cuente qué pasó, cuándo y en qué sede. Entre más concreto, más rápido puede resolverse."
-                      class="{{ CAMPO }} w-full"></textarea>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-3">
-            <button type="submit"
-                class="{{ BOTON }}">
-                Radicar
-            </button>
-            <span class="text-xs text-slate-600">
-                Recibirá un número de radicado y respuesta dentro de los quince días hábiles.
-            </span>
-        </div>
+      </div>
     </form>
+  {% endcall %}
 
-    <h2 class="text-lg font-semibold text-slate-900 mb-3">Sus radicados</h2>
-
+  {% call panel('Sus radicados', 'list') %}
     {% if not radicados %}
-    <p class="text-sm text-slate-600 bg-lienzo-seccion border border-linea rounded-lg p-4">
-        Todavía no ha radicado ninguna solicitud.
-    </p>
+    {{ vacio('Todavía no ha radicado ninguna solicitud.') }}
     {% else %}
-    <div class="space-y-3">
-        {% for r in radicados %}
-        <article class="bg-white border border-linea rounded-lg p-4">
-            <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
-                <div>
-                    <p class="font-mono text-sm font-semibold text-slate-900">{{ r.ticket_code }}</p>
-                    <p class="text-sm text-slate-700">{{ etiquetas.get(r.complaint_type, r.complaint_type) }} · {{ r.subject }}</p>
-                </div>
-                {% if r.status == 'resuelta' %}
-                <span class="bg-positive-subtle text-positive-text border border-positive-border px-2.5 py-1 rounded-full text-xs font-semibold">Respondida</span>
-                {% elif r.is_overdue %}
-                <span class="bg-critical-subtle text-critical-text border border-critical-border px-2.5 py-1 rounded-full text-xs font-semibold">Fuera de plazo</span>
-                {% else %}
-                <span class="bg-caution-subtle text-caution-text border border-caution-border px-2.5 py-1 rounded-full text-xs font-semibold">En trámite</span>
-                {% endif %}
-            </div>
-            <dl class="text-xs text-slate-600 flex flex-wrap gap-x-5 gap-y-1">
-                <div class="flex gap-1.5">
-                    <dt>Radicada:</dt><dd>{{ r.submitted_at | colombia_date }}</dd>
-                </div>
-                {% if r.due_at and not r.resolved_at %}
-                <div class="flex gap-1.5">
-                    <dt>Plazo de respuesta:</dt><dd>{{ r.due_at | colombia_date }}</dd>
-                </div>
-                {% endif %}
-                {% if r.resolved_at %}
-                <div class="flex gap-1.5">
-                    <dt>Respondida:</dt><dd>{{ r.resolved_at | colombia_date }}</dd>
-                </div>
-                {% endif %}
-            </dl>
-            {% if r.resolution %}
-            <div class="mt-3 pt-3 border-t border-linea">
-                <p class="text-xs font-semibold text-slate-700 mb-1">Respuesta</p>
-                <p class="text-sm text-slate-700 leading-relaxed">{{ r.resolution }}</p>
-            </div>
-            {% endif %}
-        </article>
-        {% endfor %}
-    </div>
+    {% call tabla(['Radicado', 'Asunto', 'Estado', 'Fechas', 'Respuesta']) %}
+      {% for r in radicados %}
+      <tr>
+        <td class="{{ TABLA_TD }} font-mono font-semibold text-slate-900 whitespace-nowrap">{{ r.ticket_code }}</td>
+        <td class="{{ TABLA_TD }}">
+          <span class="font-semibold text-slate-900">{{ r.subject }}</span>
+          <span class="block text-xs text-slate-500">{{ etiquetas.get(r.complaint_type, r.complaint_type) }}</span>
+        </td>
+        <td class="{{ TABLA_TD }}">
+          {% if r.status == 'resuelta' %}
+          {{ chip('Respondida', 'completado') }}
+          {% elif r.is_overdue %}
+          {{ chip('Fuera de plazo', 'riesgo') }}
+          {% else %}
+          {{ chip('En trámite', 'revisar') }}
+          {% endif %}
+        </td>
+        <td class="{{ TABLA_TD }} text-xs text-slate-600 whitespace-nowrap">
+          <span class="block">Radicada: {{ r.submitted_at | colombia_date }}</span>
+          {% if r.due_at and not r.resolved_at %}
+          <span class="block">Plazo: {{ r.due_at | colombia_date }}</span>
+          {% endif %}
+          {% if r.resolved_at %}
+          <span class="block">Respondida: {{ r.resolved_at | colombia_date }}</span>
+          {% endif %}
+        </td>
+        <td class="{{ TABLA_TD }} text-slate-700">
+          {% if r.resolution %}{{ r.resolution }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    {% endcall %}
     {% endif %}
+  {% endcall %}
 
-    <p class="text-xs text-slate-600 mt-6 leading-relaxed">
-        Agotado el trámite ante el prestador sin respuesta satisfactoria, puede
-        acudir a la Superintendencia Nacional de Salud.
-    </p>
+  <p class="text-xs text-slate-500 leading-relaxed">
+    Agotado el trámite ante el prestador sin respuesta satisfactoria, puede
+    acudir a la Superintendencia Nacional de Salud.
+  </p>
 </div>
 {% endblock %}

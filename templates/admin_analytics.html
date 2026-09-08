@@ -1,120 +1,85 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel %}
 {% block content %}
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-semibold text-slate-900 flex items-center gap-3">
-                <div class="bg-accent p-2.5 rounded-lg">
-                    <i data-lucide="bar-chart-3" class="w-7 h-7 text-white"></i>
-                </div>
-                Dashboard Analítica
-            </h1>
-            <p class="text-sm text-slate-500 mt-1">Métricas en tiempo real de la clínica</p>
-        </div>
-        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-linea">
-            <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
-            <span class="text-sm font-bold text-slate-600" id="analytics-date"></span>
-        </div>
-    </div>
+<div class="max-w-7xl mx-auto space-y-6">
 
-    {# Indicadores.
-
-       Eran cuatro tarjetas de colores distintos con manchas difuminadas. Cuatro
-       colores fuertes juntos no jerarquizan nada: compiten. Y en una pantalla
-       clinica el color tiene que reservarse para lo que exige atencion, no para
-       distinguir un contador de otro.
-
-       Ahora la cifra es lo que destaca, que es lo que se viene a mirar. #}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-grid">
-        <div class="bg-white border border-linea rounded-lg p-5">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Consultas este mes</p>
-            <p class="text-3xl font-semibold mt-1 text-slate-900" id="kpi-consultations">0</p>
-            <p class="text-xs text-slate-600 mt-1" id="kpi-consultations-trend"></p>
-        </div>
-        <div class="bg-white border border-linea rounded-lg p-5">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Pacientes registrados</p>
-            <p class="text-3xl font-semibold mt-1 text-slate-900" id="kpi-patients">0</p>
-            <p class="text-xs text-slate-600 mt-1">Total en la clínica</p>
-        </div>
-        <div class="bg-white border border-linea rounded-lg p-5">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Satisfacción</p>
-            <p class="text-3xl font-semibold mt-1 text-slate-900" id="kpi-rating">0</p>
-            <p class="text-xs text-slate-600 mt-1" id="kpi-rating-count"></p>
-        </div>
-        <div class="bg-white border border-linea rounded-lg p-5">
-            <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">Chats activos</p>
-            <p class="text-3xl font-semibold mt-1 text-slate-900" id="kpi-chats">0</p>
-            <p class="text-xs text-slate-600 mt-1" id="kpi-alerts"></p>
-        </div>
-    </div>
-
-    <!-- Charts Row 1 -->
-    <div class="grid lg:grid-cols-3 gap-4">
-        <!-- Trend Chart (wide) -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-lg border border-linea">
-            <h3 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
-                <i data-lucide="trending-up" class="w-4 h-4 text-slate-500"></i>
-                Tendencia de consultas (6 meses)
-            </h3>
-            <div class="h-64">
-                <canvas id="chart-trend"></canvas>
-            </div>
-        </div>
-
-        <!-- Diagnostics Donut -->
-        <div class="bg-white p-6 rounded-lg border border-linea">
-            <h3 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
-                <i data-lucide="pie-chart" class="w-4 h-4 text-slate-500"></i>
-                Diagnósticos CIE-10
-            </h3>
-            <div class="h-64 flex items-center justify-center">
-                <canvas id="chart-diagnostics"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row 2 -->
-    <div class="grid lg:grid-cols-2 gap-4">
-        <!-- Top Meds Bar Chart -->
-        <div class="bg-white p-6 rounded-lg border border-linea">
-            <h3 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
-                <i data-lucide="pill" class="w-4 h-4 text-slate-500"></i>
-                Top 10 medicamentos recetados
-            </h3>
-            <div class="h-72">
-                <canvas id="chart-meds"></canvas>
-            </div>
-        </div>
-
-        <!-- Doctor Productivity Table -->
-        <div class="bg-white p-6 rounded-lg border border-linea">
-            <h3 class="text-sm font-semibold uppercase tracking-widest text-slate-600 mb-4 flex items-center gap-2">
-                <i data-lucide="stethoscope" class="w-4 h-4 text-slate-500"></i>
-                Productividad por doctor
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-linea">
-                            <th class="text-left py-2 px-2 text-slate-500 font-bold text-xs uppercase">Doctor</th>
-                            <th class="text-center py-2 px-2 text-slate-500 font-bold text-xs uppercase">Consultas</th>
-                            <th class="text-center py-2 px-2 text-slate-500 font-bold text-xs uppercase">Chats</th>
-                            <th class="text-center py-2 px-2 text-slate-500 font-bold text-xs uppercase">Rating</th>
-                        </tr>
-                    </thead>
-                    <tbody id="doctor-table-body">
-                        <tr><td colspan="4" class="py-8 text-center text-slate-600">Cargando datos...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Back link -->
+  {% call cabecera('Analítica', 'Métricas de la clínica') %}
+    <span class="inline-flex items-center gap-2 text-sm text-slate-600">
+      <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
+      <span id="analytics-date"></span>
+    </span>
     <a href="/admin/dashboard" class="{{ BOTON_2 }}">
-        <i data-lucide="arrow-left" class="w-5 h-5 transition-transform group-hover:-translate-x-1"></i> Volver al panel
+      <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel
     </a>
+  {% endcall %}
+
+  {# Indicadores.
+
+     Eran cuatro tarjetas de colores distintos con manchas difuminadas. Cuatro
+     colores fuertes juntos no jerarquizan nada: compiten. Y en una pantalla
+     clinica el color tiene que reservarse para lo que exige atencion, no para
+     distinguir un contador de otro.
+
+     Ahora van en una sola tira con contorno: la cifra es lo que destaca, que
+     es lo que se viene a mirar, y ocupa la cuarta parte del espacio. #}
+  <div id="kpi-grid"
+       class="{{ TARJETA }} grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y divide-linea-suave lg:divide-y-0 lg:divide-x lg:divide-linea-suave">
+    <div class="px-4 py-3">
+      <span class="{{ ROTULO_DATO }}">Consultas este mes</span>
+      <p class="text-2xl font-semibold text-slate-900 mt-1" id="kpi-consultations">0</p>
+      <p class="text-xs text-slate-500 mt-0.5" id="kpi-consultations-trend"></p>
+    </div>
+    <div class="px-4 py-3">
+      <span class="{{ ROTULO_DATO }}">Pacientes registrados</span>
+      <p class="text-2xl font-semibold text-slate-900 mt-1" id="kpi-patients">0</p>
+      <p class="text-xs text-slate-500 mt-0.5">Total en la clínica</p>
+    </div>
+    <div class="px-4 py-3">
+      <span class="{{ ROTULO_DATO }}">Satisfacción</span>
+      <p class="text-2xl font-semibold text-slate-900 mt-1" id="kpi-rating">0</p>
+      <p class="text-xs text-slate-500 mt-0.5" id="kpi-rating-count"></p>
+    </div>
+    <div class="px-4 py-3">
+      <span class="{{ ROTULO_DATO }}">Chats activos</span>
+      <p class="text-2xl font-semibold text-slate-900 mt-1" id="kpi-chats">0</p>
+      <p class="text-xs text-slate-500 mt-0.5" id="kpi-alerts"></p>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2">
+      {% call panel('Tendencia de consultas (6 meses)', 'trending-up') %}
+        <div class="h-64"><canvas id="chart-trend"></canvas></div>
+      {% endcall %}
+    </div>
+    {% call panel('Diagnósticos CIE-10', 'pie-chart') %}
+      <div class="h-64 flex items-center justify-center"><canvas id="chart-diagnostics"></canvas></div>
+    {% endcall %}
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-4">
+    {% call panel('Top 10 medicamentos recetados', 'pill') %}
+      <div class="h-72"><canvas id="chart-meds"></canvas></div>
+    {% endcall %}
+
+    {% call panel('Productividad por doctor', 'stethoscope') %}
+      <div class="overflow-x-auto -mx-4 sm:mx-0">
+        <table class="{{ TABLA }}">
+          <thead class="{{ TABLA_CABECERA }}">
+            <tr>
+              <th scope="col" class="{{ TABLA_TH }}">Doctor</th>
+              <th scope="col" class="{{ TABLA_TH }}">Consultas</th>
+              <th scope="col" class="{{ TABLA_TH }}">Chats</th>
+              <th scope="col" class="{{ TABLA_TH }}">Calificación</th>
+            </tr>
+          </thead>
+          <tbody id="doctor-table-body">
+            <tr><td colspan="4" class="{{ TABLA_TD }} text-center text-slate-600">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    {% endcall %}
+  </div>
 </div>
 
 <script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
@@ -188,6 +153,8 @@
             });
 
             // Top Meds Bar Chart
+            // Una sola serie, un solo color: las ocho tintas de antes no
+            // codificaban nada, solo hacian ruido junto al resto de la pantalla.
             new Chart(document.getElementById('chart-meds'), {
                 type: 'bar',
                 data: {
@@ -195,12 +162,10 @@
                     datasets: [{
                         label: 'Cantidad recetada',
                         data: data.top_meds.data,
-                        backgroundColor: data.top_meds.labels.map((_, i) =>
-                            DONUT_PALETTE[i % DONUT_PALETTE.length] + '99'),
-                        borderColor: data.top_meds.labels.map((_, i) =>
-                            DONUT_PALETTE[i % DONUT_PALETTE.length]),
+                        backgroundColor: COLORS.sky[1],
+                        borderColor: COLORS.sky[0],
                         borderWidth: 2,
-                        borderRadius: 8,
+                        borderRadius: 4,
                     }]
                 },
                 options: {
@@ -245,25 +210,18 @@
             // Doctor Table
             const tbody = document.getElementById('doctor-table-body');
             if (data.doctors.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-slate-600">Sin datos de doctores</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="{{ TABLA_TD }} text-center text-slate-600">Sin datos de doctores</td></tr>';
             } else {
                 tbody.innerHTML = data.doctors.map((doc, i) => `
-                    <tr class="border-b border-linea hover:bg-lienzo-seccion transition-colors">
-                        <td class="py-3 px-2">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white font-semibold text-xs">
-                                    ${i + 1}
-                                </div>
-                                <div>
-                                    <p class="font-bold text-slate-800">${doc.name}</p>
-                                    <p class="text-xs text-slate-600">${doc.specialty}</p>
-                                </div>
-                            </div>
+                    <tr class="hover:bg-lienzo-seccion transition-colors">
+                        <td class="{{ TABLA_TD }}">
+                            <span class="font-semibold text-slate-900">${i + 1}. ${doc.name}</span>
+                            <span class="block text-xs text-slate-500">${doc.specialty}</span>
                         </td>
-                        <td class="text-center py-3 px-2 font-semibold text-slate-700">${doc.attended}</td>
-                        <td class="text-center py-3 px-2 font-bold text-slate-600">${doc.chats_closed}</td>
-                        <td class="text-center py-3 px-2">
-                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg ${doc.rating >= 4 ? 'bg-positive-subtle text-emerald-700' : doc.rating > 0 ? 'bg-caution-subtle text-amber-700' : 'bg-slate-100 text-slate-500'} font-semibold text-xs">
+                        <td class="{{ TABLA_TD }} tabular-nums">${doc.attended}</td>
+                        <td class="{{ TABLA_TD }} tabular-nums">${doc.chats_closed}</td>
+                        <td class="{{ TABLA_TD }}">
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-xs font-semibold whitespace-nowrap ${doc.rating >= 4 ? 'border-positive-border text-positive bg-positive-subtle' : doc.rating > 0 ? 'border-caution-border text-caution bg-caution-subtle' : 'border-linea text-slate-600 bg-white'}">
                                 ${doc.rating > 0 ? doc.rating + ' / 5' : 'Sin calificar'}
                             </span>
                         </td>

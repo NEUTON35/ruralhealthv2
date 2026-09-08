@@ -1,92 +1,95 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import cabecera, seccion, panel, tira, dato, chip, aviso, vacio %}
 {% block content %}
 <div class="max-w-3xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold">Agendar Cita</h1>
-            <p class="text-slate-500">Paciente: <span class="font-bold text-slate-800">{{ patient.name }}</span></p>
-        </div>
-        <a href="/doctor/dashboard" class="text-blue-600 font-bold flex items-center gap-2 hover:underline"><i data-lucide="arrow-left" class="w-5 h-5"></i> Volver al Panel</a>
-    </div>
+
+    {% call cabecera('Agendar cita', 'Paciente: ' ~ patient.name) %}
+        <a href="/doctor/dashboard" class="{{ BOTON_2 }}">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel
+        </a>
+    {% endcall %}
 
     <!-- Componente Calendario Mensual -->
     {% include 'calendar_component.html' %}
 
     <!-- Selección de Hora -->
     {% if selected_date %}
-        <div class="bg-white p-6 rounded-lg border border-linea mt-6">
-            <h3 class="font-bold text-gray-800 mb-4 text-lg">Sus horas para el {{ selected_date }}</h3>
-            
+        <div class="mt-6">
+        {% call panel('Sus horas para el ' ~ selected_date, 'clock') %}
+
             {% if slots %}
                 <form method="POST" action="/doctor/book_appointment/{{ patient.id }}" class="space-y-6">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="date" value="{{ selected_date }}">
-                    
+
                     {% set morning_slots = slots|selectattr('time', 'lt', '12:00')|list %}
                     {% set afternoon_slots = slots|rejectattr('time', 'lt', '12:00')|list %}
 
                     {% if morning_slots %}
-                    <div>
-                        <h4 class="font-bold text-sm text-yellow-700 mb-2 flex items-center gap-2"><i data-lucide="sunrise" class="w-4 h-4"></i> Mañana</h4>
-                        <div class="grid grid-cols-4 md:grid-cols-6 gap-3">
+                    <fieldset>
+                        <legend class="{{ ROTULO }} flex items-center gap-2 mb-2">
+                            <i data-lucide="sunrise" class="w-4 h-4 text-slate-500"></i> Mañana
+                        </legend>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                             {% for slot in morning_slots %}
                                 {% if slot.status == 'available' %}
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required aria-label="Hora">
-                                    <div class="peer-checked:bg-accent peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-accent-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-accent-border transition">
+                                    <input type="radio" name="time" value="{{ slot.time }}" class="sr-only peer" required aria-label="Hora">
+                                    <span class="block min-h-control px-2 py-2.5 rounded-lg border border-linea bg-white text-slate-900 text-center text-sm font-semibold hover:bg-lienzo-seccion peer-checked:bg-accent peer-checked:text-white peer-checked:border-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent transition-colors">
                                         {{ slot.time }}
-                                    </div>
+                                    </span>
                                 </label>
                                 {% elif slot.status == 'booked' %}
-                                <div class="border-2 border-critical-border bg-critical-subtle text-red-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
+                                <span class="block min-h-control px-2 py-2.5 rounded-lg border border-linea-suave bg-lienzo-seccion text-slate-500 text-center text-sm font-semibold line-through cursor-not-allowed" title="Ya reservada">{{ slot.time }}</span>
                                 {% else %}
-                                <div class="border border-gray-600 bg-gray-800 text-gray-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
+                                <span class="block min-h-control px-2 py-2.5 rounded-lg border border-linea-suave bg-lienzo-seccion text-slate-500 text-center text-sm font-semibold cursor-not-allowed" title="No disponible">{{ slot.time }}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>
-                    </div>
+                    </fieldset>
                     {% endif %}
 
                     {% if afternoon_slots %}
-                    <div>
-                        <h4 class="font-bold text-sm text-slate-900 mb-2 flex items-center gap-2"><i data-lucide="sunset" class="w-4 h-4"></i> Tarde</h4>
-                        <div class="grid grid-cols-4 md:grid-cols-6 gap-3">
+                    <fieldset>
+                        <legend class="{{ ROTULO }} flex items-center gap-2 mb-2">
+                            <i data-lucide="sunset" class="w-4 h-4 text-slate-500"></i> Tarde
+                        </legend>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                             {% for slot in afternoon_slots %}
                                 {% if slot.status == 'available' %}
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="time" value="{{ slot.time }}" class="hidden peer" required aria-label="Hora">
-                                    <div class="peer-checked:bg-accent peer-checked:text-white peer-checked:border-blue-600 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-positive bg-accent-subtle text-green-800 p-3 rounded-lg text-center font-bold hover:bg-accent-border transition">
+                                    <input type="radio" name="time" value="{{ slot.time }}" class="sr-only peer" required aria-label="Hora">
+                                    <span class="block min-h-control px-2 py-2.5 rounded-lg border border-linea bg-white text-slate-900 text-center text-sm font-semibold hover:bg-lienzo-seccion peer-checked:bg-accent peer-checked:text-white peer-checked:border-accent peer-focus-visible:ring-2 peer-focus-visible:ring-accent transition-colors">
                                         {{ slot.time }}
-                                    </div>
+                                    </span>
                                 </label>
                                 {% elif slot.status == 'booked' %}
-                                <div class="border-2 border-critical-border bg-critical-subtle text-red-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm line-through">{{ slot.time }}</div>
+                                <span class="block min-h-control px-2 py-2.5 rounded-lg border border-linea-suave bg-lienzo-seccion text-slate-500 text-center text-sm font-semibold line-through cursor-not-allowed" title="Ya reservada">{{ slot.time }}</span>
                                 {% else %}
-                                <div class="border border-gray-600 bg-gray-800 text-gray-500 p-3 rounded-lg text-center font-bold opacity-50 cursor-not-allowed text-sm">{{ slot.time }}</div>
+                                <span class="block min-h-control px-2 py-2.5 rounded-lg border border-linea-suave bg-lienzo-seccion text-slate-500 text-center text-sm font-semibold cursor-not-allowed" title="No disponible">{{ slot.time }}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>
-                    </div>
+                    </fieldset>
                     {% endif %}
 
-                    <div class="border-t pt-4 mt-4">
-                        <input type="text" name="description" placeholder="Motivo de la cita..." class="{{ CAMPO }} w-full" aria-label="Motivo de la cita...">
+                    <div class="border-t border-linea-suave pt-4">
+                        <label class="{{ ROTULO }}" for="campo-description">Motivo de la cita</label>
+                        <input id="campo-description" type="text" name="description" placeholder="Motivo de la cita..." class="{{ CAMPO }}" aria-label="Motivo de la cita...">
+                        <p class="{{ PISTA }}">Lo verá el paciente en su agenda.</p>
                     </div>
                     <button type="submit" class="{{ BOTON }}">
-                        <i data-lucide="check-circle" class="w-6 h-6"></i> Confirmar Cita para {{ patient.name }}
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar cita para {{ patient.name }}
                     </button>
                 </form>
             {% else %}
-                <div class="bg-caution-subtle p-6 rounded-lg text-yellow-800 font-semibold text-center flex flex-col items-center gap-2">
-                    <i data-lucide="calendar-x-2" class="w-10 h-10 text-caution"></i>
-                    No atiende este día. Seleccione otro día en verde.
-                </div>
+                {{ vacio('No atiende este día.', 'Seleccione otro día en verde en el calendario.') }}
             {% endif %}
+        {% endcall %}
         </div>
     {% else %}
-        <div class="bg-blue-50 p-6 rounded-lg text-blue-800 font-semibold text-center flex flex-col items-center gap-2 mt-6">
-            <i data-lucide="mouse-pointer-click" class="w-10 h-10 text-slate-500"></i>
-            Seleccione un día en el calendario para ver sus horas.
+        <div class="mt-6">
+            {{ vacio('Seleccione un día en el calendario para ver sus horas.') }}
         </div>
     {% endif %}
 </div>
