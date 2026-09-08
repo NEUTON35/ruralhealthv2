@@ -1,0 +1,62 @@
+# Lo que NO puede entrar en la imagen.
+#
+# El Dockerfile hace `COPY . .`. Sin este archivo, todo lo que haya en el
+# directorio acaba dentro de la imagen, y una imagen se sube a un registro, se
+# comparte y se conserva por capas: lo que entra una vez es muy dificil de
+# sacar despues.
+
+# --- Secretos ---------------------------------------------------------------
+# Lo primero y lo mas importante. Las variables de entorno se inyectan en
+# tiempo de ejecucion (el orquestador, el gestor de secretos); NUNCA se
+# hornean en la imagen. Un `.env` copiado a la imagen queda legible para
+# cualquiera que haga `docker run ... cat .env`, y sigue estando en la capa
+# aunque un Dockerfile posterior lo borre.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Datos de pacientes -----------------------------------------------------
+# `uploads/` tiene documentos clinicos y comprobantes de pago; `instance/` y
+# los .db, la base de datos local. Nada de eso puede viajar en una imagen.
+uploads/
+instance/
+logs/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# --- Peso muerto ------------------------------------------------------------
+# `node_modules` solo hace falta para regenerar el CSS, que ya viene generado
+# y versionado en `static/css/app.css`. Copiarlo multiplica el tamaño de la
+# imagen y el tiempo de despliegue sin aportar nada en produccion.
+node_modules/
+package-lock.json
+
+# Las capturas del recorrido son 23 MB de PNG que se regeneran solos.
+capturas/
+
+# --- Desarrollo -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+tests/
+scripts/recorrido/
+
+# --- Control de versiones y editores ----------------------------------------
+.git/
+.gitignore
+.dockerignore
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

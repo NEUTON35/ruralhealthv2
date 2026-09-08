@@ -30,8 +30,10 @@ Los documentos viven en la raíz porque es donde GitHub los renderiza: quien
 entra al repositorio ve primero qué es esto y qué hay que leer antes de
 desplegarlo con datos de pacientes.
 
-**Todos los comandos de este documento se ejecutan desde `ruralhealth/`**, que
-es donde está la aplicación:
+`ruralhealth/` es la raíz de la aplicación: ahí dentro está todo lo que
+necesita en ejecución, incluido el `.env`. **Todos los comandos se ejecutan
+desde ahí**, y es lo que hay que poner como *Root Directory* del servicio al
+desplegar.
 
 ```bash
 cd ruralhealth

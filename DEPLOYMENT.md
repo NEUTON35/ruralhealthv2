@@ -1,15 +1,21 @@
 # Despliegue, RuralHealth Connect
 
 > [!IMPORTANT]
-> La aplicación vive en el subdirectorio `ruralhealth/`. **Todos los
-> comandos de este documento se ejecutan desde ahí**, y el directorio
-> de trabajo del servicio en producción tiene que ser ese: el
-> comando de arranque es `cd ruralhealth && gunicorn -c
-> gunicorn.conf.py wsgi:app`. Las rutas de `uploads/`, `logs/` e
-> `instance/` se resuelven contra el directorio de trabajo, así que
-> arrancar desde la raíz del repositorio crearía esas carpetas en el
-> sitio equivocado y la aplicación no encontraría los archivos
-> subidos.
+> **La raíz del servicio es `ruralhealth/`, no la del repositorio.**
+>
+> En Render, Railway o similar: pon `ruralhealth` en *Root Directory*.
+> En Docker: ese es el contexto de construcción
+> (`docker build ruralhealth/`). En local: `cd ruralhealth` antes de
+> cualquier comando de este documento.
+>
+> Ahí dentro está todo lo que la aplicación necesita en ejecución,
+> incluido el `.env`. En la raíz del repositorio solo quedan los
+> documentos que GitHub renderiza.
+>
+> Importa porque `uploads/`, `logs/` e `instance/` se resuelven contra
+> el directorio de trabajo: arrancar desde la raíz del repositorio
+> crearía esas carpetas en el sitio equivocado, y la aplicación no
+> encontraría los documentos clínicos ya subidos.
 
 
 Guía para poner el sistema en operación real. Cada paso está aquí porque su
