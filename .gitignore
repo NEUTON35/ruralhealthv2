@@ -41,3 +41,9 @@ package-lock.json
 
 # static/css/app.css SI se versiona: sin el, ejecutar la aplicacion
 # exigiria Node y conexion, que es justo lo que se queria evitar.
+
+# --- Recorrido de la interfaz ---
+# Las capturas se regeneran con scripts/recorrido/capturar.py. Son 21 MB de
+# PNG que cambian con cada retoque de estilo: versionarlas engorda el
+# historial sin aportar nada que no se pueda reconstruir en un minuto.
+capturas/
