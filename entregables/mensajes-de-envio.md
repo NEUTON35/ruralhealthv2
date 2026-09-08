@@ -20,10 +20,11 @@ Tres cosas que valen para los tres mensajes:
 
 Buenos días, [nombre].
 
-Soy Juan David Gómez Aragón, estudiante de [programa] en la Universidad Autónoma de
+Soy Juan David Gómez Aragón, estudiante de Ingeniería Mecatrónica en la Universidad Autónoma de
 Occidente. Desarrollé una plataforma de atención en salud para zonas rurales
 que gestiona historia clínica, teleconsulta y dispensación de medicamentos, y
-que remite la información obligatoria al Ministerio de Salud.
+que remite la información obligatoria al Ministerio de Salud. Empezó como un
+trabajo de clase y terminó siendo un sistema completo.
 
 Los cinco textos legales ya están redactados: política de tratamiento de datos,
 términos y condiciones, aviso de privacidad, consentimiento de telemedicina y
@@ -60,8 +61,10 @@ juan.david.gomez.aragon@gmail.com
 
 Buenos días, [nombre].
 
-Soy Juan David Gómez Aragón, estudiante de [programa] en la Universidad Autónoma de
-Occidente. Desarrollé una plataforma de atención en salud para zonas rurales.
+Soy Juan David Gómez Aragón, estudiante de Ingeniería Mecatrónica en la Universidad Autónoma de
+Occidente. Desarrollé una plataforma de atención en salud para zonas rurales, que
+empezó como un trabajo de clase y terminó siendo un sistema completo.
+
 Cuando un médico va a firmar una orden, el sistema contrasta lo prescrito
 contra la historia del paciente y **puede bloquear la firma**: alergias,
 interacciones, duplicidad terapéutica, embarazo, pediatría y cantidades.
