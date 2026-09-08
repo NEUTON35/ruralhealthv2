@@ -25,6 +25,8 @@ sencillamente no existía:
     python manage.py rda-backfill           Encola atenciones sin registro de envio
     python manage.py rda-preview <id>       Revisa un RDA sin transmitirlo
     python manage.py rips-json              Genera el RIPS vigente (Res 948/2026)
+    python manage.py load-rips-tables       Carga una tabla de referencia del RIPS
+    python manage.py load-sivigila-events   Carga el catálogo de eventos del INS
 
 Los comandos que modifican datos piden confirmación explícita.
 """
@@ -985,6 +987,114 @@ def cmd_rips_json(args):
             warn(aviso)
         return 0
 
+
+def cmd_load_rips_tables(args):
+    """Carga una tabla de referencia del RIPS desde el archivo oficial.
+
+    Las semillas que trae la aplicacion son parciales: cubren las primeras
+    entradas de cada tabla. El Ministerio publica las completas en SISPRO.
+
+    Formato del archivo: CSV de dos columnas, codigo y descripcion.
+    """
+    app = get_app()
+    from models import RIPSReferenceCode, db
+
+    if not os.path.isfile(args.archivo):
+        fail('No existe el archivo %s.' % args.archivo)
+        return 1
+
+    with app.app_context():
+        existentes = {
+            f.code: f for f in RIPSReferenceCode.query.filter_by(
+                table_name=args.tabla).all()
+        }
+        nuevos, actualizados = 0, 0
+        with io.open(args.archivo, encoding='utf-8-sig', newline='') as handle:
+            for indice, fila in enumerate(csv.reader(handle)):
+                if len(fila) < 2:
+                    continue
+                codigo = fila[0].strip()[:10]
+                descripcion = fila[1].strip()[:250]
+                if not codigo or not descripcion:
+                    continue
+                if indice == 0 and codigo.lower() in {'codigo', 'code', 'tabla'}:
+                    continue
+                fila_existente = existentes.get(codigo)
+                if fila_existente is None:
+                    db.session.add(RIPSReferenceCode(
+                        table_name=args.tabla, code=codigo,
+                        description=descripcion))
+                    nuevos += 1
+                elif fila_existente.description != descripcion:
+                    fila_existente.description = descripcion
+                    actualizados += 1
+        db.session.commit()
+
+    ok('%s: %d codigo(s) nuevo(s), %d actualizado(s).'
+       % (args.tabla, nuevos, actualizados))
+    print('   Las semillas de la aplicacion son parciales; verifique que el')
+    print('   archivo provenga de web.sispro.gov.co.')
+    return 0
+
+
+def cmd_load_sivigila_events(args):
+    """Carga el catalogo de eventos de interes en salud publica.
+
+    Formato: CSV de cuatro columnas: codigo, nombre, periodicidad
+    (inmediata|semanal) y prefijos CIE-10 separados por punto y coma.
+
+    El Instituto Nacional de Salud publica el catalogo vigente cada ano en sus
+    lineamientos. La semilla de la aplicacion cubre los eventos de mayor
+    frecuencia en atencion primaria rural, no el catalogo completo.
+    """
+    app = get_app()
+    from models import (NotifiableEvent, SIVIGILA_INMEDIATA, SIVIGILA_SEMANAL,
+                        db)
+
+    if not os.path.isfile(args.archivo):
+        fail('No existe el archivo %s.' % args.archivo)
+        return 1
+
+    validas = {SIVIGILA_INMEDIATA, SIVIGILA_SEMANAL}
+    with app.app_context():
+        existentes = {e.code: e for e in NotifiableEvent.query.all()}
+        nuevos, actualizados, rechazados = 0, 0, 0
+        with io.open(args.archivo, encoding='utf-8-sig', newline='') as handle:
+            for indice, fila in enumerate(csv.reader(handle)):
+                if len(fila) < 3:
+                    continue
+                codigo = fila[0].strip()[:10]
+                nombre = fila[1].strip()[:200]
+                periodicidad = fila[2].strip().lower()
+                prefijos = (fila[3].strip().replace(';', ',')[:300]
+                            if len(fila) > 3 else None)
+                if not codigo or not nombre:
+                    continue
+                if indice == 0 and codigo.lower() in {'codigo', 'code'}:
+                    continue
+                if periodicidad not in validas:
+                    rechazados += 1
+                    continue
+                evento = existentes.get(codigo)
+                if evento is None:
+                    db.session.add(NotifiableEvent(
+                        code=codigo, name=nombre, periodicity=periodicidad,
+                        cie10_prefixes=prefijos))
+                    nuevos += 1
+                else:
+                    evento.name = nombre
+                    evento.periodicity = periodicidad
+                    if prefijos:
+                        evento.cie10_prefixes = prefijos
+                    actualizados += 1
+        db.session.commit()
+
+    ok('%d evento(s) nuevo(s), %d actualizado(s).' % (nuevos, actualizados))
+    if rechazados:
+        warn('%d fila(s) rechazadas: la periodicidad debe ser "inmediata" o '
+             '"semanal".' % rechazados)
+    return 0
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog='manage.py',
@@ -1092,6 +1202,18 @@ def build_parser():
     p.add_argument('--preview', action='store_true',
                    help='Solo comprobar, sin escribir el archivo')
     p.set_defaults(func=cmd_rips_json)
+
+
+    p = sub.add_parser('load-rips-tables', help='Carga una tabla de referencia del RIPS')
+    p.add_argument('tabla', help='Ej: RIPSCausaExternaVersion2')
+    p.add_argument('archivo', help='CSV de codigo,descripcion')
+    p.set_defaults(func=cmd_load_rips_tables)
+
+    p = sub.add_parser('load-sivigila-events',
+                       help='Carga el catalogo de eventos notificables del INS')
+    p.add_argument('archivo',
+                   help='CSV de codigo,nombre,periodicidad,prefijos CIE-10')
+    p.set_defaults(func=cmd_load_sivigila_events)
 
     return parser
 

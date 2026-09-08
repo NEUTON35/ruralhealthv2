@@ -1371,7 +1371,93 @@ def patient_history(patient_id):
             patient_id=patient.id, status='activa').all(),
         active_meds=_active_medications_for(patient),
         patient_age_years=_patient_age_years(patient),
+        histories=(MedicalHistory.query
+                   .filter_by(patient_id=patient.id, clinic_id=current_user.clinic_id)
+                   .order_by(MedicalHistory.created_at.desc()).all()),
     )
+
+
+@doctor_bp.route('/historia/<int:history_id>/adenda', methods=['POST'])
+@login_required
+@role_required('doctor')
+def amend_history(history_id):
+    """Enmienda una atencion por adenda, sin tocar el registro original.
+
+    La Resolucion 1995 de 1999 no admite corregir la historia clinica
+    borrando: se corrige por adenda, que deja intacto lo anterior y anade un
+    registro nuevo que lo enmienda.
+
+    Que un profesional no pueda editar lo ya escrito es correcto. Que no pueda
+    enmendarlo, no: un diagnostico equivocado se queda ahi, y ademas ya viajo
+    al IHCE.
+    """
+    original = MedicalHistory.query.filter_by(
+        id=history_id, clinic_id=current_user.clinic_id).first_or_404()
+
+    if original.amends_id is not None:
+        flash('Esa entrada ya es una adenda. Enmiende la atencion original.')
+        return redirect(url_for('doctor.patient_history', patient_id=original.patient_id))
+
+    motivo = bleach.clean((request.form.get('amendment_reason') or '').strip())
+    if len(motivo) < 20:
+        flash('Explique que se corrige y por que (minimo 20 caracteres). '
+              'La adenda queda en la historia clinica junto al registro original.')
+        return redirect(url_for('doctor.patient_history', patient_id=original.patient_id))
+
+    diagnostico = bleach.clean((request.form.get('diagnosis') or '').strip())
+    resumen = bleach.clean((request.form.get('summary') or '').strip())
+    tratamiento = bleach.clean((request.form.get('treatment') or '').strip())
+    cie10 = (request.form.get('cie10_code') or '').strip().upper()
+
+    codigo = original.cie10_code
+    if cie10:
+        cie_ok, cie_res = validate_medical_code(cie10, 'CIE10')
+        if not cie_ok:
+            flash(cie_res)
+            return redirect(url_for('doctor.patient_history', patient_id=original.patient_id))
+        codigo = cie_res
+
+    adenda = MedicalHistory(
+        clinic_id=original.clinic_id,
+        patient_id=original.patient_id,
+        doctor_id=current_user.id,
+        chat_id=original.chat_id,
+        appointment_id=original.appointment_id,
+        record_type='adenda',
+        summary=resumen or original.summary,
+        diagnosis=diagnostico or original.diagnosis,
+        cie10_code=codigo,
+        cups_code=original.cups_code,
+        treatment=tratamiento or original.treatment,
+        external_cause=original.external_cause,
+        consultation_purpose=original.consultation_purpose,
+        care_modality=original.care_modality,
+        amends_id=original.id,
+        amendment_reason=motivo,
+    )
+    db.session.add(adenda)
+    db.session.flush()
+
+    # La adenda es una atencion mas para efectos de remision: el IHCE ya
+    # recibio la version anterior y tiene que recibir la corregida.
+    try:
+        encolar_rda(db, adenda)
+    except Exception:
+        current_app.logger.exception('No se pudo encolar el RDA de la adenda')
+        audit('rda_enqueue_failed', details=f'history_id={adenda.id}')
+
+    # Si la correccion cambia el diagnostico, puede volverlo notificable.
+    try:
+        detectar_eventos(db, adenda)
+    except Exception:
+        current_app.logger.exception('Fallo la deteccion de eventos en la adenda')
+
+    audit('medical_history_amended',
+          details=f'original_id={original.id}; adenda_id={adenda.id}')
+    db.session.commit()
+
+    flash('Adenda registrada. El registro original se conserva intacto.')
+    return redirect(url_for('doctor.patient_history', patient_id=original.patient_id))
 
 
 @doctor_bp.route('/patient/<int:patient_id>/alergias', methods=['POST'])

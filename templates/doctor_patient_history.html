@@ -275,6 +275,101 @@
     </div>
 </section>
 
+{# --- Registros clinicos y adendas -------------------------------------
+   La historia clinica no se edita: se enmienda por adenda, que deja intacto
+   lo anterior (Resolucion 1995 de 1999). Poder corregir importa porque el
+   diagnostico ya viajo al IHCE. #}
+<div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+    <div class="bg-slate-50 border-b border-slate-100 p-6">
+        <h2 class="text-xl font-semibold text-slate-800 flex items-center gap-2">
+            <i data-lucide="file-text" class="w-6 h-6 text-slate-500"></i>
+            Registros clínicos
+        </h2>
+        <p class="text-sm text-slate-500 font-medium">
+            No se editan. Una corrección se registra como adenda junto al original.
+        </p>
+    </div>
+
+    <div class="p-6">
+        {% if not histories %}
+        <p class="text-sm text-slate-500">Sin registros clínicos.</p>
+        {% else %}
+        <div class="space-y-4">
+            {% for h in histories %}
+            <div class="border-2 rounded-2xl p-5 {% if h.is_amendment %}border-sky-200 bg-sky-50/40{% else %}border-slate-100{% endif %}">
+                <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">
+                            {{ h.cie10_code or 'Sin código' }} · {{ h.diagnosis or 'Sin diagnóstico' }}
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            {{ h.created_at | colombia_date }}
+                            {% if h.is_telemedicine %} · Telemedicina{% endif %}
+                        </p>
+                    </div>
+                    {% if h.is_amendment %}
+                    <span class="bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-1 rounded-full text-xs font-semibold">
+                        Adenda del registro #{{ h.amends_id }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                {% if h.summary %}
+                <p class="text-sm text-slate-700 leading-relaxed">{{ h.summary }}</p>
+                {% endif %}
+
+                {% if h.amendment_reason %}
+                <div class="mt-3 pt-3 border-t border-sky-200">
+                    <p class="text-xs font-semibold text-sky-900 mb-1">Motivo de la corrección</p>
+                    <p class="text-sm text-sky-900 leading-relaxed">{{ h.amendment_reason }}</p>
+                </div>
+                {% endif %}
+
+                {% if not h.is_amendment %}
+                <details class="mt-3 pt-3 border-t border-slate-100">
+                    <summary class="text-xs font-semibold text-slate-600 cursor-pointer hover:text-slate-900">
+                        Registrar una adenda
+                    </summary>
+                    <form method="POST" action="{{ url_for('doctor.amend_history', history_id=h.id) }}"
+                          class="mt-3 space-y-2">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <div>
+                            <label for="reason-{{ h.id }}" class="block text-xs font-semibold text-slate-700 mb-1">
+                                Qué se corrige y por qué
+                            </label>
+                            <textarea id="reason-{{ h.id }}" name="amendment_reason" rows="2"
+                                      required minlength="20" maxlength="1000"
+                                      placeholder="Por ejemplo: el diagnóstico se registró como J00 por error de digitación; corresponde a J01.9 según la evolución."
+                                      class="w-full border-2 border-slate-200 p-2.5 rounded-xl text-xs focus:border-sky-400 focus:outline-none resize-y"></textarea>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-2">
+                            <input type="text" name="cie10_code" maxlength="10"
+                                   placeholder="CIE-10 corregido (opcional)"
+                                   aria-label="Codigo CIE-10 corregido"
+                                   class="border-2 border-slate-200 p-2.5 rounded-xl text-xs focus:border-sky-400 focus:outline-none">
+                            <input type="text" name="diagnosis" maxlength="400"
+                                   placeholder="Diagnóstico corregido (opcional)"
+                                   aria-label="Diagnostico corregido"
+                                   class="border-2 border-slate-200 p-2.5 rounded-xl text-xs focus:border-sky-400 focus:outline-none">
+                        </div>
+                        <textarea name="summary" rows="2" maxlength="2000"
+                                  placeholder="Resumen corregido (opcional). Si se deja vacío se conserva el del registro original."
+                                  aria-label="Resumen corregido"
+                                  class="w-full border-2 border-slate-200 p-2.5 rounded-xl text-xs focus:border-sky-400 focus:outline-none resize-y"></textarea>
+                        <button type="submit"
+                            class="bg-sky-700 text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-sky-800 transition-colors">
+                            Registrar adenda
+                        </button>
+                    </form>
+                </details>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
     <div class="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center">
         <div>

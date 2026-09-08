@@ -834,3 +834,148 @@ El orden de ataque no es el orden de esta lista. Lo que sigue mandando es la
 rotación de las credenciales expuestas: mientras la semilla de cifrado siga
 siendo pública, la historia clínica es descifrable hoy por quien tuviera ese
 archivo, sin necesidad de ninguna de estas normas.
+
+
+# Octava pasada — 2026-09-07
+
+Corrección del inventario levantado en la séptima pasada. Se cierra todo lo que
+puede cerrarse desde el código; lo que depende de credenciales o contratos queda
+señalado con precisión.
+
+## Casi se implementa una segunda norma derogada
+
+Al ir a construir el RIPS se iba a tomar como referencia la **Resolución 2275 de
+2023**, que es lo que aparece en toda la documentación secundaria. Está también
+derogada: la vigente es la **Resolución 948 de 2026**, del 14 de mayo, que derogó
+la 2275 y las 558 y 1884 de 2024.
+
+Se detectó porque un resultado de búsqueda la mencionaba de pasada. Desde el **1
+de junio de 2026** sus reglas de validación pasaron de notificar a **rechazar**.
+
+Es el segundo caso en esta auditoría de una norma reemplazada sin que la
+documentación de referencia lo refleje. La lección operativa: **verificar la
+vigencia en la fuente antes de escribir, no después**.
+
+## Resuelto
+
+### P0-17 · RIPS en el formato vigente
+
+Nuevo `rips_json.py`, con la estructura del anexo técnico: cabecera con obligado
+y factura, arreglo de usuarios y objeto de servicios. Se cuidaron los detalles
+que se pasan por alto: `fechaInicioAtencion` de dieciséis caracteres sin
+segundos, y `numAutorizacion` como `null` y no como cadena vacía.
+
+`rips_service.py` queda marcado como derogado en su primera línea. Se conserva
+porque alguna entidad territorial puede pedir el plano para conciliaciones
+históricas, no porque sirva para radicar.
+
+**Lo que no hace:** radicar. Eso exige la factura electrónica validada por la
+DIAN y las credenciales del Mecanismo Único de Validación, que devuelve el CUV.
+Los avisos del propio módulo lo dicen en cada generación.
+
+**Tres campos declarados como pendientes** en lugar de emitirse con un nombre
+inventado: CIE-11 y Código VIDA (exigibles desde el 1 de julio de 2026) y SIRAS
+(desde el 1 de septiembre). No se pudo confirmar su nombre exacto en el anexo. Un
+campo mal nombrado se rechaza igual que uno ausente, pero además hace creer que
+está resuelto.
+
+### P0-18 · Vigilancia en salud pública
+
+Nuevo `surveillance.py`. Al guardar una atención contrasta el diagnóstico contra
+el catálogo de eventos y abre un pendiente con su plazo.
+
+La detección es deliberadamente amplia, por prefijo CIE-10: un falso positivo
+cuesta que alguien revise y descarte; un falso negativo cuesta un brote sin
+notificar. Cerrar un pendiente cuesta trabajo a propósito: notificarlo exige el
+número de la ficha radicada, descartarlo exige explicar por qué.
+
+**No radica.** El Sivigila recibe por su propio sistema. Lo que se cierra es el
+hueco anterior: que el sistema no supiera que un caso era notificable.
+
+### P1-16 · Causa externa real
+
+El generador quemaba `causa externa = 13` para toda atención, contradiciendo su
+propia documentación. Ahora la determina el profesional en cada consulta y el
+generador se niega a exportar si falta.
+
+Con eso un accidente de trabajo va a la ARL, uno de tránsito al SOAT, y una
+lesión por agresión deja de desaparecer del reporte.
+
+### P1-17 · Modalidad de atención
+
+`MedicalHistory.care_modality`, con el catálogo del Ministerio. El `Encounter`
+del RDA ya no va siempre como ambulatorio presencial.
+
+### P1-18 · PQRS del servicio de salud
+
+Nuevo `routes_pqrs.py` y `service_quality.py`. Quien radica recibe un número; sin
+él no puede hacer seguimiento ni acreditar que radicó, que es lo que convierte un
+canal de quejas en un buzón sin fondo.
+
+El código del radicado excluye I, O, 0 y 1: se dicta por teléfono o se anota a
+mano, y esos se confunden.
+
+El plazo se fija al radicar, no al atender. Fijarlo al abrirla haría imposible
+saber que algo está vencido sin que nadie lo haya mirado.
+
+### P1-19 · Farmacovigilancia
+
+`AdverseDrugEvent` y su lógica en `service_quality.py`. El plazo depende de la
+seriedad: setenta y dos horas si es seria, un mes si no.
+
+`PatientAllergy` no cubría esto aunque lo pareciera: registra la alergia de un
+paciente para impedir una prescripción futura. Mira hacia adelante y es de uso
+clínico. El reporte mira hacia atrás y es de uso poblacional: sirve para que el
+INVIMA detecte que un lote o un principio activo están dañando a mucha gente.
+
+### P1-20 · Fecha de solicitud de la cita
+
+`Appointment.requested_at`. Sin ella la oportunidad no puede calcularse.
+
+### P2-15 · Adenda de la historia clínica
+
+Ruta y pantalla para enmendar sin borrar. El registro original queda intacto y la
+adenda lo referencia con su motivo.
+
+La adenda se remite al IHCE como una atención más: el Ministerio recibió la
+versión anterior y tiene que recibir la corregida. Y si la corrección cambia el
+diagnóstico, puede volver el caso notificable, así que también pasa por la
+detección de vigilancia.
+
+## Una trampa que casi se cuela
+
+La tabla de zona del RIPS va **al revés** que la del IHCE:
+
+| | 01 | 02 |
+| :--- | :--- | :--- |
+| `ZonaVersion2` (RIPS) | Rural | Urbano |
+| `ColombianResidenceZone` (IHCE) | Urbana | Rural |
+
+En una plataforma rural, confundirlas reporta a toda la población en la zona
+equivocada. Queda una prueba de regresión que falla si alguien intenta
+unificarlas.
+
+## Catálogos: semillas parciales, carga oficial
+
+El portal de SISPRO pagina sus tablas de diez en diez y no cedió a la
+paginación automatizada. En lugar de quemar medias tablas, los catálogos viven
+en base de datos con comando de carga, igual que ya se hacía con CIE-10 y CUPS:
+
+- `manage.py load-rips-tables <tabla> <archivo>`
+- `manage.py load-sivigila-events <archivo>`
+
+Las semillas que trae la aplicación están marcadas como parciales en el propio
+código. Para el catálogo de causa externa se incluyeron las entradas que importan
+clínicamente: accidente de trabajo, de tránsito común y laboral, lesión por
+agresión, lesión autoinfligida y sospecha de violencia física.
+
+## Estado de las prioridades
+
+Sigue mandando lo mismo que en la séptima pasada: **rotar las credenciales
+expuestas**. Mientras la semilla de cifrado siga siendo pública, la historia
+clínica es descifrable hoy por quien tuviera ese archivo, sin necesidad de
+ninguna de estas normas.
+
+Como no hay datos clínicos todavía, la vía limpia es eliminar la instancia de
+base de datos y crear otra: mata el URI comprometido, entrega credenciales
+nuevas y no hay nada que migrar.
